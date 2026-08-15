@@ -1,16 +1,15 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\DesignController;
+use App\Http\Controllers\Api\DesignerController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PrintProviderController;
-use App\Http\Controllers\Api\DesignerController;
-use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Api\UserController;
+use Illuminate\Support\Facades\Route;
+
+Route::pattern('id', '[0-9]+');
 
 /*
 |--------------------------------------------------------------------------
@@ -27,38 +26,38 @@ use App\Http\Controllers\Auth\NewPasswordController;
 Route::get('/test', function () {
     return response()->json([
         'message' => 'API is working! 🚀',
-        'status' => 'success'
+        'status' => 'success',
     ]);
 });
 
 // ========== Routes عامة (لا تحتاج توثيق) ==========
 Route::prefix('auth')->group(function () {
-    // تسجيل الدخول
-    Route::post('/login', [AuthController::class, 'login']);
-
     // تسجيل مستخدم جديد
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register'])
+        ->middleware('throttle:5,1');
+
+    // تسجيل الدخول
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:10,1');
+
+    // طلب رابط إعادة تعيين كلمة المرور
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])
+        ->middleware('throttle:3,1');
+
+    // إعادة تعيين كلمة المرور
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])
+        ->middleware('throttle:5,1');
 
     // تسجيل الخروج
     Route::post('/logout', [AuthController::class, 'logout'])
         ->middleware('auth:sanctum');
-
-    // 🆕 طلب إعادة تعيين كلمة المرور (نسيت كلمة المرور)
-    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
-        ->name('password.email');
-
-    // 🆕 إعادة تعيين كلمة المرور
-    Route::post('/reset-password', [NewPasswordController::class, 'store'])
-        ->name('password.store');
 });
 
 // ✅ Protected routes (تحتاج توثيق)
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'active'])->group(function () {
 
     // جلب معلومات المستخدم الحالي
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+    Route::get('/user', [AuthController::class, 'me']);
 
     // ========== Routes خاصة بالمستخدمين ==========
     Route::prefix('users')->group(function () {

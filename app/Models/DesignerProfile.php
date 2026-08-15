@@ -38,6 +38,6 @@ class DesignerProfile extends Model
 
     public function designs()
     {
-        return $this->hasMany(Design::class, 'designer_id');
+        return $this->hasMany(Design::class, 'designer_id', 'user_id');
     }
 }

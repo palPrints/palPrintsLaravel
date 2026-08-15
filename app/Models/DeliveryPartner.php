@@ -23,6 +23,10 @@ class DeliveryPartner extends Model
         'is_active',
     ];
 
+    protected $hidden = [
+        'api_key',
+    ];
+
     protected $casts = [
         'service_areas' => 'array',
         'delivery_fee' => 'decimal:2',
@@ -38,6 +42,6 @@ class DeliveryPartner extends Model
 
     public function orders()
     {
-        return $this->hasMany(Order::class, 'delivery_partner_id');
+        return $this->hasMany(Order::class, 'delivery_partner_id', 'user_id');
     }
 }
