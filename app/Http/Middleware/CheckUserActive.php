@@ -17,22 +17,6 @@ class CheckUserActive
             return $next($request);
         }
 
-        if ($request->is('api/*')) {
-            $currentAccessToken = $user->currentAccessToken();
-
-            if ($currentAccessToken && method_exists($currentAccessToken, 'delete')) {
-                $currentAccessToken->delete();
-            }
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'حسابك غير مفعّل أو ما زال قيد مراجعة الإدارة.',
-                'data' => [
-                    'account_status' => 'pending',
-                ],
-            ], 403);
-        }
-
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
