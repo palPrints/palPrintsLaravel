@@ -3,42 +3,40 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     protected $fillable = [
         'name',
         'email',
-        'password',
         'phone',
-        'role',
+        'avatar_path',
+        'locale',
         'is_active',
-        'is_verified',
-        'verification_token',
+        'last_login_at',
+        'last_login_ip',
+        'password',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
-        'verification_token',
     ];
 
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'is_active' => 'boolean',
-        'is_verified' => 'boolean',
-    ];
-
-    // ========== العلاقات ==========
-
-    public function addresses()
+    protected function casts(): array
     {
-        return $this->hasMany(Address::class);
+        return [
+            'email_verified_at' => 'datetime',
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
+            'password' => 'hashed',
+        ];
     }
 
     public function designerProfile()
@@ -56,9 +54,9 @@ class User extends Authenticatable
         return $this->hasOne(DeliveryPartner::class);
     }
 
-    public function designs()
+    public function addresses()
     {
-        return $this->hasMany(Design::class, 'designer_id');
+        return $this->hasMany(Address::class);
     }
 
     public function orders()
@@ -66,9 +64,14 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
-    public function reviews()
+    public function designs()
     {
-        return $this->hasMany(Review::class);
+        return $this->hasMany(Design::class, 'designer_id');
+    }
+
+    public function cartItems()
+    {
+        return $this->hasMany(Cart::class);
     }
 
     public function wallet()
@@ -76,18 +79,74 @@ class User extends Authenticatable
         return $this->hasOne(Wallet::class);
     }
 
-    public function notifications()
-    {
-        return $this->hasMany(Notification::class);
-    }
-
     public function auditLogs()
     {
         return $this->hasMany(AuditLog::class);
     }
 
-    public function carts()
+    public function approvalRequests()
     {
-        return $this->hasMany(Cart::class);
+        return $this->hasMany(ApprovalRequest::class);
+    }
+
+    public function socialAccounts()
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+
+    public function primaryRole(): ?string
+    {
+        return $this->getRoleNames()->first();
+    }
+
+    public function supportsOnboarding(): bool
+    {
+        return in_array($this->primaryRole(), ['designer', 'print_provider', 'delivery_partner'], true);
+    }
+
+    public function roleProfile(): ?Model
+    {
+        return match ($this->primaryRole()) {
+            'designer' => $this->designerProfile,
+            'print_provider' => $this->printProvider,
+            'delivery_partner' => $this->deliveryPartner,
+            default => null,
+        };
+    }
+
+    public function approvalStatus(): string
+    {
+        return $this->supportsOnboarding()
+            ? ($this->roleProfile()?->approval_status ?? 'draft')
+            : 'approved';
+    }
+
+    public function hasCompletedRoleProfile(): bool
+    {
+        return ! $this->supportsOnboarding()
+            || $this->roleProfile()?->profile_completed_at !== null;
+    }
+
+    public function hasApprovedBusinessAccount(): bool
+    {
+        return ! $this->supportsOnboarding() || $this->approvalStatus() === 'approved';
+    }
+
+    public function isAwaitingApproval(): bool
+    {
+        return $this->supportsOnboarding()
+            && in_array($this->approvalStatus(), ['submitted', 'under_review'], true);
+    }
+
+    public function dashboardRouteName(): string
+    {
+        return match ($this->primaryRole()) {
+            'admin' => 'admin.dashboard',
+            'customer' => 'customer.dashboard',
+            'designer' => 'designer.dashboard',
+            'print_provider' => 'print-provider.dashboard',
+            'delivery_partner' => 'delivery-partner.dashboard',
+            default => 'dashboard',
+        };
     }
 }

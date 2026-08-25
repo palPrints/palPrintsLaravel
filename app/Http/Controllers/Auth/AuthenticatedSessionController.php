@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Models\User;
+use App\Models\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -20,37 +20,52 @@ class AuthenticatedSessionController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->validate([
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
-        ]);
+        $request->authenticate();
 
-        // ✅ التحقق من is_active
-        $user = User::where('email', $request->email)->first();
+        $user = $request->user();
 
-        if ($user && !$user->is_active) {
-            return back()->withErrors([
-                'email' => '⚠️ حسابك قيد المراجعة من قبل الإدارة. يرجى الانتظار حتى الموافقة.',
-            ]);
-        }
+        if (! $user->is_active) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
-        if (! Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
+                'email' => 'هذا الحساب موقوف حاليًا. يرجى التواصل مع إدارة PALPRINTS.',
             ]);
         }
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user->forceFill([
+            'last_login_at' => now(),
+            'last_login_ip' => $request->ip(),
+        ])->saveQuietly();
+
+        AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'account.logged_in',
+            'description' => 'تم تسجيل الدخول إلى الحساب.',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        return redirect()->intended(route($user->dashboardRouteName(), absolute: false));
     }
 
     public function destroy(Request $request): RedirectResponse
     {
+        if ($request->user()) {
+            AuditLog::create([
+                'user_id' => $request->user()->id,
+                'action' => 'account.logged_out',
+                'description' => 'تم تسجيل الخروج من الحساب.',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+        }
+
         Auth::guard('web')->logout();
-
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');

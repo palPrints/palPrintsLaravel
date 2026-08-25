@@ -12,8 +12,9 @@ class CheckUserActive
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
+        $hasActiveFlag = $user && array_key_exists('is_active', $user->getAttributes());
 
-        if (! $user || $user->is_active) {
+        if (! $user || ! $hasActiveFlag || $user->is_active) {
             return $next($request);
         }
 

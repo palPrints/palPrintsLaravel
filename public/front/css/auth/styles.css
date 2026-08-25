@@ -1,0 +1,5736 @@
+/* =========================================================
+   PALPRINTS Register Page
+   File: styles.css
+   ========================================================= */
+
+/* ---------- Design tokens ---------- */
+:root {
+  color-scheme: light;
+
+  --font-family: "Cairo", Arial, sans-serif;
+
+  --purple: #7c3aed;
+  --purple-strong: #6d28d9;
+  --blue: #2563eb;
+  --blue-strong: #1d4ed8;
+  --cyan: #0891b2;
+  --teal: #0d9488;
+
+  --gradient-primary: linear-gradient(
+    135deg,
+    var(--teal) 0%,
+    var(--blue) 52%,
+    var(--purple) 100%
+  );
+
+  --gradient-soft: linear-gradient(
+    135deg,
+    rgba(13, 148, 136, 0.12),
+    rgba(37, 99, 235, 0.1),
+    rgba(124, 58, 237, 0.12)
+  );
+
+  --page-bg: #f5f8fe;
+  --page-bg-secondary: #eef4ff;
+  --surface: #ffffff;
+  --surface-elevated: rgba(255, 255, 255, 0.94);
+  --surface-muted: #f8fafc;
+  --surface-soft: #f1f5f9;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  /* --text-muted: #64748b; */
+  --text-on-brand: #ffffff;
+
+  --border: #dbe3ef;
+  --border-strong: #cbd5e1;
+  --border-soft: rgba(203, 213, 225, 0.68);
+
+  --success: #0f8a5f;
+  --success-bg: #ecfdf5;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --warning: #b45309;
+  --warning-bg: #fffbeb;
+
+  --focus: #2563eb;
+  --focus-ring: rgba(37, 99, 235, 0.2);
+
+  --shadow-sm: 0 4px 14px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 14px 38px rgba(15, 23, 42, 0.09);
+  --shadow-lg: 0 26px 70px rgba(30, 64, 175, 0.12);
+  --shadow-brand: 0 12px 30px rgba(37, 99, 235, 0.24);
+
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-pill: 999px;
+
+  --header-height: 94px;
+  --content-width: 980px;
+  --transition-fast: 160ms ease;
+  --transition-base: 240ms ease;
+}
+
+html[data-theme="dark"],
+body.dark-mode {
+  color-scheme: dark;
+
+  --page-bg: #07111f;
+  --page-bg-secondary: #0b1728;
+  --surface: #111c2d;
+  --surface-elevated: rgba(17, 28, 45, 0.94);
+  --surface-muted: #152338;
+  --surface-soft: #1b2a40;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+
+  --border: #2a3a52;
+  --border-strong: #3b4d67;
+  --border-soft: rgba(71, 85, 105, 0.72);
+
+  --success: #5eead4;
+  --success-bg: rgba(13, 148, 136, 0.14);
+  --danger: #fca5a5;
+  --danger-bg: rgba(127, 29, 29, 0.2);
+  --warning: #fcd34d;
+  --warning-bg: rgba(120, 53, 15, 0.2);
+
+  --focus: #60a5fa;
+  --focus-ring: rgba(96, 165, 250, 0.22);
+
+  --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.16);
+  --shadow-md: 0 18px 44px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 28px 80px rgba(0, 0, 0, 0.34);
+  --shadow-brand: 0 14px 34px rgba(37, 99, 235, 0.3);
+}
+
+/* ---------- Reset ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  font-family: var(--font-family);
+  line-height: 1.6;
+  color: var(--text-primary);
+  background:
+    radial-gradient(circle at 15% 18%, rgba(37, 99, 235, 0.1), transparent 31%),
+    radial-gradient(circle at 88% 78%, rgba(124, 58, 237, 0.1), transparent 30%),
+    linear-gradient(145deg, var(--page-bg), var(--page-bg-secondary));
+  transition:
+    color var(--transition-base),
+    background-color var(--transition-base);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a,
+label,
+input[type="checkbox"],
+input[type="file"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  color: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+img,
+svg {
+  display: block;
+}
+
+img {
+  max-width: 100%;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+::selection {
+  color: #ffffff;
+  background: var(--blue);
+}
+
+/* ---------- Accessibility ---------- */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.skip-link {
+  position: fixed;
+  inset-block-start: 14px;
+  inset-inline-start: 14px;
+  z-index: 1000;
+  padding: 10px 16px;
+  color: #ffffff;
+  text-decoration: none;
+  background: var(--text-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-160%);
+  transition: transform var(--transition-fast);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* ---------- Shared icon styling ---------- */
+.svg-sprite {
+  position: absolute;
+  pointer-events: none;
+}
+
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- Decorative background ---------- */
+.page-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.decor {
+  position: absolute;
+  display: block;
+}
+
+.decor-circle {
+  width: clamp(230px, 25vw, 430px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 50%;
+}
+
+.decor-circle::before,
+.decor-circle::after {
+  position: absolute;
+  content: "";
+  border-radius: 50%;
+}
+
+.decor-circle::before {
+  width: 11px;
+  height: 11px;
+  background: #0ea5e9;
+  box-shadow: 0 0 0 7px rgba(14, 165, 233, 0.08);
+}
+
+.decor-circle::after {
+  width: 56%;
+  height: 56%;
+  background: rgba(96, 165, 250, 0.07);
+  filter: blur(8px);
+}
+
+.decor-circle-start {
+  inset-block-start: 18%;
+  inset-inline-start: -14%;
+}
+
+.decor-circle-start::before {
+  inset-block-start: 42%;
+  inset-inline-end: -6px;
+}
+
+.decor-circle-start::after {
+  inset-block-end: 3%;
+  inset-inline-start: 16%;
+}
+
+.decor-circle-end {
+  inset-inline-end: -15%;
+  inset-block-end: -8%;
+  border-color: rgba(124, 58, 237, 0.23);
+}
+
+.decor-circle-end::before {
+  inset-block-start: 18%;
+  inset-inline-start: 4%;
+  background: var(--purple);
+  box-shadow: 0 0 0 7px rgba(124, 58, 237, 0.08);
+}
+
+.decor-circle-end::after {
+  inset-block-end: 13%;
+  inset-inline-end: 12%;
+  background: rgba(124, 58, 237, 0.08);
+}
+
+.decor-blob {
+  width: clamp(180px, 22vw, 360px);
+  height: clamp(180px, 22vw, 360px);
+  border-radius: 48% 52% 62% 38% / 36% 44% 56% 64%;
+  filter: blur(4px);
+  opacity: 0.5;
+}
+
+.decor-blob-start {
+  inset-inline-start: -8%;
+  inset-block-end: 8%;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(96, 165, 250, 0.02));
+  transform: rotate(25deg);
+}
+
+.decor-blob-end {
+  inset-inline-end: -7%;
+  inset-block-start: 18%;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(37, 99, 235, 0.02));
+  transform: rotate(-28deg);
+}
+
+.decor-dots {
+  width: 84px;
+  height: 84px;
+  opacity: 0.32;
+  background-image: radial-gradient(circle, rgba(37, 99, 235, 0.42) 2px, transparent 2.5px);
+  background-size: 15px 15px;
+}
+
+.decor-dots-top {
+  inset-block-start: 23%;
+  inset-inline-start: 12%;
+}
+
+.decor-dots-bottom {
+  inset-inline-end: 12%;
+  inset-block-end: 18%;
+}
+
+html[data-theme="dark"] .decor-dots,
+body.dark-mode .decor-dots {
+  opacity: 0.2;
+}
+
+/* ---------- Header ---------- */
+.site-header {
+  position: relative;
+  z-index: 20;
+  width: min(100% - 28px, 1500px);
+  min-height: var(--header-height);
+  margin: 16px auto 0;
+}
+
+.header-container {
+  min-height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 8px clamp(18px, 3vw, 42px);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+}
+
+.brand-logo {
+  width: clamp(148px, 14vw, 205px);
+  height: auto;
+  object-fit: contain;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  min-width: 0;
+}
+
+.login-shortcut {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.login-question {
+  color: var(--text-secondary);
+  font-size: 0.93rem;
+  white-space: nowrap;
+}
+
+.login-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 17px;
+  color: var(--blue-strong);
+  font-weight: 700;
+  text-decoration: none;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  border-radius: var(--radius-pill);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.login-link:hover {
+  color: #ffffff;
+  background: var(--blue);
+  border-color: var(--blue);
+  transform: translateY(-1px);
+}
+
+.header-divider {
+  width: 1px;
+  height: 34px;
+  background: var(--border);
+}
+
+.header-control {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 13px;
+  color: var(--text-secondary);
+  font-weight: 650;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.header-control:hover {
+  color: var(--blue);
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.12);
+  transform: translateY(-1px);
+}
+
+.theme-toggle {
+  width: 46px;
+  padding: 0;
+}
+
+.theme-icon-dark {
+  display: none;
+}
+
+html[data-theme="dark"] .theme-icon-light,
+body.dark-mode .theme-icon-light {
+  display: none;
+}
+
+html[data-theme="dark"] .theme-icon-dark,
+body.dark-mode .theme-icon-dark {
+  display: block;
+}
+
+/* ---------- Main layout ---------- */
+.main-content {
+  position: relative;
+  z-index: 5;
+  width: min(100% - 28px, var(--content-width));
+  margin: 24px auto 48px;
+}
+
+.main-content:focus {
+  outline: none;
+}
+
+.noscript-message {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  color: var(--warning);
+  background: var(--warning-bg);
+  border: 1px solid color-mix(in srgb, var(--warning) 28%, transparent);
+  border-radius: var(--radius-md);
+}
+
+.verification-card,
+.result-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.verification-card::before,
+.result-card::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  content: "";
+  background: var(--gradient-primary);
+}
+
+
+/* ---------- Register heading ---------- */
+
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  margin: 0 0 8px;
+  padding: 4px 12px;
+  color: var(--blue-strong);
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  border-radius: var(--radius-pill);
+}
+
+
+.step-progress {
+  width: min(100%, 360px);
+  margin: 22px auto 0;
+}
+
+.step-track {
+  position: relative;
+  height: 7px;
+  overflow: hidden;
+  background: var(--surface-soft);
+  border-radius: var(--radius-pill);
+}
+
+.step-track-active {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 50%;
+  background: var(--gradient-primary);
+  border-radius: inherit;
+  box-shadow: 0 0 16px rgba(37, 99, 235, 0.28);
+}
+
+.step-label {
+  display: block;
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+/* ---------- Account type tabs ---------- */
+
+
+.section-title {
+  margin: 0 0 14px;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+
+.card-text-group h3 {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.card-text-group p {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+/* ---------- Section divider ---------- */
+.form-divider,
+.social-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+}
+
+.form-divider {
+  margin: 8px 0 26px;
+}
+
+.form-divider span,
+.social-divider span {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.form-divider strong {
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+/* ---------- Panels and forms ---------- */
+
+
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.form-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.form-grid-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form-grid-full {
+  grid-column: 1 / -1;
+}
+
+.field-group {
+  min-width: 0;
+}
+
+/* ---------- Floating labels ---------- */
+.floating-field {
+  position: relative;
+  min-height: 56px;
+}
+
+.floating-field input,
+.floating-field textarea,
+.floating-field select {
+  width: 100%;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.floating-field input {
+  height: 56px;
+  padding: 16px 16px 10px;
+}
+
+.floating-field textarea {
+  min-height: 126px;
+  resize: vertical;
+  padding: 23px 16px 12px;
+  line-height: 1.65;
+}
+
+.floating-field label {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 16px;
+  max-width: calc(100% - 48px);
+  padding-inline: 4px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1;
+  pointer-events: none;
+  background: transparent;
+  transform: translateY(-50%);
+  transform-origin: right center;
+  transition:
+    inset-block-start var(--transition-fast),
+    color var(--transition-fast),
+    font-size var(--transition-fast),
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+html[dir="ltr"] .floating-field label {
+  transform-origin: left center;
+}
+
+.floating-textarea label {
+  inset-block-start: 28px;
+}
+
+.floating-field input:focus,
+.floating-field textarea:focus,
+.floating-field select:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 4px var(--focus-ring);
+  background: var(--surface);
+}
+
+.floating-field input:focus + label,
+.floating-field input:not(:placeholder-shown) + label,
+.floating-field input:-webkit-autofill + label,
+.floating-field textarea:focus + label,
+.floating-field textarea:not(:placeholder-shown) + label,
+.floating-field select:focus + label,
+.floating-field select:valid + label {
+  inset-block-start: 0;
+  color: var(--focus);
+  font-size: 0.74rem;
+  font-weight: 800;
+  background: var(--surface);
+  transform: translateY(-50%);
+}
+
+.floating-field input:-webkit-autofill,
+.floating-field input:-webkit-autofill:hover,
+.floating-field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-primary);
+  box-shadow: 0 0 0 1000px var(--surface) inset;
+  transition: background-color 9999s ease-out 0s;
+}
+
+.required-mark {
+  position: absolute;
+  inset-block-start: 14px;
+  inset-inline-end: 13px;
+  color: var(--danger);
+  font-size: 0.88rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.has-action .required-mark {
+  inset-inline-end: 46px;
+}
+
+.has-action input {
+  padding-inline-end: 52px;
+}
+
+.field-action {
+  position: absolute;
+  inset-inline-end: 7px;
+  inset-block-start: 50%;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  outline: none;
+  box-shadow: none;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.field-action:hover,
+.field-action:focus,
+.field-action:focus-visible {
+  color: var(--blue);
+  background: transparent;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+}
+
+.icon-eye-off {
+  display: none;
+}
+
+.password-toggle.is-visible .icon-eye {
+  display: none;
+}
+
+.password-toggle.is-visible .icon-eye-off {
+  display: block;
+}
+
+.field-hint,
+.field-error {
+  margin: 7px 4px 0;
+  font-size: 0.76rem;
+  line-height: 1.55;
+}
+
+.field-hint {
+  color: var(--text-muted);
+}
+
+.field-error {
+  min-height: 0;
+  color: var(--danger);
+  font-weight: 650;
+}
+
+.field-error:empty {
+  display: none;
+}
+
+.time-field input {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] .time-field input,
+body.dark-mode .time-field input {
+  color-scheme: dark;
+}
+
+/* ---------- Fieldsets ---------- */
+
+
+.fieldset-description {
+  margin: 0 0 16px;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+/* ---------- Image uploader ---------- */
+
+
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.file-input:focus-visible + label {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+
+.remove-upload-button {
+  justify-self: center;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  color: var(--danger);
+  font-weight: 700;
+  background: var(--danger-bg);
+  border: 1px solid color-mix(in srgb, var(--danger) 22%, transparent);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    transform var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.remove-upload-button:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--danger-bg) 80%, var(--danger) 20%);
+}
+
+/* ---------- Documents uploader ---------- */
+
+
+.selected-file-name {
+  width: 100%;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Printer services ---------- */
+
+
+.service-check {
+  position: absolute;
+  inset-block-start: 8px;
+  inset-inline-end: 8px;
+  width: 21px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.7);
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.service-check .icon {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.7;
+}
+
+
+.service-emoji {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+
+/* ---------- Consent checkbox ---------- */
+
+
+.custom-checkbox {
+  width: 21px;
+  height: 21px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  margin-top: 2px;
+  color: #ffffff;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.custom-checkbox .icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+  stroke-width: 2.7;
+  transform: scale(0.6);
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+
+/* ---------- Buttons ---------- */
+.primary-button,
+.google-button,
+.back-button {
+  border: 0;
+  cursor: pointer;
+}
+
+.primary-button {
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 24px;
+  color: var(--text-on-brand);
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-brand);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    filter var(--transition-fast);
+}
+
+.primary-button:hover {
+  filter: saturate(1.08) brightness(1.03);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(37, 99, 235, 0.3);
+}
+
+.primary-button:active {
+  transform: translateY(0);
+}
+
+.primary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.66;
+  filter: grayscale(0.2);
+  transform: none;
+}
+
+.submit-button {
+  width: 100%;
+}
+
+.button-loader {
+  width: 18px;
+  height: 18px;
+  display: none;
+  border: 2px solid rgba(255, 255, 255, 0.38);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+.submit-button.is-loading .button-loader {
+  display: block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.social-divider {
+  margin-top: -2px;
+}
+
+.social-divider strong {
+  font-size: 0.8rem;
+}
+
+.google-button {
+  min-height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 20px;
+  color: var(--text-primary);
+  font-weight: 750;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.google-button:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.google-mark {
+  font-family: "Cairo", Arial, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 900;
+  line-height: 1;
+  background: conic-gradient(
+    from -45deg,
+    #4285f4 0 25%,
+    #34a853 25% 45%,
+    #fbbc05 45% 68%,
+    #ea4335 68% 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.form-status {
+  display: none;
+  padding: 12px 14px;
+  font-size: 0.84rem;
+  font-weight: 650;
+  border-radius: var(--radius-md);
+}
+
+.form-status:not(:empty) {
+  display: block;
+}
+
+.form-status.is-success {
+  color: var(--success);
+  background: var(--success-bg);
+  border: 1px solid color-mix(in srgb, var(--success) 22%, transparent);
+}
+
+.form-status.is-error {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border: 1px solid color-mix(in srgb, var(--danger) 22%, transparent);
+}
+
+.approval-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0;
+  padding: 12px 14px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  background: rgba(37, 99, 235, 0.06);
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  border-radius: var(--radius-md);
+}
+
+.approval-note .icon {
+  color: var(--success);
+  margin-top: 2px;
+}
+
+/* ---------- Card footer ---------- */
+
+
+/* ---------- Verification and result cards ---------- */
+.verification-card,
+.result-card {
+  max-width: 640px;
+  margin-inline: auto;
+  padding: clamp(26px, 5vw, 48px);
+  text-align: center;
+}
+
+.back-button {
+  position: absolute;
+  inset-block-start: 20px;
+  inset-inline-start: 20px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  color: var(--text-secondary);
+  font-weight: 700;
+  background: var(--surface-muted);
+  border-radius: var(--radius-pill);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.back-button:hover {
+  color: var(--blue);
+  background: rgba(37, 99, 235, 0.08);
+  transform: translateY(-1px);
+}
+
+html[dir="ltr"] .back-button .icon {
+  transform: rotate(180deg);
+}
+
+.verification-icon,
+.result-icon {
+  width: 78px;
+  height: 78px;
+  display: grid;
+  place-items: center;
+  margin: 6px auto 18px;
+  color: #ffffff;
+  background: var(--gradient-primary);
+  border-radius: 24px;
+  box-shadow: var(--shadow-brand);
+}
+
+.verification-icon .icon,
+.result-icon .icon {
+  width: 38px;
+  height: 38px;
+  stroke-width: 2.4;
+}
+
+.verification-card h2,
+.result-card h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.55rem, 4vw, 2rem);
+}
+
+.verification-card > p,
+.result-card > p {
+  max-width: 520px;
+  margin: 0 auto 24px;
+  color: var(--text-secondary);
+}
+
+.otp-inputs {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(42px, 58px));
+  justify-content: center;
+  gap: clamp(7px, 2vw, 12px);
+  margin-bottom: 8px;
+}
+
+.otp-inputs input {
+  width: 100%;
+  aspect-ratio: 1;
+  color: var(--text-primary);
+  font-size: clamp(1.25rem, 3vw, 1.65rem);
+  font-weight: 800;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.otp-inputs input:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 4px var(--focus-ring);
+  transform: translateY(-2px);
+}
+
+.otp-error {
+  min-height: 22px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+#otpForm {
+  display: grid;
+  gap: 14px;
+}
+
+.resend-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 20px !important;
+  margin-bottom: 0 !important;
+  font-size: 0.82rem;
+}
+
+.resend-row button {
+  padding: 0;
+  color: var(--blue-strong);
+  font-weight: 800;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.resend-row button:hover {
+  color: var(--purple);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.result-card .primary-button {
+  margin-top: 4px;
+}
+
+/* ---------- Footer ---------- */
+.site-footer {
+  position: relative;
+  z-index: 5;
+  padding: 0 20px 28px;
+  color: var(--text-muted);
+  text-align: center;
+  font-size: 0.78rem;
+}
+
+.site-footer p {
+  margin: 0;
+}
+
+.site-footer strong {
+  color: var(--text-secondary);
+}
+
+/* ---------- RTL / LTR details ---------- */
+html[dir="ltr"] .service-check {
+  inset-inline-end: 10px;
+}
+
+html[dir="ltr"] .floating-field label {
+  text-align: left;
+}
+
+html[dir="rtl"] .floating-field label {
+  text-align: right;
+}
+
+/* ---------- Responsive: tablets ---------- */
+@media (max-width: 900px) {
+  :root {
+    --header-height: auto;
+  }
+
+  .site-header {
+    width: min(100% - 20px, 1500px);
+    margin-top: 10px;
+  }
+
+  .header-container {
+    min-height: 82px;
+    padding: 10px 18px;
+    gap: 14px;
+  }
+
+  .login-question {
+    display: none;
+  }
+
+
+}
+
+@media (max-width: 760px) {
+  .header-container {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .brand {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .brand-logo {
+    width: 165px;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .header-divider {
+    height: 28px;
+  }
+
+  .main-content {
+    margin-top: 16px;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+  .form-grid-two {
+    grid-template-columns: 1fr;
+  }
+
+
+
+
+
+
+}
+
+/* ---------- Responsive: phones ---------- */
+@media (max-width: 520px) {
+  .site-header,
+.main-content {
+    width: min(100% - 16px, var(--content-width));
+  }
+
+  .header-container {
+    border-radius: 16px;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+  }
+
+  .header-divider {
+    display: none;
+  }
+
+  .login-link,
+.header-control {
+    min-height: 40px;
+    font-size: 0.8rem;
+  }
+
+  .language-toggle {
+    padding-inline: 10px;
+  }
+
+  .verification-card,
+.result-card {
+    border-radius: 18px;
+  }
+
+
+
+
+
+
+
+  .form-divider {
+    gap: 8px;
+  }
+
+  .form-divider strong {
+    font-size: 0.78rem;
+  }
+
+  .floating-field input {
+    height: 54px;
+  }
+
+
+
+
+
+
+
+
+
+  .otp-inputs {
+    grid-template-columns: repeat(6, minmax(36px, 1fr));
+    gap: 6px;
+  }
+
+  .verification-card,
+.result-card {
+    padding: 68px 16px 26px;
+  }
+
+  .back-button {
+    inset-block-start: 15px;
+    inset-inline-start: 14px;
+  }
+}
+
+@media (max-width: 380px) {
+  .login-link .icon,
+.language-toggle .icon {
+    display: none;
+  }
+
+
+
+  .otp-inputs {
+    gap: 4px;
+  }
+}
+
+/* ---------- Motion preferences ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+*::before,
+*::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Step 1 role selection — spacious horizontal card stack
+   This block intentionally affects only the role-selection view. Step 2 keeps
+   its existing form layout and scrolling behavior.
+   -------------------------------------------------------------------------- */
+
+
+/* --------------------------------------------------------------------------
+   Hybrid Step 2 role views
+   Customer is social-only; designer and print provider retain the complete
+   four-field manual form plus social registration alternatives.
+   -------------------------------------------------------------------------- */
+
+
+/* Step 1 always fits the viewport and never owns a scrollbar. Step 2 may
+   restore scrolling through its role-view modifier when the full form needs it. */
+
+
+/* Lock every scroll owner while the role-selection step is visible. */
+
+
+/* Customer: keep Step 2 intentionally minimal and center its social choices
+   inside the available form-column height. */
+
+
+/* Designer/press: natural document flow with a scrollable form column. */
+
+
+/* ---------- Print ---------- */
+@media print {
+  .page-background,
+.site-header,
+.site-footer,
+.google-button,
+.social-divider,
+.back-button {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  .main-content {
+    width: 100%;
+    margin: 0;
+  }
+
+  .verification-card,
+.result-card {
+    box-shadow: none;
+    border: 1px solid #d1d5db;
+  }
+}
+
+/* ==========================================================================
+   Homepage visual system alignment
+   Applied to the Register page to keep both pages visually consistent.
+   ========================================================================== */
+
+:root {
+  --purple: #7c3aed;
+  --purple-strong: #6d28d9;
+  --blue: #0284c7;
+  --blue-strong: #0369a1;
+  --cyan: #0284c7;
+  --teal: #0891b2;
+
+  --gradient-primary: linear-gradient(90deg, #0284c7 0%, #7c3aed 100%);
+  --gradient-border: linear-gradient(90deg, #3b82f6 0%, #a855f7 100%);
+
+  --page-bg: #ffffff;
+  --page-bg-secondary: #ffffff;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-muted: #f8fafc;
+  --surface-soft: #eef0ff;
+
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #64748b;
+
+  --border: #e5e7eb;
+  --border-strong: #cbd5e1;
+  --border-soft: #e2e8f0;
+
+  --focus: #7c3aed;
+  --focus-ring: rgba(124, 58, 237, 0.18);
+
+  --shadow-sm: 0 2px 8px rgba(31, 41, 55, 0.05);
+  --shadow-md: 0 6px 20px rgba(31, 41, 55, 0.07);
+  --shadow-lg: 0 12px 34px rgba(31, 41, 55, 0.09);
+  --shadow-brand:
+    0 6px 18px rgba(2, 132, 199, 0.16),
+    0 6px 18px rgba(124, 58, 237, 0.16);
+
+  --header-height: 72px;
+  --content-width: 1040px;
+
+  --header-background: #ffffff;
+  --header-text: #1f2937;
+  --header-muted: #6b7280;
+  --header-border: #e2e8f0;
+}
+
+html[data-theme="dark"],
+body.dark-mode {
+  --page-bg: #0f172a;
+  --page-bg-secondary: #0f172a;
+  --surface: #1e293b;
+  --surface-elevated: #1e293b;
+  --surface-muted: #172033;
+  --surface-soft: #111827;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #94a3b8;
+
+  --border: #334155;
+  --border-strong: #475569;
+  --border-soft: #334155;
+
+  --focus: #c4b5fd;
+  --focus-ring: rgba(196, 181, 253, 0.18);
+
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.18);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 16px 44px rgba(0, 0, 0, 0.3);
+  --shadow-brand:
+    0 6px 18px rgba(2, 132, 199, 0.18),
+    0 6px 18px rgba(109, 40, 217, 0.18);
+
+  --gradient-primary: linear-gradient(90deg, #0369a1 0%, #6d28d9 100%);
+
+  --header-background: #1e293b;
+  --header-text: #f8fafc;
+  --header-muted: #cbd5e1;
+  --header-border: #334155;
+}
+
+body {
+  background: var(--page-bg);
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.page-background {
+  display: none;
+}
+
+/* ---------- Header: same structure as the homepage ---------- */
+.site-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1000;
+  width: 100%;
+  min-height: var(--header-height);
+  margin: 0;
+  background: var(--header-background);
+  border-bottom: 1px solid var(--header-border);
+  box-shadow: none;
+}
+
+.header-container {
+  width: 100%;
+  max-width: 1280px;
+  min-height: var(--header-height);
+  margin: 0 auto;
+  padding: 0 30px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.brand {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.brand-logo {
+  width: auto;
+  max-width: 140px;
+  max-height: 50px;
+  height: auto;
+  object-fit: contain;
+  filter: none;
+}
+
+.brand-logo-dark {
+  display: none;
+}
+
+html[data-theme="dark"] .brand-logo-light,
+body.dark-mode .brand-logo-light {
+  display: none;
+}
+
+html[data-theme="dark"] .brand-logo-dark,
+body.dark-mode .brand-logo-dark {
+  display: block;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.28));
+}
+
+.header-actions,
+.login-shortcut {
+  gap: 12px;
+}
+
+.login-question {
+  color: var(--header-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.header-divider {
+  height: 30px;
+  background: var(--header-border);
+}
+
+.login-link {
+  min-height: 44px;
+  padding: 0 20px;
+  color: #6d28d9;
+  background:
+    linear-gradient(var(--header-background), var(--header-background)) padding-box,
+    var(--gradient-border) border-box;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.login-link:hover {
+  color: #ffffff;
+  background: var(--gradient-primary);
+  border-color: transparent;
+  opacity: 0.94;
+  transform: none;
+}
+
+.header-control {
+  min-height: 42px;
+  padding: 0 8px;
+  color: var(--header-text);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+}
+
+.header-control:hover {
+  color: #6d28d9;
+  background: rgba(124, 58, 237, 0.06);
+  border-color: transparent;
+  transform: translateY(-1px);
+}
+
+.theme-toggle {
+  width: 42px;
+}
+
+/* ---------- Main Register layout ---------- */
+.main-content {
+  width: min(100% - 40px, var(--content-width));
+  margin: 40px auto 60px;
+}
+
+.verification-card,
+.result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.verification-card::before,
+.result-card::before {
+  height: 3px;
+  background: var(--gradient-border);
+}
+
+
+.eyebrow {
+  color: #6d28d9;
+  background: var(--surface-soft);
+  border-color: color-mix(in srgb, #7c3aed 18%, transparent);
+}
+
+.step-track-active {
+  background: var(--gradient-primary);
+  box-shadow: none;
+}
+
+/* ---------- Account type cards ---------- */
+
+
+/* ---------- Form surfaces ---------- */
+.floating-field input,
+.floating-field textarea,
+.floating-field select {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .floating-field input,
+html[data-theme="dark"] .floating-field textarea,
+html[data-theme="dark"] .floating-field select,
+body.dark-mode .floating-field input,
+body.dark-mode .floating-field textarea,
+body.dark-mode .floating-field select {
+  background: #111827;
+}
+
+.floating-field input:focus,
+.floating-field textarea:focus,
+.floating-field select:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+
+/* ---------- Buttons: homepage shapes and gradients ---------- */
+.primary-button {
+  min-height: 48px;
+  padding: 0 24px;
+  background: var(--gradient-primary);
+  border-radius: 10px;
+  box-shadow: var(--shadow-brand);
+}
+
+.primary-button:hover {
+  filter: none;
+  opacity: 0.92;
+  transform: none;
+  box-shadow: var(--shadow-brand);
+}
+
+.google-button {
+  min-height: 48px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.google-button:hover {
+  border-color: #a855f7;
+  box-shadow: var(--shadow-sm);
+  transform: none;
+}
+
+.back-button {
+  border-radius: 10px;
+}
+
+.remove-upload-button {
+  border-radius: 10px;
+}
+
+.custom-checkbox {
+  border-radius: 6px;
+}
+
+/* ---------- Dark mode refinements ---------- */
+html[data-theme="dark"] .primary-button,
+body.dark-mode .primary-button {
+  background: linear-gradient(90deg, #0369a1 0%, #6d28d9 100%);
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .login-link,
+body.dark-mode .login-link {
+  color: #6d28d9;
+  background:
+    linear-gradient(var(--header-background), var(--header-background)) padding-box,
+    var(--gradient-border) border-box;
+}
+
+html[data-theme="dark"] .login-link:hover,
+body.dark-mode .login-link:hover {
+  color: #ffffff;
+  background: var(--gradient-primary);
+}
+
+html[data-theme="dark"] .header-control,
+html[data-theme="dark"] .login-question,
+body.dark-mode .header-control,
+body.dark-mode .login-question {
+  color: var(--header-text);
+}
+
+html[data-theme="dark"] .login-link,
+body.dark-mode .login-link {
+  color: #ddd6fe;
+}
+
+html[data-theme="dark"] .header-control:hover,
+body.dark-mode .header-control:hover {
+  color: #ffffff;
+  background: rgba(196, 181, 253, 0.1);
+}
+
+/* ---------- Responsive header aligned with homepage ---------- */
+@media (max-width: 900px) {
+  .site-header {
+    width: 100%;
+    margin: 0;
+  }
+
+  .header-container {
+    min-height: 72px;
+    padding: 0 18px;
+  }
+}
+
+@media (max-width: 760px) {
+  .header-container {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  .brand {
+    width: auto;
+    justify-content: flex-start;
+  }
+
+  .brand-logo {
+    max-width: 128px;
+  }
+
+  .header-actions {
+    width: auto;
+    justify-content: flex-end;
+  }
+
+  .login-question,
+.header-divider {
+    display: none;
+  }
+
+  .main-content {
+    width: min(100% - 20px, var(--content-width));
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 520px) {
+  .site-header,
+.main-content {
+    width: 100%;
+  }
+
+  .header-container {
+    min-height: 66px;
+    padding: 0 12px;
+  }
+
+  .brand-logo {
+    max-width: 112px;
+  }
+
+  .login-link {
+    min-height: 40px;
+    padding-inline: 12px;
+    font-size: 0.78rem;
+  }
+
+  .language-toggle {
+    padding-inline: 5px;
+  }
+
+  .main-content {
+    padding-inline: 8px;
+  }
+}
+
+/* =========================================================
+   Final dark-mode logo override: pure white logo
+   ========================================================= */
+html[data-theme="dark"] .brand-logo-dark,
+body.dark-mode .brand-logo-dark {
+  display: block !important;
+  filter: none !important;
+  opacity: 1;
+}
+
+
+/* =========================================================
+   Register page background
+   Copied from custProfile.css only, without copying profile components.
+   ========================================================= */
+
+body {
+  background:
+    radial-gradient(
+      circle at 8% 7%,
+      rgb(18 196 207 / 6%),
+      transparent 28rem
+    ),
+    radial-gradient(
+      circle at 92% 6%,
+      rgb(104 25 237 / 5%),
+      transparent 30rem
+    ),
+    #f8f9fd !important;
+
+  background-attachment: fixed;
+}
+
+html[data-theme="dark"] body,
+body.dark-mode {
+  background:
+    radial-gradient(
+      circle at 8% 7%,
+      rgb(18 196 207 / 7%),
+      transparent 28rem
+    ),
+    radial-gradient(
+      circle at 92% 6%,
+      rgb(104 25 237 / 8%),
+      transparent 30rem
+    ),
+    #0b1020 !important;
+
+  background-attachment: fixed;
+}
+
+/* The old circles, blobs and dot pattern are no longer used. */
+.page-background {
+  display: none !important;
+}
+
+/* One printer license upload fills the complete form width. */
+
+
+.printer-license-card {
+  width: 100%;
+  min-width: 0;
+}
+
+/* =========================================================
+   Pending account status page
+   ========================================================= */
+
+.status-page .main-content {
+  min-height: calc(100vh - 150px);
+  display: grid;
+  place-items: center;
+}
+
+.account-status-card {
+  position: relative;
+  width: min(100%, 720px);
+  overflow: hidden;
+  padding: clamp(28px, 5vw, 54px);
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+}
+
+.account-status-card::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  content: "";
+  background: var(--gradient-primary);
+}
+
+.status-illustration {
+  width: 84px;
+  height: 84px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 18px;
+  color: #ffffff;
+  background: var(--gradient-primary);
+  border-radius: 24px;
+  box-shadow: var(--shadow-brand);
+}
+
+.status-illustration svg {
+  width: 42px;
+  height: 42px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 6px 14px;
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.status-badge::before {
+  width: 9px;
+  height: 9px;
+  content: "";
+  background: #f59e0b;
+  border-radius: 50%;
+  box-shadow: 0 0 0 5px rgb(245 158 11 / 14%);
+}
+
+html[data-theme="dark"] .status-badge,
+body.dark-mode .status-badge {
+  color: #fcd34d;
+  background: #451a03;
+  border-color: #78350f;
+}
+
+.account-status-card h1 {
+  margin: 18px 0 10px;
+  color: var(--text-primary);
+  font-size: clamp(1.75rem, 4vw, 2.45rem);
+  line-height: 1.35;
+}
+
+.status-message {
+  max-width: 590px;
+  margin: 0 auto;
+  color: var(--text-secondary);
+  line-height: 1.9;
+}
+
+.status-reference {
+  width: min(100%, 420px);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px 18px;
+  margin: 24px auto 0;
+  padding: 16px 18px;
+  text-align: start;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.status-reference dt {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.status-reference dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.status-actions .primary-button,
+.status-actions .secondary-button {
+  min-width: 190px;
+}
+
+.secondary-button {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-weight: 800;
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.secondary-button:hover {
+  color: var(--purple);
+  border-color: var(--purple);
+  transform: translateY(-1px);
+}
+
+.status-note {
+  margin: 18px 0 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 560px) {
+  .account-status-card {
+    padding: 28px 18px;
+    border-radius: 16px;
+  }
+
+  .status-actions {
+    display: grid;
+  }
+
+  .status-actions .primary-button,
+.status-actions .secondary-button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .status-reference {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+/* ==========================================================================
+   PalPrints Team Design System — Register / Account Status integration
+   Source: team-ready package.
+   The existing auth header, compact footer and floating-label behavior remain.
+   ========================================================================== */
+
+:root {
+  --font-family: "Cairo", Arial, sans-serif;
+
+  --purple: #8516f3;
+  --purple-strong: #6815ed;
+  --blue: #168bea;
+  --blue-strong: #157ed5;
+  --cyan: #08c4cf;
+  --teal: #08c4cf;
+  --indigo: #4d45f5;
+
+  --gradient-primary: linear-gradient(
+    90deg,
+    #08c4cf 0%,
+    #168bea 38%,
+    #4d45f5 70%,
+    #8516f3 100%
+  );
+  --gradient-border: var(--gradient-primary);
+
+  --page-bg: #f8faff;
+  --page-bg-secondary: #f8faff;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-muted: #f7f9ff;
+  --surface-soft: #f2f8ff;
+
+  --text-primary: #10194d;
+  --text-secondary: #66708f;
+  --text-muted: #9299b1;
+
+  --border: #e3e7f1;
+  --border-strong: #d7ddea;
+  --border-soft: #eef1f7;
+
+  --focus: #6a44f4;
+  --focus-ring: rgb(106 68 244 / 12%);
+
+  --shadow-sm: 0 2px 8px rgb(22 42 90 / 5%);
+  --shadow-md: 0 8px 24px rgb(22 42 90 / 8%);
+  --shadow-lg: 0 15px 40px rgb(22 42 90 / 12%);
+  --shadow-brand: 0 10px 25px rgb(77 69 245 / 20%);
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* Keep the existing authentication header appearance. */
+  --header-background: #ffffff;
+  --header-text: #1f2937;
+  --header-muted: #6b7280;
+  --header-border: #e2e8f0;
+  --auth-header-gradient: linear-gradient(90deg, #0284c7 0%, #7c3aed 100%);
+}
+
+html[data-theme="dark"],
+body.dark-mode {
+  --page-bg: #080b1a;
+  --page-bg-secondary: #080b1a;
+  --surface: #101529;
+  --surface-elevated: #101529;
+  --surface-muted: #151b33;
+  --surface-soft: #101b32;
+
+  --text-primary: #f4f6ff;
+  --text-secondary: #b3bad1;
+  --text-muted: #818aa6;
+
+  --border: #2b324b;
+  --border-strong: #38415e;
+  --border-soft: #212841;
+
+  --focus: #8f78ff;
+  --focus-ring: rgb(143 120 255 / 16%);
+
+  --shadow-sm: 0 2px 8px rgb(0 0 0 / 15%);
+  --shadow-md: 0 8px 24px rgb(0 0 0 / 22%);
+  --shadow-lg: 0 15px 40px rgb(0 0 0 / 30%);
+  --shadow-brand: 0 12px 30px rgb(77 69 245 / 28%);
+
+  /* Keep the current dark authentication header and pure-white logo. */
+  --header-background: #1e293b;
+  --header-text: #f8fafc;
+  --header-muted: #cbd5e1;
+  --header-border: #334155;
+}
+
+body {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 25% 25%, rgb(230 234 255 / 70%), transparent 36%),
+    radial-gradient(circle at 78% 65%, rgb(248 229 255 / 52%), transparent 38%),
+    linear-gradient(145deg, #f9f9ff 0%, #f3f6ff 46%, #faf7ff 100%) !important;
+  background-attachment: fixed !important;
+}
+
+html[data-theme="dark"] body,
+body.dark-mode {
+  background:
+    radial-gradient(circle at 15% 10%, rgb(94 61 164 / 22%), transparent 36%),
+    radial-gradient(circle at 86% 12%, rgb(32 141 206 / 19%), transparent 38%),
+    radial-gradient(circle at 75% 82%, rgb(121 55 184 / 17%), transparent 42%),
+    linear-gradient(145deg, #07101e 0%, #0a1326 48%, #100d24 100%) !important;
+  background-attachment: fixed !important;
+}
+
+.site-header,
+.main-content,
+.site-footer {
+  position: relative;
+}
+
+.main-content,
+.site-footer {
+  z-index: 2;
+}
+
+/* ---------- Animated pastel-space background ---------- */
+.pastel-space-background {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.pastel-blob {
+  position: absolute;
+  display: block;
+  border-radius: 48% 52% 58% 42% / 46% 38% 62% 54%;
+  filter: blur(1px);
+  opacity: 0.74;
+  will-change: transform;
+  animation: pastelBlobFloat 12s ease-in-out infinite alternate;
+}
+
+.blob-top-start {
+  width: 360px;
+  height: 230px;
+  top: -105px;
+  left: -55px;
+  background: linear-gradient(135deg, rgb(201 177 255 / 78%), rgb(237 208 255 / 60%));
+  transform: rotate(12deg);
+  animation-delay: -2s;
+}
+
+.blob-top-end {
+  width: 390px;
+  height: 255px;
+  top: -95px;
+  right: -70px;
+  background: linear-gradient(145deg, rgb(168 215 255 / 78%), rgb(206 229 255 / 62%));
+  transform: rotate(-9deg);
+  animation-delay: -6s;
+}
+
+.blob-bottom-start {
+  width: 400px;
+  height: 235px;
+  bottom: -115px;
+  left: -80px;
+  background: linear-gradient(135deg, rgb(156 205 255 / 72%), rgb(210 231 255 / 64%));
+  transform: rotate(-12deg);
+  animation-delay: -4s;
+}
+
+.blob-bottom-end {
+  width: 390px;
+  height: 255px;
+  right: -75px;
+  bottom: -125px;
+  background: linear-gradient(135deg, rgb(220 171 255 / 75%), rgb(245 209 255 / 62%));
+  transform: rotate(10deg);
+  animation-delay: -8s;
+}
+
+.blob-middle-end {
+  width: 220px;
+  height: 360px;
+  top: 32%;
+  right: -150px;
+  background: linear-gradient(160deg, rgb(230 208 255 / 38%), rgb(246 219 255 / 52%));
+  animation-delay: -5s;
+}
+
+.pastel-bubble {
+  position: absolute;
+  display: block;
+  border: 1px solid rgb(255 255 255 / 75%);
+  border-radius: 50%;
+  background: linear-gradient(
+    145deg,
+    rgb(255 255 255 / 40%),
+    rgb(132 178 255 / 16%),
+    rgb(190 122 255 / 22%)
+  );
+  box-shadow: inset 0 0 15px rgb(255 255 255 / 45%), 0 8px 24px rgb(106 98 205 / 10%);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  animation: pastelBubbleFloat 8s ease-in-out infinite alternate;
+}
+
+.bubble-one { width: 62px; height: 62px; top: 12%; left: 8%; animation-delay: -1s; }
+.bubble-two { width: 58px; height: 58px; top: 10%; right: 7%; animation-delay: -5s; }
+.bubble-three { width: 56px; height: 56px; left: 10%; bottom: 8%; animation-delay: -3s; }
+.bubble-four { width: 50px; height: 50px; right: 12%; bottom: 6%; animation-delay: -7s; }
+
+.pastel-orbit {
+  position: absolute;
+  overflow: visible;
+  opacity: 0.62;
+}
+
+.pastel-orbit path {
+  fill: none;
+  stroke: rgb(139 116 234 / 42%);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 3 9;
+  animation: pastelOrbitMove 14s linear infinite;
+}
+
+.orbit-top { width: 48%; height: 210px; top: 3%; left: 0; }
+.orbit-bottom { width: 67%; height: 230px; right: 3%; bottom: 1%; }
+.orbit-bottom path { animation-direction: reverse; animation-duration: 18s; }
+
+.pastel-star {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  display: block;
+  background: linear-gradient(135deg, #ffd56e, #ffbb55);
+  clip-path: polygon(50% 0%, 61% 37%, 100% 50%, 61% 63%, 50% 100%, 39% 63%, 0% 50%, 39% 37%);
+  filter: drop-shadow(0 4px 6px rgb(92 66 180 / 12%));
+  animation: pastelStarTwinkle 3s ease-in-out infinite alternate,
+    pastelStarFloat 7s ease-in-out infinite alternate;
+}
+
+.star-one { top: 6%; left: 49%; width: 18px; height: 18px; background: #ff9fbc; animation-delay: -1s; }
+.star-two { top: 11%; right: 23%; background: #b79cf7; animation-delay: -2.5s; }
+.star-three { top: 34%; right: 7%; width: 15px; height: 26px; background: #8fd2ff; animation-delay: -4s; }
+.star-four { left: 7%; bottom: 42%; width: 27px; height: 27px; background: #ffd063; animation-delay: -3s; }
+.star-five { left: 21%; bottom: 12%; width: 18px; height: 22px; background: #aa91ee; animation-delay: -5s; }
+.star-six { right: 17%; bottom: 15%; background: #b99bf5; animation-delay: -2s; }
+.star-seven { right: 8%; bottom: 18%; width: 24px; height: 24px; background: #ffd060; animation-delay: -6s; }
+
+.pastel-dots {
+  position: absolute;
+  width: 74px;
+  height: 74px;
+  display: block;
+  opacity: 0.45;
+  background-image: radial-gradient(circle, rgb(255 255 255 / 95%) 0 2px, transparent 2.8px);
+  background-size: 17px 17px;
+  animation: pastelDotsPulse 4s ease-in-out infinite alternate;
+}
+
+.dots-one { top: 23%; left: 1%; }
+.dots-two { right: 3%; top: 42%; animation-delay: -2s; }
+.dots-three { left: 44%; bottom: 9%; animation-delay: -3s; }
+
+@keyframes pastelBlobFloat {
+  from { transform: translate3d(-8px, -5px, 0) rotate(-3deg) scale(0.97); }
+  to { transform: translate3d(18px, 14px, 0) rotate(4deg) scale(1.05); }
+}
+
+@keyframes pastelBubbleFloat {
+  from { transform: translate3d(0, 0, 0) rotate(0deg); }
+  to { transform: translate3d(10px, -16px, 0) rotate(8deg); }
+}
+
+@keyframes pastelOrbitMove {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -120; }
+}
+
+@keyframes pastelStarTwinkle {
+  from { opacity: 0.4; filter: brightness(0.95) drop-shadow(0 3px 5px rgb(92 66 180 / 10%)); }
+  to { opacity: 1; filter: brightness(1.12) drop-shadow(0 5px 9px rgb(126 92 228 / 24%)); }
+}
+
+@keyframes pastelStarFloat {
+  from { transform: translate3d(0, 0, 0) rotate(-4deg) scale(0.92); }
+  to { transform: translate3d(7px, -12px, 0) rotate(8deg) scale(1.08); }
+}
+
+@keyframes pastelDotsPulse {
+  from { opacity: 0.24; transform: scale(0.94); }
+  to { opacity: 0.62; transform: scale(1.04); }
+}
+
+html[data-theme="dark"] .pastel-blob,
+body.dark-mode .pastel-blob {
+  opacity: 0.3;
+  filter: blur(3px);
+}
+
+html[data-theme="dark"] .pastel-bubble,
+body.dark-mode .pastel-bubble {
+  border-color: rgb(255 255 255 / 18%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 8%), rgb(52 157 224 / 13%), rgb(146 68 224 / 15%));
+  box-shadow: inset 0 0 13px rgb(255 255 255 / 5%), 0 8px 26px rgb(0 0 0 / 22%);
+}
+
+html[data-theme="dark"] .pastel-orbit path,
+body.dark-mode .pastel-orbit path {
+  stroke: rgb(151 127 255 / 31%);
+}
+
+html[data-theme="dark"] .pastel-dots,
+body.dark-mode .pastel-dots {
+  opacity: 0.18;
+}
+
+html[data-theme="dark"] .pastel-star,
+body.dark-mode .pastel-star {
+  filter: brightness(1.08) drop-shadow(0 0 7px currentColor);
+}
+
+/* ---------- Cards and account type selectors ---------- */
+.account-status-card {
+  color: var(--text-primary);
+  background: var(--surface);
+  border-color: var(--border-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.account-status-card::before {
+  height: 4px;
+  background: var(--gradient-primary);
+}
+
+
+.status-illustration {
+  background: var(--gradient-primary);
+}
+
+/* ---------- Floating inputs: colors only; motion/label behavior is untouched ---------- */
+.floating-field input,
+.floating-field textarea,
+.floating-field select {
+  color: var(--text-primary);
+  background: var(--surface);
+  border-color: var(--border);
+  border-radius: var(--radius-md);
+}
+
+html[data-theme="dark"] .floating-field input,
+html[data-theme="dark"] .floating-field textarea,
+html[data-theme="dark"] .floating-field select,
+body.dark-mode .floating-field input,
+body.dark-mode .floating-field textarea,
+body.dark-mode .floating-field select {
+  background: var(--surface-muted);
+}
+
+.floating-field input:focus,
+.floating-field textarea:focus,
+.floating-field select:focus {
+  background: var(--surface);
+  border-color: var(--focus);
+  box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+.floating-field input:focus + label,
+.floating-field textarea:focus + label,
+.floating-field select:focus + label {
+  color: var(--focus);
+}
+
+
+/* The printer logo and license upload controls have exactly the same visible size. */
+.printer-license-card > label {
+  width: 100%;
+  height: 190px;
+  min-height: 190px;
+}
+
+
+/* ---------- Main content buttons from the team design system ---------- */
+.main-content .primary-button {
+  min-height: 48px;
+  padding: 11px 24px;
+  color: #ffffff;
+  background: var(--gradient-primary);
+  border: 0;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-brand);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    filter 160ms ease,
+    opacity 160ms ease;
+}
+
+.main-content .primary-button:hover {
+  color: #ffffff;
+  opacity: 1;
+  filter: brightness(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgb(77 69 245 / 28%);
+}
+
+.main-content .primary-button:active {
+  transform: translateY(0);
+}
+
+.main-content .google-button,
+.main-content .secondary-button {
+  min-height: 48px;
+  padding: 11px 24px;
+  color: var(--text-primary);
+  background: linear-gradient(var(--surface), var(--surface)) padding-box,
+    var(--gradient-primary) border-box;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-md);
+  box-shadow: none;
+  transition:
+    color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    filter 160ms ease;
+}
+
+.main-content .google-button:hover,
+.main-content .secondary-button:hover {
+  color: var(--purple);
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.remove-upload-button {
+  border-radius: var(--radius-md);
+}
+
+/* Keep the current auth header and footer rather than importing homepage components. */
+.site-header {
+  background: var(--header-background);
+  border-bottom-color: var(--header-border);
+}
+
+.site-header .login-link:hover {
+  background: var(--auth-header-gradient);
+}
+
+.site-footer {
+  color: #64748b;
+}
+
+html[data-theme="dark"] .site-footer,
+body.dark-mode .site-footer {
+  color: #94a3b8;
+}
+
+@media (max-width: 767.98px) {
+  .blob-top-start,
+.blob-top-end,
+.blob-bottom-start,
+.blob-bottom-end {
+    width: 235px;
+    height: 160px;
+  }
+
+  .orbit-top { width: 75%; }
+  .orbit-bottom { width: 90%; }
+
+  .pastel-dots {
+    width: 55px;
+    height: 55px;
+    background-size: 14px 14px;
+  }
+
+  .printer-license-card > label {
+    height: 170px;
+    min-height: 170px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pastel-blob,
+.pastel-bubble,
+.pastel-orbit path,
+.pastel-star,
+.pastel-dots {
+    animation: none !important;
+  }
+}
+
+/* =========================================================
+   Professional registration refinements
+   Local icons, password guidance and clear printer sections
+   ========================================================= */
+
+/* Google mark is a local image asset, not a text glyph. */
+.google-mark {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  display: block;
+  object-fit: contain;
+  background: none !important;
+  color: inherit;
+  filter: none !important;
+  pointer-events: none;
+}
+
+/* Keep technical values easy to read in RTL layouts without moving labels. */
+.floating-field input[type="email"],
+.floating-field input[type="tel"],
+.floating-field input[type="url"] {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: plaintext;
+}
+
+/* Password bullets should render as circular dots, then return to Cairo when visible. */
+.password-input[type="password"] {
+  font-family: Arial, sans-serif;
+  -webkit-text-security: disc;
+  letter-spacing: 0.15em;
+}
+
+.password-input[type="text"] {
+  font-family: "Cairo", Arial, sans-serif;
+  letter-spacing: normal;
+}
+
+/* Interactive password requirements. Unmet rules stay neutral before submit. */
+
+
+.password-requirement-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  display: grid;
+  place-items: center;
+  color: transparent;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.password-requirement-icon .icon {
+  width: 11px;
+  height: 11px;
+  stroke-width: 3;
+}
+
+
+/* Optional upload badge. */
+
+
+.optional-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 23px;
+  padding: 2px 9px;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.67rem;
+  font-weight: 700;
+}
+
+/* Printer form: one page, clearly separated sections inside the same main card. */
+
+
+#printer-business-section {
+  padding-top: 4px;
+  border-top: 0;
+}
+
+
+#printer-services-section > fieldset {
+  margin: 0;
+}
+
+/* The logo and license are full-width, stacked and exactly equal in visible height. */
+.printer-license-card > label {
+  width: 100%;
+  height: 190px;
+  min-height: 190px;
+}
+
+
+/* Replace platform-dependent emoji with a consistent local SVG mask set. */
+.service-icon {
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  display: inline-block;
+  background: var(--gradient-primary);
+  -webkit-mask: var(--service-icon-url) center / contain no-repeat;
+  mask: var(--service-icon-url) center / contain no-repeat;
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+}
+
+
+.service-icon-tshirt { --service-icon-url: none; }
+.service-icon-hoodie { --service-icon-url: none; }
+.service-icon-mug { --service-icon-url: none; }
+.service-icon-bag { --service-icon-url: none; }
+.service-icon-cap { --service-icon-url: none; }
+.service-icon-notebook { --service-icon-url: none; }
+.service-icon-paper { --service-icon-url: none; }
+.service-icon-sticker { --service-icon-url: none; }
+.service-icon-poster { --service-icon-url: none; }
+
+.form-status.is-info {
+  color: var(--blue-strong);
+  background: color-mix(in srgb, var(--blue) 9%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--blue) 24%, transparent);
+}
+
+@media (max-width: 760px) {
+
+
+
+
+
+
+
+
+  .printer-license-card > label {
+    height: 170px;
+    min-height: 170px;
+  }
+
+
+}
+
+@media (max-width: 480px) {
+  .google-mark {
+    width: 18px;
+    height: 18px;
+    flex-basis: 18px;
+  }
+
+
+
+  .service-icon {
+    width: 23px;
+    height: 23px;
+    flex-basis: 23px;
+  }
+}
+
+/* ---------- Native password selection and clipboard ---------- */
+.password-input {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.password-input[type="password"] {
+  font-family: Arial, sans-serif;
+  -webkit-text-security: disc;
+  letter-spacing: 0.15em;
+}
+
+.password-input[type="text"] {
+  font-family: "Cairo", Arial, sans-serif;
+  letter-spacing: normal;
+}
+
+/* =========================================================
+   PALPRINTS Split Authentication Layout
+   Simple background, visual identity panel, and image slot.
+   ========================================================= */
+
+.pastel-space-background {
+  display: none !important;
+}
+
+body.login-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%) !important;
+  background-attachment: scroll !important;
+}
+
+html[data-theme="dark"] body.login-page,
+body.login-page.dark-mode {
+  background: linear-gradient(180deg, #080b1a 0%, #0d1325 100%) !important;
+}
+
+body.login-page .main-content {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: clamp(24px, 3.2vw, 48px) clamp(14px, 3vw, 42px) clamp(38px, 5vw, 72px);
+  display: block;
+}
+
+.auth-layout {
+  width: min(1480px, 100%);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(310px, 38fr) minmax(0, 62fr);
+  gap: clamp(18px, 2.2vw, 32px);
+  align-items: start;
+}
+
+/*
+  صورة الجانب الجانبي:
+  1) ضع الصورة داخل assets/images.
+  2) فعّل السطر المناسب أدناه بدل none.
+  مثال: --auth-visual-image: url("../../assets/images/login.png");
+*/
+.auth-visual-panel {
+  --auth-visual-image: none;
+
+  position: sticky;
+  top: 24px;
+  min-height: max(640px, calc(100vh - 150px));
+  overflow: hidden;
+  isolation: isolate;
+  color: #ffffff;
+  background: linear-gradient(145deg, #0ea5e9 0%, #4f46e5 48%, #7c3aed 100%);
+  border-radius: 30px;
+  box-shadow: 0 28px 70px rgb(49 46 129 / 24%);
+}
+
+/* استخدم صورة واحدة للصفحتين أو فعّل صورة مستقلة لكل صفحة. */
+
+
+body.login-page .auth-visual-panel {
+  --auth-visual-image: url("../../assets/images/login-auth.webp");
+}
+
+/* الصورة نفسها تغطي الجانب كاملًا، وليست داخل بطاقة. */
+.auth-visual-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image: var(--auth-visual-image);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  transform: scale(1.01);
+}
+
+/* تدرج يحافظ على وضوح الصورة في الأعلى ويضمن قراءة النص في الأسفل. */
+.auth-visual-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      180deg,
+      rgb(2 6 23 / 5%) 0%,
+      rgb(2 6 23 / 13%) 34%,
+      rgb(2 6 23 / 48%) 66%,
+      rgb(2 6 23 / 90%) 100%
+    ),
+    linear-gradient(100deg, rgb(37 99 235 / 10%), rgb(124 58 237 / 16%));
+}
+
+html[data-theme="dark"] .auth-visual-panel,
+body.dark-mode .auth-visual-panel {
+  background: linear-gradient(145deg, #075985 0%, #312e81 48%, #581c87 100%);
+  box-shadow: 0 30px 80px rgb(0 0 0 / 36%);
+}
+
+html[data-theme="dark"] .auth-visual-panel::after,
+body.dark-mode .auth-visual-panel::after {
+  background:
+    linear-gradient(
+      180deg,
+      rgb(2 6 23 / 12%) 0%,
+      rgb(2 6 23 / 22%) 38%,
+      rgb(2 6 23 / 58%) 68%,
+      rgb(2 6 23 / 94%) 100%
+    ),
+    linear-gradient(100deg, rgb(14 165 233 / 8%), rgb(124 58 237 / 14%));
+}
+
+.auth-visual-inner {
+  min-height: inherit;
+  display: flex;
+  align-items: flex-end;
+  padding: clamp(30px, 4vw, 58px);
+}
+
+.auth-visual-copy {
+  width: 100%;
+  max-width: 560px;
+  padding-block-start: clamp(110px, 24vh, 250px);
+  text-shadow: 0 2px 18px rgb(2 6 23 / 28%);
+}
+
+.auth-visual-kicker {
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: rgb(255 255 255 / 80%);
+}
+
+.auth-visual-copy h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(1.75rem, 3vw, 3rem);
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.auth-visual-description {
+  max-width: 48ch;
+  margin: 16px 0 0;
+  color: rgb(255 255 255 / 84%);
+  font-size: clamp(0.94rem, 1.2vw, 1.08rem);
+  line-height: 1.9;
+}
+
+.auth-visual-benefits {
+  margin: 24px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  list-style: none;
+}
+
+.auth-visual-benefits li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgb(255 255 255 / 94%);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.auth-visual-benefits .icon {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  padding: 4px;
+  color: #312e81;
+  background: rgb(255 255 255 / 90%);
+  border-radius: 50%;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 4px 10px rgb(2 6 23 / 16%));
+}
+
+.auth-form-panel {
+  min-width: 0;
+}
+
+body.login-page .login-card {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  border-radius: 30px;
+  box-shadow: 0 24px 65px rgb(15 23 42 / 10%);
+}
+
+html[data-theme="dark"] body.login-page .login-card,
+body.login-page.dark-mode .login-card {
+  box-shadow: 0 28px 72px rgb(0 0 0 / 34%);
+}
+
+/* Login page additions */
+.login-card {
+  position: relative;
+  overflow: hidden;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  padding: clamp(26px, 4vw, 52px);
+}
+
+.login-card::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+}
+
+.login-form {
+  display: grid;
+  gap: 18px;
+  margin-top: 32px;
+}
+
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.remember-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.remember-row input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--purple);
+}
+
+.forgot-password {
+  color: var(--purple);
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+.login-footer {
+  margin-top: 24px;
+  color: var(--text-secondary);
+  text-align: center;
+  font-size: 0.88rem;
+}
+
+.login-footer a {
+  color: var(--purple);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.login-footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1050px) {
+  .auth-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-visual-panel {
+    position: relative;
+    top: auto;
+    min-height: 390px;
+    background-position: center;
+  }
+
+  .auth-visual-inner {
+    min-height: 390px;
+    padding: clamp(26px, 5vw, 48px);
+  }
+
+  .auth-visual-copy {
+    max-width: 650px;
+    padding-block-start: 120px;
+  }
+}
+
+@media (max-width: 680px) {
+  body.login-page .main-content {
+    padding-inline: 10px;
+    padding-top: 18px;
+  }
+
+  .auth-layout {
+    gap: 14px;
+  }
+
+  .auth-visual-panel,
+body.login-page .login-card {
+    border-radius: 22px;
+  }
+
+  .auth-visual-panel {
+    min-height: 260px;
+  }
+
+  .auth-visual-inner {
+    min-height: 260px;
+    padding: 22px;
+  }
+
+  .auth-visual-copy {
+    padding-block-start: 84px;
+  }
+
+  .auth-visual-copy h2 {
+    font-size: 1.65rem;
+  }
+
+  .auth-visual-description {
+    margin-top: 10px;
+    line-height: 1.75;
+  }
+
+  .auth-visual-benefits {
+    display: none;
+  }
+
+  .login-options {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-visual-panel::before {
+    transform: none;
+  }
+}
+
+/* =========================================================
+   PALPRINTS Auth — Full-Bleed Visual Side
+   Makes the image a true background for its whole side,
+   with no card-like gap, radius, border, or shadow.
+   ========================================================= */
+
+body.login-page .main-content {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.auth-layout {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(360px, 38%) minmax(0, 62%);
+  gap: 0;
+  align-items: stretch;
+}
+
+/* The visual is now the side itself, not a card inside the page. */
+.auth-visual-panel {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  min-width: 0;
+  height: calc(100svh - var(--header-height) - 16px);
+  min-height: 620px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Image files can be added later without changing the CSS. */
+
+
+body.login-page .auth-visual-panel {
+  --auth-visual-image: url("../../assets/images/login-auth.webp");
+}
+
+.auth-visual-panel::before {
+  inset: 0;
+  background-image: var(--auth-visual-image);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  transform: none;
+}
+
+.auth-visual-inner {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+}
+
+/* The form side owns its spacing instead of leaving an outer page gap. */
+.auth-form-panel {
+  min-width: 0;
+  padding: clamp(28px, 4vw, 68px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: var(--page-background, #f8fafc);
+}
+
+html[data-theme="dark"] .auth-form-panel,
+body.dark-mode .auth-form-panel {
+  background: #0f172a;
+}
+
+body.login-page .login-card {
+  width: min(100%, 960px);
+  margin: 0 auto;
+}
+
+@media (max-width: 1050px) {
+  .auth-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-visual-panel {
+    position: relative;
+    top: auto;
+    width: 100%;
+    height: 390px;
+    min-height: 390px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .auth-visual-inner {
+    height: 390px;
+    min-height: 390px;
+  }
+
+  .auth-form-panel {
+    padding: clamp(26px, 5vw, 52px);
+  }
+}
+
+@media (max-width: 680px) {
+  body.login-page .main-content {
+    padding: 0;
+  }
+
+  .auth-layout {
+    gap: 0;
+  }
+
+  .auth-visual-panel {
+    height: 270px;
+    min-height: 270px;
+    border-radius: 0;
+  }
+
+  .auth-visual-inner {
+    height: 270px;
+    min-height: 270px;
+  }
+
+  .auth-form-panel {
+    padding: 24px 12px 40px;
+  }
+}
+
+/* =========================================================
+   PALPRINTS Auth — Seamless bright visual side
+   Final overrides: the image and form are two continuous sides
+   with no card-like strip between them, and a brighter image.
+   ========================================================= */
+
+/* The form panel itself is the white/dark side, so no contrasting
+   strip appears between the background image and the form content. */
+.auth-form-panel {
+  background: var(--surface) !important;
+}
+
+html[data-theme="dark"] .auth-form-panel,
+body.dark-mode .auth-form-panel {
+  background: var(--surface) !important;
+}
+
+/* Remove the outer card treatment from the auth form only.
+   The internal fields, sections, and floating labels remain unchanged. */
+body.login-page .login-card {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.login-page .login-card::before {
+  display: none !important;
+}
+
+/* Keep the split perfectly flush. */
+.auth-layout {
+  gap: 0 !important;
+}
+
+.auth-visual-panel,
+.auth-form-panel {
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* Brighten and gently enrich the image itself. */
+.auth-visual-panel::before {
+  filter: brightness(1.12) saturate(1.06) contrast(1.01);
+}
+
+/* A light overlay over most of the image, with darkness only near
+   the text area at the bottom for readability. */
+.auth-visual-panel::after {
+  background:
+    linear-gradient(
+      180deg,
+      rgb(2 6 23 / 0%) 0%,
+      rgb(2 6 23 / 2%) 42%,
+      rgb(2 6 23 / 18%) 68%,
+      rgb(2 6 23 / 66%) 100%
+    ),
+    linear-gradient(100deg, rgb(37 99 235 / 3%), rgb(124 58 237 / 5%)) !important;
+}
+
+html[data-theme="dark"] .auth-visual-panel::after,
+body.dark-mode .auth-visual-panel::after {
+  background:
+    linear-gradient(
+      180deg,
+      rgb(2 6 23 / 2%) 0%,
+      rgb(2 6 23 / 5%) 42%,
+      rgb(2 6 23 / 23%) 68%,
+      rgb(2 6 23 / 72%) 100%
+    ),
+    linear-gradient(100deg, rgb(14 165 233 / 3%), rgb(124 58 237 / 5%)) !important;
+}
+
+/* On smaller screens, retain the same seamless full-width appearance. */
+@media (max-width: 1050px) {
+  .auth-form-panel {
+    border-radius: 0 !important;
+  }
+}
+
+/* =========================================================
+   PALPRINTS refinement pass — agreed UX improvements
+   1) compact password rules
+   2) external SVG icon slots
+   3) subtle staged form entrance
+   ========================================================= */
+
+/* ---------- External SVG icon slots ---------- */
+.external-ui-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.icon-language {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.icon-sun {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.icon-moon {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.icon-eye {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.icon-eye-off {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+/* ---------- Compact interactive password requirements ---------- */
+
+
+.password-requirement-icon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  display: grid;
+  place-items: center;
+  color: transparent;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  transition: color 160ms ease, background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.password-requirement-icon .icon {
+  width: 9px;
+  height: 9px;
+  stroke-width: 3;
+}
+
+
+/* ---------- Refined staged entrance ---------- */
+@keyframes auth-section-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes auth-role-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* Login should feel calm: one compact entrance instead of animating every field. */
+.login-page .login-card {
+  animation: auth-section-enter 320ms ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-page .login-card {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* =========================================================
+   PALPRINTS Auth Flow v3
+   Forgot password / OTP / Reset password / Account status
+   + final external SVG state fixes
+   ========================================================= */
+
+/* External icon visibility must win over the generic icon slot rule. */
+.theme-icon-dark,
+.password-toggle .icon-eye-off {
+  display: none !important;
+}
+
+html[data-theme="dark"] .theme-icon-light,
+body.dark-mode .theme-icon-light {
+  display: none !important;
+}
+
+html[data-theme="dark"] .theme-icon-dark,
+body.dark-mode .theme-icon-dark {
+  display: inline-block !important;
+}
+
+.password-toggle .icon-eye {
+  display: inline-block !important;
+}
+
+.password-toggle.is-visible .icon-eye {
+  display: none !important;
+}
+
+.password-toggle.is-visible .icon-eye-off {
+  display: inline-block !important;
+}
+
+/* Use the existing logo asset as a white mark in dark mode. */
+html[data-theme="dark"] .brand-logo-dark,
+body.dark-mode .brand-logo-dark {
+  filter: brightness(0) invert(1) !important;
+}
+
+/* Keep new short authentication pages visually aligned with Login. */
+.auth-flow-page .auth-layout {
+  min-height: calc(100svh - var(--header-height, 82px));
+}
+
+.auth-flow-page .auth-form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-flow-card {
+  width: min(100%, 680px) !important;
+  margin: auto !important;
+}
+
+.auth-flow-heading {
+  margin-bottom: 0;
+}
+
+.auth-step-badge {
+  width: 38px;
+  height: 38px;
+  margin: 0 auto 18px;
+  display: grid;
+  place-items: center;
+  color: var(--blue-strong);
+  font-weight: 800;
+  font-size: 0.86rem;
+  background: color-mix(in srgb, var(--blue) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, var(--border));
+  border-radius: 50%;
+}
+
+.auth-email-target {
+  min-height: 1.4em;
+  margin: -4px 0 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+  direction: ltr;
+  unicode-bidi: plaintext;
+}
+
+/* OTP */
+.otp-code-group {
+  width: min(100%, 500px);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(46px, 1fr));
+  gap: clamp(7px, 1.4vw, 12px);
+}
+
+.otp-digit {
+  width: 100%;
+  aspect-ratio: 1 / 1.08;
+  min-width: 0;
+  padding: 0;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+  font-weight: 800;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.otp-digit:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 4px var(--focus-ring);
+  transform: translateY(-1px);
+}
+
+.otp-error {
+  text-align: center;
+}
+
+.otp-resend-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+.link-button {
+  padding: 3px 5px;
+  color: var(--purple);
+  font: inherit;
+  font-size: inherit;
+  font-weight: 800;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.link-button:disabled {
+  color: var(--text-muted);
+  cursor: default;
+}
+
+/* Account status */
+.account-status-card {
+  text-align: center;
+}
+
+.status-symbol {
+  width: 66px;
+  height: 66px;
+  margin: 0 auto 20px;
+  display: grid;
+  place-items: center;
+  color: var(--blue-strong);
+  font-size: 1.7rem;
+  font-weight: 800;
+  background: color-mix(in srgb, var(--blue) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--blue) 23%, var(--border));
+  border-radius: 22px;
+}
+
+body[data-account-status="approved"] .status-symbol {
+  color: var(--success);
+  background: var(--success-bg);
+  border-color: color-mix(in srgb, var(--success) 30%, var(--border));
+}
+
+body[data-account-status="rejected"] .status-symbol {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-color: color-mix(in srgb, var(--danger) 30%, var(--border));
+}
+
+.status-details {
+  width: min(100%, 500px);
+  margin: 30px auto 0;
+  display: grid;
+  gap: 10px;
+}
+
+.status-details > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 16px;
+  text-align: start;
+  background: var(--surface-muted);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+}
+
+.status-details dt {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.status-details dd {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.status-actions {
+  width: min(100%, 500px);
+  margin: 24px auto 0;
+  display: grid;
+  gap: 11px;
+}
+
+.status-actions .primary-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.status-actions .primary-button[hidden] {
+  display: none !important;
+}
+
+.secondary-auth-button {
+  min-height: 48px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  transition: border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.secondary-auth-button:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+/* Calm entrance for all short auth flow cards. */
+.auth-flow-page .auth-flow-card {
+  animation: auth-section-enter 320ms ease both;
+}
+
+@media (max-width: 680px) {
+  .otp-code-group {
+    gap: 6px;
+    grid-template-columns: repeat(6, minmax(39px, 1fr));
+  }
+
+  .otp-digit {
+    border-radius: 12px;
+    font-size: 1.12rem;
+  }
+
+  .auth-step-badge {
+    margin-bottom: 14px;
+  }
+
+  .status-details > div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-flow-page .auth-flow-card,
+.otp-digit {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+
+/* Account status — clearer review flow */
+.status-review-summary {
+  width: min(100%, 540px);
+  margin: 26px auto 0;
+  padding: 18px 20px;
+  text-align: start;
+  background: color-mix(in srgb, var(--blue) 5%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--blue) 14%, var(--border));
+  border-radius: var(--radius-lg);
+}
+
+.status-review-summary h2 {
+  margin: 0 0 7px;
+  color: var(--text-primary);
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+.status-review-summary p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.8;
+}
+
+.status-review-summary .status-next-note {
+  margin-top: 8px;
+  color: var(--text-muted);
+}
+
+.status-progress {
+  width: min(100%, 540px);
+  margin: 26px auto 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+}
+
+.status-progress-step {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.status-progress-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 16px;
+  inset-inline-start: calc(50% + 22px);
+  width: calc(100% - 44px);
+  height: 2px;
+  background: var(--border);
+}
+
+.status-progress-marker {
+  position: relative;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.status-progress-step.is-complete { color: var(--success); }
+.status-progress-step.is-complete .status-progress-marker {
+  color: var(--success);
+  background: var(--success-bg);
+  border-color: color-mix(in srgb, var(--success) 35%, var(--border));
+}
+
+.status-progress-step.is-current { color: var(--blue-strong); }
+.status-progress-step.is-current .status-progress-marker {
+  color: #fff;
+  background: var(--gradient-primary);
+  border-color: transparent;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--blue) 10%, transparent);
+}
+
+.status-progress-step.is-blocked { color: var(--danger); }
+.status-progress-step.is-blocked .status-progress-marker {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-color: color-mix(in srgb, var(--danger) 30%, var(--border));
+  box-shadow: none;
+}
+
+@media (max-width: 520px) {
+  .status-review-summary { padding: 16px; }
+  .status-progress-label { font-size: 0.7rem; line-height: 1.45; }
+  .status-progress-step:not(:last-child)::after {
+    inset-inline-start: calc(50% + 19px);
+    width: calc(100% - 38px);
+  }
+}
+
+/* =========================================================
+   Account Status — Calm full-page layout
+   No split visual/image panel; the status card is centered on
+   a quiet PALPRINTS-tinted background.
+   ========================================================= */
+.account-status-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(circle at 14% 18%, rgb(124 58 237 / 8%), transparent 31%),
+    radial-gradient(circle at 86% 76%, rgb(13 148 136 / 7%), transparent 30%),
+    #f8fafc;
+}
+
+html[data-theme="dark"] .account-status-page,
+body.account-status-page.dark-mode {
+  background:
+    radial-gradient(circle at 14% 18%, rgb(124 58 237 / 13%), transparent 31%),
+    radial-gradient(circle at 86% 76%, rgb(13 148 136 / 9%), transparent 30%),
+    #0f172a;
+}
+
+.account-status-page .site-header {
+  flex: 0 0 auto;
+}
+
+.account-status-main {
+  position: relative;
+  isolation: isolate;
+  flex: 1 0 auto;
+  width: 100%;
+  padding: clamp(42px, 7vw, 86px) 20px clamp(54px, 8vw, 96px);
+  display: grid;
+  place-items: center;
+}
+
+.account-status-main::before,
+.account-status-main::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(3px);
+}
+
+.account-status-main::before {
+  width: clamp(180px, 24vw, 360px);
+  aspect-ratio: 1;
+  inset-inline-start: -8%;
+  inset-block-start: 10%;
+  background: rgb(96 165 250 / 5%);
+}
+
+.account-status-main::after {
+  width: clamp(170px, 22vw, 330px);
+  aspect-ratio: 1;
+  inset-inline-end: -7%;
+  inset-block-end: 5%;
+  background: rgb(45 212 191 / 5%);
+}
+
+.account-status-shell {
+  width: min(100%, 680px);
+  margin-inline: auto;
+}
+
+.account-status-page .account-status-card {
+  width: 100%;
+  margin: 0;
+  padding: clamp(28px, 5vw, 46px);
+  text-align: center;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  border-radius: 28px;
+  box-shadow: 0 24px 70px rgb(15 23 42 / 10%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html[data-theme="dark"] .account-status-page .account-status-card,
+body.account-status-page.dark-mode .account-status-card {
+  background: color-mix(in srgb, #1e293b 94%, transparent);
+  border-color: rgb(148 163 184 / 14%);
+  box-shadow: 0 28px 80px rgb(0 0 0 / 28%);
+}
+
+.account-status-page .status-symbol {
+  margin-bottom: 18px;
+}
+
+/* Pending uses a calm amber accent; approved/rejected keep their semantic colors. */
+body.account-status-page[data-account-status="pending"] .status-symbol {
+  color: #b45309;
+  background: rgb(245 158 11 / 10%);
+  border-color: rgb(245 158 11 / 25%);
+}
+
+html[data-theme="dark"] body.account-status-page[data-account-status="pending"] .status-symbol,
+body.account-status-page.dark-mode[data-account-status="pending"] .status-symbol {
+  color: #fbbf24;
+  background: rgb(245 158 11 / 12%);
+  border-color: rgb(251 191 36 / 22%);
+}
+
+.account-status-page .status-review-summary {
+  background: color-mix(in srgb, var(--blue) 4%, var(--surface));
+}
+
+.account-status-page .site-footer {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
+@media (max-width: 680px) {
+  .account-status-main {
+    padding: 28px 12px 44px;
+  }
+
+  .account-status-page .account-status-card {
+    padding: 26px 18px;
+    border-radius: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-status-main::before,
+.account-status-main::after {
+    filter: none;
+  }
+}
+
+/* =========================================================
+   Account Status — 830px layout refinement
+   Final overrides kept at end of file to avoid older parent/card rules.
+   ========================================================= */
+.account-status-page .account-status-shell {
+  width: min(94%, 830px);
+  max-width: 830px;
+  margin-inline: auto;
+}
+
+.account-status-page .account-status-card {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 32px 38px;
+}
+
+.account-status-page .status-message,
+.account-status-page .status-review-summary p {
+  max-width: 620px;
+  margin-inline: auto;
+}
+
+.account-status-page .status-details {
+  width: 100%;
+  max-width: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.account-status-page .status-details > div {
+  min-width: 0;
+  padding: 14px 16px;
+}
+
+@media (max-width: 680px) {
+  .account-status-page .account-status-shell {
+    width: min(100%, 830px);
+  }
+
+  .account-status-page .account-status-card {
+    padding: 26px 18px;
+  }
+
+  .account-status-page .status-details {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   Register visual — PALPRINTS geometric product artwork
+   Keeps the product image bright while protecting text contrast.
+   ========================================================= */
+
+
+/* The generated artwork intentionally leaves calm space toward the bottom.
+   Darken only that text zone instead of lowering opacity of the whole image. */
+
+
+/* =========================================================
+   PALPRINTS auth layout refinements — Register / Login / Header
+   ========================================================= */
+
+/* Keep the header visible while the page scrolls.
+   This final rule intentionally overrides older generic
+   `.site-header, .main-content, .site-footer { position: relative; }` rules. */
+.site-header {
+  position: sticky;
+  inset-block-start: 0;
+  top: 0;
+  z-index: 1200;
+}
+
+/* Register is now a normal centered form with no visual side panel. */
+
+
+/* The generated geometric product artwork is used only on the real Login page,
+   not on Forgot Password / OTP / Reset Password pages that also carry login-page. */
+body.login-page:not(.auth-flow-page) .auth-visual-panel {
+  --auth-visual-image: url("../../assets/images/login-auth.webp");
+  background: #f3f1ef;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-panel::before {
+  background-position: center top;
+  background-size: cover;
+  filter: brightness(1.02) saturate(1.02) contrast(1.02);
+}
+
+/* Keep the product artwork bright and darken mainly the text zone. */
+body.login-page:not(.auth-flow-page) .auth-visual-panel::after {
+  background:
+    linear-gradient(
+      180deg,
+      rgb(2 6 23 / 0%) 0%,
+      rgb(2 6 23 / 2%) 38%,
+      rgb(2 6 23 / 15%) 56%,
+      rgb(2 6 23 / 58%) 76%,
+      rgb(2 6 23 / 84%) 100%
+    ),
+    linear-gradient(110deg, rgb(37 99 235 / 2%), rgb(124 58 237 / 4%)) !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-copy {
+  text-shadow: 0 2px 18px rgb(2 6 23 / 44%);
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-kicker,
+body.login-page:not(.auth-flow-page) .auth-visual-description,
+body.login-page:not(.auth-flow-page) .auth-visual-benefits li {
+  color: rgb(255 255 255 / 96%);
+}
+
+/* Auth-flow pages retain their calm gradient visual instead of inheriting login artwork. */
+body.auth-flow-page .auth-visual-panel {
+  --auth-visual-image: none;
+}
+
+@media (max-width: 1050px) {
+  body.login-page:not(.auth-flow-page) .auth-visual-panel::before {
+    background-position: center 22%;
+  }
+}
+
+@media (max-width: 680px) {
+
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel::before {
+    background-position: center 18%;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel::after {
+    background:
+      linear-gradient(
+        180deg,
+        rgb(2 6 23 / 3%) 0%,
+        rgb(2 6 23 / 12%) 36%,
+        rgb(2 6 23 / 60%) 70%,
+        rgb(2 6 23 / 86%) 100%
+      ) !important;
+  }
+}
+
+/* =========================================================
+   PALPRINTS auth polish v8
+   - shared calm background
+   - floating sticky header
+   - register without visual panel
+   - login 55/45 split with sticky visual
+   - centered account type
+   ========================================================= */
+
+/* Shared calm PALPRINTS background across all auth pages. */
+body.login-page,
+body.auth-flow-page,
+body.account-status-page {
+  background:
+    radial-gradient(circle at 14% 18%, rgb(124 58 237 / 8%), transparent 31%),
+    radial-gradient(circle at 86% 76%, rgb(13 148 136 / 7%), transparent 30%),
+    #f8fafc;
+  background-attachment: fixed;
+}
+
+html[data-theme="dark"] body.login-page,
+html[data-theme="dark"] body.auth-flow-page,
+html[data-theme="dark"] body.account-status-page,
+body.login-page.dark-mode,
+body.auth-flow-page.dark-mode,
+body.account-status-page.dark-mode {
+  background:
+    radial-gradient(circle at 14% 18%, rgb(124 58 237 / 13%), transparent 31%),
+    radial-gradient(circle at 86% 76%, rgb(13 148 136 / 9%), transparent 30%),
+    #0f172a;
+  background-attachment: fixed;
+}
+
+/* Let form areas reveal the shared page background. */
+body.login-page .auth-form-panel,
+body.auth-flow-page .auth-form-panel {
+  background: transparent !important;
+}
+
+/* Floating header on every auth page. */
+.site-header {
+  position: sticky;
+  top: 12px;
+  inset-block-start: 12px;
+  z-index: 1200;
+  width: min(calc(100% - 32px), 1500px);
+  margin: 12px auto 0;
+  border-radius: 22px;
+}
+
+.site-header .header-container {
+  min-height: var(--header-height);
+  padding-inline: 14px 18px;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--surface-elevated) 94%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-soft) 92%, transparent);
+  box-shadow: 0 12px 36px rgb(15 23 42 / 10%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+html[data-theme="dark"] .site-header .header-container,
+body.dark-mode .site-header .header-container {
+  box-shadow: 0 14px 42px rgb(0 0 0 / 24%);
+}
+
+/* Push the logo visually closer to the outer edge of the floating header. */
+.site-header .brand {
+  margin-inline-start: -5px;
+}
+
+.site-header .brand-logo {
+  width: clamp(158px, 14vw, 210px);
+}
+
+/* Register: normal centered form, no image/visual side at all. */
+
+
+/* Login desktop: 45% image + 55% form. */
+body.login-page:not(.auth-flow-page) .auth-layout {
+  grid-template-columns: minmax(0, 45%) minmax(0, 55%);
+  align-items: stretch;
+}
+
+body.login-page:not(.auth-flow-page) .auth-form-panel {
+  padding: clamp(30px, 4vw, 58px);
+}
+
+body.login-page:not(.auth-flow-page) .login-card {
+  width: min(100%, 720px);
+  margin-inline: auto;
+}
+
+/* Keep the login artwork visually fixed while the form/page scrolls. */
+body.login-page:not(.auth-flow-page) .auth-visual-panel {
+  position: sticky;
+  top: calc(var(--header-height) + 36px);
+  align-self: start;
+  height: calc(100svh - var(--header-height) - 52px);
+  min-height: 560px;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-inner {
+  height: 100%;
+  min-height: 100%;
+}
+
+/* Short auth-flow pages use the same calm translucent card treatment. */
+body.auth-flow-page:not(.account-status-page) .main-content {
+  background: transparent;
+}
+
+body.auth-flow-page:not(.account-status-page) .auth-flow-card {
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  border-color: color-mix(in srgb, var(--border) 88%, transparent);
+  box-shadow: 0 24px 70px rgb(15 23 42 / 10%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html[data-theme="dark"] body.auth-flow-page:not(.account-status-page) .auth-flow-card,
+body.auth-flow-page.dark-mode:not(.account-status-page) .auth-flow-card {
+  background: color-mix(in srgb, #1e293b 94%, transparent);
+  border-color: rgb(148 163 184 / 14%);
+  box-shadow: 0 28px 80px rgb(0 0 0 / 28%);
+}
+
+/* Account status: center the Account Type field within its cell. */
+.account-status-page .status-details > div:first-child {
+  justify-content: center;
+  text-align: center;
+}
+
+.account-status-page .status-details > div:first-child dt,
+.account-status-page .status-details > div:first-child dd {
+  text-align: center;
+}
+
+/* Responsive adjustments. */
+@media (max-width: 1050px) {
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    grid-template-columns: 1fr;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    position: relative;
+    top: auto;
+    height: 360px;
+    min-height: 360px;
+  }
+}
+
+@media (max-width: 680px) {
+  .site-header {
+    top: 8px;
+    inset-block-start: 8px;
+    width: calc(100% - 16px);
+    margin-top: 8px;
+    border-radius: 18px;
+  }
+
+  .site-header .header-container {
+    padding-inline: 10px 12px;
+    border-radius: 18px;
+  }
+
+  .site-header .brand {
+    margin-inline-start: -2px;
+  }
+
+  .site-header .brand-logo {
+    width: clamp(132px, 38vw, 166px);
+  }
+
+
+
+
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    height: 270px;
+    min-height: 270px;
+  }
+}
+
+/* =========================================================
+   PALPRINTS auth polish v9 — final overrides
+   - one floating navbar surface (no nested white header)
+   - account-status background shared by every auth page
+   - account type centered in Account Status
+   ========================================================= */
+
+/* 1) Use the exact Account Status background treatment everywhere. */
+body.login-page,
+body.auth-flow-page,
+body.account-status-page {
+  background:
+    radial-gradient(circle at 14% 18%, rgb(124 58 237 / 8%), transparent 31%),
+    radial-gradient(circle at 86% 76%, rgb(13 148 136 / 7%), transparent 30%),
+    #f8fafc !important;
+  background-attachment: fixed !important;
+}
+
+html[data-theme="dark"] body.login-page,
+html[data-theme="dark"] body.auth-flow-page,
+html[data-theme="dark"] body.account-status-page,
+body.login-page.dark-mode,
+body.auth-flow-page.dark-mode,
+body.account-status-page.dark-mode {
+  background:
+    radial-gradient(circle at 14% 18%, rgb(124 58 237 / 13%), transparent 31%),
+    radial-gradient(circle at 86% 76%, rgb(13 148 136 / 9%), transparent 30%),
+    #0f172a !important;
+  background-attachment: fixed !important;
+}
+
+/* Do not let page/form wrappers cover the shared background. */
+body.login-page .main-content,
+body.auth-flow-page .main-content,
+body.login-page .auth-layout,
+body.auth-flow-page .auth-layout,
+body.login-page .auth-form-panel,
+body.auth-flow-page .auth-form-panel {
+  background: transparent !important;
+}
+
+/* 2) Header: map the supplied navbar style to the current HTML classes.
+      The .site-header is the single floating surface; .header-container
+      only lays out the content, preventing the double-card effect. */
+.site-header {
+  position: sticky !important;
+  top: 12px !important;
+  inset-block-start: 12px !important;
+  z-index: 1200 !important;
+
+  width: calc(100% - 32px) !important;
+  max-width: none !important;
+  min-height: 72px;
+  margin: 12px 16px 0 !important;
+
+  display: flex;
+  align-items: center;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 32px rgb(15 23 42 / 9%) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  overflow: visible;
+
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.site-header .header-container {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 70px;
+  margin: 0 !important;
+  padding: 0 14px !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-theme="dark"] .site-header,
+body.dark-mode .site-header {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 12px 38px rgb(0 0 0 / 24%) !important;
+}
+
+/* Keep the logo close to the physical edge of the floating navbar. */
+.site-header .brand {
+  margin: 0 !important;
+  flex: 0 0 auto;
+}
+
+.site-header .brand-logo {
+  width: clamp(150px, 12vw, 190px) !important;
+  max-height: 50px;
+  object-fit: contain;
+}
+
+.site-header .header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+/* 3) Login: keep the requested 45% image / 55% form split. */
+@media (min-width: 1051px) {
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    grid-template-columns: minmax(0, 45fr) minmax(0, 55fr) !important;
+  }
+
+  /* The image stays visually fixed while the content scrolls. */
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    position: sticky !important;
+    top: 104px !important;
+    align-self: start;
+    height: calc(100svh - 120px) !important;
+    min-height: 540px;
+  }
+}
+
+/* 4) Account Status: put the Account Type field itself in the center. */
+.account-status-page .status-details {
+  width: min(100%, 520px) !important;
+  max-width: 520px !important;
+  margin-inline: auto !important;
+  grid-template-columns: 1fr !important;
+  justify-items: center;
+}
+
+.account-status-page .status-details > div {
+  width: 100%;
+}
+
+.account-status-page .status-details > div:first-child {
+  width: min(100%, 380px) !important;
+  justify-self: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.account-status-page .status-details > div:first-child dt,
+.account-status-page .status-details > div:first-child dd {
+  text-align: center !important;
+}
+
+/* Mobile navbar spacing stays compact without creating another surface. */
+@media (max-width: 680px) {
+  .site-header {
+    top: 8px !important;
+    inset-block-start: 8px !important;
+    width: calc(100% - 16px) !important;
+    margin: 8px 8px 0 !important;
+    min-height: 66px;
+    border-radius: 17px !important;
+  }
+
+  .site-header .header-container {
+    min-height: 64px;
+    padding-inline: 10px !important;
+    gap: 10px;
+  }
+
+  .site-header .brand-logo {
+    width: clamp(128px, 36vw, 158px) !important;
+    max-height: 44px;
+  }
+
+  .site-header .header-actions {
+    gap: 8px;
+  }
+}
+
+
+/* ==========================================================================\n   AUTH LAYOUT V10 — final agreed authentication layout\n   - no header surface; only logo + language/theme controls\n   - shared Account Status background on every auth page\n   - 50/50 fixed visual split for Register/Login/Forgot/Reset\n   - no side visual on OTP and Account Status\n   - mobile: form/status only, no visual image\n   - footer remains a full-width sibling after main\n   ========================================================================== */
+
+/* Shared calm PALPRINTS background from Account Status. */
+body.login-page,
+body.auth-flow-page,
+body.account-status-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(circle at 14% 18%, rgb(124 58 237 / 8%), transparent 31%),
+    radial-gradient(circle at 86% 76%, rgb(13 148 136 / 7%), transparent 30%),
+    #f8fafc !important;
+  background-attachment: fixed;
+}
+
+html[data-theme="dark"] body.login-page,
+html[data-theme="dark"] body.auth-flow-page,
+html[data-theme="dark"] body.account-status-page,
+body.login-page.dark-mode,
+body.auth-flow-page.dark-mode,
+body.account-status-page.dark-mode {
+  background:
+    radial-gradient(circle at 14% 18%, rgb(124 58 237 / 13%), transparent 31%),
+    radial-gradient(circle at 86% 76%, rgb(13 148 136 / 9%), transparent 30%),
+    #0f172a !important;
+}
+
+/* Remove the old navbar/header surface completely. The controls float directly
+   over the page and are intentionally not sticky. */
+.auth-topbar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 1300;
+  width: 100%;
+  padding: 18px clamp(20px, 2.4vw, 38px);
+  pointer-events: none;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.auth-topbar__container {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.auth-topbar .brand,
+.auth-topbar__actions,
+.auth-topbar .header-control {
+  pointer-events: auto;
+}
+
+.auth-topbar .brand {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+}
+
+.auth-topbar .brand-logo {
+  width: clamp(148px, 11vw, 184px) !important;
+  height: auto;
+  max-height: 52px;
+  object-fit: contain;
+}
+
+.auth-topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Keep controls light-weight: no bar/card behind them. */
+.auth-topbar .header-control {
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  box-shadow: 0 6px 20px rgb(15 23 42 / 7%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+html[data-theme="dark"] .auth-topbar .header-control,
+body.dark-mode .auth-topbar .header-control {
+  background: rgb(30 41 59 / 78%);
+  border-color: rgb(148 163 184 / 16%);
+}
+
+/* Main and footer are independent siblings. */
+body.login-page > .main-content,
+body.auth-flow-page > .main-content {
+  width: 100%;
+  flex: 1 0 auto;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+body.login-page > .site-footer,
+body.auth-flow-page > .site-footer,
+body.account-status-page > .site-footer {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0 !important;
+}
+
+/* Split pages: image is the background of its own fixed 50% half. */
+body.login-page:not(.auth-flow-page) .auth-layout,
+body.forgot-password-page .auth-layout,
+body.reset-password-page .auth-layout {
+  width: 100%;
+  min-height: 100vh;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 0 !important;
+  align-items: stretch;
+  direction: ltr;
+  background: transparent !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-panel,
+body.forgot-password-page .auth-visual-panel,
+body.reset-password-page .auth-visual-panel {
+  position: sticky !important;
+  top: 0 !important;
+  align-self: start !important;
+  width: 100% !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  isolation: isolate;
+  direction: rtl;
+}
+
+/* Register keeps its dedicated artwork; login/recovery pages share one image. */
+
+body.login-page:not(.auth-flow-page) .auth-visual-panel,
+body.forgot-password-page .auth-visual-panel,
+body.reset-password-page .auth-visual-panel {
+  --auth-visual-image: url("../../assets/images/login-auth.webp") !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-panel::before,
+body.forgot-password-page .auth-visual-panel::before,
+body.reset-password-page .auth-visual-panel::before {
+  inset: 0 !important;
+  background-image: var(--auth-visual-image) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  filter: brightness(1.04) saturate(1.03) contrast(1.01) !important;
+  transform: none !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-panel::after,
+body.forgot-password-page .auth-visual-panel::after,
+body.reset-password-page .auth-visual-panel::after {
+  inset: 0 !important;
+  background: linear-gradient(
+    to top,
+    rgb(15 23 42 / 58%) 0%,
+    rgb(15 23 42 / 22%) 34%,
+    rgb(15 23 42 / 3%) 62%,
+    transparent 82%
+  ) !important;
+}
+
+/* Form side owns its scrolling height; it never drags the image with it. */
+body.login-page:not(.auth-flow-page) .auth-form-panel,
+body.forgot-password-page .auth-form-panel,
+body.reset-password-page .auth-form-panel {
+  min-width: 0;
+  width: 100% !important;
+  min-height: 100vh;
+  padding: clamp(104px, 9vw, 132px) clamp(24px, 4.5vw, 72px) 64px !important;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  direction: rtl;
+  background: transparent !important;
+}
+
+html[dir="ltr"] body.login-page:not(.auth-flow-page) .auth-form-panel,
+html[dir="ltr"] body.forgot-password-page .auth-form-panel,
+html[dir="ltr"] body.reset-password-page .auth-form-panel,
+html[dir="ltr"] body.login-page:not(.auth-flow-page) .auth-visual-panel,
+html[dir="ltr"] body.forgot-password-page .auth-visual-panel,
+html[dir="ltr"] body.reset-password-page .auth-visual-panel {
+  direction: ltr;
+}
+
+
+body.login-page:not(.auth-flow-page) .login-card,
+body.forgot-password-page .auth-flow-card,
+body.reset-password-page .auth-flow-card {
+  width: min(100%, 620px) !important;
+  max-width: 620px !important;
+  margin: auto !important;
+}
+
+/* OTP is deliberately image-free and centered. */
+body.verify-otp-page > .main-content {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 106px 20px 56px !important;
+}
+
+body.verify-otp-page .auth-layout {
+  width: min(100%, 680px) !important;
+  min-height: 0 !important;
+  display: block !important;
+  margin: auto !important;
+  background: transparent !important;
+}
+
+body.verify-otp-page .auth-form-panel {
+  width: 100% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  background: transparent !important;
+}
+
+body.verify-otp-page .auth-flow-card {
+  width: 100% !important;
+  max-width: 680px !important;
+  margin: 0 auto !important;
+}
+
+/* Account Status remains image-free and centered. */
+body.account-status-page .account-status-main {
+  padding-top: clamp(110px, 10vw, 138px) !important;
+  background: transparent !important;
+}
+
+/* Center the Account Type field itself, not only its text. */
+body.account-status-page .status-details {
+  width: min(100%, 520px) !important;
+  max-width: 520px !important;
+  margin-inline: auto !important;
+  grid-template-columns: 1fr !important;
+  justify-items: center !important;
+}
+
+body.account-status-page .status-details > div {
+  width: min(100%, 390px) !important;
+  justify-self: center !important;
+  text-align: center !important;
+}
+
+body.account-status-page .status-details dt,
+body.account-status-page .status-details dd {
+  width: 100%;
+  text-align: center !important;
+}
+
+/* Mobile: only the form/status is shown. No side image at all. */
+@media (max-width: 768px) {
+  .auth-topbar {
+    padding: 14px 16px;
+  }
+
+  .auth-topbar .brand-logo {
+    width: clamp(126px, 34vw, 154px) !important;
+    max-height: 44px;
+  }
+
+  .auth-topbar__actions {
+    gap: 7px;
+  }
+
+  .auth-topbar .language-toggle #languageToggleText {
+    display: none;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-layout,
+body.forgot-password-page .auth-layout,
+body.reset-password-page .auth-layout {
+    display: block !important;
+    min-height: 100vh;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel,
+body.forgot-password-page .auth-visual-panel,
+body.reset-password-page .auth-visual-panel {
+    display: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-form-panel,
+body.forgot-password-page .auth-form-panel,
+body.reset-password-page .auth-form-panel {
+    width: 100% !important;
+    min-height: 100vh;
+    padding: 92px 16px 46px !important;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  body.verify-otp-page > .main-content,
+body.account-status-page .account-status-main {
+    padding: 92px 12px 42px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-card,
+body.forgot-password-page .auth-flow-card,
+body.reset-password-page .auth-flow-card,
+body.verify-otp-page .auth-flow-card {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
+/* OTP keeps a focused card treatment because it has no visual half. */
+body.verify-otp-page .auth-flow-card {
+  padding: clamp(28px, 4vw, 42px) !important;
+  background: color-mix(in srgb, var(--surface) 96%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent) !important;
+  border-radius: 28px !important;
+  box-shadow: 0 24px 70px rgb(15 23 42 / 10%) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html[data-theme="dark"] body.verify-otp-page .auth-flow-card,
+body.verify-otp-page.dark-mode .auth-flow-card {
+  background: color-mix(in srgb, #1e293b 94%, transparent) !important;
+  border-color: rgb(148 163 184 / 14%) !important;
+  box-shadow: 0 28px 80px rgb(0 0 0 / 28%) !important;
+}
+
+@media (max-width: 768px) {
+  body.verify-otp-page .auth-flow-card {
+    padding: 26px 18px !important;
+    border-radius: 22px !important;
+  }
+}
+
+/* ==========================================================================
+   PALPRINTS Auth Layout v11 — RTL/LTR swap + reliable visual backgrounds
+   ========================================================================== */
+
+/* Desktop split layout: Arabic = visual left / form right.
+   English = form left / visual right. */
+@media (min-width: 769px) {
+  body.login-page:not(.auth-flow-page) .auth-layout,
+body.forgot-password-page .auth-layout,
+body.reset-password-page .auth-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    grid-template-areas: "visual form" !important;
+    direction: ltr !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel,
+body.forgot-password-page .auth-visual-panel,
+body.reset-password-page .auth-visual-panel {
+    grid-area: visual;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-form-panel,
+body.forgot-password-page .auth-form-panel,
+body.reset-password-page .auth-form-panel {
+    grid-area: form;
+  }
+
+  html[dir="ltr"] body.login-page:not(.auth-flow-page) .auth-layout,
+html[dir="ltr"] body.forgot-password-page .auth-layout,
+html[dir="ltr"] body.reset-password-page .auth-layout {
+    grid-template-areas: "form visual" !important;
+  }
+
+  /* Register and login placement: Arabic form on the left, English form on the right. */
+  html[dir="rtl"] body.login-page:not(.auth-flow-page) .auth-layout {
+    grid-template-areas: "form visual" !important;
+  }
+
+  html[dir="ltr"] body.login-page:not(.auth-flow-page) .auth-layout {
+    grid-template-areas: "visual form" !important;
+  }
+}
+
+/* Keep the artwork as a real background layer above the panel fallback color.
+   This avoids the old negative z-index layer being hidden by the panel itself. */
+body.login-page:not(.auth-flow-page) .auth-visual-panel,
+body.forgot-password-page .auth-visual-panel,
+body.reset-password-page .auth-visual-panel {
+  position: sticky !important;
+  isolation: isolate;
+  background: #e2e8f0 !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-panel::before,
+body.forgot-password-page .auth-visual-panel::before,
+body.reset-password-page .auth-visual-panel::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  opacity: 1 !important;
+  display: block !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  background-position: center center !important;
+}
+
+
+/* An earlier register-only layout revision hides this panel with !important.
+   Restore it after that rule so the occupied left column contains its image. */
+
+
+body.login-page:not(.auth-flow-page) .auth-visual-panel::before,
+body.forgot-password-page .auth-visual-panel::before,
+body.reset-password-page .auth-visual-panel::before {
+  background-image: url("../../assets/images/login-auth.webp") !important;
+}
+
+/* Login has its own quieter artwork; recovery pages retain the shared image. */
+body.login-page:not(.auth-flow-page) .auth-visual-panel::before {
+  background-image: url("../../assets/images/login-auth-simple.png") !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-panel::after,
+body.forgot-password-page .auth-visual-panel::after,
+body.reset-password-page .auth-visual-panel::after {
+  z-index: 1 !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-inner,
+body.forgot-password-page .auth-visual-inner,
+body.reset-password-page .auth-visual-inner {
+  position: relative;
+  z-index: 2;
+}
+
+/* Keep the register artwork visible on narrow screens. The general auth
+   mobile rule above intentionally removes visual panels, but registration
+   still needs its product artwork, so present it as a compact top section. */
+
+
+/* Login soft panel: keep one clear form surface without a heavy nested-card
+   effect. The image and form columns remain flush through the zero-gap grid. */
+body.login-page:not(.auth-flow-page) .auth-form-panel {
+  align-items: center !important;
+  padding-inline: clamp(28px, 4.5vw, 72px) !important;
+}
+
+body.login-page:not(.auth-flow-page) .login-card {
+  width: min(100%, 680px) !important;
+  max-width: 680px !important;
+  padding: clamp(34px, 3.2vw, 48px) !important;
+  background: color-mix(in srgb, var(--surface) 88%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 16px 44px rgb(15 23 42 / 8%) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .login-card,
+body.login-page.dark-mode:not(.auth-flow-page) .login-card {
+  background: rgb(30 41 59 / 82%) !important;
+  border-color: rgb(148 163 184 / 15%) !important;
+  box-shadow: 0 18px 48px rgb(0 0 0 / 22%) !important;
+}
+
+@media (max-width: 768px) {
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    align-items: flex-start !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-card {
+    padding: 26px 20px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 12px 34px rgb(15 23 42 / 7%) !important;
+  }
+}
+
+/* Register uses the same soft-panel language as login, with a wider surface
+   and top alignment because its role-specific forms are substantially longer. */
+
+
+/* Desktop seam: attach the form surface directly to the image. Logical
+   inline-start is the shared edge in both arrangements (RTL and LTR). */
+@media (min-width: 769px) {
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    justify-content: flex-start !important;
+    padding-inline-start: 0 !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-card {
+    margin-inline: 0 !important;
+    border-start-start-radius: 0 !important;
+    border-end-start-radius: 0 !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-card {
+    margin-block: auto !important;
+  }
+
+
+}
+
+/* Full-side auth layout: the form panel itself is the surface, while the
+   register/login sections only constrain readable content width. */
+body.login-page:not(.auth-flow-page) .auth-form-panel {
+  justify-content: center !important;
+  padding-inline: clamp(28px, 5vw, 80px) !important;
+  background: var(--surface) !important;
+}
+
+body.login-page:not(.auth-flow-page) .login-card {
+  margin-inline: auto !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+
+body.login-page:not(.auth-flow-page) .login-card {
+  width: min(100%, 620px) !important;
+  max-width: 620px !important;
+  margin-block: auto !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .auth-form-panel,
+body.login-page.dark-mode:not(.auth-flow-page) .auth-form-panel {
+  background: var(--surface) !important;
+}
+
+@media (max-width: 768px) {
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    padding: 92px 20px 46px !important;
+  }
+}
+
+/* Login artwork carries one concise sentence; registration keeps its richer,
+   role-aware title and supporting description. */
+body.login-page:not(.auth-flow-page) .auth-visual-kicker,
+body.login-page:not(.auth-flow-page) .auth-visual-benefits {
+  display: none !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-copy {
+  max-width: 680px;
+}
+
+/* Recovery pages share one quiet, dedicated artwork and only show the two
+   requested text lines. */
+body.forgot-password-page .auth-visual-panel::before,
+body.reset-password-page .auth-visual-panel::before {
+  background-image: url("../../assets/images/recovery-auth-simple.png") !important;
+  background-size: cover !important;
+  background-position: center center !important;
+}
+
+body.forgot-password-page .auth-visual-kicker,
+body.reset-password-page .auth-visual-kicker {
+  display: none !important;
+}
+
+/* Desktop proportions: the form always owns 55% and the artwork 45%, even
+   when language direction swaps their physical positions. */
+@media (min-width: 769px) {
+  html[dir="rtl"] body.login-page:not(.auth-flow-page) .auth-layout {
+    grid-template-columns: minmax(0, 55fr) minmax(0, 45fr) !important;
+  }
+
+  html[dir="ltr"] body.login-page:not(.auth-flow-page) .auth-layout {
+    grid-template-columns: minmax(0, 45fr) minmax(0, 55fr) !important;
+  }
+
+  html[dir="rtl"] body.forgot-password-page .auth-layout,
+html[dir="rtl"] body.reset-password-page .auth-layout {
+    grid-template-columns: minmax(0, 55fr) minmax(0, 45fr) !important;
+    grid-template-areas: "form visual" !important;
+  }
+
+  html[dir="ltr"] body.forgot-password-page .auth-layout,
+html[dir="ltr"] body.reset-password-page .auth-layout {
+    grid-template-columns: minmax(0, 45fr) minmax(0, 55fr) !important;
+    grid-template-areas: "visual form" !important;
+  }
+}
+
+/* Preserve the top of the register artwork instead of centering its crop. */
+
+
+/* Match the calm recovery-page background on the full register/login form
+   halves while keeping their borderless full-side layout. */
+body.login-page:not(.auth-flow-page) .auth-form-panel {
+  background:
+    radial-gradient(circle at 16% 18%, rgb(124 58 237 / 7%), transparent 34%),
+    radial-gradient(circle at 86% 78%, rgb(13 148 136 / 6%), transparent 32%),
+    linear-gradient(145deg, #ffffff 0%, #f8fafc 58%, #f3f6fb 100%) !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .auth-form-panel,
+body.login-page.dark-mode:not(.auth-flow-page) .auth-form-panel {
+  background:
+    radial-gradient(circle at 16% 18%, rgb(124 58 237 / 12%), transparent 34%),
+    radial-gradient(circle at 86% 78%, rgb(13 148 136 / 9%), transparent 32%),
+    linear-gradient(145deg, #111827 0%, #0f172a 58%, #101827 100%) !important;
+}
+
+/* Dark mode must remain a full-side form surface, not revert to the older
+   floating-card treatment. These selectors intentionally match its higher
+   specificity. */
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .login-card,
+body.login-page.dark-mode:not(.auth-flow-page) .login-card {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .login-card::before,
+body.login-page.dark-mode:not(.auth-flow-page) .login-card::before {
+  display: none !important;
+}
+
+/* Mobile and tablet: focus entirely on the form. Side artwork is desktop-only. */
+@media (max-width: 1024px) {
+  body.login-page:not(.auth-flow-page) .auth-layout,
+body.forgot-password-page .auth-layout,
+body.reset-password-page .auth-layout {
+    display: block !important;
+    min-height: 100vh;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel,
+body.forgot-password-page .auth-visual-panel,
+body.reset-password-page .auth-visual-panel {
+    display: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-form-panel,
+body.forgot-password-page .auth-form-panel,
+body.reset-password-page .auth-form-panel {
+    width: 100% !important;
+    min-height: 100vh;
+  }
+}
+
+/* Registration viewport fit: preserve professional 50px fields while saving
+   height in decorative and transitional areas first. */
+.auth-topbar__actions {
+  transform: translateX(-6px) !important;
+}
+
+.auth-topbar__container {
+  align-items: center !important;
+}
+
+
+/* Short desktop/laptop viewports: reduce one spacing step while retaining
+   full-size fields and readable account choices. */
+
+
+/* Simplified authentication experience. */
+.theme-toggle {
+  display: none !important;
+}
+
+html {
+  color-scheme: light !important;
+}
+
+/* Registration keeps only full name, email, password and confirmation. */
+#printer-hours-section,
+#printer-files-section,
+#printer-services-section {
+  display: none !important;
+}
+
+
+#printer-business-section,
+#printer-security-section {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+
+.login-page .submit-button,
+.forgot-password-page .submit-button,
+.reset-password-page .submit-button {
+  width: 50% !important;
+  min-width: 220px;
+  align-self: center;
+  margin-inline: auto !important;
+}
+
+.apple-button {
+  margin-top: 10px;
+}
+
+.apple-icon-slot {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* Desktop uses a strict 50/50 split. Only the form column may scroll when a
+   very short viewport cannot contain the required controls. */
+@media (min-width: 1025px) {
+  body.login-page,
+body.forgot-password-page,
+body.reset-password-page {
+    height: 100vh;
+    overflow: hidden !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-layout,
+body.forgot-password-page .auth-layout,
+body.reset-password-page .auth-layout {
+    height: 100vh;
+    min-height: 100vh;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel,
+body.forgot-password-page .auth-visual-panel,
+body.reset-password-page .auth-visual-panel {
+    position: sticky !important;
+    top: 0 !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-form-panel,
+body.forgot-password-page .auth-form-panel,
+body.reset-password-page .auth-form-panel {
+    height: 100vh;
+    min-height: 100vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-block: 92px 28px !important;
+  }
+
+  body.login-page > .site-footer,
+body.forgot-password-page > .site-footer,
+body.reset-password-page > .site-footer {
+    display: none !important;
+  }
+}
+
+/* Final compact auth refinements. */
+
+
+.auth-topbar {
+  padding-top: 10px !important;
+  padding-left: 12px !important;
+}
+
+.auth-topbar__actions {
+  transform: translate(-6px, -3px);
+}
+
+
+.login-page:not(.auth-flow-page) .floating-field input {
+  min-height: 50px !important;
+}
+
+.login-page:not(.auth-flow-page) .field-error:empty {
+  display: none;
+}
+
+.login-page:not(.auth-flow-page) .login-form {
+  gap: 10px !important;
+}
+
+.login-page:not(.auth-flow-page) .login-form {
+  margin-top: 20px !important;
+}
+
+@media (min-width: 1025px) {
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    overflow: hidden !important;
+    padding-block: 72px 14px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-card {
+    max-height: calc(100vh - 86px);
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+  body.login-page:not(.auth-flow-page) .login-footer {
+    margin-top: 10px !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  body.login-page:not(.auth-flow-page) {
+    height: 100svh;
+    overflow: hidden !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    height: 100svh;
+    min-height: 100svh;
+    overflow: hidden !important;
+    padding: 68px 18px 10px !important;
+  }
+
+
+
+
+
+
+
+
+}
+
+/* Fit the complete active registration form inside the viewport. These
+   height-aware rules reduce decoration and spacing rather than clipping it. */
+
+
+/* Reset Password content fits its half; never show an internal scrollbar. */
+body.reset-password-page .auth-form-panel {
+  overflow: hidden !important;
+}
+
+/* Comfortable register layout and restored centered T-shirt artwork. */
+
+
+/* Give each Account Status section a clearer visual pause. */
+body.account-status-page .status-review-summary,
+body.account-status-page .status-progress,
+body.account-status-page .status-details,
+body.account-status-page .status-actions {
+  margin-top: initial;
+}
+
+body.account-status-page .status-details {
+  row-gap: initial;
+}
+
+body.account-status-page .status-actions {
+  gap: initial;
+}
+
+/* Ensure the complete register experience—including both social actions—fits
+   inside the fixed viewport without clipping. */
+
+
+body.account-status-page .status-review-summary,
+body.account-status-page .status-progress,
+body.account-status-page .status-details,
+body.account-status-page .status-actions {
+  margin-top: initial;
+}
+
+body.account-status-page .status-details {
+  row-gap: initial;
+}
+
+body.account-status-page .status-actions {
+  gap: initial;
+}
+
+/* Customer/designer register forms: tighter field rhythm keeps both social
+   actions inside the viewport without removing any control. */
+
+
+/* Registration layout refresh: spacious, consistent controls without changing
+   form behavior or validation. */
+
+
+/* Final registration viewport-fit overrides (must remain last). */
+.auth-topbar__container { align-items: center !important; }
+.auth-topbar__actions { transform: translateX(-6px) !important; }
+
+
+/* Registration viewport fit and field polish — final cascade layer. */
+.auth-topbar {
+  padding-top: 16px !important;
+}
+
+.auth-topbar__container {
+  align-items: center !important;
+}
+
+.auth-topbar__actions {
+  transform: translateX(-6px) !important;
+}
+
+
+@media (min-width: 1025px) {
+  html {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+
+
+
+}
+
+
+/* Keep the language control consistently five pixels higher on every page. */
+.language-toggle {
+  transform: translate(5px, -10px) !important;
+}
+
+html[dir="ltr"] .auth-topbar {
+  padding-right: 12px !important;
+}
+
+html[dir="ltr"] .language-toggle {
+  transform: translate(7px, -10px) !important;
+}
+
+/* Keep focused form controls crisp across every authentication page. */
+.floating-field input:focus,
+.floating-field textarea:focus,
+.floating-field select:focus,
+.otp-inputs input:focus,
+.otp-digit:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Required state remains semantic; decorative red stars are not rendered. */
+.required-mark {
+  display: none !important;
+}
+
+/* Registration-only viewport fit. The four-field forms share one flexible
+   vertical structure and never transfer scrolling to the page or form side. */
+
+
+/* Flatten the role-specific wrappers so every form exposes the same four
+   field rows and the same submit/social rows to the flex layout. */
+
+
+/* One centered registration rail keeps selectors, fields and actions aligned. */
+
+
+/* Keep role-specific image copy on identical baselines even when one phrase
+   wraps to fewer lines than the others. */
+
+
+/* --------------------------------------------------------------------------
+   Premium registration layout
+   The registration view is intentionally allowed to flow vertically so its
+   controls retain comfortable spacing instead of being compressed to 100vh.
+   -------------------------------------------------------------------------- */
+
+
+/* The role wrappers remain visually transparent, giving all three account
+   types one consistent four-field layout without changing their HTML or JS. */
+
+
+/* --------------------------------------------------------------------------
+   Two-step registration onboarding
+   Step visibility is controlled by the native `hidden` attribute and the
+   selectRole()/goBack() functions in script.js.
+   -------------------------------------------------------------------------- */
+
+
+@keyframes onboarding-step-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* The artwork is always the right-hand, viewport-anchored desktop column. */
+
+
+/* Final Step 1 component dimensions: kept last so legacy registration rules
+   cannot turn the horizontal bars back into tall grid cards. */
+
+
+/* Customer Step 2 is intentionally social-only, so it never needs a scroll
+   owner. Lock the document, split wrapper, and form panel to one viewport. */
+
+
+/* Primary registration actions are 50% of the existing 680px form rail. */
+
+
+/* Designer and print-provider action areas share identical geometry even
+   though the print actions are nested inside `.printer-submit-section`. */
+
+
+/* Login Apple button matches the black registration Apple action. */
+
+
+body.login-page:not(.auth-flow-page) .apple-icon-slot img {
+  display: block;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  filter: invert(1);
+}
+
+
+/* The longer print-provider submission label uses a slightly narrower,
+   centered action button without changing the social-login controls. */
+
+
+/* Step 1 typography hierarchy and role-card micro-copy. */
+
+
+/* ========================================================================
+   Viewport-contained registration flow
+   Keeps role selection and all four-field account forms inside one screen.
+   ======================================================================== */
+
+
+/* Step 1 uses one spacing rhythm and subtly tinted account buttons. */
+
+
+/* Step 2: one compact four-field form for customer, designer and printer. */
+
+
+/* Align the complete registration module vertically with the T-shirt artwork. */
+
+
+/* Floating labels and contextual tooltips must escape the compact form frame. */
+
+
+/* The arrow sits at the form column's outer edge and shares the language
+   control's vertical baseline. */
+
+
+/* Mirror the registration split when the interface changes direction. */
+
+
+/* Role selection: elevated, unmistakably interactive SaaS cards. */
+
+
+/* Customer social actions use the designer form's exact dimensions. */
+
+
+/* Submit-only validation: this explicit class is the sole red-border trigger. */
+
+
+/* Password requirements live in a spatially neutral contextual tooltip. */
+
+
+/* Submit-only warning: absolute positioning keeps the compact form stable. */
++
+/* Unified login-style header controls across every authentication page. */
+@keyframes sharedHeaderGlobeSpin{to{transform:rotate(360deg)}}
+.auth-topbar .auth-topbar__actions{gap:14px!important}
+.auth-topbar .language-toggle{
+  width:auto!important;min-width:0!important;height:42px!important;padding-inline:2px!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  flex-direction:row-reverse!important;gap:6px!important;direction:ltr!important;
+  color:#6815ed!important;background:transparent!important;border:0!important;border-radius:0!important;
+  box-shadow:none!important;transition:color .2s ease,transform .2s ease!important
+}
+.auth-topbar .language-toggle .bi-globe2{font-size:24px!important;transform-origin:center;will-change:transform}
+.auth-topbar #languageToggleText{min-width:22px;font-size:15px!important;font-weight:800!important;color:inherit!important}
+.auth-topbar .language-toggle:hover{color:#4f0fc5!important;background:transparent!important;transform:translateY(-1px)!important}
+.auth-topbar .language-toggle:hover .bi-globe2{animation:sharedHeaderGlobeSpin 1.1s ease}
+.auth-topbar .theme-toggle{
+  width:38px!important;min-width:38px!important;height:42px!important;padding:0!important;
+  display:inline-grid!important;place-items:center!important;color:#6815ed!important;
+  background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;
+  transition:color .2s ease,transform .2s ease!important
+}
+.auth-topbar #themeToggleIcon{display:inline-block!important;font-size:27px!important;color:inherit!important;transform-origin:center;transition:transform .22s ease!important}
+.auth-topbar .theme-toggle:hover{color:#4f0fc5!important;background:transparent!important;transform:translateY(-1px)!important}
+.auth-topbar .theme-toggle:hover #themeToggleIcon{transform:rotate(-14deg)!important}
+html[data-theme="dark"] .auth-topbar .language-toggle,
+html[data-theme="dark"] .auth-topbar .theme-toggle,
+body.dark-mode .auth-topbar .language-toggle,
+body.dark-mode .auth-topbar .theme-toggle{color:#a879ff!important}
+@media(max-width:700px){
+  .auth-topbar .auth-topbar__actions{gap:9px!important}
+  .auth-topbar .language-toggle{height:38px!important}
+  .auth-topbar .language-toggle .bi-globe2{font-size:21px!important}
+  .auth-topbar #languageToggleText{display:inline!important;font-size:13px!important}
+  .auth-topbar .theme-toggle{width:34px!important;min-width:34px!important;height:38px!important}
+  .auth-topbar #themeToggleIcon{font-size:24px!important}
+}

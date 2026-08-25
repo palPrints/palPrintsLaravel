@@ -11,8 +11,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->validateCsrfTokens(except: [
+            'auth/apple/callback',
+        ]);
+
         $middleware->alias([
             'active' => \App\Http\Middleware\CheckUserActive::class,
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'profile.complete' => \App\Http\Middleware\EnsureRoleProfileComplete::class,
+            'account.approved' => \App\Http\Middleware\EnsureBusinessAccountApproved::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
