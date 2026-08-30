@@ -25,8 +25,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="{{ asset('front/css/auth/visual-refresh.css') }}">
   <link rel="stylesheet" href="{{ asset('front/css/auth/login-reference.css') }}?v={{ filemtime(public_path('front/css/auth/login-reference.css')) }}">
-  <script src="{{ asset('front/js/auth/auth-ui.js') }}" defer></script>
   <script src="{{ asset('front/js/auth/login.js') }}" defer></script>
+  <script src="{{ asset('front/js/auth/auth-ui.js') }}" defer></script>
 </head>
 <body class="login-page auth-page" data-auth-page="login">
   <svg class="login-clip-defs" width="0" height="0" aria-hidden="true" focusable="false">
@@ -93,28 +93,50 @@
             <p class="register-subtitle" data-i18n="loginSubtitle">أدخل بيانات حسابك للمتابعة إلى PALPRINTS.</p>
           </header>
 
+        @php
+          $loginErrorTranslations = session('login_error_translations', []);
+          $emailErrorTranslations = $loginErrorTranslations['email'] ?? null;
+          $passwordErrorTranslations = $loginErrorTranslations['password'] ?? null;
+          $formErrorTranslations = $loginErrorTranslations['social']
+              ?? $loginErrorTranslations['general']
+              ?? null;
+          $formHasError = $errors->has('social') || session()->has('error');
+          $formMessage = $errors->first('social') ?: session('error') ?: session('status');
+        @endphp
+
         <section class="login-card" aria-labelledby="login-title">
-          <form class="login-form" id="loginForm" method="POST" action="{{ route('login') }}" data-native-auth-form>
+          <form class="login-form" id="loginForm" method="POST" action="{{ route('login') }}" data-native-auth-form novalidate>
             @csrf
+            <input id="loginLocale" name="locale" type="hidden" value="{{ old('locale', 'ar') }}">
             <div class="field-group">
               <label class="stacked-label" for="loginEmail" data-i18n="email">البريد الإلكتروني</label>
               <div class="stacked-field">
-                <input id="loginEmail" name="email" type="email" value="{{ old('email') }}" placeholder="example@palprints.com" autocomplete="username" required aria-describedby="loginEmailError">
+                <input id="loginEmail" name="email" type="email" value="{{ old('email') }}" placeholder="example@palprints.com" autocomplete="username" required aria-describedby="loginEmailError" aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}">
                 <span class="field-affix" aria-hidden="true"><i class="bi bi-envelope"></i></span>
               </div>
-              <p class="field-error" id="loginEmailError" aria-live="polite">@error('email'){{ $message }}@enderror</p>
+              <p class="field-error" id="loginEmailError" aria-live="polite"
+                @if($emailErrorTranslations)
+                  data-error-ar="{{ $emailErrorTranslations['ar'] ?? '' }}"
+                  data-error-en="{{ $emailErrorTranslations['en'] ?? '' }}"
+                @endif
+              >@error('email'){{ $message }}@enderror</p>
             </div>
 
             <div class="field-group">
               <label class="stacked-label" for="loginPassword" data-i18n="password">كلمة المرور</label>
               <div class="stacked-field">
-                <input class="password-input" id="loginPassword" name="password" type="password" placeholder="••••••••••••" autocomplete="current-password" required aria-describedby="loginPasswordError">
+                <input class="password-input" id="loginPassword" name="password" type="password" placeholder="••••••••••••" autocomplete="current-password" required aria-describedby="loginPasswordError" aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}">
                 <button class="field-affix password-toggle" type="button" data-password-target="loginPassword" aria-label="إظهار كلمة المرور">
                   <i class="bi bi-eye icon external-ui-icon icon-eye" aria-hidden="true"></i>
                   <i class="bi bi-eye-slash icon external-ui-icon icon-eye-off" aria-hidden="true"></i>
                 </button>
               </div>
-              <p class="field-error" id="loginPasswordError" aria-live="polite">@error('password'){{ $message }}@enderror</p>
+              <p class="field-error" id="loginPasswordError" aria-live="polite"
+                @if($passwordErrorTranslations)
+                  data-error-ar="{{ $passwordErrorTranslations['ar'] ?? '' }}"
+                  data-error-en="{{ $passwordErrorTranslations['en'] ?? '' }}"
+                @endif
+              >@error('password'){{ $message }}@enderror</p>
             </div>
 
             <div class="login-options">
@@ -125,7 +147,17 @@
               <a class="forgot-password" href="{{ route('password.request') }}" id="forgotPasswordLink" data-i18n="forgotPassword">نسيت كلمة المرور؟</a>
             </div>
 
-            <div class="form-status @if(session('status')) is-success @elseif($errors->has('social')) is-error @endif" id="loginFormStatus" role="status" aria-live="polite" @if(session('status') || $errors->has('social')) style="display:block" @endif>{{ $errors->first('social') ?: session('status') }}</div>
+            <div
+              class="form-status {{ $formHasError ? 'is-error' : ($formMessage ? 'is-success' : '') }}"
+              id="loginFormStatus"
+              role="{{ $formHasError ? 'alert' : 'status' }}"
+              aria-live="polite"
+              @if($formMessage) style="display:block" @endif
+              @if($formErrorTranslations)
+                data-error-ar="{{ $formErrorTranslations['ar'] ?? '' }}"
+                data-error-en="{{ $formErrorTranslations['en'] ?? '' }}"
+              @endif
+            >{{ $formMessage }}</div>
 
             <button class="primary-button submit-button" type="submit">
               <span data-i18n="signIn">تسجيل الدخول</span>

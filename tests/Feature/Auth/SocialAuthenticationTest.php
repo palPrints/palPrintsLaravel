@@ -66,7 +66,6 @@ test('google registration creates a linked draft designer account', function () 
         'user_id' => $user->id,
         'approval_status' => 'draft',
     ]);
-    $this->assertDatabaseMissing('wallets', ['user_id' => $user->id]);
 });
 
 test('social login links an existing user by verified email', function () {
@@ -113,6 +112,25 @@ test('social login does not create a new account without choosing a role', funct
     $response->assertSessionHasErrors('social');
     $this->assertGuest();
     $this->assertDatabaseMissing('users', ['email' => 'unknown@example.com']);
+});
+
+test('social login errors use and retain the selected language', function () {
+    config()->set('services.google.client_secret', null);
+
+    $response = $this->get(route('social.redirect', [
+        'provider' => 'google',
+        'locale' => 'en',
+    ]));
+
+    $response
+        ->assertRedirect(route('login', absolute: false))
+        ->assertSessionHasErrors([
+            'social' => 'Sign-in with Google is currently unavailable because its configuration is incomplete.',
+        ])
+        ->assertSessionHas('login_error_translations.social', [
+            'ar' => 'تسجيل الدخول بواسطة Google غير متاح حاليًا لعدم اكتمال الإعدادات.',
+            'en' => 'Sign-in with Google is currently unavailable because its configuration is incomplete.',
+        ]);
 });
 
 test('an unverified provider email cannot be linked', function () {

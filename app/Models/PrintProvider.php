@@ -48,16 +48,6 @@ class PrintProvider extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function printProviderProducts()
-    {
-        return $this->hasMany(PrintProviderProduct::class);
-    }
-
-    public function orders()
-    {
-        return $this->hasMany(Order::class);
-    }
-
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');

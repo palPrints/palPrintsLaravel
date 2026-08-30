@@ -1,8 +1,7 @@
 <?php
 
-use App\Http\Controllers\Admin\ApprovalRequestController;
 use App\Http\Controllers\DashboardRedirectController;
-use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\Designer\DashboardController as DesignerDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleDashboardController;
 use Illuminate\Support\Facades\Route;
@@ -27,7 +26,6 @@ Route::view('/privacy', 'legal.placeholder', [
     'message' => 'هذه الصفحة مهيأة لإضافة سياسة الخصوصية النهائية قبل إطلاق المنصة.',
 ])->name('privacy');
 
-
 /*
 |--------------------------------------------------------------------------
 | Dashboard
@@ -41,23 +39,22 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->defaults('dashboard_role', 'admin')->middleware('role:admin')->name('admin.dashboard');
     Route::get('/customer/dashboard', [RoleDashboardController::class, 'show'])
         ->defaults('dashboard_role', 'customer')->middleware('role:customer')->name('customer.dashboard');
-    Route::get('/designer/dashboard', [RoleDashboardController::class, 'show'])
-        ->defaults('dashboard_role', 'designer')->middleware('role:designer')->name('designer.dashboard');
+    Route::get('/designer/dashboard', DesignerDashboardController::class)
+        ->middleware('role:designer')->name('designer.dashboard');
     Route::get('/print-provider/dashboard', [RoleDashboardController::class, 'show'])
         ->defaults('dashboard_role', 'print_provider')->middleware('role:print_provider')->name('print-provider.dashboard');
-    Route::get('/delivery-partner/dashboard', [RoleDashboardController::class, 'show'])
-        ->defaults('dashboard_role', 'delivery_partner')->middleware('role:delivery_partner')->name('delivery-partner.dashboard');
-
-    Route::post('/onboarding/submit', [OnboardingController::class, 'submit'])
-        ->middleware('role:designer|print_provider|delivery_partner')
-        ->name('onboarding.submit');
-
-    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::patch('/approval-requests/{approvalRequest}', [ApprovalRequestController::class, 'update'])
-            ->name('approval-requests.update');
+    Route::middleware('role:designer')->prefix('designer')->name('designer.')->group(function () {
+        Route::view('/designs', 'designer.designs.index')->name('designs.index');
+        Route::view('/designs/create', 'designer.designs.create')->name('designs.create');
+        Route::view('/profile', 'designer.profile')->name('profile');
+        Route::view('/earnings', 'designer.earnings')->name('earnings');
+        Route::view('/settings', 'designer.settings')->name('settings');
+        Route::view('/support', 'designer.support')->name('support');
+        Route::view('/notifications', 'designer.notifications')->name('notifications');
+        Route::view('/trends', 'designer.trends')->name('trends');
     });
-});
 
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -77,7 +74,6 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->name('profile.destroy');
 
 });
-
 
 /*
 |--------------------------------------------------------------------------

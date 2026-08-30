@@ -12,7 +12,6 @@ class RoleDashboardController extends Controller
         'customer' => 'لوحة تحكم العميل',
         'designer' => 'لوحة تحكم المصمم',
         'print_provider' => 'لوحة تحكم المطبعة',
-        'delivery_partner' => 'لوحة تحكم التوصيل',
     ];
 
     public function show(Request $request): View

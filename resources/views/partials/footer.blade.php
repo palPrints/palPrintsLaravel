@@ -18,10 +18,12 @@
           <div class="footer__col footer__col--brand">
 
             <div class="footer__logo">
+              <a href="{{ route('home') }}" aria-label="PalPrints">
               <img
-                src="{{ asset('front/images/home/palprintLogo-removebg-preview.png') }}"
+                src="{{ asset('front/assets/images/palprints-logo.png') }}"
                 alt="PalPrints"
               >
+              </a>
             </div>
 
             <p class="footer__description">

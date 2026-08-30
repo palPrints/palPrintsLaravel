@@ -49,44 +49,9 @@ class User extends Authenticatable
         return $this->hasOne(PrintProvider::class);
     }
 
-    public function deliveryPartner()
-    {
-        return $this->hasOne(DeliveryPartner::class);
-    }
-
-    public function addresses()
-    {
-        return $this->hasMany(Address::class);
-    }
-
-    public function orders()
-    {
-        return $this->hasMany(Order::class);
-    }
-
-    public function designs()
-    {
-        return $this->hasMany(Design::class, 'designer_id');
-    }
-
-    public function cartItems()
-    {
-        return $this->hasMany(Cart::class);
-    }
-
-    public function wallet()
-    {
-        return $this->hasOne(Wallet::class);
-    }
-
     public function auditLogs()
     {
         return $this->hasMany(AuditLog::class);
-    }
-
-    public function approvalRequests()
-    {
-        return $this->hasMany(ApprovalRequest::class);
     }
 
     public function socialAccounts()
@@ -101,7 +66,7 @@ class User extends Authenticatable
 
     public function supportsOnboarding(): bool
     {
-        return in_array($this->primaryRole(), ['designer', 'print_provider', 'delivery_partner'], true);
+        return in_array($this->primaryRole(), ['designer', 'print_provider'], true);
     }
 
     public function roleProfile(): ?Model
@@ -109,7 +74,6 @@ class User extends Authenticatable
         return match ($this->primaryRole()) {
             'designer' => $this->designerProfile,
             'print_provider' => $this->printProvider,
-            'delivery_partner' => $this->deliveryPartner,
             default => null,
         };
     }
@@ -145,7 +109,6 @@ class User extends Authenticatable
             'customer' => 'customer.dashboard',
             'designer' => 'designer.dashboard',
             'print_provider' => 'print-provider.dashboard',
-            'delivery_partner' => 'delivery-partner.dashboard',
             default => 'dashboard',
         };
     }

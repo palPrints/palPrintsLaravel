@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Exceptions\SocialAuthenticationException;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\SocialAccount;
@@ -29,6 +30,10 @@ class SocialAuthController extends Controller
     {
         abort_unless(in_array($provider, self::PROVIDERS, true), 404);
 
+        $requestedLocale = $request->query('locale');
+        $locale = in_array($requestedLocale, ['ar', 'en'], true) ? $requestedLocale : 'ar';
+        app()->setLocale($locale);
+
         $source = $request->query('source') === 'register' ? 'register' : 'login';
         $accountType = null;
 
@@ -38,14 +43,14 @@ class SocialAuthController extends Controller
             if (! in_array($accountType, self::ACCOUNT_TYPES, true)) {
                 return $this->failure(
                     'register',
-                    'اختر نوع الحساب أولًا قبل المتابعة باستخدام Google أو Apple.'
+                    'auth.social.account_type_required'
                 );
             }
 
             if (! $request->boolean('terms')) {
                 return $this->failure(
                     'register',
-                    'يجب الموافقة على الشروط وسياسة الخصوصية قبل إنشاء الحساب.',
+                    'auth.social.terms_required',
                     $accountType
                 );
             }
@@ -54,8 +59,9 @@ class SocialAuthController extends Controller
         if (! $this->providerIsConfigured($provider)) {
             return $this->failure(
                 $source,
-                'تسجيل الدخول بواسطة '.ucfirst($provider).' غير مهيأ بعد. أضف بيانات المزوّد إلى ملف البيئة.',
-                $accountType
+                'auth.social.provider_not_configured',
+                $accountType,
+                ['provider' => ucfirst($provider)]
             );
         }
 
@@ -63,6 +69,9 @@ class SocialAuthController extends Controller
             'source' => $source,
             'account_type' => $accountType,
         ];
+        if (in_array($requestedLocale, ['ar', 'en'], true)) {
+            $intent['locale'] = $locale;
+        }
         $request->session()->put('social_auth', $intent);
 
         try {
@@ -83,8 +92,9 @@ class SocialAuthController extends Controller
 
             return $this->failure(
                 $source,
-                'تعذر بدء الاتصال مع '.ucfirst($provider).'. حاول مرة أخرى.',
-                $accountType
+                'auth.social.connection_failed',
+                $accountType,
+                ['provider' => ucfirst($provider)]
             );
         }
     }
@@ -109,14 +119,19 @@ class SocialAuthController extends Controller
         }
         $source = ($intent['source'] ?? null) === 'register' ? 'register' : 'login';
         $accountType = $intent['account_type'] ?? null;
+        $locale = in_array($intent['locale'] ?? null, ['ar', 'en'], true)
+            ? $intent['locale']
+            : 'ar';
+        app()->setLocale($locale);
 
         if ($request->filled('error')) {
             $request->session()->forget('social_auth');
 
             return $this->failure(
                 $source,
-                'تم إلغاء المتابعة بواسطة '.ucfirst($provider).'.',
-                $accountType
+                'auth.social.cancelled',
+                $accountType,
+                ['provider' => ucfirst($provider)]
             );
         }
 
@@ -125,8 +140,9 @@ class SocialAuthController extends Controller
 
             return $this->failure(
                 $source,
-                'إعدادات '.ucfirst($provider).' غير مكتملة.',
-                $accountType
+                'auth.social.settings_incomplete',
+                $accountType,
+                ['provider' => ucfirst($provider)]
             );
         }
 
@@ -146,6 +162,7 @@ class SocialAuthController extends Controller
 
             Auth::guard('web')->login($user);
             $request->session()->regenerate();
+            $request->session()->put('auth_locale', $locale);
             $request->session()->forget('social_auth');
 
             $user->forceFill([
@@ -168,20 +185,30 @@ class SocialAuthController extends Controller
             ]);
 
             return redirect()->intended(route($user->dashboardRouteName(), absolute: false));
+        } catch (SocialAuthenticationException $exception) {
+            $request->session()->forget('social_auth');
+
+            return $this->failure(
+                $source,
+                $exception->translationKey,
+                $accountType,
+                $exception->replacements
+            );
         } catch (ValidationException $exception) {
             $request->session()->forget('social_auth');
             $message = collect($exception->errors())->flatten()->first()
-                ?? 'تعذر إكمال تسجيل الدخول.';
+                ?? trans('auth.social.unable_to_complete');
 
-            return $this->failure($source, $message, $accountType);
+            return $this->failureMessage($source, $message, $accountType);
         } catch (Throwable $exception) {
             report($exception);
             $request->session()->forget('social_auth');
 
             return $this->failure(
                 $source,
-                'تعذر إكمال تسجيل الدخول بواسطة '.ucfirst($provider).'. حاول مرة أخرى.',
-                $accountType
+                'auth.social.provider_login_failed',
+                $accountType,
+                ['provider' => ucfirst($provider)]
             );
         }
     }
@@ -196,9 +223,7 @@ class SocialAuthController extends Controller
         $providerUserId = trim((string) $providerUser->getId());
 
         if ($providerUserId === '') {
-            throw ValidationException::withMessages([
-                'social' => 'لم يرسل مزوّد الدخول معرّف الحساب المطلوب.',
-            ]);
+            throw new SocialAuthenticationException('auth.social.provider_id_missing');
         }
 
         $socialAccount = SocialAccount::query()
@@ -216,9 +241,10 @@ class SocialAuthController extends Controller
         $email = Str::lower(trim((string) $providerUser->getEmail()));
 
         if ($email === '' || ! $this->providerEmailIsVerified($providerUser, $provider)) {
-            throw ValidationException::withMessages([
-                'social' => 'تعذر التحقق من بريدك الإلكتروني لدى '.ucfirst($provider).'.',
-            ]);
+            throw new SocialAuthenticationException(
+                'auth.social.email_unverified',
+                ['provider' => ucfirst($provider)]
+            );
         }
 
         return DB::transaction(fn (): array => $this->linkOrCreateUser(
@@ -260,9 +286,7 @@ class SocialAuthController extends Controller
             ->first();
 
         if (! $user && $source !== 'register') {
-            throw ValidationException::withMessages([
-                'social' => 'لا يوجد حساب PALPRINTS لهذا البريد. انتقل إلى إنشاء حساب واختر نوع الحساب أولًا.',
-            ]);
+            throw new SocialAuthenticationException('auth.social.login_account_missing');
         }
 
         if ($user) {
@@ -273,9 +297,7 @@ class SocialAuthController extends Controller
 
         if (! $user) {
             if (! in_array($accountType, self::ACCOUNT_TYPES, true)) {
-                throw ValidationException::withMessages([
-                    'social' => 'انتهت جلسة اختيار نوع الحساب. اختر نوع الحساب مرة أخرى.',
-                ]);
+                throw new SocialAuthenticationException('auth.social.role_session_expired');
             }
 
             $name = trim((string) $providerUser->getName());
@@ -303,9 +325,10 @@ class SocialAuthController extends Controller
             ->first();
 
         if ($existingProviderLink) {
-            throw ValidationException::withMessages([
-                'social' => 'هذا الحساب مربوط مسبقًا بحساب '.ucfirst($provider).' آخر.',
-            ]);
+            throw new SocialAuthenticationException(
+                'auth.social.already_linked',
+                ['provider' => ucfirst($provider)]
+            );
         }
 
         SocialAccount::create([
@@ -322,9 +345,7 @@ class SocialAuthController extends Controller
     private function assertAccountIsActive(User $user): void
     {
         if (! $user->is_active) {
-            throw ValidationException::withMessages([
-                'social' => 'هذا الحساب موقوف حاليًا. يرجى التواصل مع إدارة PALPRINTS.',
-            ]);
+            throw new SocialAuthenticationException('auth.social.inactive');
         }
     }
 
@@ -367,14 +388,42 @@ class SocialAuthController extends Controller
 
     private function failure(
         string $source,
+        string $translationKey,
+        ?string $accountType = null,
+        array $replacements = []
+    ): RedirectResponse {
+        $translations = [
+            'ar' => trans($translationKey, $replacements, 'ar'),
+            'en' => trans($translationKey, $replacements, 'en'),
+        ];
+        $locale = app()->getLocale() === 'en' ? 'en' : 'ar';
+
+        return $this->failureMessage(
+            $source,
+            $translations[$locale],
+            $accountType,
+            $translations
+        );
+    }
+
+    /**
+     * @param  array{ar: string, en: string}|null  $translations
+     */
+    private function failureMessage(
+        string $source,
         string $message,
-        ?string $accountType = null
+        ?string $accountType = null,
+        ?array $translations = null
     ): RedirectResponse {
         $route = $source === 'register' ? 'register' : 'login';
         $response = redirect()->route($route)->withErrors(['social' => $message]);
 
         if ($route === 'register' && in_array($accountType, self::ACCOUNT_TYPES, true)) {
             $response->withInput(['account_type' => $accountType, 'terms' => '1']);
+        }
+
+        if ($route === 'login' && $translations) {
+            $response->with('login_error_translations', ['social' => $translations]);
         }
 
         return $response;

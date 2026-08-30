@@ -28,9 +28,10 @@ class AuthenticatedSessionController extends Controller
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
+            $request->flashErrorTranslations('email', 'auth.login.inactive');
 
             throw ValidationException::withMessages([
-                'email' => 'هذا الحساب موقوف حاليًا. يرجى التواصل مع إدارة PALPRINTS.',
+                'email' => trans('auth.login.inactive'),
             ]);
         }
 

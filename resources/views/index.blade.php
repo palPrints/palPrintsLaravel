@@ -104,8 +104,8 @@
         >
 
           <img
-            src="{{ asset('front/images/home/herosectionphoto1.png') }}"
-            data-hero-base="{{ asset('front/images/home/herosectionphoto1') }}"
+            src="{{ asset('front/assets/images/herosectionphoto1.png') }}"
+            data-hero-base="{{ asset('front/assets/images/herosectionphoto1') }}"
             alt="منتجات PalPrints المطبوعة - الصورة 1"
             class="hero__img hero__slide is-active"
             draggable="false"
@@ -114,8 +114,8 @@
           >
 
           <img
-            src="{{ asset('front/images/home/herosectionphoto2.png') }}"
-            data-hero-base="{{ asset('front/images/home/herosectionphoto2') }}"
+            src="{{ asset('front/assets/images/herosectionphoto2.png') }}"
+            data-hero-base="{{ asset('front/assets/images/herosectionphoto2') }}"
             alt="منتجات PalPrints المطبوعة - الصورة 2"
             class="hero__img hero__slide"
             draggable="false"
@@ -124,8 +124,8 @@
           >
 
           <img
-            src="{{ asset('front/images/home/herosectionphoto3.png') }}"
-            data-hero-base="{{ asset('front/images/home/herosectionphoto3') }}"
+            src="{{ asset('front/assets/images/herosectionphoto3.png') }}"
+            data-hero-base="{{ asset('front/assets/images/herosectionphoto3') }}"
             alt="منتجات PalPrints المطبوعة - الصورة 3"
             class="hero__img hero__slide"
             draggable="false"
@@ -401,7 +401,7 @@
           >
             <div class="category-card__icon">
               <img
-                src="{{ asset('front/images/home/notebookicon.png') }}"
+                src="{{ asset('front/assets/images/notebookicon.png') }}"
                 alt="دفاتر"
                 class="category-card__img"
               >
@@ -420,7 +420,7 @@
           >
             <div class="category-card__icon">
               <img
-                src="{{ asset('front/images/home/capIcon.png') }}"
+                src="{{ asset('front/assets/images/capIcon.png') }}"
                 alt="طواقي"
                 class="category-card__img"
               >
@@ -439,7 +439,7 @@
           >
             <div class="category-card__icon">
               <img
-                src="{{ asset('front/images/home/bagicon.png') }}"
+                src="{{ asset('front/assets/images/bagicon.png') }}"
                 alt="حقائب"
                 class="category-card__img"
               >
@@ -458,7 +458,7 @@
           >
             <div class="category-card__icon">
               <img
-                src="{{ asset('front/images/home/hoddieIcon.svg') }}"
+                src="{{ asset('front/assets/images/hoddieIcon.svg') }}"
                 alt="هوديز"
                 class="category-card__img"
               >
@@ -477,7 +477,7 @@
           >
             <div class="category-card__icon">
               <img
-                src="{{ asset('front/images/home/t-shirt.png') }}"
+                src="{{ asset('front/assets/images/t-shirt.png') }}"
                 alt="تيشيرتات"
                 class="category-card__img"
               >
@@ -496,7 +496,7 @@
           >
             <div class="category-card__icon">
               <img
-                src="{{ asset('front/images/home/document.png') }}"
+                src="{{ asset('front/assets/images/document.png') }}"
                 alt="طباعة ورق"
                 class="category-card__img"
               >
@@ -515,7 +515,7 @@
           >
             <div class="category-card__icon">
               <img
-                src="{{ asset('front/images/home/posterposter.png') }}"
+                src="{{ asset('front/assets/images/posterposter.png') }}"
                 alt="طباعة جلديات"
                 class="category-card__img no-filter custom-size"
               >
@@ -534,7 +534,7 @@
           >
             <div class="category-card__icon">
               <img
-                src="{{ asset('front/images/home/icons8-sticker-48.png') }}"
+                src="{{ asset('front/assets/images/icons8-sticker-48.png') }}"
                 alt="ملصقات"
                 class="category-card__img no-filter custom-size"
               >
@@ -1120,7 +1120,7 @@
             </div>
 
             <img
-              src="{{ asset('front/images/home/highLaptopWithoutBackGround.jpeg') }}"
+              src="{{ asset('front/assets/images/highLaptopWithoutBackGround.jpeg') }}"
               alt="لوحة المصمم ومنتجات PALPRINTS"
               class="mockup-img"
             >
@@ -1276,7 +1276,7 @@
 
             <div class="testimonial-card__avatar-wrapper">
               <img
-                src="{{ asset('front/images/home/user (1).png') }}"
+                src="{{ asset('front/assets/images/user (1).png') }}"
                 alt="ليلى منصور"
                 class="testimonial-card__avatar"
               >
@@ -1317,7 +1317,7 @@
 
             <div class="testimonial-card__avatar-wrapper">
               <img
-                src="{{ asset('front/images/home/user (1).png') }}"
+                src="{{ asset('front/assets/images/user (1).png') }}"
                 alt="محمد علاء"
                 class="testimonial-card__avatar"
               >
@@ -1358,7 +1358,7 @@
 
             <div class="testimonial-card__avatar-wrapper">
               <img
-                src="{{ asset('front/images/home/user (1).png') }}"
+                src="{{ asset('front/assets/images/user (1).png') }}"
                 alt="سارة خالد"
                 class="testimonial-card__avatar"
               >
@@ -1400,7 +1400,7 @@
 
             <div class="testimonial-card__avatar-wrapper">
               <img
-                src="{{ asset('front/images/home/user (1).png') }}"
+                src="{{ asset('front/assets/images/user (1).png') }}"
                 alt="أحمد المصري"
                 class="testimonial-card__avatar"
               >

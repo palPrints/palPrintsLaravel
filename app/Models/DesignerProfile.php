@@ -44,11 +44,6 @@ class DesignerProfile extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function designs()
-    {
-        return $this->hasMany(Design::class, 'designer_id', 'user_id');
-    }
-
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
