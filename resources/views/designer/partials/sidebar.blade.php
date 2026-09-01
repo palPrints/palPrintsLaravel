@@ -36,8 +36,15 @@
 
         <a
             href='{{ route('designer.designs.create') }}'
-            @class(['profile-sidebar-link', 'active' => request()->routeIs('designer.designs.create')])
-            @if(request()->routeIs('designer.designs.create')) aria-current='page' @endif
+            @class([
+                'profile-sidebar-link',
+                'active' => request()->routeIs(
+                    'designer.designs.create',
+                    'designer.designs.editor',
+                    'designer.designs.review',
+                ),
+            ])
+            @if(request()->routeIs('designer.designs.create', 'designer.designs.editor', 'designer.designs.review')) aria-current='page' @endif
         >
             <i class='bi bi-cloud-arrow-up' aria-hidden='true'></i>
             <span data-i18n='uploadDesign'>رفع تصميم جديد</span>

@@ -1,0 +1,3148 @@
+/* =========================================================
+   PalPrints — Profile Core
+   الأساس المشترك لصفحات الملف الشخصي الثلاث
+   (العميل — المصمم — المطبعة)
+
+   File: assets/css/pages/profile-core.css
+
+   الترتيب:
+   01. المتغيرات
+   02. الوضع الليلي
+   03. إعدادات الصفحة
+   04. الخلفية الباستيلية
+   05. هيكل الصفحة
+   06. القائمة الجانبية
+   07. الشريط العلوي
+   08. عنوان الصفحة ومسار التنقل
+   09. البطاقات
+   10. بطاقة الهيرو
+   11. الأزرار
+   12. الشارات وحالات الاعتماد
+   13. شبكة الإحصائيات
+   14. صفوف المعلومات
+   15. المحفظة والأرباح
+   16. مفاتيح التفضيلات
+   17. الحالات: Loading / Empty / Error
+   18. رسائل النجاح والخطأ
+   19. النوافذ المنبثقة
+   20. أدوات الوصول
+   21. التجاوب
+   ========================================================= */
+
+
+/* =========================================================
+   01. المتغيرات
+   ========================================================= */
+
+:root {
+  --profile-primary: #6815ed;
+  --profile-primary-dark: #4e0fc0;
+  --profile-blue: #158fdd;
+  --profile-cyan: #10bad4;
+
+  --profile-gradient:
+    linear-gradient(
+      100deg,
+      #10bad4 0%,
+      #158fdd 48%,
+      #6815ed 100%
+    );
+
+  --profile-gradient-soft:
+    linear-gradient(
+      100deg,
+      rgb(16 186 212 / 12%),
+      rgb(104 21 237 / 12%)
+    );
+
+  --profile-body: #f5f7fc;
+  --profile-surface: #ffffff;
+  --profile-soft: #f7f8fc;
+  --profile-soft-strong: #eef1f9;
+
+  --profile-text: #171a43;
+  --profile-secondary: #62677f;
+  --profile-muted: #969aab;
+
+  --profile-border: #e7e9f1;
+  --profile-border-strong: #d8dcea;
+
+  /* ألوان الحالات */
+  --profile-success: #18a66b;
+  --profile-success-soft: #e6f7ef;
+  --profile-warning: #e08a12;
+  --profile-warning-soft: #fdf3e2;
+  --profile-danger: #e5384f;
+  --profile-danger-soft: #fdecee;
+  --profile-info: #158fdd;
+  --profile-info-soft: #e7f3fd;
+  --profile-neutral: #6f7590;
+  --profile-neutral-soft: #f0f2f8;
+  --profile-purple-soft: #f2ebff;
+  --profile-whatsapp: #1fa855;
+
+  --profile-shadow: 0 14px 40px rgb(26 33 74 / 8%);
+  --profile-shadow-small: 0 7px 20px rgb(26 33 74 / 7%);
+  --profile-shadow-hover: 0 18px 44px rgb(26 33 74 / 12%);
+
+  --profile-radius: 18px;
+  --profile-radius-small: 12px;
+  --profile-radius-pill: 999px;
+
+  --profile-transition: 0.22s ease;
+
+  --profile-sidebar-width: 254px;
+  --profile-sidebar-gap: 14px;
+}
+
+
+/* =========================================================
+   02. الوضع الليلي
+   ========================================================= */
+
+html[data-bs-theme="dark"] {
+  --profile-body: #0b1020;
+  --profile-surface: #11172a;
+  --profile-soft: #171e34;
+  --profile-soft-strong: #1d2540;
+
+  --profile-text: #f4f6ff;
+  --profile-secondary: #c5cada;
+  --profile-muted: #8f96ad;
+
+  --profile-border: #293149;
+  --profile-border-strong: #35405e;
+
+  --profile-success-soft: rgb(24 166 107 / 16%);
+  --profile-warning-soft: rgb(224 138 18 / 16%);
+  --profile-danger-soft: rgb(229 56 79 / 16%);
+  --profile-info-soft: rgb(21 143 221 / 16%);
+  --profile-neutral-soft: rgb(111 117 144 / 18%);
+  --profile-purple-soft: rgb(104 21 237 / 20%);
+
+  --profile-shadow: 0 14px 40px rgb(0 0 0 / 26%);
+  --profile-shadow-small: 0 7px 20px rgb(0 0 0 / 22%);
+  --profile-shadow-hover: 0 18px 44px rgb(0 0 0 / 34%);
+
+  color-scheme: dark;
+}
+
+
+/* =========================================================
+   03. إعدادات الصفحة
+   ========================================================= */
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body.profile-page {
+  min-height: 100vh;
+
+  margin: 0;
+
+  color: var(--profile-text);
+  background: var(--profile-body);
+
+  font-family: "Cairo", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+
+  overflow-x: hidden;
+}
+
+.profile-page *,
+.profile-page *::before,
+.profile-page *::after {
+  box-sizing: border-box;
+}
+
+.profile-page button,
+.profile-page input,
+.profile-page select,
+.profile-page textarea {
+  font-family: inherit;
+}
+
+.profile-page a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.profile-page h1,
+.profile-page h2,
+.profile-page h3,
+.profile-page h4 {
+  margin: 0;
+  color: var(--profile-text);
+}
+
+.profile-page p {
+  margin: 0;
+}
+
+.profile-page ul,
+.profile-page ol,
+.profile-page dl {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* حلقة التركيز الموحدة */
+
+.profile-page a:focus-visible,
+.profile-page button:focus-visible,
+.profile-page input:focus-visible,
+.profile-page select:focus-visible,
+.profile-page textarea:focus-visible,
+.profile-page [tabindex]:focus-visible {
+  outline: 2px solid var(--profile-primary);
+  outline-offset: 2px;
+}
+
+
+/* =========================================================
+   04. الخلفية الباستيلية
+   ========================================================= */
+
+body.profile-page {
+  background:
+    radial-gradient(
+      circle at 12% 8%,
+      rgb(226 214 255 / 55%),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 88% 10%,
+      rgb(206 231 255 / 55%),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 78% 78%,
+      rgb(248 229 255 / 45%),
+      transparent 38%
+    ),
+    linear-gradient(
+      145deg,
+      #f9f9ff 0%,
+      #f3f6ff 46%,
+      #faf7ff 100%
+    );
+}
+
+html[data-bs-theme="dark"] body.profile-page {
+  background:
+    radial-gradient(
+      circle at 15% 10%,
+      rgb(94 61 164 / 22%),
+      transparent 36%
+    ),
+    radial-gradient(
+      circle at 86% 12%,
+      rgb(32 141 206 / 19%),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 75% 82%,
+      rgb(121 55 184 / 17%),
+      transparent 42%
+    ),
+    linear-gradient(
+      145deg,
+      #07101e 0%,
+      #0a1326 48%,
+      #100d24 100%
+    );
+}
+
+.pastel-space-background {
+  position: fixed;
+  z-index: 0;
+
+  inset: 0;
+
+  overflow: hidden;
+
+  pointer-events: none;
+}
+
+/* الأشكال الكبيرة */
+
+.pastel-blob {
+  position: absolute;
+
+  display: block;
+
+  border-radius:
+    48% 52% 58% 42% /
+    46% 38% 62% 54%;
+
+  filter: blur(1px);
+  opacity: 0.7;
+
+  will-change: transform;
+
+  animation: pastelBlobFloat 12s ease-in-out infinite alternate;
+}
+
+.blob-top-start {
+  width: 360px;
+  height: 230px;
+
+  top: -105px;
+  left: -55px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgb(201 177 255 / 78%),
+      rgb(237 208 255 / 60%)
+    );
+
+  transform: rotate(12deg);
+
+  animation-delay: -2s;
+}
+
+.blob-top-end {
+  width: 390px;
+  height: 255px;
+
+  top: -95px;
+  right: -70px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(168 215 255 / 78%),
+      rgb(206 229 255 / 62%)
+    );
+
+  transform: rotate(-9deg);
+
+  animation-delay: -6s;
+}
+
+.blob-bottom-start {
+  width: 400px;
+  height: 235px;
+
+  bottom: -115px;
+  left: -80px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgb(156 205 255 / 72%),
+      rgb(210 231 255 / 64%)
+    );
+
+  transform: rotate(-12deg);
+
+  animation-delay: -4s;
+}
+
+.blob-bottom-end {
+  width: 390px;
+  height: 255px;
+
+  right: -75px;
+  bottom: -125px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgb(220 171 255 / 75%),
+      rgb(245 209 255 / 62%)
+    );
+
+  transform: rotate(10deg);
+
+  animation-delay: -8s;
+}
+
+.blob-middle-end {
+  width: 220px;
+  height: 360px;
+
+  top: 32%;
+  right: -150px;
+
+  background:
+    linear-gradient(
+      160deg,
+      rgb(230 208 255 / 38%),
+      rgb(246 219 255 / 52%)
+    );
+
+  animation-delay: -5s;
+}
+
+/* الدوائر الشفافة */
+
+.pastel-bubble {
+  position: absolute;
+
+  display: block;
+
+  border: 1px solid rgb(255 255 255 / 75%);
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 40%),
+      rgb(132 178 255 / 16%),
+      rgb(190 122 255 / 22%)
+    );
+
+  box-shadow:
+    inset 0 0 15px rgb(255 255 255 / 45%),
+    0 8px 24px rgb(106 98 205 / 10%);
+
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+
+  animation: pastelBubbleFloat 8s ease-in-out infinite alternate;
+}
+
+.bubble-one {
+  width: 62px;
+  height: 62px;
+
+  top: 12%;
+  left: 8%;
+
+  animation-delay: -1s;
+}
+
+.bubble-two {
+  width: 58px;
+  height: 58px;
+
+  top: 10%;
+  right: 7%;
+
+  animation-delay: -5s;
+}
+
+.bubble-three {
+  width: 56px;
+  height: 56px;
+
+  left: 10%;
+  bottom: 8%;
+
+  animation-delay: -3s;
+}
+
+.bubble-four {
+  width: 50px;
+  height: 50px;
+
+  right: 12%;
+  bottom: 6%;
+
+  animation-delay: -7s;
+}
+
+/* المسارات المنقطة */
+
+.pastel-orbit {
+  position: absolute;
+
+  overflow: visible;
+
+  opacity: 0.6;
+}
+
+.pastel-orbit path {
+  fill: none;
+
+  stroke: rgb(139 116 234 / 42%);
+  stroke-width: 2;
+
+  stroke-linecap: round;
+  stroke-dasharray: 3 9;
+
+  animation: pastelOrbitMove 14s linear infinite;
+}
+
+.orbit-top {
+  width: 48%;
+  height: 210px;
+
+  top: 3%;
+  left: 0;
+}
+
+.orbit-bottom {
+  width: 67%;
+  height: 230px;
+
+  right: 3%;
+  bottom: 1%;
+}
+
+.orbit-bottom path {
+  animation-direction: reverse;
+  animation-duration: 18s;
+}
+
+/* النجوم */
+
+.pastel-star {
+  position: absolute;
+
+  width: 22px;
+  height: 22px;
+
+  display: block;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffd56e,
+      #ffbb55
+    );
+
+  clip-path:
+    polygon(
+      50% 0%,
+      61% 37%,
+      100% 50%,
+      61% 63%,
+      50% 100%,
+      39% 63%,
+      0% 50%,
+      39% 37%
+    );
+
+  filter: drop-shadow(0 4px 6px rgb(92 66 180 / 12%));
+
+  animation:
+    pastelStarTwinkle 3s ease-in-out infinite alternate,
+    pastelStarFloat 7s ease-in-out infinite alternate;
+}
+
+.star-one {
+  top: 6%;
+  left: 49%;
+
+  width: 18px;
+  height: 18px;
+
+  background: #ff9fbc;
+
+  animation-delay: -1s;
+}
+
+.star-two {
+  top: 11%;
+  right: 23%;
+
+  background: #b79cf7;
+
+  animation-delay: -2.5s;
+}
+
+.star-three {
+  top: 34%;
+  right: 7%;
+
+  width: 15px;
+  height: 26px;
+
+  background: #8fd2ff;
+
+  animation-delay: -4s;
+}
+
+.star-four {
+  left: 7%;
+  bottom: 42%;
+
+  width: 27px;
+  height: 27px;
+
+  background: #ffd063;
+
+  animation-delay: -3s;
+}
+
+.star-five {
+  left: 21%;
+  bottom: 12%;
+
+  width: 18px;
+  height: 22px;
+
+  background: #aa91ee;
+
+  animation-delay: -5s;
+}
+
+.star-six {
+  right: 17%;
+  bottom: 15%;
+
+  background: #b99bf5;
+
+  animation-delay: -2s;
+}
+
+.star-seven {
+  right: 8%;
+  bottom: 18%;
+
+  width: 24px;
+  height: 24px;
+
+  background: #ffd060;
+
+  animation-delay: -6s;
+}
+
+/* مجموعات النقاط */
+
+.pastel-dots {
+  position: absolute;
+
+  width: 74px;
+  height: 74px;
+
+  display: block;
+
+  opacity: 0.45;
+
+  background-image:
+    radial-gradient(
+      circle,
+      rgb(255 255 255 / 95%) 0 2px,
+      transparent 2.8px
+    );
+
+  background-size: 17px 17px;
+
+  animation: pastelDotsPulse 4s ease-in-out infinite alternate;
+}
+
+.dots-one {
+  top: 23%;
+  left: 1%;
+}
+
+.dots-two {
+  right: 3%;
+  top: 42%;
+
+  animation-delay: -2s;
+}
+
+.dots-three {
+  left: 44%;
+  bottom: 9%;
+
+  animation-delay: -3s;
+}
+
+/* الحركات */
+
+@keyframes pastelBlobFloat {
+  0% {
+    transform: translate3d(-8px, -5px, 0) rotate(-3deg) scale(0.97);
+  }
+
+  100% {
+    transform: translate3d(18px, 14px, 0) rotate(4deg) scale(1.05);
+  }
+}
+
+@keyframes pastelBubbleFloat {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+
+  100% {
+    transform: translate3d(10px, -16px, 0) rotate(8deg);
+  }
+}
+
+@keyframes pastelOrbitMove {
+  from {
+    stroke-dashoffset: 0;
+  }
+
+  to {
+    stroke-dashoffset: -120;
+  }
+}
+
+@keyframes pastelStarTwinkle {
+  0% {
+    opacity: 0.4;
+    filter: brightness(0.95) drop-shadow(0 3px 5px rgb(92 66 180 / 10%));
+  }
+
+  100% {
+    opacity: 1;
+    filter: brightness(1.12) drop-shadow(0 5px 9px rgb(126 92 228 / 24%));
+  }
+}
+
+@keyframes pastelStarFloat {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(-4deg) scale(0.92);
+  }
+
+  100% {
+    transform: translate3d(7px, -12px, 0) rotate(8deg) scale(1.08);
+  }
+}
+
+@keyframes pastelDotsPulse {
+  0% {
+    opacity: 0.24;
+    transform: scale(0.94);
+  }
+
+  100% {
+    opacity: 0.62;
+    transform: scale(1.04);
+  }
+}
+
+/* الوضع الليلي للخلفية */
+
+html[data-bs-theme="dark"] .pastel-blob {
+  opacity: 0.3;
+  filter: blur(3px);
+}
+
+html[data-bs-theme="dark"] .pastel-bubble {
+  border-color: rgb(255 255 255 / 18%);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 8%),
+      rgb(52 157 224 / 13%),
+      rgb(146 68 224 / 15%)
+    );
+
+  box-shadow:
+    inset 0 0 13px rgb(255 255 255 / 5%),
+    0 8px 26px rgb(0 0 0 / 22%);
+}
+
+html[data-bs-theme="dark"] .pastel-orbit path {
+  stroke: rgb(151 127 255 / 31%);
+}
+
+html[data-bs-theme="dark"] .pastel-dots {
+  opacity: 0.18;
+}
+
+html[data-bs-theme="dark"] .pastel-star {
+  filter: brightness(1.08) drop-shadow(0 0 7px currentColor);
+}
+
+
+/* =========================================================
+   05. هيكل الصفحة
+   ========================================================= */
+
+.profile-app {
+  position: relative;
+  z-index: 2;
+
+  min-height: 100vh;
+}
+
+.profile-shell {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  padding-inline-start:
+    calc(
+      var(--profile-sidebar-width) +
+      (var(--profile-sidebar-gap) * 2)
+    );
+
+  transition: padding-inline-start 0.3s ease;
+}
+
+/* عند طيّ القائمة على سطح المكتب يتمدد المحتوى */
+
+.profile-app.sidebar-collapsed .profile-shell {
+  padding-inline-start: 0;
+}
+
+.profile-main {
+  width: 100%;
+  max-width: 1240px;
+
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  margin-inline: auto;
+  padding: 18px 22px 40px;
+}
+
+
+/* =========================================================
+   06. القائمة الجانبية
+   =========================================================
+   الارتفاع مقسوم إلى ثلاث مناطق:
+   - الرأس ثابت
+   - قائمة الروابط قابلة للتمرير (min-height:0 يمنع القص)
+   - تسجيل الخروج مثبت في الأسفل
+   ========================================================= */
+
+.profile-sidebar {
+  position: fixed;
+  z-index: 1200;
+
+  inset-block: var(--profile-sidebar-gap);
+  inset-inline-start: var(--profile-sidebar-gap);
+
+  width: var(--profile-sidebar-width);
+  height: calc(100vh - (var(--profile-sidebar-gap) * 2));
+  height: calc(100dvh - (var(--profile-sidebar-gap) * 2));
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 14px 14px 12px;
+
+  overflow: hidden;
+
+  background: var(--profile-surface);
+
+  border: 1px solid var(--profile-border);
+  border-radius: 20px;
+
+  box-shadow: var(--profile-shadow);
+
+  transition:
+    transform 0.3s ease,
+    visibility 0.3s ease;
+}
+
+/* القائمة مطويّة على سطح المكتب
+   الاتجاه يتبع جهة القائمة: يمينًا في RTL ويسارًا في LTR */
+
+.profile-app.sidebar-collapsed .profile-sidebar {
+  transform: translateX(calc(100% + var(--profile-sidebar-gap) + 8px));
+  visibility: hidden;
+}
+
+html[dir="ltr"] .profile-app.sidebar-collapsed .profile-sidebar {
+  transform: translateX(calc((100% + var(--profile-sidebar-gap) + 8px) * -1));
+}
+
+/* رأس القائمة */
+
+.profile-sidebar-header {
+  position: relative;
+
+  flex: 0 0 auto;
+
+  min-height: 78px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 6px;
+}
+
+.profile-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+}
+
+.profile-brand-image {
+  width: 170px;
+  height: 72px;
+
+  display: block;
+
+  object-fit: contain;
+}
+
+html[data-bs-theme="dark"] .profile-brand-image {
+  filter: brightness(0) invert(1);
+}
+
+.profile-sidebar-close {
+  position: absolute;
+
+  top: 2px;
+  inset-inline-end: 0;
+
+  width: 36px;
+  height: 36px;
+
+  display: none;
+  place-items: center;
+
+  color: var(--profile-text);
+  background: var(--profile-soft);
+
+  border: 0;
+  border-radius: 10px;
+
+  font-size: 17px;
+  cursor: pointer;
+
+  transition:
+    color var(--profile-transition),
+    background var(--profile-transition);
+}
+
+.profile-sidebar-close:hover {
+  color: var(--profile-danger);
+  background: var(--profile-danger-soft);
+}
+
+/* منطقة الروابط القابلة للتمرير */
+
+.profile-sidebar-nav {
+  flex: 1 1 auto;
+
+  /* أساس الإصلاح: يسمح للعنصر بالانكماش داخل flex ومن ثم التمرير */
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  padding-inline-end: 4px;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  overscroll-behavior: contain;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--profile-border-strong) transparent;
+}
+
+.profile-sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.profile-sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--profile-border-strong);
+  border-radius: 999px;
+}
+
+.profile-sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.profile-sidebar-link {
+  flex: 0 0 auto;
+
+  min-height: 46px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 9px 14px;
+
+  color: var(--profile-text);
+
+  border: 1px solid transparent;
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  transition:
+    color var(--profile-transition),
+    background var(--profile-transition),
+    box-shadow var(--profile-transition);
+}
+
+.profile-sidebar-link i {
+  width: 26px;
+  flex: 0 0 26px;
+
+  color: var(--profile-secondary);
+
+  font-size: 19px;
+  text-align: center;
+
+  transition: color var(--profile-transition);
+}
+
+.profile-sidebar-link span {
+  min-width: 0;
+  flex: 1;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-sidebar-link:hover {
+  color: var(--profile-primary);
+  background: var(--profile-purple-soft);
+}
+
+.profile-sidebar-link:hover i {
+  color: var(--profile-primary);
+}
+
+/* العنصر النشط — الملف الشخصي داخل صفحات البروفايل */
+
+.profile-sidebar-link.active,
+.profile-sidebar-link[aria-current="page"] {
+  color: #ffffff;
+
+  background: var(--profile-gradient);
+
+  box-shadow: 0 8px 20px rgb(78 57 225 / 24%);
+}
+
+.profile-sidebar-link.active i,
+.profile-sidebar-link[aria-current="page"] i {
+  color: #ffffff;
+}
+
+.profile-sidebar-divider {
+  flex: 0 0 auto;
+
+  height: 1px;
+
+  margin: 8px 10px;
+
+  background: var(--profile-border);
+}
+
+/* تسجيل الخروج — مثبت في نهاية القائمة */
+
+.profile-sidebar-logout {
+  flex: 0 0 auto;
+
+  min-height: 46px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-top: 10px;
+  padding: 9px 14px;
+
+  color: var(--profile-danger);
+
+  background: transparent;
+
+  border: 1px solid transparent;
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background var(--profile-transition),
+    border-color var(--profile-transition);
+}
+
+.profile-sidebar-logout i {
+  width: 26px;
+  flex: 0 0 26px;
+
+  font-size: 19px;
+  text-align: center;
+}
+
+.profile-sidebar-logout:hover {
+  background: var(--profile-danger-soft);
+  border-color: rgb(229 56 79 / 22%);
+}
+
+/* خلفية القائمة على الهاتف */
+
+.profile-sidebar-backdrop {
+  position: fixed;
+  z-index: 1100;
+
+  inset: 0;
+
+  display: none;
+
+  padding: 0;
+
+  background: rgb(12 16 38 / 45%);
+
+  border: 0;
+
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   07. الشريط العلوي
+   ========================================================= */
+
+.profile-topbar {
+  position: sticky;
+  z-index: 900;
+
+  top: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  width: calc(100% - 44px);
+  max-width: 1240px;
+
+  min-height: 62px;
+
+  margin: 12px auto 4px;
+  padding: 8px 14px;
+
+  background: var(--profile-surface);
+
+  border: 1px solid var(--profile-border);
+  border-radius: 18px;
+
+  box-shadow: var(--profile-shadow-small);
+}
+
+.profile-topbar-start,
+.profile-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* زر فتح وإغلاق القائمة الجانبية */
+
+.profile-sidebar-toggle {
+  width: 46px;
+  height: 46px;
+
+  display: inline-grid;
+  place-items: center;
+
+  padding: 0;
+
+  color: var(--profile-text);
+  background: var(--profile-surface);
+
+  border: 1px solid var(--profile-border);
+  border-radius: 14px;
+
+  cursor: pointer;
+
+  transition:
+    color var(--profile-transition),
+    background var(--profile-transition),
+    border-color var(--profile-transition),
+    box-shadow var(--profile-transition);
+}
+
+.profile-sidebar-toggle i {
+  font-size: 21px;
+}
+
+.profile-sidebar-toggle:hover {
+  color: var(--profile-primary);
+  background: var(--profile-purple-soft);
+  border-color: rgb(104 21 237 / 26%);
+
+  box-shadow: var(--profile-shadow-small);
+}
+
+/* حالة «القائمة مفتوحة» */
+
+.profile-sidebar-toggle[aria-expanded="true"] {
+  color: var(--profile-text);
+}
+
+.profile-sidebar-toggle[aria-expanded="true"]:hover {
+  color: var(--profile-danger);
+  background: var(--profile-danger-soft);
+  border-color: rgb(229 56 79 / 22%);
+}
+
+/* أزرار الأدوات */
+
+.profile-action-button {
+  position: relative;
+
+  width: 42px;
+  height: 42px;
+
+  display: inline-grid;
+  place-items: center;
+
+  color: var(--profile-secondary);
+  background: transparent;
+
+  border: 1px solid transparent;
+  border-radius: 13px;
+
+  font-size: 19px;
+  cursor: pointer;
+
+  transition:
+    color var(--profile-transition),
+    background var(--profile-transition),
+    border-color var(--profile-transition);
+}
+
+.profile-action-button:hover {
+  color: var(--profile-primary);
+  background: var(--profile-soft);
+  border-color: var(--profile-border);
+}
+
+.profile-action-button[aria-expanded="true"] {
+  color: var(--profile-primary);
+  background: var(--profile-purple-soft);
+  border-color: rgb(104 21 237 / 20%);
+}
+
+.profile-language-button {
+  width: 58px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.profile-language-button > i {
+  font-size: 16px;
+}
+
+.profile-language-code {
+  direction: ltr;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.profile-action-badge {
+  position: absolute;
+
+  top: 3px;
+  inset-inline-end: 3px;
+
+  min-width: 18px;
+  height: 18px;
+
+  display: grid;
+  place-items: center;
+
+  padding: 0 5px;
+
+  color: #ffffff;
+  background: var(--profile-primary);
+
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.profile-action-dot {
+  position: absolute;
+
+  top: 8px;
+  inset-inline-end: 9px;
+
+  width: 8px;
+  height: 8px;
+
+  background: var(--profile-blue);
+
+  border: 2px solid var(--profile-surface);
+  border-radius: 50%;
+}
+
+.profile-header-action {
+  position: relative;
+  display: flex;
+}
+
+.profile-header-popover[hidden] {
+  display: none;
+}
+
+.profile-header-popover {
+  position: absolute;
+  z-index: 1100;
+  inset-block-start: calc(100% + 2px);
+  inset-inline-end: 0;
+  width: min(290px, calc(100vw - 24px));
+  overflow: hidden;
+  color: var(--profile-text);
+  background: var(--profile-surface);
+  border: 1px solid var(--profile-border);
+  border-radius: 14px;
+  box-shadow: var(--profile-shadow-hover);
+  animation: profileHeaderPopoverIn 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.profile-header-popover-head,
+.profile-header-popover-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 12px;
+}
+
+.profile-header-popover-head {
+  border-bottom: 1px solid var(--profile-border);
+}
+
+.profile-header-popover-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.profile-header-popover-title i {
+  color: var(--profile-primary);
+  font-size: 16px;
+}
+
+.profile-header-popover-count {
+  padding: 3px 8px;
+  color: var(--profile-primary);
+  background: var(--profile-purple-soft);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.profile-header-popover-list {
+  padding: 4px;
+}
+
+.profile-header-popover-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.profile-header-popover-item + .profile-header-popover-item {
+  margin-top: 2px;
+}
+
+.profile-header-popover-item:hover {
+  background: var(--profile-soft);
+}
+
+.profile-header-popover-item.is-unread::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: 10px;
+  width: 7px;
+  height: 7px;
+  background: var(--profile-blue);
+  border-radius: 50%;
+}
+
+.profile-header-popover-item-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  font-size: 16px;
+}
+
+.profile-header-popover-item-icon.is-purple { color: var(--profile-primary); background: var(--profile-purple-soft); }
+.profile-header-popover-item-icon.is-blue { color: var(--profile-info); background: var(--profile-info-soft); }
+.profile-header-popover-item-icon.is-green { color: var(--profile-success); background: var(--profile-success-soft); }
+
+.profile-header-popover-item > span:last-child {
+  min-width: 0;
+  padding-inline-end: 12px;
+}
+
+.profile-header-popover-item strong,
+.profile-header-popover-item small {
+  display: block;
+}
+
+.profile-header-popover-item strong {
+  overflow-wrap: anywhere;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.profile-header-popover-item small {
+  margin-top: 2px;
+  color: var(--profile-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.profile-header-popover-total {
+  background: var(--profile-soft);
+  border-top: 1px solid var(--profile-border);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profile-header-popover-total strong {
+  color: var(--profile-primary);
+  font-size: 14px;
+}
+
+.profile-header-popover-footer {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--profile-primary);
+  border-top: 1px solid var(--profile-border);
+  font-size: 12px;
+  font-weight: 800;
+  transition: color var(--profile-transition), background var(--profile-transition);
+}
+
+.profile-header-popover-footer:hover {
+  color: var(--profile-primary-dark);
+  background: var(--profile-purple-soft);
+}
+
+html[dir="ltr"] .profile-header-popover-footer i {
+  transform: scaleX(-1);
+}
+
+@keyframes profileHeaderPopoverIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.985);
+  }
+}
+
+
+/* =========================================================
+   08. عنوان الصفحة ومسار التنقل
+   ========================================================= */
+
+.profile-page-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  margin-top: 6px;
+}
+
+.profile-page-heading h1 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.profile-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  color: var(--profile-muted);
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.profile-breadcrumb li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-breadcrumb li + li::before {
+  content: "/";
+  color: var(--profile-border-strong);
+}
+
+.profile-breadcrumb a {
+  color: var(--profile-primary);
+}
+
+.profile-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   09. البطاقات
+   ========================================================= */
+
+.profile-card {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 20px;
+
+  background: var(--profile-surface);
+
+  border: 1px solid var(--profile-border);
+  border-radius: var(--profile-radius);
+
+  box-shadow: var(--profile-shadow-small);
+}
+
+.profile-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  margin-bottom: 16px;
+}
+
+.profile-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-card-title h2 {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.profile-card-title p {
+  margin-top: 2px;
+
+  color: var(--profile-muted);
+
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.profile-card-icon {
+  width: 34px;
+  height: 34px;
+
+  flex: 0 0 34px;
+
+  display: grid;
+  place-items: center;
+
+  color: var(--profile-primary);
+  background: var(--profile-purple-soft);
+
+  border-radius: 11px;
+
+  font-size: 17px;
+}
+
+.profile-card-icon.icon-blue {
+  color: var(--profile-blue);
+  background: var(--profile-info-soft);
+}
+
+.profile-card-icon.icon-green {
+  color: var(--profile-success);
+  background: var(--profile-success-soft);
+}
+
+.profile-card-icon.icon-orange {
+  color: var(--profile-warning);
+  background: var(--profile-warning-soft);
+}
+
+.profile-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--profile-primary);
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profile-card-link:hover {
+  text-decoration: underline;
+}
+
+.profile-card-note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  margin-top: 12px;
+
+  color: var(--profile-muted);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* شبكات الصفوف */
+
+.profile-row {
+  display: grid;
+  gap: 18px;
+}
+
+.profile-row-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.profile-row-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+
+/* =========================================================
+   10. بطاقة الهيرو
+   ========================================================= */
+
+.profile-hero {
+  padding: 0;
+  overflow: hidden;
+}
+
+.profile-hero-cover {
+  height: 10px;
+
+  background: var(--profile-gradient);
+}
+
+.profile-hero-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+
+  padding: 22px 24px 24px;
+}
+
+.profile-avatar-area {
+  position: relative;
+
+  flex: 0 0 auto;
+}
+
+.profile-avatar {
+  width: 116px;
+  height: 116px;
+
+  display: grid;
+  place-items: center;
+
+  overflow: hidden;
+
+  color: var(--profile-primary);
+  background: var(--profile-soft);
+
+  border: 3px solid var(--profile-cyan);
+  border-radius: 50%;
+
+  font-size: 54px;
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.profile-avatar-upload {
+  position: absolute;
+
+  inset-inline-start: 2px;
+  bottom: 2px;
+
+  width: 36px;
+  height: 36px;
+
+  display: grid;
+  place-items: center;
+
+  color: var(--profile-primary);
+  background: var(--profile-surface);
+
+  border: 1px solid var(--profile-border);
+  border-radius: 50%;
+
+  font-size: 16px;
+
+  box-shadow: var(--profile-shadow-small);
+
+  cursor: pointer;
+}
+
+.profile-avatar-upload:hover {
+  color: #ffffff;
+  background: var(--profile-primary);
+}
+
+.profile-identity {
+  flex: 1;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-eyebrow {
+  color: var(--profile-blue);
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profile-identity h2 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.profile-role {
+  color: var(--profile-secondary);
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* شرائح التواصل */
+
+.profile-contact-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  margin-top: 6px;
+}
+
+.profile-contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  min-height: 40px;
+
+  padding: 0 14px;
+
+  color: var(--profile-secondary);
+  background: var(--profile-surface);
+
+  border: 1px solid var(--profile-border);
+  border-radius: var(--profile-radius-pill);
+
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.profile-contact-item i {
+  color: var(--profile-primary);
+  font-size: 16px;
+}
+
+a.profile-contact-item:hover {
+  color: var(--profile-primary);
+  border-color: rgb(104 21 237 / 30%);
+}
+
+/* أزرار الهيرو */
+
+.profile-hero-actions {
+  flex: 0 0 auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+
+  min-width: 220px;
+}
+
+
+/* =========================================================
+   11. الأزرار
+   ========================================================= */
+
+.profile-button {
+  min-height: 46px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  padding: 0 18px;
+
+  color: var(--profile-text);
+  background: var(--profile-surface);
+
+  border: 1px solid var(--profile-border);
+  border-radius: 14px;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    color var(--profile-transition),
+    background var(--profile-transition),
+    border-color var(--profile-transition),
+    box-shadow var(--profile-transition),
+    transform var(--profile-transition);
+}
+
+.profile-button i {
+  font-size: 17px;
+}
+
+.profile-button:hover {
+  border-color: var(--profile-border-strong);
+  box-shadow: var(--profile-shadow-small);
+}
+
+.profile-button:active {
+  transform: translateY(1px);
+}
+
+.profile-button.is-primary {
+  color: #ffffff;
+  background: var(--profile-gradient);
+  border-color: transparent;
+
+  box-shadow: 0 10px 24px rgb(79 55 222 / 24%);
+}
+
+.profile-button.is-primary:hover {
+  box-shadow: 0 14px 30px rgb(79 55 222 / 32%);
+}
+
+.profile-button.is-outline {
+  color: var(--profile-primary);
+  background: transparent;
+  border-color: rgb(104 21 237 / 32%);
+}
+
+.profile-button.is-outline:hover {
+  background: var(--profile-purple-soft);
+}
+
+.profile-button.is-ghost {
+  color: var(--profile-secondary);
+  background: var(--profile-soft);
+  border-color: transparent;
+}
+
+.profile-button.is-danger {
+  color: var(--profile-danger);
+  background: transparent;
+  border-color: rgb(229 56 79 / 30%);
+}
+
+.profile-button.is-danger:hover {
+  background: var(--profile-danger-soft);
+}
+
+.profile-button.is-block {
+  width: 100%;
+}
+
+.profile-button.is-small {
+  min-height: 38px;
+
+  padding: 0 14px;
+
+  font-size: 13px;
+}
+
+.profile-button[disabled],
+.profile-button[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.profile-button-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* مؤشر الانتظار داخل الأزرار */
+
+.profile-spinner {
+  width: 16px;
+  height: 16px;
+
+  display: inline-block;
+
+  border: 2px solid rgb(255 255 255 / 45%);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+
+  animation: profileSpin 0.7s linear infinite;
+}
+
+.profile-button:not(.is-primary) .profile-spinner {
+  border-color: rgb(104 21 237 / 30%);
+  border-top-color: var(--profile-primary);
+}
+
+@keyframes profileSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   12. الشارات وحالات الاعتماد
+   ========================================================= */
+
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  min-height: 30px;
+
+  padding: 0 12px;
+
+  border-radius: var(--profile-radius-pill);
+
+  font-size: 12.5px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.profile-badge i {
+  font-size: 14px;
+}
+
+/* معتمد */
+.profile-badge.is-approved {
+  color: var(--profile-success);
+  background: var(--profile-success-soft);
+}
+
+/* قيد المراجعة */
+.profile-badge.is-pending {
+  color: var(--profile-warning);
+  background: var(--profile-warning-soft);
+}
+
+/* مرفوض */
+.profile-badge.is-rejected {
+  color: var(--profile-danger);
+  background: var(--profile-danger-soft);
+}
+
+/* يحتاج استكمال بيانات / وثائق */
+.profile-badge.is-incomplete {
+  color: var(--profile-info);
+  background: var(--profile-info-soft);
+}
+
+/* مسودة / محايد */
+.profile-badge.is-neutral {
+  color: var(--profile-neutral);
+  background: var(--profile-neutral-soft);
+}
+
+/* واتساب موثق */
+.profile-badge.is-whatsapp {
+  color: var(--profile-whatsapp);
+  background: rgb(31 168 85 / 12%);
+}
+
+html[data-bs-theme="dark"] .profile-badge.is-whatsapp {
+  background: rgb(31 168 85 / 20%);
+}
+
+
+/* =========================================================
+   13. شبكة الإحصائيات
+   ========================================================= */
+
+.profile-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.profile-stat-grid.is-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.profile-stat-grid.is-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.profile-stat-grid.is-six {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.profile-stat {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  padding: 14px;
+
+  background: var(--profile-soft);
+
+  border: 1px solid var(--profile-border);
+  border-radius: 14px;
+
+  transition:
+    border-color var(--profile-transition),
+    box-shadow var(--profile-transition),
+    transform var(--profile-transition);
+}
+
+.profile-stat:hover {
+  border-color: var(--profile-border-strong);
+  box-shadow: var(--profile-shadow-small);
+  transform: translateY(-2px);
+}
+
+.profile-stat-icon {
+  width: 38px;
+  height: 38px;
+
+  flex: 0 0 38px;
+
+  display: grid;
+  place-items: center;
+
+  color: var(--profile-primary);
+  background: var(--profile-surface);
+
+  border-radius: 12px;
+
+  font-size: 18px;
+}
+
+.profile-stat-body {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-stat-body strong {
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.profile-stat-body span {
+  color: var(--profile-muted);
+
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* بطاقة إحصائية عمودية بلون حالة */
+
+.profile-stat.is-stacked {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+
+  text-align: center;
+}
+
+.profile-stat.is-stacked .profile-stat-icon {
+  margin-bottom: 2px;
+}
+
+.profile-stat.tone-green {
+  background: var(--profile-success-soft);
+  border-color: rgb(24 166 107 / 24%);
+}
+
+.profile-stat.tone-green strong {
+  color: var(--profile-success);
+}
+
+.profile-stat.tone-orange {
+  background: var(--profile-warning-soft);
+  border-color: rgb(224 138 18 / 24%);
+}
+
+.profile-stat.tone-orange strong {
+  color: var(--profile-warning);
+}
+
+.profile-stat.tone-red {
+  background: var(--profile-danger-soft);
+  border-color: rgb(229 56 79 / 24%);
+}
+
+.profile-stat.tone-red strong {
+  color: var(--profile-danger);
+}
+
+.profile-stat.tone-blue {
+  background: var(--profile-info-soft);
+  border-color: rgb(21 143 221 / 24%);
+}
+
+.profile-stat.tone-blue strong {
+  color: var(--profile-info);
+}
+
+.profile-stat.tone-purple {
+  background: var(--profile-purple-soft);
+  border-color: rgb(104 21 237 / 22%);
+}
+
+.profile-stat.tone-purple strong {
+  color: var(--profile-primary);
+}
+
+.profile-stat.tone-grey {
+  background: var(--profile-neutral-soft);
+  border-color: rgb(111 117 144 / 24%);
+}
+
+.profile-stat.tone-grey strong {
+  color: var(--profile-neutral);
+}
+
+
+/* =========================================================
+   14. صفوف المعلومات
+   ========================================================= */
+
+/* عمودان: التسميات في عمود والقيم في عمود،
+   فتبدأ كل قيمة من نفس النقطة مهما اختلف طول التسمية.
+
+   عرض عمود التسميات يُحسب من أطولها، ولهذا تذوب الصفوف
+   في الشبكة بـ display: contents — فلو بقي كل صف شبكةً
+   مستقلة لاختلف عرض عموده عن جاره ولاختلّت المحاذاة. */
+
+.profile-info-list {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  column-gap: 16px;
+}
+
+.profile-info-row {
+  display: contents;
+}
+
+/* الحدّ والحشوة انتقلا إلى الخليتين
+   لأن الصف نفسه لم يعد صندوقاً يُرسم */
+
+.profile-info-label,
+.profile-info-value {
+  padding: 11px 0;
+
+  border-bottom: 1px dashed var(--profile-border);
+}
+
+.profile-info-row:last-child .profile-info-label,
+.profile-info-row:last-child .profile-info-value {
+  border-bottom: 0;
+}
+
+.profile-info-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  color: var(--profile-secondary);
+
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.profile-info-label i {
+  color: var(--profile-muted);
+  font-size: 16px;
+}
+
+.profile-info-value {
+  display: flex;
+  align-items: center;
+
+  /* القيمة تبدأ من حافة عمودها — يمينًا في RTL ويسارًا في LTR */
+  justify-content: flex-start;
+
+  /* min-width: 0 يسمح للخلية بالانكماش داخل الشبكة،
+     و flex-wrap يُنزل ما لا يتسع سطراً تحته
+     بدل أن يفيض خارج البطاقة */
+  flex-wrap: wrap;
+
+  min-width: 0;
+
+  gap: 6px 8px;
+
+  /* dd يأتي من المتصفح بهامش inline-start مقداره 40px،
+     وهو ما كان يزيح القيم فلا تستقيم تحت بعضها */
+  margin: 0;
+
+  color: var(--profile-text);
+
+  font-size: 13.5px;
+  font-weight: 700;
+
+  text-align: start;
+}
+
+/* قيمة مخفية (بيانات حساسة) */
+
+.profile-masked-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  font-family: "Cairo", monospace;
+  letter-spacing: 1px;
+}
+
+
+/* =========================================================
+   15. المحفظة والأرباح
+   ========================================================= */
+
+.profile-wallet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  margin-bottom: 14px;
+}
+
+.profile-wallet-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 9px 0;
+
+  border-bottom: 1px dashed var(--profile-border);
+}
+
+.profile-wallet-row:last-child {
+  border-bottom: 0;
+}
+
+.profile-wallet-row dt {
+  color: var(--profile-secondary);
+
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.profile-wallet-row dd {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+
+  margin: 0;
+
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.profile-wallet-row.is-total dd {
+  color: var(--profile-text);
+}
+
+.profile-wallet-row.is-available dd {
+  color: var(--profile-success);
+}
+
+.profile-wallet-row.is-pending dd {
+  color: var(--profile-warning);
+}
+
+.profile-currency {
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.profile-wallet-row.is-meta dd {
+  color: var(--profile-muted);
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   16. مفاتيح التفضيلات
+   ========================================================= */
+
+.profile-preference-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.profile-preference-list.is-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.profile-preference {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  padding: 12px 14px;
+
+  background: var(--profile-soft);
+
+  border: 1px solid var(--profile-border);
+  border-radius: 14px;
+}
+
+.profile-preference-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  min-width: 0;
+}
+
+.profile-preference-text i {
+  color: var(--profile-primary);
+  font-size: 17px;
+}
+
+.profile-preference-text span {
+  color: var(--profile-text);
+
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+/* المفتاح */
+
+.profile-switch {
+  position: relative;
+
+  flex: 0 0 auto;
+
+  display: inline-flex;
+  align-items: center;
+
+  cursor: pointer;
+}
+
+.profile-switch input {
+  position: absolute;
+
+  width: 100%;
+  height: 100%;
+
+  margin: 0;
+  opacity: 0;
+
+  cursor: pointer;
+}
+
+.profile-switch-track {
+  position: relative;
+
+  width: 46px;
+  height: 26px;
+
+  display: block;
+
+  background: var(--profile-border-strong);
+
+  border-radius: 999px;
+
+  transition: background var(--profile-transition);
+}
+
+.profile-switch-track::after {
+  content: "";
+
+  position: absolute;
+
+  top: 3px;
+  inset-inline-start: 3px;
+
+  width: 20px;
+  height: 20px;
+
+  background: #ffffff;
+
+  border-radius: 50%;
+
+  box-shadow: 0 2px 5px rgb(20 24 60 / 22%);
+
+  transition: transform var(--profile-transition);
+}
+
+.profile-switch input:checked + .profile-switch-track {
+  background: var(--profile-gradient);
+}
+
+.profile-switch input:checked + .profile-switch-track::after {
+  transform: translateX(20px);
+}
+
+html[dir="rtl"] .profile-switch input:checked + .profile-switch-track::after {
+  transform: translateX(-20px);
+}
+
+.profile-switch input:focus-visible + .profile-switch-track {
+  outline: 2px solid var(--profile-primary);
+  outline-offset: 2px;
+}
+
+
+/* =========================================================
+   17. الحالات: Loading / Empty / Error
+   ========================================================= */
+
+/* أثناء التحميل: إخفاء المحتوى وإظهار الهيكل العظمي */
+
+[data-state] > [data-state-content],
+[data-state] > [data-state-loading],
+[data-state] > [data-state-empty],
+[data-state] > [data-state-error] {
+  display: none;
+}
+
+[data-state="ready"] > [data-state-content] {
+  display: block;
+}
+
+[data-state="ready"] > [data-state-content].is-flex {
+  display: flex;
+}
+
+[data-state="loading"] > [data-state-loading],
+[data-state="empty"] > [data-state-empty],
+[data-state="error"] > [data-state-error] {
+  display: block;
+}
+
+/* الهيكل العظمي */
+
+.profile-skeleton {
+  display: block;
+
+  height: 14px;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--profile-soft-strong) 25%,
+      var(--profile-soft) 37%,
+      var(--profile-soft-strong) 63%
+    );
+
+  background-size: 400% 100%;
+
+  border-radius: 8px;
+
+  animation: profileSkeleton 1.3s ease infinite;
+}
+
+.profile-skeleton + .profile-skeleton {
+  margin-top: 10px;
+}
+
+.profile-skeleton.is-title {
+  width: 45%;
+  height: 20px;
+}
+
+.profile-skeleton.is-line {
+  width: 100%;
+}
+
+.profile-skeleton.is-short {
+  width: 62%;
+}
+
+.profile-skeleton.is-block {
+  height: 74px;
+}
+
+.profile-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@keyframes profileSkeleton {
+  0% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* الحالة الفارغة وحالة الخطأ */
+
+.profile-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  padding: 26px 18px;
+
+  text-align: center;
+
+  background: var(--profile-soft);
+
+  border: 1px dashed var(--profile-border-strong);
+  border-radius: 14px;
+}
+
+.profile-state-icon {
+  width: 52px;
+  height: 52px;
+
+  display: grid;
+  place-items: center;
+
+  color: var(--profile-muted);
+  background: var(--profile-surface);
+
+  border-radius: 50%;
+
+  font-size: 23px;
+}
+
+.profile-state h3 {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.profile-state p {
+  max-width: 380px;
+
+  color: var(--profile-muted);
+
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.profile-state .profile-button {
+  margin-top: 6px;
+}
+
+.profile-state.is-error {
+  background: var(--profile-danger-soft);
+  border-color: rgb(229 56 79 / 30%);
+}
+
+.profile-state.is-error .profile-state-icon {
+  color: var(--profile-danger);
+}
+
+.profile-state.is-error h3 {
+  color: var(--profile-danger);
+}
+
+
+/* =========================================================
+   18. رسائل النجاح والخطأ
+   ========================================================= */
+
+.profile-toast {
+  position: fixed;
+  z-index: 2000;
+
+  inset-inline-end: 20px;
+  bottom: 20px;
+
+  max-width: min(360px, calc(100vw - 40px));
+
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  padding: 13px 16px;
+
+  color: var(--profile-text);
+  background: var(--profile-surface);
+
+  border: 1px solid var(--profile-border);
+  border-radius: 14px;
+
+  box-shadow: var(--profile-shadow);
+
+  font-size: 13.5px;
+  font-weight: 700;
+
+  opacity: 0;
+  transform: translateY(14px);
+  pointer-events: none;
+
+  transition:
+    opacity var(--profile-transition),
+    transform var(--profile-transition);
+}
+
+.profile-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.profile-toast-icon {
+  width: 30px;
+  height: 30px;
+
+  flex: 0 0 30px;
+
+  display: grid;
+  place-items: center;
+
+  color: #ffffff;
+  background: var(--profile-success);
+
+  border-radius: 50%;
+
+  font-size: 15px;
+}
+
+.profile-toast.is-error .profile-toast-icon {
+  background: var(--profile-danger);
+}
+
+.profile-toast.is-info .profile-toast-icon {
+  background: var(--profile-info);
+}
+
+
+/* =========================================================
+   19. النوافذ المنبثقة
+   ========================================================= */
+
+.profile-dialog {
+  width: min(620px, calc(100vw - 32px));
+
+  padding: 0;
+
+  color: var(--profile-text);
+  background: var(--profile-surface);
+
+  border: 1px solid var(--profile-border);
+  border-radius: 20px;
+
+  box-shadow: var(--profile-shadow);
+}
+
+.profile-dialog::backdrop {
+  background: rgb(12 16 38 / 52%);
+  backdrop-filter: blur(3px);
+}
+
+.profile-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 18px 20px 12px;
+
+  border-bottom: 1px solid var(--profile-border);
+}
+
+.profile-dialog-header h2 {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.profile-dialog-header p {
+  margin-top: 3px;
+
+  color: var(--profile-muted);
+
+  font-size: 12.5px;
+}
+
+.profile-dialog-close {
+  width: 34px;
+  height: 34px;
+
+  flex: 0 0 34px;
+
+  display: grid;
+  place-items: center;
+
+  color: var(--profile-secondary);
+  background: var(--profile-soft);
+
+  border: 0;
+  border-radius: 10px;
+
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.profile-dialog-body {
+  max-height: min(60vh, 460px);
+
+  padding: 18px 20px;
+
+  overflow-y: auto;
+}
+
+.profile-dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+
+  padding: 14px 20px 18px;
+
+  border-top: 1px solid var(--profile-border);
+}
+
+/* حقول النماذج */
+
+.profile-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-field.is-wide {
+  grid-column: 1 / -1;
+}
+
+.profile-field > span,
+.profile-field > label {
+  color: var(--profile-secondary);
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profile-input-shell {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  min-height: 46px;
+
+  padding: 0 13px;
+
+  background: var(--profile-soft);
+
+  border: 1px solid var(--profile-border);
+  border-radius: 12px;
+
+  transition:
+    border-color var(--profile-transition),
+    box-shadow var(--profile-transition);
+}
+
+.profile-input-shell:focus-within {
+  border-color: var(--profile-primary);
+  box-shadow: 0 0 0 3px rgb(104 21 237 / 12%);
+}
+
+.profile-input-shell > i {
+  color: var(--profile-muted);
+  font-size: 16px;
+}
+
+.profile-input-shell input,
+.profile-input-shell select,
+.profile-input-shell textarea {
+  width: 100%;
+
+  padding: 10px 0;
+
+  color: var(--profile-text);
+  background: transparent;
+
+  border: 0;
+  outline: none;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* The shell owns the focus treatment; nested controls must not draw a
+   second rectangular outline inside the rounded field. */
+.profile-page .profile-input-shell input:focus-visible,
+.profile-page .profile-input-shell select:focus-visible,
+.profile-page .profile-input-shell textarea:focus-visible {
+  outline: none;
+  outline-offset: 0;
+}
+
+.profile-input-shell textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.profile-input-shell.is-textarea {
+  align-items: flex-start;
+  padding-top: 10px;
+}
+
+.profile-field-error {
+  display: none;
+
+  color: var(--profile-danger);
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profile-field.has-error .profile-input-shell {
+  border-color: var(--profile-danger);
+}
+
+.profile-field.has-error .profile-field-error {
+  display: block;
+}
+
+
+/* =========================================================
+   20. أدوات الوصول
+   ========================================================= */
+
+.screen-reader-only {
+  position: absolute !important;
+
+  width: 1px;
+  height: 1px;
+
+  margin: -1px;
+  padding: 0;
+
+  overflow: hidden;
+
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+
+  white-space: nowrap;
+  border: 0;
+}
+
+.profile-skip-link {
+  position: absolute;
+  z-index: 3000;
+
+  inset-inline-start: 16px;
+  top: -60px;
+
+  padding: 10px 16px;
+
+  color: #ffffff;
+  background: var(--profile-primary);
+
+  border-radius: 0 0 12px 12px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  transition: top var(--profile-transition);
+}
+
+.profile-skip-link:focus {
+  top: 0;
+}
+
+
+/* =========================================================
+   21. التجاوب
+   ========================================================= */
+
+/* لابتوب صغير */
+
+@media (max-width: 1279.98px) {
+  .profile-row-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-stat-grid.is-six {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* تابلت */
+
+@media (max-width: 1091.98px) {
+  .profile-hero-content {
+    flex-wrap: wrap;
+  }
+
+  .profile-hero-actions {
+    width: 100%;
+    min-width: 0;
+
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .profile-hero-actions .profile-button {
+    flex: 1 1 200px;
+  }
+}
+
+/* تحويل القائمة إلى قائمة منزلقة */
+
+@media (max-width: 991.98px) {
+  .profile-shell {
+    padding-inline-start: 0;
+  }
+
+  .profile-sidebar {
+    inset-block: 0;
+    inset-inline-start: 0;
+
+    width: min(290px, 84vw);
+    height: 100vh;
+    height: 100dvh;
+
+    border-radius: 0;
+    border-inline-start: 0;
+
+    /* القائمة تنزلق من جهة البداية حسب اتجاه الصفحة */
+    transform: translateX(100%);
+    visibility: hidden;
+  }
+
+  html[dir="ltr"] .profile-sidebar,
+  html[dir="ltr"] .profile-app.sidebar-collapsed .profile-sidebar {
+    transform: translateX(-100%);
+  }
+
+  /* على الهاتف القائمة منزلقة دائماً ولا يوجد طيّ */
+
+  .profile-app.sidebar-collapsed .profile-sidebar {
+    transform: translateX(100%);
+    visibility: hidden;
+  }
+
+  .profile-app.sidebar-open .profile-sidebar,
+  .profile-app.sidebar-open.sidebar-collapsed .profile-sidebar,
+  html[dir="ltr"] .profile-app.sidebar-open .profile-sidebar,
+  html[dir="ltr"] .profile-app.sidebar-open.sidebar-collapsed .profile-sidebar {
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+  .profile-app.sidebar-open .profile-sidebar-backdrop {
+    display: block;
+  }
+
+  .profile-sidebar-close {
+    display: grid;
+  }
+
+  .profile-row-2,
+  .profile-row-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-main {
+    padding: 14px 16px 34px;
+  }
+
+  .profile-topbar {
+    width: calc(100% - 32px);
+  }
+}
+
+/* هاتف */
+
+@media (max-width: 767.98px) {
+  .profile-page-heading h1 {
+    font-size: 24px;
+  }
+
+  .profile-hero-content {
+    flex-direction: column;
+    align-items: center;
+
+    padding: 20px 16px 22px;
+
+    text-align: center;
+  }
+
+  .profile-identity {
+    align-items: center;
+  }
+
+  .profile-contact-list {
+    justify-content: center;
+  }
+
+  .profile-hero-actions {
+    flex-direction: column;
+  }
+
+  .profile-hero-actions .profile-button {
+    width: 100%;
+  }
+
+  .profile-stat-grid,
+  .profile-stat-grid.is-three,
+  .profile-stat-grid.is-six,
+  .profile-skeleton-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-preference-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-field-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-card {
+    padding: 16px;
+  }
+
+  /* على الهاتف تنزل القيمة تحت تسميتها في عمود واحد،
+     والحدّ يُرسم أسفل القيمة وحدها ليفصل بين الصفوف */
+
+  .profile-info-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-info-label {
+    padding: 9px 0 0;
+
+    border-bottom: 0;
+  }
+
+  .profile-info-value {
+    padding: 2px 0 9px;
+  }
+
+  .profile-toast {
+    inset-inline: 16px;
+    max-width: none;
+  }
+
+  .blob-top-start,
+  .blob-top-end,
+  .blob-bottom-start,
+  .blob-bottom-end {
+    width: 235px;
+    height: 160px;
+  }
+
+  .orbit-top {
+    width: 75%;
+  }
+
+  .orbit-bottom {
+    width: 90%;
+  }
+
+  .pastel-dots {
+    width: 55px;
+    height: 55px;
+
+    background-size: 14px 14px;
+  }
+
+  .pastel-star {
+    transform: scale(0.8);
+  }
+}
+
+/* هاتف صغير */
+
+@media (max-width: 479.98px) {
+  .profile-stat-grid,
+  .profile-stat-grid.is-three,
+  .profile-stat-grid.is-six {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-avatar {
+    width: 96px;
+    height: 96px;
+
+    font-size: 44px;
+  }
+
+  .profile-identity h2 {
+    font-size: 24px;
+  }
+}
+
+/* تقليل الحركة */
+
+@media (prefers-reduced-motion: reduce) {
+  .pastel-blob,
+  .pastel-bubble,
+  .pastel-orbit path,
+  .pastel-star,
+  .pastel-dots,
+  .profile-skeleton,
+  .profile-spinner {
+    animation: none !important;
+  }
+
+  .profile-page * {
+    transition-duration: 0.01ms !important;
+  }
+}

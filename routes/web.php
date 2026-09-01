@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardRedirectController;
 use App\Http\Controllers\Designer\DashboardController as DesignerDashboardController;
+use App\Http\Controllers\Designer\ProfileController as DesignerProfileController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleDashboardController;
 use Illuminate\Support\Facades\Route;
@@ -46,7 +47,10 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::middleware('role:designer')->prefix('designer')->name('designer.')->group(function () {
         Route::view('/designs', 'designer.designs.index')->name('designs.index');
         Route::view('/designs/create', 'designer.designs.create')->name('designs.create');
-        Route::view('/profile', 'designer.profile')->name('profile');
+        Route::view('/designs/editor', 'designer.designs.editor')->name('designs.editor');
+        Route::view('/designs/review', 'designer.designs.review')->name('designs.review');
+        Route::get('/profile', [DesignerProfileController::class, 'show'])->name('profile');
+        Route::patch('/profile', [DesignerProfileController::class, 'update'])->name('profile.update');
         Route::view('/earnings', 'designer.earnings')->name('earnings');
         Route::view('/settings', 'designer.settings')->name('settings');
         Route::view('/support', 'designer.support')->name('support');

@@ -36,7 +36,8 @@
     <link rel='preload' href='{{ asset('front/designer/assets/fonts/Cairo-Variable.ttf') }}' as='font' type='font/ttf' crossorigin>
     <link rel='preload' href='{{ asset('front/designer/assets/icons/fonts/bootstrap-icons.woff2') }}' as='font' type='font/woff2' crossorigin>
     <link rel='stylesheet' href='{{ asset('front/designer/assets/icons/bootstrap-icons.min.css') }}'>
-    <link rel='stylesheet' href='{{ asset('front/designer/css/designer.css') }}'>
+    @stack('base-styles')
+    <link rel='stylesheet' href='{{ asset('front/designer/css/designer.css') }}?v={{ filemtime(public_path('front/designer/css/designer.css')) }}'>
     @stack('styles')
 </head>
 <body class='dashboard-page'>
@@ -54,7 +55,7 @@
         <div class='page-shell'>
             @include('designer.partials.topbar')
 
-            <main class='main-content' id='designerMain'>
+            <main class='main-content @yield('main-class')' id='designerMain'>
                 @yield('content')
             </main>
         </div>

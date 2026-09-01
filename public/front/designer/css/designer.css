@@ -72,6 +72,13 @@ html[data-bs-theme="dark"] {
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Cairo", Arial, sans-serif; }
 
+/* Keep native modal dialogs centered after the global margin reset above. */
+.profile-dialog[open] {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+}
+
 button,
 input,
 select,
@@ -531,6 +538,19 @@ html[data-bs-theme="dark"] .profile-brand-image {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+}
+
+/* مساحة الصفحات الأصلية الخاصة بمحرر التصميم. */
+.main-content.source-create-main,
+.main-content.source-editor-main,
+.main-content.source-review-main {
+  max-width: 1480px;
+}
+
+.main-content.source-create-main > *,
+.main-content.source-editor-main > *,
+.main-content.source-review-main > * {
+  width: 100%;
 }
 
 .designer-intro {

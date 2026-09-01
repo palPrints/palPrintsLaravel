@@ -36,6 +36,8 @@ test('designer sections use the shared dashboard shell', function () {
     foreach ([
         'designer.designs.index',
         'designer.designs.create',
+        'designer.designs.editor',
+        'designer.designs.review',
         'designer.profile',
         'designer.earnings',
         'designer.settings',
