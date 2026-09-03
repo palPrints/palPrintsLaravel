@@ -2,36 +2,38 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
-    use HasFactory;
+    public $timestamps = false;
 
-    protected $fillable = [
-        'name',
-        'slug',
-        'description',
-        'base_price',
-        'image_url',
-        'is_active',
-    ];
+    protected $fillable = ['category_id', 'name', 'code', 'description', 'is_active'];
 
-    protected $casts = [
-        'base_price' => 'decimal:2',
-        'is_active' => 'boolean',
-    ];
-
-    // ========== العلاقات ==========
-
-    public function designProducts()
+    protected function casts(): array
     {
-        return $this->hasMany(DesignProduct::class);
+        return ['is_active' => 'boolean'];
     }
 
-    public function printProviderProducts()
+    public function category(): BelongsTo
     {
-        return $this->hasMany(PrintProviderProduct::class);
+        return $this->belongsTo(Category::class);
+    }
+
+    public function attributes(): HasMany
+    {
+        return $this->hasMany(ProductAttribute::class);
+    }
+
+    public function variants(): HasMany
+    {
+        return $this->hasMany(Variant::class);
+    }
+
+    public function providerOfferings(): HasMany
+    {
+        return $this->hasMany(ProviderOffering::class);
     }
 }
