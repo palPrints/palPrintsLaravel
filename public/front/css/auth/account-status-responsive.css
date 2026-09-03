@@ -1,0 +1,225 @@
+/* Final sizing for the account-status page. Loaded after the shared styles. */
+html:has(body.account-status-page),
+body.account-status-page {
+  width: 100%;
+  height: 100svh !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+body.account-status-page .account-status-main {
+  width: 100%;
+  height: 100svh !important;
+  min-height: 0 !important;
+  box-sizing: border-box;
+  padding: clamp(76px, 10vh, 96px) 16px clamp(10px, 2vh, 20px) !important;
+  display: grid;
+  place-items: center;
+  overflow: hidden !important;
+}
+
+body.account-status-page .account-status-shell {
+  width: min(88vw, 500px) !important;
+  max-width: 500px !important;
+  height: 100%;
+  max-height: 720px;
+  margin: 0 auto !important;
+  transform: none !important;
+}
+
+body.account-status-page .account-status-card {
+  width: 100% !important;
+  height: 100%;
+  min-height: 0 !important;
+  max-height: 100%;
+  box-sizing: border-box;
+  margin: 0 !important;
+  padding: clamp(10px, 1.8vh, 18px) clamp(16px, 3vw, 28px) !important;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: space-evenly !important;
+  gap: clamp(6px, 1.2vh, 12px);
+}
+
+body.account-status-page .status-symbol {
+  width: clamp(40px, 5.5vh, 48px);
+  height: clamp(40px, 5.5vh, 48px);
+  margin-bottom: clamp(4px, 0.8vh, 8px) !important;
+}
+
+body.account-status-page .auth-flow-heading h1 {
+  margin-block: clamp(4px, 0.8vh, 8px);
+  font-size: clamp(18px, 2.5vh, 23px) !important;
+}
+
+body.account-status-page .eyebrow {
+  font-size: clamp(0.72rem, 1.55vh, 0.84rem) !important;
+}
+
+body.account-status-page .register-subtitle {
+  margin-block: 2px 0;
+  font-size: clamp(0.7rem, 1.5vh, 0.82rem) !important;
+  line-height: 1.5;
+}
+
+body.account-status-page .status-review-summary,
+body.account-status-page .status-progress,
+body.account-status-page .status-details,
+body.account-status-page .status-actions {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+body.account-status-page .auth-flow-heading {
+  margin: 0 !important;
+}
+
+body.account-status-page .status-review-summary {
+  padding: clamp(7px, 1.2vh, 11px) 14px !important;
+}
+
+body.account-status-page .status-review-summary h2 {
+  margin-bottom: 3px;
+  font-size: clamp(0.78rem, 1.7vh, 0.9rem) !important;
+}
+
+body.account-status-page .status-review-summary p {
+  font-size: clamp(0.66rem, 1.3vh, 0.74rem) !important;
+  line-height: 1.45 !important;
+}
+
+body.account-status-page .status-review-summary .status-next-note {
+  margin-top: 3px;
+}
+
+body.account-status-page .status-progress-step {
+  gap: 4px;
+  font-size: clamp(0.64rem, 1.35vh, 0.72rem) !important;
+}
+
+body.account-status-page .status-progress-marker {
+  width: clamp(28px, 4vh, 34px);
+  height: clamp(28px, 4vh, 34px);
+}
+
+body.account-status-page .status-progress-step:not(:last-child)::after {
+  inset-block-start: clamp(13px, 2vh, 16px);
+}
+
+body.account-status-page .status-details {
+  row-gap: 6px !important;
+}
+
+body.account-status-page .status-details > div {
+  padding: clamp(5px, 1vh, 8px) 12px !important;
+}
+
+body.account-status-page .status-details dt {
+  font-size: clamp(0.66rem, 1.35vh, 0.74rem) !important;
+}
+
+body.account-status-page .status-details dd {
+  font-size: clamp(0.7rem, 1.45vh, 0.78rem) !important;
+}
+
+body.account-status-page .status-actions {
+  gap: 6px !important;
+}
+
+body.account-status-page .status-actions .primary-button,
+body.account-status-page .secondary-auth-button {
+  min-height: clamp(36px, 5.2vh, 44px) !important;
+  font-size: clamp(0.72rem, 1.55vh, 0.84rem) !important;
+}
+
+body.account-status-page .guest-browse-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 20px;
+  text-decoration: none;
+}
+
+body.account-status-page .auth-topbar .theme-toggle {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 44px;
+  padding: 0 !important;
+  appearance: none !important;
+  color: var(--auth-primary) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  transition: color var(--auth-transition), transform var(--auth-transition) !important;
+}
+
+body.account-status-page #themeToggleIcon {
+  display: inline-block !important;
+  width: auto !important;
+  height: auto !important;
+  color: inherit !important;
+  font-size: 24px !important;
+  line-height: 1;
+  opacity: 1 !important;
+  transform-origin: center !important;
+  transition: transform 220ms ease !important;
+}
+
+body.account-status-page .auth-topbar .theme-toggle:hover,
+body.account-status-page .auth-topbar .theme-toggle:focus-visible,
+html[data-theme="dark"] body.account-status-page .auth-topbar .theme-toggle,
+html[data-theme="dark"] body.account-status-page .auth-topbar .theme-toggle:hover,
+body.account-status-page.dark-mode .auth-topbar .theme-toggle,
+body.account-status-page.dark-mode .auth-topbar .theme-toggle:hover {
+  color: var(--auth-primary) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+body.account-status-page .auth-topbar .theme-toggle:hover {
+  transform: translateY(-1px) !important;
+}
+
+body.account-status-page .auth-topbar .theme-toggle:hover #themeToggleIcon {
+  transform: rotate(-14deg) !important;
+}
+
+body.account-status-page .auth-topbar .theme-toggle:active {
+  transform: translateY(0) scale(0.96) !important;
+}
+
+@media (max-height: 680px) {
+  body.account-status-page .account-status-main {
+    padding-top: 68px !important;
+  }
+
+  body.account-status-page .status-review-summary .status-next-note {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  body.account-status-page .account-status-main {
+    padding-inline: 8px !important;
+  }
+
+  body.account-status-page .account-status-shell {
+    width: 94vw !important;
+    height: 100%;
+  }
+
+  body.account-status-page .account-status-card {
+    padding-inline: 13px !important;
+  }
+}

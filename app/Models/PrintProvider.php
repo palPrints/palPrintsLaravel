@@ -19,14 +19,23 @@ class PrintProvider extends Model
         'license_document',
         'verification_document',
         'approval_status',
+        'profile_completed_at',
+        'submitted_at',
+        'reviewed_at',
         'approved_at',
+        'approved_by',
         'rejection_reason',
+        'admin_notes',
         'total_orders',
         'total_earnings',
         'is_active',
     ];
 
     protected $casts = [
+        'working_hours' => 'array',
+        'profile_completed_at' => 'datetime',
+        'submitted_at' => 'datetime',
+        'reviewed_at' => 'datetime',
         'approved_at' => 'datetime',
         'total_earnings' => 'decimal:2',
         'is_active' => 'boolean',
@@ -39,13 +48,8 @@ class PrintProvider extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function printProviderProducts()
+    public function approver()
     {
-        return $this->hasMany(PrintProviderProduct::class);
-    }
-
-    public function orders()
-    {
-        return $this->hasMany(Order::class);
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }

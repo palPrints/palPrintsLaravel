@@ -17,7 +17,7 @@
         aria-label="PalPrints"
       >
         <img
-          src="{{ asset('front/images/home/palprintLogo-removebg-preview.png') }}"
+          src="{{ asset('front/assets/images/palprints-logo.png') }}"
           alt="PalPrints Logo"
           class="logo-img"
         >

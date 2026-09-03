@@ -1,0 +1,3265 @@
+/* PALPRINTS auth visual system
+   A final, isolated presentation layer shared by every registration flow page. */
+:root {
+  --auth-primary: #6815ed;
+  --auth-primary-dark: #4e0fc0;
+  --auth-blue: #158fdd;
+  --auth-cyan: #10bad4;
+  --auth-gradient: linear-gradient(135deg, #10bad4 0%, #158fdd 46%, #6815ed 100%);
+  --auth-gradient-soft: linear-gradient(135deg, rgb(16 186 212 / 12%), rgb(104 21 237 / 10%));
+  --auth-page: #f5f7fc;
+  --auth-surface: rgb(255 255 255 / 94%);
+  --auth-soft: #f7f8fc;
+  --auth-text: #171a43;
+  --auth-secondary: #62677f;
+  --auth-border: #e4e7f0;
+  --auth-shadow: 0 18px 52px rgb(26 33 74 / 10%);
+  --auth-shadow-hover: 0 22px 58px rgb(26 33 74 / 15%);
+  --auth-radius: 22px;
+  --auth-radius-sm: 14px;
+  --auth-transition: 220ms ease;
+}
+
+/* --------------------------------------------------------------------------
+   Login responsive layout — final geometry
+   -------------------------------------------------------------------------- */
+@media (min-width: 1200px) {
+  body.login-page:not(.auth-flow-page) > .main-content {
+    padding: 92px clamp(32px, 4vw, 72px) 24px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    width: min(100%, 1480px) !important;
+    height: calc(100dvh - 116px) !important;
+    grid-template-columns: minmax(400px, 0.9fr) minmax(560px, 1.1fr) !important;
+    gap: clamp(32px, 4vw, 64px) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    width: 100% !important;
+    max-width: 780px !important;
+    height: min(72dvh, 700px) !important;
+    min-height: 520px !important;
+    border-radius: 28px !important;
+    background-position: center !important;
+    background-size: cover !important;
+    transform: none !important;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1199px) {
+  body.login-page:not(.auth-flow-page) > .main-content {
+    padding: 88px 24px 20px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    width: 100% !important;
+    height: calc(100dvh - 108px) !important;
+    grid-template-columns: minmax(360px, 0.92fr) minmax(430px, 1.08fr) !important;
+    gap: 24px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    width: 100% !important;
+    max-width: none !important;
+    height: min(68dvh, 620px) !important;
+    min-height: 480px !important;
+    border-radius: 24px !important;
+    background-position: center !important;
+    background-size: cover !important;
+    transform: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-copy {
+    padding: 24px 28px 28px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-copy h2 {
+    font-size: clamp(23px, 2.6vw, 30px) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  html:has(body.login-page:not(.auth-flow-page)),
+  body.login-page:not(.auth-flow-page) {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  body.login-page:not(.auth-flow-page) > .main-content {
+    height: auto !important;
+    min-height: 100dvh !important;
+    padding: 86px 16px 28px !important;
+    overflow: visible !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    display: block !important;
+    width: min(100%, 560px) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin-inline: auto !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    display: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    width: 100% !important;
+    height: auto !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-card {
+    width: 100% !important;
+    max-width: 520px !important;
+    margin-inline: auto !important;
+  }
+}
+
+@media (max-width: 520px) {
+  body.login-page:not(.auth-flow-page) > .main-content {
+    padding-inline: 10px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-card {
+    padding: 22px 18px !important;
+    border-radius: 20px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .social-auth-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Keep the complete desktop form fixed and visible without internal scrolling. */
+@media (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    overflow: hidden !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-shell {
+    max-height: calc(100dvh - 92px);
+    align-content: center;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 700px) {
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    padding-block: 60px 8px !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-shell {
+    gap: 8px;
+  }
+  body.login-page:not(.auth-flow-page) .login-shell > .register-heading h1 {
+    margin-bottom: 2px !important;
+    font-size: 28px !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-shell > .register-heading .register-subtitle {
+    font-size: 12px !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-shell > .login-card {
+    padding: 12px 24px !important;
+  }
+  body.login-page:not(.auth-flow-page) .floating-field input {
+    min-height: 44px !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-form {
+    gap: 5px !important;
+  }
+  body.login-page:not(.auth-flow-page) .submit-button {
+    min-height: 42px !important;
+  }
+  body.login-page:not(.auth-flow-page) .social-auth-row .google-button {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-footer {
+    margin-top: 5px !important;
+  }
+}
+
+html[data-theme="dark"],
+body.dark-mode {
+  --auth-page: #0b1020;
+  --auth-surface: rgb(17 23 42 / 94%);
+  --auth-soft: #171e34;
+  --auth-text: #f4f6ff;
+  --auth-secondary: #c5cada;
+  --auth-border: #293149;
+  --auth-shadow: 0 20px 56px rgb(0 0 0 / 30%);
+  --auth-shadow-hover: 0 24px 62px rgb(0 0 0 / 38%);
+}
+
+html { scroll-behavior: smooth; }
+
+body.register-page,
+body.login-page,
+body.auth-flow-page,
+body.account-status-page {
+  color: var(--auth-text);
+  background:
+    radial-gradient(circle at 8% 18%, rgb(104 21 237 / 13%), transparent 26rem),
+    radial-gradient(circle at 92% 82%, rgb(16 186 212 / 13%), transparent 28rem),
+    linear-gradient(145deg, var(--auth-page), color-mix(in srgb, var(--auth-page) 90%, #dceaff));
+  font-family: "Cairo", Arial, sans-serif;
+}
+
+body.register-page::before,
+body.login-page::before,
+body.auth-flow-page::before,
+body.account-status-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .42;
+  background-image: radial-gradient(circle, rgb(104 21 237 / 20%) 1px, transparent 1.5px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(120deg, #000, transparent 42%, #000);
+}
+
+/* Header: same floating-card language used by profile pages. */
+.auth-topbar {
+  position: absolute !important;
+  inset: 18px 0 auto !important;
+  z-index: 1200;
+  width: 100%;
+  padding: 0 clamp(16px, 5vw, 76px) !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.auth-topbar__container {
+  min-height: 54px;
+  max-width: 1588px !important;
+  margin-inline: auto !important;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.auth-topbar__actions { gap: 8px !important; transform: none !important; }
+
+.auth-topbar .brand-logo {
+  width: 170px !important;
+  max-height: 56px !important;
+  transition: transform var(--auth-transition);
+}
+
+.auth-topbar .brand:hover .brand-logo { transform: scale(1.025); }
+
+.auth-topbar .header-control {
+  min-height: 44px;
+  padding: 0 13px !important;
+  color: var(--auth-text) !important;
+  border: 1px solid transparent !important;
+  border-radius: 13px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: color var(--auth-transition), border-color var(--auth-transition),
+    background var(--auth-transition), transform var(--auth-transition), box-shadow var(--auth-transition);
+}
+
+.auth-topbar .header-control:hover {
+  color: var(--auth-primary) !important;
+  border-color: transparent !important;
+  background: color-mix(in srgb, var(--auth-soft) 78%, #efe7ff) !important;
+  box-shadow: none !important;
+  transform: translateY(-2px) !important;
+}
+
+.auth-topbar .theme-toggle { width: 44px; padding: 0 !important; }
+
+.auth-topbar .language-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row-reverse;
+  gap: 6px;
+  width: 82px;
+  min-width: 82px;
+  height: 58px;
+  padding: 0 10px !important;
+  direction: ltr;
+  color: var(--auth-primary) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.auth-topbar .language-toggle .bi-globe2 {
+  width: auto;
+  height: auto;
+  font-size: 20px;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.auth-topbar .language-toggle:hover {
+  color: var(--auth-primary) !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.auth-topbar .language-toggle:hover .bi-globe2 {
+  animation: authGlobeSpin 1.1s ease;
+}
+
+.auth-topbar #languageToggleText {
+  min-width: 20px;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: .02em;
+}
+
+@keyframes authGlobeSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Main surfaces */
+body.register-page > .main-content,
+body.login-page > .main-content,
+body.auth-flow-page > .main-content {
+  padding-top: 112px !important;
+}
+
+.auth-layout {
+  width: min(100% - 32px, 1480px) !important;
+  max-width: 1480px !important;
+  min-height: calc(100vh - 136px) !important;
+  margin: 0 auto 24px !important;
+  gap: clamp(18px, 2.4vw, 38px) !important;
+  align-items: center !important;
+}
+
+.auth-visual-panel {
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 28%) !important;
+  border-radius: 28px !important;
+  box-shadow: var(--auth-shadow) !important;
+}
+
+.auth-visual-panel::before {
+  background: linear-gradient(160deg, rgb(13 20 52 / 18%), rgb(27 17 76 / 76%)) !important;
+}
+
+.auth-visual-copy {
+  max-width: 610px;
+  padding: clamp(24px, 4vw, 58px) !important;
+  text-shadow: 0 2px 18px rgb(8 15 42 / 20%);
+}
+
+.auth-visual-kicker {
+  display: inline-flex;
+  width: fit-content;
+  padding: 7px 13px;
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 13%);
+  backdrop-filter: blur(8px);
+}
+
+.auth-visual-copy h2 { font-size: clamp(28px, 2.3vw, 42px) !important; line-height: 1.35; }
+.auth-visual-description { line-height: 1.9 !important; }
+.auth-visual-benefits li {
+  padding: 11px 13px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 13px;
+  background: rgb(255 255 255 / 10%);
+  backdrop-filter: blur(7px);
+}
+
+.auth-form-panel { padding: clamp(8px, 2vw, 26px) !important; }
+
+.register-card,
+.login-card,
+.auth-flow-card,
+.account-status-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--auth-border) !important;
+  border-radius: var(--auth-radius) !important;
+  background: var(--auth-surface) !important;
+  box-shadow: var(--auth-shadow) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.register-card::before,
+.login-card::before,
+.auth-flow-card::before,
+.account-status-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: var(--auth-gradient);
+}
+
+.register-heading h1,
+.onboarding-form-heading h2 { color: var(--auth-text) !important; font-size: clamp(24px, 2vw, 32px) !important; }
+.register-subtitle,
+.register-heading p { color: var(--auth-secondary) !important; }
+.eyebrow { color: var(--auth-primary) !important; font-weight: 800 !important; letter-spacing: .02em; }
+
+/* Controls */
+.floating-field input,
+.floating-field select,
+.floating-field textarea,
+.otp-input {
+  color: var(--auth-text) !important;
+  border: 1px solid var(--auth-border) !important;
+  border-radius: var(--auth-radius-sm) !important;
+  background: color-mix(in srgb, var(--auth-surface) 82%, var(--auth-soft)) !important;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 36%) inset;
+  transition: border-color var(--auth-transition), box-shadow var(--auth-transition), background var(--auth-transition);
+}
+
+.floating-field input:hover,
+.floating-field select:hover,
+.floating-field textarea:hover { border-color: color-mix(in srgb, var(--auth-primary) 38%, var(--auth-border)) !important; }
+
+.floating-field input:focus,
+.floating-field select:focus,
+.floating-field textarea:focus,
+.otp-input:focus {
+  border-color: var(--auth-primary) !important;
+  background: var(--auth-surface) !important;
+  box-shadow: 0 0 0 4px rgb(104 21 237 / 11%) !important;
+}
+
+.floating-field label { color: var(--auth-secondary) !important; }
+.field-action { border-radius: 10px !important; transition: color var(--auth-transition), background var(--auth-transition); }
+.field-action:hover { color: var(--auth-primary) !important; background: rgb(104 21 237 / 9%) !important; }
+
+.primary-button,
+.submit-button {
+  min-height: 52px !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  color: #fff !important;
+  background: var(--auth-gradient) !important;
+  box-shadow: 0 12px 28px rgb(104 21 237 / 23%) !important;
+  transition: transform var(--auth-transition), box-shadow var(--auth-transition), filter var(--auth-transition) !important;
+}
+
+.primary-button:hover,
+.submit-button:hover {
+  filter: saturate(1.08) brightness(1.03);
+  transform: translateY(-2px) !important;
+  box-shadow: 0 16px 34px rgb(104 21 237 / 30%) !important;
+}
+
+.primary-button:active,
+.submit-button:active { transform: translateY(0) scale(.99) !important; }
+
+.google-button,
+.secondary-button,
+.account-tab,
+.role-card,
+.service-option,
+.document-upload-card label,
+.image-dropzone,
+.printer-form-section,
+.status-review-summary {
+  text-decoration: none !important;
+  border-color: var(--auth-border) !important;
+  border-radius: var(--auth-radius-sm) !important;
+  background: var(--auth-soft) !important;
+  transition: border-color var(--auth-transition), background var(--auth-transition),
+    transform var(--auth-transition), box-shadow var(--auth-transition) !important;
+}
+
+.google-button:hover,
+.secondary-button:hover,
+.account-tab:hover,
+.role-card:hover,
+.service-option:hover,
+.document-upload-card label:hover,
+.image-dropzone:hover {
+  border-color: rgb(104 21 237 / 30%) !important;
+  background: color-mix(in srgb, var(--auth-soft) 78%, #efe7ff) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgb(26 33 74 / 8%);
+}
+
+.account-tab[aria-selected="true"],
+.role-card.is-selected,
+.service-option:has(input:checked) {
+  color: var(--auth-primary) !important;
+  border-color: var(--auth-primary) !important;
+  background: rgb(104 21 237 / 8%) !important;
+  box-shadow: 0 0 0 3px rgb(104 21 237 / 8%) !important;
+}
+
+.site-footer { color: var(--auth-secondary) !important; background: transparent !important; border: 0 !important; }
+.site-footer a { color: var(--auth-primary) !important; }
+
+/* Icons follow the same Bootstrap Icons system used by profile pages. */
+.external-ui-icon.bi,
+.service-icon.bi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25em;
+  height: 1.25em;
+  color: currentColor;
+  background: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  font-size: 1.15em;
+  line-height: 1;
+}
+
+.service-icon.bi {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  color: var(--auth-primary);
+  border-radius: 10px;
+  background: rgb(104 21 237 / 9%) !important;
+  font-size: 18px;
+}
+
+.google-mark.bi,
+.apple-icon-slot .bi {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.google-mark.bi { color: #4285f4; }
+.apple-icon-slot .bi { color: var(--auth-text); }
+
+.icon.bi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 1.25em;
+  height: 1.25em;
+  fill: none;
+  stroke: none;
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.account-tab .icon.bi,
+.printer-section-icon .icon.bi {
+  font-size: 1.2em;
+}
+
+.password-requirement-icon .icon.bi {
+  font-size: .82em;
+}
+
+@media (max-width: 1024px) {
+  html { height: auto !important; overflow: auto !important; }
+  .auth-topbar { inset-block-start: 12px !important; padding-inline: 12px !important; }
+  .auth-layout { grid-template-columns: 1fr !important; width: min(100% - 24px, 720px) !important; }
+  .auth-visual-panel { min-height: 330px !important; height: auto !important; position: relative !important; }
+  .auth-form-panel { padding: 0 !important; }
+}
+
+@media (max-width: 640px) {
+  .auth-topbar__container { min-height: 64px; padding: 8px 10px; border-radius: 17px; }
+  .auth-topbar .brand-logo { width: 130px !important; max-height: 46px !important; }
+  .auth-topbar .header-control { min-height: 40px; padding-inline: 10px !important; }
+  .auth-topbar .language-toggle {
+    width: 72px;
+    min-width: 72px;
+    height: 52px;
+    gap: 5px;
+    padding: 0 7px !important;
+    border-radius: 0 !important;
+  }
+  .auth-topbar .language-toggle .bi-globe2 { font-size: 18px; }
+  .auth-topbar #languageToggleText { min-width: 18px; font-size: 12px; }
+  body.register-page > .main-content,
+  body.login-page > .main-content,
+  body.auth-flow-page > .main-content { padding-top: 92px !important; }
+  .auth-layout { width: calc(100% - 20px) !important; margin-bottom: 10px !important; }
+  .auth-visual-panel { display: none !important; }
+  .register-card,
+  .login-card,
+  .auth-flow-card,
+  .account-status-card { border-radius: 18px !important; }
+  .register-heading h1,
+  .onboarding-form-heading h2 { font-size: 24px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+/* --------------------------------------------------------------------------
+   Professional login composition — scoped so recovery and registration flows
+   keep their own layouts.
+   -------------------------------------------------------------------------- */
+body.login-page:not(.auth-flow-page) {
+  height: 100vh !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+html:has(body.login-page:not(.auth-flow-page)) {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+body.login-page:not(.auth-flow-page) > .auth-topbar {
+  position: absolute !important;
+  inset-block-start: 18px !important;
+  padding-inline: clamp(24px, 4vw, 72px) !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-topbar__container {
+  max-width: 1440px !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-topbar .brand-logo {
+  width: 184px !important;
+  max-height: 60px !important;
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle {
+  width: 46px;
+  height: 46px;
+  color: var(--auth-text) !important;
+  border-radius: 14px !important;
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle:hover {
+  color: var(--auth-primary) !important;
+  background: rgb(104 21 237 / 8%) !important;
+}
+
+body.login-page:not(.auth-flow-page) > .main-content {
+  width: 100%;
+  height: 100vh !important;
+  min-height: 0 !important;
+  padding: 88px clamp(22px, 4vw, 70px) 18px !important;
+  display: grid;
+  align-items: start;
+}
+
+body.login-page:not(.auth-flow-page) .auth-layout {
+  width: min(100%, 1440px) !important;
+  max-width: 1440px !important;
+  min-height: 0 !important;
+  height: calc(100vh - 106px) !important;
+  margin: 0 auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(440px, .93fr) minmax(500px, 1.07fr) !important;
+  gap: 0 !important;
+  direction: rtl;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--auth-border) 88%, transparent);
+  border-radius: 30px !important;
+  background: var(--auth-surface) !important;
+  box-shadow: 0 28px 80px rgb(26 33 74 / 14%) !important;
+  isolation: isolate;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .auth-layout,
+body.login-page:not(.auth-flow-page).dark-mode .auth-layout {
+  box-shadow: 0 30px 90px rgb(0 0 0 / 38%) !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-panel {
+  position: relative !important;
+  inset: auto !important;
+  align-self: stretch !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  overflow: hidden;
+  direction: rtl;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-image:
+    linear-gradient(180deg, rgb(14 24 57 / 2%) 20%, rgb(15 22 51 / 74%) 100%),
+    url("../../assets/images/login.png") !important;
+  background-position: center 55% !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  box-shadow: none !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(90deg, rgb(104 21 237 / 8%), transparent 34%),
+    linear-gradient(180deg, transparent 42%, rgb(11 16 40 / 58%)) !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-panel::after {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  z-index: 0;
+  pointer-events: none;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 20px;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0 !important;
+  display: flex;
+  align-items: flex-end;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-copy {
+  position: absolute !important;
+  inset: auto 0 0 !important;
+  transform: none !important;
+  width: 100%;
+  max-width: 650px;
+  padding: 44px 48px !important;
+  color: #fff;
+  text-shadow: 0 2px 18px rgb(8 15 42 / 24%);
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-kicker {
+  display: inline-flex !important;
+  margin: 0 0 12px;
+  padding: 7px 13px;
+  color: #fff;
+  border-color: rgb(255 255 255 / 30%);
+  background: rgb(255 255 255 / 13%);
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-copy h2 {
+  max-width: 560px;
+  margin: 0 0 10px;
+  color: #fff !important;
+  font-size: clamp(28px, 2.1vw, 39px) !important;
+  line-height: 1.35;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-description {
+  max-width: 570px;
+  margin: 0 0 18px;
+  color: rgb(255 255 255 / 88%) !important;
+  font-size: 15px;
+  line-height: 1.8 !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-benefits {
+  display: none !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-benefits li {
+  min-height: 58px;
+  padding: 9px 10px;
+  color: #fff;
+  border-color: rgb(255 255 255 / 18%);
+  background: rgb(255 255 255 / 11%);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+body.login-page:not(.auth-flow-page) .auth-visual-benefits .icon {
+  color: #8ce9f2;
+}
+
+body.login-page:not(.auth-flow-page) .auth-form-panel {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: 34px clamp(34px, 4.2vw, 68px) !important;
+  display: grid;
+  place-items: center;
+  direction: rtl;
+  background:
+    radial-gradient(circle at 12% 12%, rgb(104 21 237 / 6%), transparent 15rem),
+    var(--auth-surface) !important;
+}
+
+body.login-page:not(.auth-flow-page) .login-card {
+  width: min(100%, 540px);
+  max-width: 540px;
+  margin: 0;
+  padding: 0 !important;
+  overflow: visible;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none;
+}
+
+body.login-page:not(.auth-flow-page) .login-card::before { display: none; }
+
+body.login-page:not(.auth-flow-page) .register-heading {
+  margin-bottom: 24px;
+  text-align: start;
+}
+
+body.login-page:not(.auth-flow-page) .register-heading .eyebrow {
+  display: inline-flex;
+  width: fit-content;
+  margin: 0 0 10px;
+  padding: 6px 11px;
+  color: var(--auth-primary) !important;
+  border: 1px solid rgb(104 21 237 / 15%);
+  border-radius: 999px;
+  background: rgb(104 21 237 / 7%);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+body.login-page:not(.auth-flow-page) .register-heading h1 {
+  margin: 0 0 7px;
+  color: var(--auth-text) !important;
+  font-size: clamp(28px, 2.1vw, 36px) !important;
+  line-height: 1.35;
+}
+
+body.login-page:not(.auth-flow-page) .register-subtitle {
+  margin: 0;
+  color: var(--auth-secondary) !important;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+body.login-page:not(.auth-flow-page) .login-form { gap: 12px; }
+
+body.login-page:not(.auth-flow-page) .floating-field input {
+  min-height: 58px !important;
+  padding-inline: 18px 50px !important;
+  border-radius: 15px !important;
+  background: color-mix(in srgb, var(--auth-surface) 76%, var(--auth-soft)) !important;
+}
+
+body.login-page:not(.auth-flow-page) .floating-field label { inset-inline-start: 18px; }
+
+body.login-page:not(.auth-flow-page) .field-action {
+  width: 40px;
+  height: 40px;
+  inset-inline-end: 9px;
+}
+
+body.login-page:not(.auth-flow-page) .login-options {
+  margin: 1px 0 2px;
+  color: var(--auth-secondary);
+  font-size: 13px;
+}
+
+body.login-page:not(.auth-flow-page) .remember-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--auth-primary);
+}
+
+body.login-page:not(.auth-flow-page) .forgot-password,
+body.login-page:not(.auth-flow-page) .login-footer a {
+  color: var(--auth-primary) !important;
+  font-weight: 800;
+}
+
+body.login-page:not(.auth-flow-page) .submit-button {
+  min-height: 54px !important;
+  border-radius: 15px !important;
+}
+
+body.login-page:not(.auth-flow-page) .social-divider { margin: 2px 0; }
+
+body.login-page:not(.auth-flow-page) .social-auth-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+body.login-page:not(.auth-flow-page) .google-button {
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 11px;
+  border-radius: 14px !important;
+  color: var(--auth-text) !important;
+  background: var(--auth-soft) !important;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+body.login-page:not(.auth-flow-page) .login-footer {
+  margin: 18px 0 0;
+  color: var(--auth-secondary);
+  text-align: center;
+  font-size: 13px;
+}
+
+body.login-page:not(.auth-flow-page) > .site-footer {
+  display: none !important;
+}
+
+@media (max-width: 1180px) {
+  body.login-page:not(.auth-flow-page) > .main-content {
+    padding-inline: 20px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    grid-template-columns: minmax(390px, .88fr) minmax(460px, 1.12fr) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-copy { padding: 38px 34px !important; }
+  body.login-page:not(.auth-flow-page) .auth-visual-benefits { grid-template-columns: 1fr; max-width: 320px; }
+  body.login-page:not(.auth-flow-page) .auth-visual-benefits li { min-height: auto; }
+  body.login-page:not(.auth-flow-page) .auth-form-panel { padding-inline: 34px !important; }
+}
+
+@media (max-width: 900px) {
+  html:has(body.login-page:not(.auth-flow-page)),
+  body.login-page:not(.auth-flow-page) { height: 100% !important; overflow: hidden !important; }
+  body.login-page:not(.auth-flow-page) > .auth-topbar { padding-inline: 18px !important; }
+  body.login-page:not(.auth-flow-page) .auth-topbar .brand-logo { width: 148px !important; }
+  body.login-page:not(.auth-flow-page) > .main-content { height: 100vh !important; padding: 88px 14px 14px !important; }
+
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    width: min(100%, 680px) !important;
+    height: calc(100vh - 102px) !important;
+    min-height: 0 !important;
+    grid-template-columns: 1fr !important;
+    border-radius: 24px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel { display: none !important; }
+  body.login-page:not(.auth-flow-page) .auth-form-panel { padding: 38px clamp(22px, 7vw, 52px) !important; }
+  body.login-page:not(.auth-flow-page) .login-card { width: 100%; }
+  body.login-page:not(.auth-flow-page) > .site-footer { margin-top: 0 !important; }
+}
+
+@media (max-height: 760px) and (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) > .auth-topbar { inset-block-start: 10px !important; }
+  body.login-page:not(.auth-flow-page) .auth-topbar .brand-logo { width: 154px !important; max-height: 50px !important; }
+  body.login-page:not(.auth-flow-page) > .main-content { padding-top: 70px !important; padding-bottom: 12px !important; }
+  body.login-page:not(.auth-flow-page) .auth-layout { height: calc(100vh - 82px) !important; }
+  body.login-page:not(.auth-flow-page) .auth-form-panel { padding-block: 20px !important; }
+  body.login-page:not(.auth-flow-page) .register-heading { margin-bottom: 16px; }
+  body.login-page:not(.auth-flow-page) .register-heading .eyebrow { margin-bottom: 6px; padding-block: 4px; }
+  body.login-page:not(.auth-flow-page) .register-heading h1 { font-size: 28px !important; margin-bottom: 3px; }
+  body.login-page:not(.auth-flow-page) .register-subtitle { font-size: 12px; line-height: 1.6; }
+  body.login-page:not(.auth-flow-page) .login-form { gap: 8px; }
+  body.login-page:not(.auth-flow-page) .floating-field input { min-height: 50px !important; }
+  body.login-page:not(.auth-flow-page) .submit-button { min-height: 48px !important; }
+  body.login-page:not(.auth-flow-page) .google-button { min-height: 43px; padding-block: 6px; }
+  body.login-page:not(.auth-flow-page) .login-footer { margin-top: 10px; }
+  body.login-page:not(.auth-flow-page) .auth-visual-copy { padding-block: 28px !important; }
+}
+
+/* Reference-inspired login: compact card + large organic visual. */
+@media (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) {
+    background:
+      radial-gradient(circle at 72% 58%, rgb(21 143 221 / 7%), transparent 28rem),
+      radial-gradient(circle at 84% 22%, rgb(104 21 237 / 6%), transparent 24rem),
+      var(--auth-page) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) > .auth-topbar {
+    position: fixed !important;
+    inset: 0 0 auto !important;
+    height: 76px;
+    padding: 0 clamp(34px, 5vw, 94px) !important;
+    display: flex;
+    align-items: center;
+    background: transparent !important;
+    border-bottom: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-topbar__container {
+    width: 100%;
+    max-width: 1540px !important;
+    min-height: 76px;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-topbar .brand-logo {
+    width: 162px !important;
+    max-height: 52px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) > .main-content {
+    padding: 96px clamp(40px, 6vw, 116px) 20px !important;
+    align-items: center;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    width: min(100%, 1540px) !important;
+    height: calc(100vh - 116px) !important;
+    min-height: 0 !important;
+    grid-template-columns: minmax(560px, 1.42fr) minmax(360px, .78fr) !important;
+    gap: clamp(42px, 6vw, 112px) !important;
+    align-items: center !important;
+    overflow: visible;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    grid-column: 2;
+    width: calc(100% + 240px) !important;
+    max-width: 960px !important;
+    height: calc(100vh - 94px) !important;
+    max-height: 750px !important;
+    min-height: 500px !important;
+    justify-self: center;
+    overflow: hidden;
+    border: 0 !important;
+    border-radius: 30px !important;
+    background-color: #18213d !important;
+    background-image: url("../../assets/images/login.png") !important;
+    background-position: center !important;
+    background-size: 108% auto !important;
+    background-repeat: no-repeat !important;
+    background-blend-mode: normal;
+    box-shadow:
+      0 24px 60px rgb(42 45 94 / 16%),
+      0 0 0 1px rgb(255 255 255 / 72%) inset !important;
+    transform: translate(62px, 18px);
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel::before {
+    /* A neutral readability veil only; the generated artwork keeps its colors. */
+    background: linear-gradient(
+      180deg,
+      transparent 52%,
+      rgb(9 15 35 / 8%) 64%,
+      rgb(9 15 35 / 70%) 100%
+    ) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel::after {
+    display: none;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-copy {
+    display: block !important;
+    inset: auto 0 0 !important;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    padding: 30px clamp(24px, 4vw, 48px) 34px !important;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-kicker {
+    display: inline-flex !important;
+    margin-inline: auto;
+    margin-bottom: 9px;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-copy h2 {
+    width: 100%;
+    max-width: 640px;
+    margin-inline: auto;
+    margin-bottom: 7px;
+    font-size: clamp(25px, 1.8vw, 34px) !important;
+    line-height: 1.4 !important;
+    overflow-wrap: anywhere;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-description {
+    display: block !important;
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto 14px;
+    color: rgb(255 255 255 / 92%) !important;
+    font-size: 13px;
+    line-height: 1.75 !important;
+    overflow-wrap: anywhere;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-benefits {
+    display: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    grid-column: 1;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    padding: 0 !important;
+    display: block;
+    background: transparent !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-card {
+    width: min(100%, 430px);
+    max-width: 430px;
+    margin-inline: auto;
+    padding: clamp(24px, 3vh, 34px) 30px 24px !important;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--auth-border) 88%, transparent) !important;
+    border-radius: 24px !important;
+    background: var(--auth-surface) !important;
+    box-shadow: 0 18px 48px rgb(26 33 74 / 11%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-card::before {
+    display: block;
+    height: 3px;
+  }
+
+  body.login-page:not(.auth-flow-page) .register-heading {
+    margin-bottom: 19px;
+    text-align: center;
+  }
+
+  body.login-page:not(.auth-flow-page) .register-heading .eyebrow {
+    margin-inline: auto;
+    margin-bottom: 7px;
+    padding: 0;
+    color: var(--auth-secondary) !important;
+    border: 0;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  body.login-page:not(.auth-flow-page) .register-heading h1 {
+    margin-bottom: 4px;
+    color: transparent !important;
+    background: linear-gradient(90deg, var(--auth-blue), var(--auth-primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    font-size: clamp(29px, 2.25vw, 38px) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .register-subtitle {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-form { gap: 9px; }
+
+  body.login-page:not(.auth-flow-page) .floating-field input {
+    min-height: 50px !important;
+    border-radius: 12px !important;
+    background: var(--auth-surface) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .floating-field:focus-within input {
+    border-color: var(--auth-cyan) !important;
+    box-shadow: 0 0 0 3px rgb(16 186 212 / 11%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-options { font-size: 11px; }
+
+  body.login-page:not(.auth-flow-page) .submit-button {
+    min-height: 48px !important;
+    border-radius: 11px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .social-divider { margin-block: 0; }
+
+  body.login-page:not(.auth-flow-page) .social-auth-row {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  body.login-page:not(.auth-flow-page) .google-button {
+    width: 46px;
+    min-width: 46px;
+    height: 42px;
+    min-height: 42px;
+    padding: 0;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: var(--auth-soft) !important;
+    box-shadow: 0 5px 14px rgb(26 33 74 / 7%);
+    font-size: 0;
+  }
+
+  body.login-page:not(.auth-flow-page) .google-button .google-mark,
+  body.login-page:not(.auth-flow-page) .google-button .apple-icon-slot {
+    margin: 0;
+    font-size: 20px;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-footer {
+    margin-top: 12px;
+    font-size: 11px;
+  }
+}
+
+/* Soft ambient background behind the login form. */
+body.login-page:not(.auth-flow-page) .auth-form-panel {
+  background:
+    radial-gradient(circle at 14% 18%, rgb(20 184 216 / 13%) 0, transparent 34%),
+    radial-gradient(circle at 86% 82%, rgb(112 77 235 / 11%) 0, transparent 38%),
+    linear-gradient(145deg, #fcfdff 0%, #f7f7ff 52%, #fbf9ff 100%) !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .auth-form-panel,
+body.login-page:not(.auth-flow-page).dark-mode .auth-form-panel {
+  background:
+    radial-gradient(circle at 14% 18%, rgb(20 184 216 / 12%) 0, transparent 34%),
+    radial-gradient(circle at 86% 82%, rgb(112 77 235 / 14%) 0, transparent 38%),
+    linear-gradient(145deg, #11182b 0%, #141a30 52%, #18182f 100%) !important;
+}
+
+@media (max-height: 720px) and (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) > .main-content { padding-top: 84px !important; padding-bottom: 10px !important; }
+  body.login-page:not(.auth-flow-page) .auth-layout { height: calc(100vh - 94px) !important; }
+  body.login-page:not(.auth-flow-page) .auth-visual-panel { min-height: 430px !important; height: calc(100vh - 112px) !important; }
+  body.login-page:not(.auth-flow-page) .login-card { padding-block: 18px !important; }
+  body.login-page:not(.auth-flow-page) .register-heading { margin-bottom: 12px; }
+  body.login-page:not(.auth-flow-page) .floating-field input { min-height: 45px !important; }
+  body.login-page:not(.auth-flow-page) .submit-button { min-height: 44px !important; }
+}
+
+@media (max-width: 520px) {
+  body.login-page:not(.auth-flow-page) .auth-topbar .brand-logo { width: 126px !important; }
+  body.login-page:not(.auth-flow-page) .auth-form-panel { padding: 30px 18px !important; }
+  body.login-page:not(.auth-flow-page) .register-heading { margin-bottom: 20px; }
+  body.login-page:not(.auth-flow-page) .register-heading h1 { font-size: 27px !important; }
+  body.login-page:not(.auth-flow-page) .social-auth-row { grid-template-columns: 1fr; }
+  body.login-page:not(.auth-flow-page) .google-button { font-size: 12px; }
+}
+
+/* Final responsive authority for the login page. */
+html:has(body.login-page:not(.auth-flow-page)),
+body.login-page:not(.auth-flow-page) {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+@media (min-width: 1200px) {
+  body.login-page:not(.auth-flow-page) > .main-content {
+    padding: 92px clamp(32px, 4vw, 72px) 24px !important;
+  }
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    width: min(100%, 1480px) !important;
+    height: auto !important;
+    min-height: calc(100dvh - 116px) !important;
+    grid-template-columns: minmax(400px, .9fr) minmax(560px, 1.1fr) !important;
+    gap: clamp(32px, 4vw, 64px) !important;
+  }
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    width: 100% !important;
+    max-width: 780px !important;
+    height: min(72dvh, 700px) !important;
+    min-height: 520px !important;
+    border-radius: 28px !important;
+    background-position: center !important;
+    background-size: cover !important;
+    transform: none !important;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1199px) {
+  body.login-page:not(.auth-flow-page) > .main-content { padding: 88px 24px 20px !important; }
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    width: 100% !important;
+    height: auto !important;
+    min-height: calc(100dvh - 108px) !important;
+    grid-template-columns: minmax(360px, .92fr) minmax(430px, 1.08fr) !important;
+    gap: 24px !important;
+  }
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    width: 100% !important;
+    max-width: none !important;
+    height: min(68dvh, 620px) !important;
+    min-height: 480px !important;
+    border-radius: 24px !important;
+    background-position: center !important;
+    background-size: cover !important;
+    transform: none !important;
+  }
+  body.login-page:not(.auth-flow-page) .auth-visual-copy { padding: 24px 28px 28px !important; }
+  body.login-page:not(.auth-flow-page) .auth-visual-copy h2 { font-size: clamp(23px, 2.6vw, 30px) !important; }
+}
+
+@media (max-width: 900px) {
+  html:has(body.login-page:not(.auth-flow-page)),
+  body.login-page:not(.auth-flow-page) {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+  body.login-page:not(.auth-flow-page) > .main-content {
+    height: auto !important;
+    min-height: 100dvh !important;
+    padding: 86px 16px 28px !important;
+    overflow: visible !important;
+  }
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    display: block !important;
+    width: min(100%, 560px) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin-inline: auto !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+  }
+  body.login-page:not(.auth-flow-page) .auth-visual-panel { display: none !important; }
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    width: 100% !important;
+    height: auto !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-card {
+    width: 100% !important;
+    max-width: 520px !important;
+    margin-inline: auto !important;
+  }
+}
+
+@media (max-width: 520px) {
+  body.login-page:not(.auth-flow-page) > .main-content { padding-inline: 10px !important; }
+  body.login-page:not(.auth-flow-page) .auth-form-panel { padding: 0 !important; }
+  body.login-page:not(.auth-flow-page) .login-card {
+    padding: 22px 18px !important;
+    border-radius: 20px !important;
+  }
+  body.login-page:not(.auth-flow-page) .social-auth-row { grid-template-columns: 1fr !important; }
+}
+
+/* Desktop login: flush 50/50 split with a full-height visual. */
+@media (min-width: 901px) {
+  html:has(body.login-page:not(.auth-flow-page)),
+  body.login-page:not(.auth-flow-page) {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.login-page:not(.auth-flow-page) > .main-content {
+    width: 100% !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    width: 100% !important;
+    max-width: none !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 0 !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    grid-column: 2 !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    justify-self: stretch !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background-position: center !important;
+    background-size: cover !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    grid-column: 1 !important;
+    width: 100% !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    padding: 76px clamp(24px, 3vw, 48px) 20px !important;
+    display: grid !important;
+    place-items: center !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    scrollbar-width: none;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-form-panel::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-card {
+    width: min(100%, 470px) !important;
+    max-width: 470px !important;
+    margin: auto !important;
+    padding: clamp(18px, 2.3vh, 26px) 28px 20px !important;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 820px) {
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    padding-block: 68px 12px !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-card {
+    padding-block: 16px !important;
+  }
+  body.login-page:not(.auth-flow-page) .register-heading { margin-bottom: 12px !important; }
+  body.login-page:not(.auth-flow-page) .register-heading .eyebrow { margin-bottom: 4px !important; }
+  body.login-page:not(.auth-flow-page) .register-heading h1 {
+    margin-bottom: 2px !important;
+    font-size: 30px !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-form { gap: 7px !important; }
+  body.login-page:not(.auth-flow-page) .floating-field input { min-height: 48px !important; }
+  body.login-page:not(.auth-flow-page) .submit-button { min-height: 46px !important; }
+  body.login-page:not(.auth-flow-page) .login-footer { margin-top: 8px !important; }
+}
+
+/* --------------------------------------------------------------------------
+   PALPRINTS login — curved split composition inspired by the supplied layout.
+   -------------------------------------------------------------------------- */
+@media (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) {
+    background:
+      radial-gradient(circle at 14% 18%, rgb(104 21 237 / 6%), transparent 24rem),
+      linear-gradient(135deg, #fbfbfd 0%, #f2f3f8 100%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page)::before {
+    opacity: .22 !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    grid-template-columns: minmax(400px, 47fr) minmax(520px, 53fr) !important;
+    grid-template-areas: "form visual" !important;
+    direction: ltr !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    grid-area: form !important;
+    position: relative;
+    z-index: 2;
+    padding: 82px clamp(42px, 6vw, 96px) 24px !important;
+    background: transparent !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-card {
+    width: min(100%, 430px) !important;
+    max-width: 430px !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-card::before {
+    display: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .register-heading {
+    margin-bottom: clamp(18px, 2.5vh, 26px) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .register-heading .eyebrow {
+    display: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .register-heading h1 {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 12px !important;
+    color: #151526 !important;
+    background: none !important;
+    -webkit-text-fill-color: currentColor;
+    font-size: clamp(30px, 2.35vw, 40px) !important;
+    font-weight: 800 !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .register-heading h1::after {
+    content: "";
+    position: absolute;
+    right: 50%;
+    bottom: -7px;
+    width: 34px;
+    height: 3px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #18b9d4, #6815ed);
+    transform: translateX(50%);
+  }
+
+  body.login-page:not(.auth-flow-page) .register-subtitle {
+    margin-top: 9px !important;
+    color: #71758a !important;
+    font-size: 13px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-form {
+    gap: 12px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .floating-field input {
+    min-height: 58px !important;
+    padding-inline: 20px 52px !important;
+    border: 1px solid #d9dbe4 !important;
+    border-radius: 18px !important;
+    background: rgb(255 255 255 / 58%) !important;
+    box-shadow: 0 5px 16px rgb(26 33 74 / 3%) inset !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .floating-field:focus-within input {
+    border-color: #7255e9 !important;
+    background: #fff !important;
+    box-shadow: 0 0 0 4px rgb(104 21 237 / 8%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-options {
+    margin-block: 1px 2px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .submit-button {
+    width: min(100%, 250px) !important;
+    min-height: 48px !important;
+    margin-inline: auto !important;
+    border-radius: 999px !important;
+    box-shadow: 0 12px 24px rgb(104 21 237 / 20%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    grid-area: visual !important;
+    position: relative !important;
+    isolation: isolate;
+    overflow: hidden !important;
+    border-radius: 48% 0 0 48% / 100% 0 0 100% !important;
+    background-color: #d9d3eb !important;
+    background-image: url("../../assets/images/login.png") !important;
+    background-position: center !important;
+    background-size: cover !important;
+    background-blend-mode: normal !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel::before {
+    background: linear-gradient(
+      180deg,
+      rgb(8 12 28 / 3%) 0%,
+      rgb(8 12 28 / 10%) 48%,
+      rgb(8 12 28 / 54%) 100%
+    ) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-inner {
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-copy {
+    inset: auto !important;
+    width: min(72%, 560px) !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    text-align: center !important;
+    transform: translateX(7%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-kicker {
+    margin-bottom: 16px !important;
+    padding: 8px 16px !important;
+    background: rgb(255 255 255 / 12%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-copy h2 {
+    max-width: 520px !important;
+    margin: 0 auto 12px !important;
+    color: #fff !important;
+    font-size: clamp(29px, 2.65vw, 44px) !important;
+    line-height: 1.35 !important;
+    text-shadow: 0 3px 18px rgb(9 4 65 / 35%);
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-description {
+    max-width: 480px !important;
+    margin-inline: auto !important;
+    color: rgb(255 255 255 / 88%) !important;
+    font-size: 15px !important;
+    line-height: 1.8 !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-benefits {
+    display: none !important;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 760px) {
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    padding-block: 68px 12px !important;
+  }
+  body.login-page:not(.auth-flow-page) .register-heading { margin-bottom: 12px !important; }
+  body.login-page:not(.auth-flow-page) .floating-field input { min-height: 50px !important; }
+  body.login-page:not(.auth-flow-page) .login-form { gap: 7px !important; }
+  body.login-page:not(.auth-flow-page) .google-button { min-height: 40px !important; }
+  body.login-page:not(.auth-flow-page) .login-footer { margin-top: 6px !important; }
+}
+
+/* Login form card — cyan/blue/violet treatment from the supplied reference. */
+body.login-page:not(.auth-flow-page) .login-card {
+  width: min(100%, 440px) !important;
+  max-width: 440px !important;
+  padding: clamp(24px, 3vh, 34px) clamp(22px, 3vw, 34px) 24px !important;
+  overflow: visible !important;
+  border: 1px solid rgb(222 226 236 / 82%) !important;
+  border-radius: 26px !important;
+  background: color-mix(in srgb, var(--auth-surface) 97%, transparent) !important;
+  box-shadow: 0 20px 52px rgb(42 45 94 / 10%) !important;
+}
+
+body.login-page:not(.auth-flow-page) .login-card::before {
+  display: none !important;
+}
+
+body.login-page:not(.auth-flow-page) .register-heading {
+  margin-bottom: 22px !important;
+  text-align: center !important;
+}
+
+body.login-page:not(.auth-flow-page) .register-heading h1 {
+  display: inline-block !important;
+  margin-bottom: 7px !important;
+  color: transparent !important;
+  background: linear-gradient(90deg, #0db8df 0%, #2678e8 48%, #7651e9 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-size: clamp(30px, 2.3vw, 39px) !important;
+  font-weight: 800 !important;
+}
+
+body.login-page:not(.auth-flow-page) .register-heading h1::after {
+  display: none !important;
+}
+
+body.login-page:not(.auth-flow-page) .register-subtitle {
+  margin-top: 0 !important;
+  color: var(--auth-secondary) !important;
+  font-size: 13px !important;
+}
+
+body.login-page:not(.auth-flow-page) .login-form {
+  gap: 12px !important;
+}
+
+body.login-page:not(.auth-flow-page) .floating-field input {
+  min-height: 56px !important;
+  border: 1px solid #dfe3eb !important;
+  border-radius: 13px !important;
+  background: #fff !important;
+  box-shadow: 0 3px 12px rgb(39 49 88 / 3%) !important;
+}
+
+body.login-page:not(.auth-flow-page) .floating-field:focus-within input {
+  border-color: #24b8d1 !important;
+  box-shadow: 0 0 0 3px rgb(13 184 223 / 13%) !important;
+}
+
+body.login-page:not(.auth-flow-page) .floating-field label {
+  color: #40445a !important;
+  font-weight: 700 !important;
+}
+
+body.login-page:not(.auth-flow-page) .forgot-password,
+body.login-page:not(.auth-flow-page) .login-footer a {
+  color: #13aebf !important;
+  font-weight: 800 !important;
+}
+
+body.login-page:not(.auth-flow-page) .remember-row input {
+  accent-color: #13b5cf;
+}
+
+body.login-page:not(.auth-flow-page) .submit-button {
+  width: 100% !important;
+  min-height: 50px !important;
+  margin-inline: 0 !important;
+  border-radius: 12px !important;
+  background: linear-gradient(100deg, #08b9df 0%, #168fe5 45%, #7750eb 100%) !important;
+  box-shadow: 0 12px 25px rgb(60 102 222 / 22%) !important;
+}
+
+body.login-page:not(.auth-flow-page) .social-divider {
+  margin-block: 1px !important;
+}
+
+body.login-page:not(.auth-flow-page) .social-auth-row {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+body.login-page:not(.auth-flow-page) .social-auth-row .google-button {
+  flex: 0 0 48px !important;
+  width: 48px !important;
+  min-width: 48px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid #e2e5ed !important;
+  border-radius: 50% !important;
+  background: #fff !important;
+  box-shadow: 0 7px 18px rgb(34 43 79 / 9%) !important;
+}
+
+body.login-page:not(.auth-flow-page) .social-auth-row .google-button > span:not(.apple-icon-slot) {
+  display: none !important;
+}
+
+body.login-page:not(.auth-flow-page) .login-footer {
+  margin-top: 16px !important;
+  text-align: center !important;
+}
+
+@media (min-width: 901px) and (max-height: 760px) {
+  body.login-page:not(.auth-flow-page) .login-card {
+    padding-block: 18px !important;
+  }
+  body.login-page:not(.auth-flow-page) .register-heading { margin-bottom: 13px !important; }
+  body.login-page:not(.auth-flow-page) .floating-field input { min-height: 48px !important; }
+  body.login-page:not(.auth-flow-page) .social-auth-row .google-button {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+  }
+}
+
+/* Minimal theme icon, matching the language control (no surrounding square). */
+body.login-page:not(.auth-flow-page) .theme-toggle,
+body.login-page:not(.auth-flow-page) .theme-toggle:hover {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  color: #6815ed !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle:hover {
+  color: #4e0fc0 !important;
+  transform: translateY(-1px) scale(1.08);
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle .theme-icon {
+  font-size: 25px !important;
+}
+
+/* Show the action the button will perform: moon in light, sun in dark. */
+body.login-page:not(.auth-flow-page) .theme-icon-light {
+  opacity: 0 !important;
+  transform: rotate(90deg) scale(.45) !important;
+}
+
+body.login-page:not(.auth-flow-page) .theme-icon-dark {
+  display: grid !important;
+  color: #6815ed !important;
+  opacity: 1 !important;
+  transform: rotate(0) scale(1) !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-icon-light,
+body.login-page:not(.auth-flow-page).dark-mode .theme-icon-light {
+  color: #fbbf24 !important;
+  opacity: 1 !important;
+  transform: rotate(0) scale(1) !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-icon-dark,
+body.login-page:not(.auth-flow-page).dark-mode .theme-icon-dark {
+  opacity: 0 !important;
+  transform: rotate(-90deg) scale(.45) !important;
+}
+
+/* Heading sits outside the compact form surface. */
+body.login-page:not(.auth-flow-page) .login-shell {
+  display: grid;
+  width: min(100%, 440px);
+  gap: clamp(16px, 2.2vh, 24px);
+  margin: auto;
+}
+
+body.login-page:not(.auth-flow-page) .login-shell > .register-heading {
+  margin: 0 !important;
+}
+
+body.login-page:not(.auth-flow-page) .login-shell > .register-heading h1 {
+  margin-bottom: 8px !important;
+  font-size: clamp(32px, 2.45vw, 42px) !important;
+}
+
+body.login-page:not(.auth-flow-page) .login-shell > .register-heading .register-subtitle {
+  font-size: 14px !important;
+}
+
+body.login-page:not(.auth-flow-page) .login-shell > .login-card {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: clamp(22px, 2.6vh, 30px) 30px 22px !important;
+  border-radius: 22px !important;
+}
+
+@media (min-width: 901px) and (max-height: 760px) {
+  body.login-page:not(.auth-flow-page) .login-shell {
+    gap: 12px;
+  }
+  body.login-page:not(.auth-flow-page) .login-shell > .register-heading h1 {
+    font-size: 31px !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-shell > .login-card {
+    padding: 16px 26px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  body.login-page:not(.auth-flow-page) .login-shell {
+    gap: 14px;
+  }
+  body.login-page:not(.auth-flow-page) .login-shell > .login-card {
+    padding: 20px 18px !important;
+  }
+}
+
+/* Final no-scroll form override. */
+@media (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    overflow: hidden !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-shell {
+    max-height: calc(100dvh - 88px);
+    align-content: center;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 700px) {
+  body.login-page:not(.auth-flow-page) .auth-form-panel { padding-block: 60px 8px !important; }
+  body.login-page:not(.auth-flow-page) .login-shell { gap: 8px; }
+  body.login-page:not(.auth-flow-page) .login-shell > .register-heading h1 {
+    margin-bottom: 2px !important;
+    font-size: 28px !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-shell > .register-heading .register-subtitle {
+    font-size: 12px !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-shell > .login-card { padding: 12px 24px !important; }
+  body.login-page:not(.auth-flow-page) .floating-field input { min-height: 44px !important; }
+  body.login-page:not(.auth-flow-page) .login-form { gap: 5px !important; }
+  body.login-page:not(.auth-flow-page) .submit-button { min-height: 42px !important; }
+  body.login-page:not(.auth-flow-page) .social-auth-row .google-button {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-footer { margin-top: 5px !important; }
+}
+
+/* Larger responsive PALPRINTS logo on the login page. */
+body.login-page:not(.auth-flow-page) .auth-topbar .brand-logo {
+  width: clamp(170px, 12vw, 220px) !important;
+  height: auto !important;
+  max-height: 72px !important;
+  object-fit: contain;
+}
+
+@media (max-width: 900px) {
+  body.login-page:not(.auth-flow-page) .auth-topbar .brand-logo {
+    width: clamp(145px, 34vw, 180px) !important;
+    max-height: 62px !important;
+  }
+}
+
+/* Slightly larger form with the external heading lifted upward. */
+body.login-page:not(.auth-flow-page) .login-shell {
+  width: min(100%, 480px);
+}
+
+body.login-page:not(.auth-flow-page) .login-shell > .register-heading {
+  transform: translateY(-12px);
+}
+
+body.login-page:not(.auth-flow-page) .login-shell > .login-card {
+  padding: 28px 34px 26px !important;
+}
+
+body.login-page:not(.auth-flow-page) .floating-field input {
+  min-height: 60px !important;
+}
+
+@media (min-width: 901px) and (max-height: 760px) {
+  body.login-page:not(.auth-flow-page) .login-shell {
+    width: min(100%, 460px);
+  }
+  body.login-page:not(.auth-flow-page) .login-shell > .register-heading {
+    transform: translateY(-6px);
+  }
+  body.login-page:not(.auth-flow-page) .login-shell > .login-card {
+    padding: 16px 26px !important;
+  }
+  body.login-page:not(.auth-flow-page) .floating-field input {
+    min-height: 48px !important;
+  }
+}
+
+/* FINAL: bare theme icon with no surrounding tile. */
+body.login-page:not(.auth-flow-page) .theme-toggle,
+body.login-page:not(.auth-flow-page) .theme-toggle:hover,
+body.login-page:not(.auth-flow-page) .theme-toggle:focus-visible {
+  display: inline-grid !important;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  padding: 0 !important;
+  place-items: center !important;
+  overflow: visible !important;
+  color: var(--auth-secondary) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle:hover {
+  color: var(--auth-primary) !important;
+}
+
+body.login-page:not(.auth-flow-page) #themeToggleIcon {
+  display: inline-block !important;
+  width: auto !important;
+  height: auto !important;
+  color: inherit !important;
+  font-size: 24px !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle,
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle:hover,
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle:focus,
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle:active,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle:hover,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle:focus,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle:active {
+  appearance: none !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+/* Remove the stronger dark/focus button surface as well. */
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle,
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle:hover,
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle:focus,
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle:active,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle:hover,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle:focus,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle:active {
+  appearance: none !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+/* Exact theme-button treatment used by the profile pages. */
+body.login-page:not(.auth-flow-page) .theme-toggle {
+  position: relative;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  padding: 0 !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  overflow: visible !important;
+  color: var(--auth-secondary) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 13px !important;
+  box-shadow: none !important;
+  font-size: 19px !important;
+  cursor: pointer;
+  transform: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition:
+    color var(--auth-transition),
+    background var(--auth-transition),
+    border-color var(--auth-transition) !important;
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle:hover {
+  color: var(--auth-primary) !important;
+  background: var(--auth-soft) !important;
+  border-color: var(--auth-border) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle:active {
+  transform: none !important;
+}
+
+body.login-page:not(.auth-flow-page) #themeToggleIcon {
+  display: inline-block !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  color: inherit !important;
+  font-size: 19px !important;
+  line-height: 1 !important;
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Icon-only theme control: no visible container edges. */
+body.login-page:not(.auth-flow-page) .theme-toggle,
+body.login-page:not(.auth-flow-page) .theme-toggle:hover,
+body.login-page:not(.auth-flow-page) .theme-toggle:focus-visible {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline-offset: 3px;
+}
+
+/* Theme tile aligned with the language control, as in the profile header. */
+body.login-page:not(.auth-flow-page) .theme-toggle,
+body.login-page:not(.auth-flow-page) .theme-toggle:hover,
+body.login-page:not(.auth-flow-page) .theme-toggle:focus-visible {
+  width: 54px !important;
+  height: 54px !important;
+  min-width: 54px !important;
+  color: #555b72 !important;
+  background: color-mix(in srgb, var(--auth-surface) 96%, transparent) !important;
+  border: 1px solid var(--auth-border) !important;
+  border-radius: 17px !important;
+  box-shadow: 0 8px 20px rgb(36 43 80 / 7%) !important;
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle:hover {
+  color: var(--auth-primary) !important;
+  background: var(--auth-surface) !important;
+  border-color: rgb(104 21 237 / 20%) !important;
+  box-shadow: 0 10px 24px rgb(104 21 237 / 11%) !important;
+}
+
+body.login-page:not(.auth-flow-page) #themeToggleIcon {
+  font-size: 24px !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle {
+  color: #d9d7ff !important;
+  background: #171e34 !important;
+  border-color: #343c55 !important;
+}
+
+/* Final minimal theme-control override. */
+body.login-page:not(.auth-flow-page) .theme-toggle,
+body.login-page:not(.auth-flow-page) .theme-toggle:hover {
+  display: inline-grid !important;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  padding: 0 !important;
+  place-items: center !important;
+  overflow: visible !important;
+  color: #6815ed !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body.login-page:not(.auth-flow-page) .theme-toggle:hover {
+  color: #4e0fc0 !important;
+  transform: translateY(-1px) scale(1.08);
+}
+body.login-page:not(.auth-flow-page) .theme-toggle .theme-icon { font-size: 25px !important; }
+body.login-page:not(.auth-flow-page) .theme-icon-light {
+  opacity: 0 !important;
+  transform: rotate(90deg) scale(.45) !important;
+}
+body.login-page:not(.auth-flow-page) .theme-icon-dark {
+  display: grid !important;
+  color: #6815ed !important;
+  opacity: 1 !important;
+  transform: rotate(0) scale(1) !important;
+}
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-icon-light,
+body.login-page:not(.auth-flow-page).dark-mode .theme-icon-light {
+  color: #fbbf24 !important;
+  opacity: 1 !important;
+  transform: rotate(0) scale(1) !important;
+}
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-icon-dark,
+body.login-page:not(.auth-flow-page).dark-mode .theme-icon-dark {
+  opacity: 0 !important;
+  transform: rotate(-90deg) scale(.45) !important;
+}
+
+@media (max-width: 520px) {
+  body.login-page:not(.auth-flow-page) .login-shell > .register-heading {
+    transform: translateY(-4px);
+  }
+  body.login-page:not(.auth-flow-page) .login-shell > .login-card {
+    padding: 20px 18px !important;
+  }
+  body.login-page:not(.auth-flow-page) .floating-field input {
+    min-height: 54px !important;
+  }
+}
+
+/* Profile-style animated theme control. */
+body.login-page:not(.auth-flow-page) .theme-toggle {
+  position: relative;
+  display: inline-grid !important;
+  width: 46px !important;
+  height: 46px !important;
+  padding: 0 !important;
+  place-items: center;
+  overflow: hidden;
+  color: #5f6378 !important;
+  border: 1px solid rgb(214 219 231 / 88%) !important;
+  border-radius: 14px !important;
+  background: rgb(255 255 255 / 72%) !important;
+  box-shadow: 0 7px 20px rgb(37 45 83 / 7%) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: color 220ms ease, background 220ms ease, border-color 220ms ease,
+    box-shadow 220ms ease, transform 180ms ease !important;
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle:hover {
+  color: #6815ed !important;
+  border-color: rgb(104 21 237 / 24%) !important;
+  background: #fff !important;
+  box-shadow: 0 10px 24px rgb(104 21 237 / 13%) !important;
+  transform: translateY(-2px);
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle:active {
+  transform: translateY(0) scale(.94);
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle .theme-icon {
+  position: absolute;
+  inset: 0;
+  width: 20px !important;
+  height: 20px !important;
+  margin: auto;
+  display: grid !important;
+  place-items: center;
+  font-size: 19px;
+  line-height: 1;
+  transition: opacity 260ms ease, transform 360ms cubic-bezier(.2, .8, .2, 1);
+}
+
+body.login-page:not(.auth-flow-page) .theme-icon-light {
+  color: #f59e0b;
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+body.login-page:not(.auth-flow-page) .theme-icon-dark {
+  color: #8b7cf6;
+  opacity: 0;
+  transform: rotate(-90deg) scale(.45);
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle {
+  color: #d9d7ff !important;
+  border-color: rgb(139 124 246 / 28%) !important;
+  background: rgb(27 34 57 / 82%) !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-icon-light,
+body.login-page:not(.auth-flow-page).dark-mode .theme-icon-light {
+  opacity: 0;
+  transform: rotate(90deg) scale(.45);
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-icon-dark,
+body.login-page:not(.auth-flow-page).dark-mode .theme-icon-dark {
+  display: grid !important;
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+/* Ensure the custom login surface also follows the restored dark theme. */
+html[data-theme="dark"] body.login-page:not(.auth-flow-page),
+body.login-page:not(.auth-flow-page).dark-mode {
+  background:
+    radial-gradient(circle at 14% 18%, rgb(104 21 237 / 12%), transparent 24rem),
+    linear-gradient(135deg, #0b1020 0%, #11182b 100%) !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .floating-field input,
+body.login-page:not(.auth-flow-page).dark-mode .floating-field input {
+  color: #f4f6ff !important;
+  border-color: #343c55 !important;
+  background: #171e34 !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .floating-field label,
+body.login-page:not(.auth-flow-page).dark-mode .floating-field label {
+  color: #cbd0df !important;
+}
+
+/* --------------------------------------------------------------------------
+   Centered PALPRINTS split card with a soft scalloped divider.
+   -------------------------------------------------------------------------- */
+@media (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) {
+    background:
+      radial-gradient(circle at 12% 18%, rgb(35 126 222 / 10%), transparent 25rem),
+      linear-gradient(145deg, #eef8ff 0%, #e6f3fc 100%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) > .main-content {
+    padding: 94px clamp(28px, 5vw, 84px) 26px !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    width: min(100%, 1160px) !important;
+    height: min(700px, calc(100dvh - 120px)) !important;
+    min-height: 570px !important;
+    grid-template-columns: minmax(400px, 45fr) minmax(470px, 55fr) !important;
+    grid-template-areas: "visual form" !important;
+    overflow: hidden !important;
+    border: 1px solid rgb(202 220 236 / 72%) !important;
+    border-radius: 28px !important;
+    background: #fff !important;
+    box-shadow: 0 30px 75px rgb(43 83 125 / 15%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    grid-area: visual !important;
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    border-radius: 27px 0 0 27px !important;
+    background-color: #146fc5 !important;
+    background-image:
+      linear-gradient(155deg, rgb(7 76 164 / 70%), rgb(15 113 205 / 76%)),
+      url("../../assets/images/login.png") !important;
+    background-position: center !important;
+    background-size: cover !important;
+    background-blend-mode: multiply, normal !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel::before {
+    background:
+      radial-gradient(circle at 35% 25%, rgb(56 189 248 / 22%), transparent 22rem),
+      linear-gradient(180deg, rgb(5 54 130 / 4%), rgb(5 42 105 / 42%)) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel::after {
+    content: "";
+    position: absolute;
+    inset: 0 -1px 0 auto;
+    z-index: 3;
+    display: block !important;
+    width: 34px;
+    height: 100%;
+    pointer-events: none;
+    border: 0;
+    border-radius: 0;
+    background:
+      radial-gradient(circle at 100% 18px, transparent 0 17px, #fff 18px 100%)
+      0 0 / 36px 36px repeat-y;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-inner {
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-copy {
+    inset: auto !important;
+    width: min(76%, 430px) !important;
+    padding: 0 !important;
+    text-align: center !important;
+    transform: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-copy h2 {
+    font-size: clamp(28px, 2.5vw, 40px) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-description {
+    font-size: 14px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    grid-area: form !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 28px clamp(38px, 5vw, 72px) !important;
+    overflow: hidden !important;
+    background:
+      radial-gradient(circle at 14% 18%, rgb(20 184 216 / 13%) 0, transparent 34%),
+      radial-gradient(circle at 86% 82%, rgb(112 77 235 / 11%) 0, transparent 38%),
+      linear-gradient(145deg, #fcfdff 0%, #f7f7ff 52%, #fbf9ff 100%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-shell {
+    width: min(100%, 440px) !important;
+    max-height: none !important;
+    gap: 14px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-shell > .register-heading {
+    transform: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-shell > .register-heading h1 {
+    font-size: clamp(30px, 2.15vw, 37px) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-shell > .login-card {
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .floating-field input {
+    min-height: 52px !important;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 700px) {
+  body.login-page:not(.auth-flow-page) > .main-content {
+    padding-block: 76px 14px !important;
+  }
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    height: calc(100dvh - 90px) !important;
+    min-height: 0 !important;
+  }
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    padding-block: 16px !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-shell { gap: 8px !important; }
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .auth-layout,
+body.login-page:not(.auth-flow-page).dark-mode .auth-layout,
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .auth-form-panel,
+body.login-page:not(.auth-flow-page).dark-mode .auth-form-panel {
+  background:
+    radial-gradient(circle at 14% 18%, rgb(20 184 216 / 12%) 0, transparent 34%),
+    radial-gradient(circle at 86% 82%, rgb(112 77 235 / 14%) 0, transparent 38%),
+    linear-gradient(145deg, #11182b 0%, #141a30 52%, #18182f 100%) !important;
+  border-color: #2a3550 !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .auth-visual-panel::after,
+body.login-page:not(.auth-flow-page).dark-mode .auth-visual-panel::after {
+  background:
+    radial-gradient(circle at 100% 18px, transparent 0 17px, #11182b 18px 100%)
+    0 0 / 36px 36px repeat-y;
+}
+
+/* Revert the latest centered split-card experiment. */
+@media (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) {
+    background:
+      radial-gradient(circle at 14% 18%, rgb(104 21 237 / 6%), transparent 24rem),
+      linear-gradient(135deg, #fbfbfd 0%, #f2f3f8 100%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) > .main-content {
+    width: 100% !important;
+    height: 100dvh !important;
+    padding: 0 !important;
+    display: block !important;
+    overflow: hidden !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    width: 100% !important;
+    max-width: none !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    grid-template-columns: minmax(400px, 47fr) minmax(520px, 53fr) !important;
+    grid-template-areas: "form visual" !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    grid-area: form !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    padding: 82px clamp(42px, 6vw, 96px) 24px !important;
+    overflow: hidden !important;
+    background: transparent !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    grid-area: visual !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    border-radius: 48% 0 0 48% / 100% 0 0 100% !important;
+    background-color: #d9d3eb !important;
+    background-image: url("../../assets/images/login.png") !important;
+    background-position: center !important;
+    background-size: cover !important;
+    background-blend-mode: normal !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel::before {
+    background: linear-gradient(
+      180deg,
+      rgb(8 12 28 / 3%) 0%,
+      rgb(8 12 28 / 10%) 48%,
+      rgb(8 12 28 / 54%) 100%
+    ) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel::after {
+    display: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-copy {
+    inset: auto !important;
+    width: min(72%, 560px) !important;
+    padding: 0 !important;
+    text-align: center !important;
+    transform: translateX(7%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-shell {
+    width: min(100%, 480px) !important;
+    max-height: calc(100dvh - 88px) !important;
+    gap: clamp(16px, 2.2vh, 24px) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-shell > .register-heading {
+    transform: translateY(-12px) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-shell > .login-card {
+    padding: 28px 34px 26px !important;
+    border: 1px solid rgb(222 226 236 / 82%) !important;
+    border-radius: 22px !important;
+    background: color-mix(in srgb, var(--auth-surface) 97%, transparent) !important;
+    box-shadow: 0 20px 52px rgb(42 45 94 / 10%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .floating-field input {
+    min-height: 60px !important;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 760px) {
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    padding-block: 68px 12px !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-shell {
+    width: min(100%, 460px) !important;
+    gap: 12px !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-shell > .register-heading {
+    transform: translateY(-6px) !important;
+  }
+  body.login-page:not(.auth-flow-page) .login-shell > .login-card {
+    padding: 16px 26px !important;
+  }
+  body.login-page:not(.auth-flow-page) .floating-field input {
+    min-height: 48px !important;
+  }
+}
+
+/* Absolute final theme appearance: icon only, no square. */
+body.login-page:not(.auth-flow-page) .theme-toggle,
+body.login-page:not(.auth-flow-page) .theme-toggle:hover,
+body.login-page:not(.auth-flow-page) .theme-toggle:focus-visible {
+  display: inline-grid !important;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  padding: 0 !important;
+  place-items: center !important;
+  overflow: visible !important;
+  color: var(--auth-secondary) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+}
+body.login-page:not(.auth-flow-page) .theme-toggle:hover { color: var(--auth-primary) !important; }
+body.login-page:not(.auth-flow-page) #themeToggleIcon {
+  display: inline-block !important;
+  width: auto !important;
+  height: auto !important;
+  color: inherit !important;
+  font-size: 24px !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Dark mode must remain icon-only too. */
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle,
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle:hover,
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle:focus,
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle:active,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle:hover,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle:focus,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle:active {
+  appearance: none !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+/* Match the language button hover motion. */
+body.login-page:not(.auth-flow-page) .theme-toggle {
+  transition: color var(--auth-transition), transform var(--auth-transition) !important;
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle:hover {
+  color: var(--auth-primary) !important;
+  transform: translateY(-1px) !important;
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle:hover #themeToggleIcon {
+  animation: authGlobeSpin 1.1s ease;
+}
+
+/* Purple at rest; gently tilt instead of spinning on hover. */
+body.login-page:not(.auth-flow-page) .theme-toggle,
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .theme-toggle,
+body.login-page:not(.auth-flow-page).dark-mode .theme-toggle {
+  color: var(--auth-primary) !important;
+}
+
+body.login-page:not(.auth-flow-page) #themeToggleIcon {
+  transform-origin: center !important;
+  transition: transform 220ms ease !important;
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle:hover {
+  color: var(--auth-primary) !important;
+  transform: translateY(-1px) !important;
+}
+
+body.login-page:not(.auth-flow-page) .theme-toggle:hover #themeToggleIcon {
+  animation: none !important;
+  transform: rotate(-14deg) !important;
+}
+
+/* Simple neutral veil over the login artwork for a calmer background. */
+@media (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) .auth-visual-panel::before {
+    background: linear-gradient(
+      180deg,
+      rgb(9 15 35 / 5%) 0%,
+      rgb(9 15 35 / 10%) 50%,
+      rgb(9 15 35 / 58%) 100%
+    ) !important;
+  }
+}
+
+/* Give the visual side the same generous, sweeping footprint as the reference. */
+@media (min-width: 1100px) {
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    grid-template-columns: minmax(390px, 42fr) minmax(600px, 58fr) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    border-radius: 50% 0 0 50% / 100% 0 0 100% !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-copy {
+    width: min(68%, 570px) !important;
+    transform: translateX(9%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    padding-inline: clamp(30px, 4vw, 68px) !important;
+  }
+}
+
+/* Keep language and theme controls together as one compact group. */
+body.login-page:not(.auth-flow-page) .auth-topbar__actions {
+  gap: 14px !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-topbar .language-toggle {
+  width: auto !important;
+  min-width: 0 !important;
+  padding-inline: 2px !important;
+  gap: 6px !important;
+}
+
+body.login-page:not(.auth-flow-page) .auth-topbar .theme-toggle {
+  width: 38px !important;
+  min-width: 38px !important;
+}
+
+@media (min-width: 901px) and (max-width: 1099px) {
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    grid-template-columns: minmax(370px, 46fr) minmax(470px, 54fr) !important;
+  }
+}
+
+/* True sweeping ellipse: visibly cuts into the form side like the reference. */
+@media (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    border-radius: 0 !important;
+    clip-path: ellipse(88% 112% at 100% 50%);
+  }
+}
+
+/* The ellipse occupies 55% of the desktop canvas. */
+@media (min-width: 1100px) {
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    position: relative !important;
+    display: block !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    position: absolute !important;
+    inset: 0 0 0 auto !important;
+    z-index: 0 !important;
+    width: 55% !important;
+    height: 100% !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-form-panel {
+    position: relative !important;
+    z-index: 2 !important;
+    inset: 0 auto 0 0 !important;
+    width: 50% !important;
+    height: 100% !important;
+    display: grid !important;
+    place-items: center !important;
+    padding-inline: clamp(32px, 5vw, 88px) !important;
+    box-sizing: border-box;
+  }
+
+  body.login-page:not(.auth-flow-page) .login-shell {
+    margin: auto !important;
+  }
+}
+
+@media (min-width: 1400px) {
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    /* The ellipse trims roughly 8% of the visual column at its midpoint;
+       68% here produces about 60% of actually visible artwork. */
+    grid-template-columns: minmax(0, 32fr) minmax(0, 68fr) !important;
+  }
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    clip-path: ellipse(86% 112% at 100% 50%);
+  }
+}
+
+@media (min-width: 1100px) and (max-width: 1399px) {
+  body.login-page:not(.auth-flow-page) .auth-layout {
+    grid-template-columns: minmax(0, 36fr) minmax(0, 64fr) !important;
+  }
+}
+
+/* Keep every printed product visible inside the elliptical crop. */
+@media (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    background-color: #a9a6c9 !important;
+    background-image: url("../../assets/images/login.png") !important;
+    background-position: right center !important;
+    background-size: auto 82% !important;
+    background-repeat: no-repeat !important;
+  }
+}
+
+/* Reference-matched curve: broad at the top, progressively narrower below. */
+@media (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    border-radius: 0 !important;
+    clip-path: ellipse(100% 130% at 100% 0%) !important;
+  }
+}
+
+/* A matching backdrop and floor beneath the product photograph. */
+@media (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    background-color: #aaa4c8 !important;
+    background-image:
+      url("../../assets/images/login.png"),
+      linear-gradient(
+        180deg,
+        #aaa4c8 0%,
+        #aaa4c8 40%,
+        #77799f 52%,
+        #35447b 66%,
+        #17234f 100%
+      ) !important;
+    background-position: center bottom, center !important;
+    background-size: 82% 90%, 100% 100% !important;
+    background-repeat: no-repeat !important;
+  }
+}
+
+/* Place artwork copy in the upper side, clear of the printed products. */
+@media (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) .auth-visual-copy {
+    position: absolute !important;
+    inset: 16% 6% auto auto !important;
+    width: min(58%, 500px) !important;
+    max-width: 500px !important;
+    padding: 0 !important;
+    text-align: start !important;
+    transform: none !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-copy h2,
+  body.login-page:not(.auth-flow-page) .auth-visual-description {
+    margin-inline: 0 !important;
+  }
+}
+
+/* Final visual-copy composition: balanced beside the logo and above products. */
+@media (min-width: 1100px) {
+  body.login-page:not(.auth-flow-page) .auth-visual-copy {
+    inset: 38px auto auto 3.5% !important;
+    width: min(56%, 570px) !important;
+    max-width: 570px !important;
+    text-align: center !important;
+    text-shadow: 0 3px 16px rgb(8 14 38 / 32%);
+    font-family: "Cairo", Arial, sans-serif !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-kicker {
+    margin: 0 auto 13px !important;
+    padding: 6px 13px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: .01em;
+    color: #effcff !important;
+    border-color: rgb(218 250 255 / 38%) !important;
+    background: rgb(27 45 92 / 30%) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-copy h2 {
+    width: 100% !important;
+    max-width: 570px !important;
+    margin: 0 auto 14px !important;
+    font-size: clamp(30px, 2.2vw, 40px) !important;
+    font-weight: 800 !important;
+    line-height: 1.38 !important;
+    color: transparent !important;
+    background: linear-gradient(100deg, #ffffff 10%, #e6fbff 52%, #cceeff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -.02em;
+    text-wrap: balance;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-description {
+    width: 100% !important;
+    max-width: 540px !important;
+    margin: 0 auto !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.9 !important;
+    color: #eef4ff !important;
+    letter-spacing: .005em;
+    text-wrap: balance;
+  }
+}
+
+/* Keep the two social icons visibly adjacent. */
+body.login-page:not(.auth-flow-page) .social-auth-row {
+  display: flex !important;
+  width: max-content !important;
+  margin-inline: auto !important;
+  justify-content: center !important;
+  gap: 10px !important;
+}
+
+body.login-page:not(.auth-flow-page) .social-auth-row .google-button {
+  margin: 0 !important;
+}
+
+body.login-page:not(.auth-flow-page) .social-auth-row .google-button + .google-button {
+  margin-inline-start: 0 !important;
+}
+
+@media (min-width: 901px) and (max-height: 720px) {
+  body.login-page:not(.auth-flow-page) .auth-visual-copy {
+    inset-block-start: 13% !important;
+  }
+}
+
+/* Copy sits beside the PALPRINTS logo at the top of the visual. */
+@media (min-width: 1100px) {
+  body.login-page:not(.auth-flow-page) .auth-visual-copy {
+    inset: 28px auto auto 1.5% !important;
+    width: min(46%, 460px) !important;
+    max-width: 460px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-kicker {
+    margin-bottom: 7px !important;
+    padding: 5px 11px !important;
+    font-size: 12px !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-copy h2 {
+    margin-bottom: 5px !important;
+    font-size: clamp(27px, 2vw, 36px) !important;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-description {
+    margin-bottom: 0 !important;
+    font-size: 14px !important;
+    line-height: 1.75 !important;
+  }
+}
+
+/* Readability surface behind the artwork copy only. */
+@media (min-width: 901px) {
+  body.login-page:not(.auth-flow-page) .auth-visual-copy {
+    padding: 0 !important;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-panel::before {
+    background: linear-gradient(
+      90deg,
+      rgb(11 18 44 / 34%) 0%,
+      rgb(11 18 44 / 20%) 48%,
+      rgb(11 18 44 / 12%) 100%
+    ) !important;
+    pointer-events: none;
+    backdrop-filter: blur(1.25px);
+    -webkit-backdrop-filter: blur(1.25px);
+  }
+
+  body.login-page:not(.auth-flow-page) .auth-visual-inner,
+  body.login-page:not(.auth-flow-page) .auth-visual-copy {
+    position: relative;
+    z-index: 2;
+  }
+}
+
+/* Final dark-mode polish for the login form. */
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .auth-form-panel,
+body.login-page:not(.auth-flow-page).dark-mode .auth-form-panel {
+  background: transparent !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .login-shell > .login-card,
+body.login-page:not(.auth-flow-page).dark-mode .login-shell > .login-card {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .floating-field input,
+body.login-page:not(.auth-flow-page).dark-mode .floating-field input {
+  color: #f5f7ff !important;
+  border-color: #4a587d !important;
+  background: #1b2644 !important;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 3%) inset;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .floating-field input:focus,
+body.login-page:not(.auth-flow-page).dark-mode .floating-field input:focus {
+  border-color: #5fcde1 !important;
+  box-shadow: 0 0 0 3px rgb(20 184 216 / 14%) !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .social-divider::before,
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .social-divider::after,
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .social-divider > span,
+body.login-page:not(.auth-flow-page).dark-mode .social-divider::before,
+body.login-page:not(.auth-flow-page).dark-mode .social-divider::after,
+body.login-page:not(.auth-flow-page).dark-mode .social-divider > span {
+  background: #33405e !important;
+}
+
+html[data-theme="dark"] body.login-page:not(.auth-flow-page) .apple-button .bi-apple,
+body.login-page:not(.auth-flow-page).dark-mode .apple-button .bi-apple {
+  color: #101322 !important;
+}
+
+/* Mirror the complete login composition when the interface is English. */
+html[dir="ltr"] body.login-page:not(.auth-flow-page) .auth-form-panel {
+  direction: ltr !important;
+}
+
+@media (min-width: 901px) {
+  html[dir="ltr"] body.login-page:not(.auth-flow-page) .auth-layout {
+    grid-template-areas: "visual form" !important;
+  }
+
+  html[dir="ltr"] body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    clip-path: ellipse(100% 130% at 0% 0%) !important;
+    background-position: center bottom, center !important;
+  }
+
+  html[dir="ltr"] body.login-page:not(.auth-flow-page) .auth-visual-copy {
+    inset: 16% auto auto 6% !important;
+  }
+
+  html[dir="ltr"] body.login-page:not(.auth-flow-page) .auth-visual-panel::before {
+    background: linear-gradient(
+      270deg,
+      rgb(11 18 44 / 34%) 0%,
+      rgb(11 18 44 / 20%) 48%,
+      rgb(11 18 44 / 12%) 100%
+    ) !important;
+  }
+}
+
+@media (min-width: 1100px) {
+  html[dir="ltr"] body.login-page:not(.auth-flow-page) .auth-visual-panel {
+    inset: 0 auto 0 0 !important;
+  }
+
+  html[dir="ltr"] body.login-page:not(.auth-flow-page) .auth-form-panel {
+    position: absolute !important;
+    inset: 0 0 0 auto !important;
+  }
+
+  html[dir="ltr"] body.login-page:not(.auth-flow-page) .auth-visual-copy {
+    inset: 28px 1.5% auto auto !important;
+  }
+}
+
+/* Explicit language class keeps the mirrored desktop layout deterministic. */
+body.login-page:not(.auth-flow-page).is-ltr .auth-form-panel {
+  direction: ltr !important;
+}
+
+@media (min-width: 901px) {
+  body.login-page:not(.auth-flow-page).is-ltr .auth-layout {
+    grid-template-areas: "visual form" !important;
+  }
+
+  body.login-page:not(.auth-flow-page).is-ltr .auth-visual-panel {
+    clip-path: ellipse(100% 130% at 0% 0%) !important;
+    background-position: center bottom, center !important;
+  }
+
+  body.login-page:not(.auth-flow-page).is-ltr .auth-visual-copy {
+    right: auto !important;
+    left: 6% !important;
+  }
+}
+
+@media (min-width: 1100px) {
+  body.login-page:not(.auth-flow-page).is-ltr .auth-visual-panel {
+    right: auto !important;
+    left: 0 !important;
+  }
+
+  body.login-page:not(.auth-flow-page).is-ltr .auth-form-panel {
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+  }
+
+  body.login-page:not(.auth-flow-page).is-ltr .auth-visual-copy {
+    right: 1.5% !important;
+    left: auto !important;
+  }
+}
+
+/* Optical alignment of translated header controls. */
+html[dir="ltr"] body.login-page:not(.auth-flow-page) .auth-topbar__actions,
+body.login-page:not(.auth-flow-page).is-ltr .auth-topbar__actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  height: 48px;
+}
+
+html[dir="ltr"] body.login-page:not(.auth-flow-page) .language-toggle,
+html[dir="ltr"] body.login-page:not(.auth-flow-page) .theme-toggle,
+body.login-page:not(.auth-flow-page).is-ltr .language-toggle,
+body.login-page:not(.auth-flow-page).is-ltr .theme-toggle {
+  align-self: center !important;
+  height: 48px !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+html[dir="ltr"] body.login-page:not(.auth-flow-page) .theme-toggle,
+body.login-page:not(.auth-flow-page).is-ltr .theme-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+html[dir="ltr"] body.login-page:not(.auth-flow-page) #themeToggleIcon,
+body.login-page:not(.auth-flow-page).is-ltr #themeToggleIcon {
+  position: static !important;
+  inset: auto !important;
+  display: block !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+/* Account Status: keep the whole experience inside the viewport. Spacing and
+   controls tighten progressively with height, so no content is clipped and no
+   page scrollbar is needed. */
+html:has(body.account-status-page),
+body.account-status-page {
+  height: 100svh !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+body.account-status-page .account-status-main {
+  height: 100svh !important;
+  min-height: 0 !important;
+  box-sizing: border-box;
+  padding: 88px 12px 12px !important;
+  overflow: hidden !important;
+}
+
+body.account-status-page .account-status-shell {
+  width: min(92vw, 680px) !important;
+  max-height: 100%;
+  transform: none !important;
+}
+
+body.account-status-page .account-status-card {
+  width: 100% !important;
+  min-height: 0 !important;
+  max-height: 100%;
+  margin-inline: auto !important;
+}
+
+@media (min-height: 901px) and (min-width: 641px) {
+  body.account-status-page .account-status-card {
+    min-height: min(720px, calc(100svh - 112px)) !important;
+  }
+}
+
+@media (max-height: 900px) {
+  body.account-status-page .account-status-card {
+    justify-content: flex-start;
+    padding: 12px 24px !important;
+  }
+
+  body.account-status-page .status-symbol {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 5px !important;
+  }
+
+  body.account-status-page .auth-flow-heading h1 {
+    margin-block: 6px;
+    font-size: clamp(22px, 2.6vh, 28px) !important;
+  }
+
+  body.account-status-page .register-subtitle {
+    margin-block: 4px 0;
+    font-size: clamp(0.78rem, 1.7vh, 0.94rem);
+    line-height: 1.55;
+  }
+
+  body.account-status-page .status-review-summary,
+  body.account-status-page .status-progress,
+  body.account-status-page .status-details,
+  body.account-status-page .status-actions {
+    margin-top: clamp(8px, 1.45vh, 13px) !important;
+  }
+
+  body.account-status-page .status-review-summary {
+    padding: 8px 14px !important;
+  }
+
+  body.account-status-page .status-review-summary h2 {
+    margin-bottom: 3px;
+  }
+
+  body.account-status-page .status-review-summary p {
+    font-size: 0.78rem;
+    line-height: 1.45 !important;
+  }
+
+  body.account-status-page .status-review-summary .status-next-note {
+    margin-top: 3px;
+  }
+
+  body.account-status-page .status-progress-step {
+    gap: 4px;
+  }
+
+  body.account-status-page .status-progress-marker {
+    width: 30px;
+    height: 30px;
+  }
+
+  body.account-status-page .status-progress-step:not(:last-child)::after {
+    inset-block-start: 14px;
+  }
+
+  body.account-status-page .status-details {
+    row-gap: 7px !important;
+  }
+
+  body.account-status-page .status-details > div {
+    padding: 6px 12px !important;
+  }
+
+  body.account-status-page .status-actions {
+    gap: 7px !important;
+  }
+
+  body.account-status-page .status-actions .primary-button,
+  body.account-status-page .secondary-auth-button {
+    min-height: 40px !important;
+  }
+}
+
+@media (max-height: 720px) {
+  body.account-status-page .account-status-main {
+    padding-top: 74px !important;
+  }
+
+  body.account-status-page .status-review-summary .status-next-note {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  body.account-status-page .account-status-main {
+    padding: 78px 8px 8px !important;
+  }
+
+  body.account-status-page .account-status-shell {
+    width: min(94vw, 680px) !important;
+  }
+
+  body.account-status-page .account-status-card {
+    padding-inline: 14px !important;
+  }
+}
+
+@media (max-width: 380px), (max-height: 640px) {
+  body.account-status-page .account-status-main {
+    padding-top: 68px !important;
+  }
+
+  body.account-status-page .account-status-card {
+    padding: 8px 12px !important;
+  }
+
+  body.account-status-page .status-symbol {
+    width: 38px;
+    height: 38px;
+  }
+
+  body.account-status-page .status-review-summary,
+  body.account-status-page .status-progress,
+  body.account-status-page .status-details,
+  body.account-status-page .status-actions {
+    margin-top: 6px !important;
+  }
+
+  body.account-status-page .status-progress-label {
+    font-size: 0.66rem;
+  }
+}

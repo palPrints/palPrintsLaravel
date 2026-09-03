@@ -20,6 +20,13 @@ class DeliveryPartner extends Model
         'estimated_delivery_days',
         'api_key',
         'approval_status',
+        'profile_completed_at',
+        'submitted_at',
+        'reviewed_at',
+        'approved_at',
+        'approved_by',
+        'rejection_reason',
+        'admin_notes',
         'is_active',
     ];
 
@@ -30,6 +37,10 @@ class DeliveryPartner extends Model
     protected $casts = [
         'service_areas' => 'array',
         'delivery_fee' => 'decimal:2',
+        'profile_completed_at' => 'datetime',
+        'submitted_at' => 'datetime',
+        'reviewed_at' => 'datetime',
+        'approved_at' => 'datetime',
         'is_active' => 'boolean',
     ];
 
@@ -43,5 +54,10 @@ class DeliveryPartner extends Model
     public function orders()
     {
         return $this->hasMany(Order::class, 'delivery_partner_id', 'user_id');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }
