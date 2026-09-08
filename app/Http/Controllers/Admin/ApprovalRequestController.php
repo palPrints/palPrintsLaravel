@@ -12,9 +12,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class ApprovalRequestController extends Controller
 {
+    public function index(): View
+    {
+        return view('admin.approval-requests', [
+            'approvalRequests' => ApprovalRequest::with('user')
+                ->whereIn('status', ['submitted', 'under_review'])
+                ->latest('submitted_at')
+                ->get(),
+        ]);
+    }
+
     public function update(Request $request, ApprovalRequest $approvalRequest): RedirectResponse
     {
         $validated = $request->validate([

@@ -3891,6 +3891,9 @@ body[data-account-status="rejected"] .status-symbol {
   margin-top: 8px;
   color: var(--text-muted);
 }
+.status-admin-note { margin-top: 14px; padding: 12px 14px; color: #7a4b00; background: #fff6df; border: 1px solid rgb(224 138 18 / 30%); border-radius: 10px; }
+.status-admin-note strong { display: block; margin-bottom: 4px; }
+.status-admin-note p { margin: 0; }
 
 .status-progress {
   width: min(100%, 540px);

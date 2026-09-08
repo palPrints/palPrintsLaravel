@@ -54,6 +54,12 @@
             <h2 id="status-now-title">ماذا يحدث الآن؟</h2>
             <p id="statusNowDescription">نراجع البيانات المرسلة للتأكد من جاهزية الحساب قبل تفعيل الصلاحيات.</p>
             <p class="status-next-note" id="statusNextNote">سنرسل لك إشعارًا عبر البريد الإلكتروني عند اكتمال المراجعة أو إذا احتجنا معلومات إضافية.</p>
+            @if(filled($accountAdminNotes ?? null))
+              <div class="status-admin-note" role="note">
+                <strong>ملاحظة الإدارة</strong>
+                <p>{{ $accountAdminNotes }}</p>
+              </div>
+            @endif
           </section>
 
           <ol class="status-progress" id="statusProgress" aria-label="مراحل مراجعة الحساب">

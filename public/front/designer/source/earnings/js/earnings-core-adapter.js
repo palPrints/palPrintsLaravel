@@ -80,7 +80,7 @@
     if (!section || typeof loader !== "function") return Promise.resolve();
     section.dataset.state = "loading";
     return Promise.resolve().then(loader).then(function (result) {
-      section.dataset.state = "success";
+      section.dataset.state = "ready";
       return result;
     }).catch(function (error) {
       section.dataset.state = "error";

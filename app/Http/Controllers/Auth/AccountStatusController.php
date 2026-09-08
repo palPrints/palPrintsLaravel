@@ -19,6 +19,7 @@ class AccountStatusController extends Controller
 
         $role = $user->primaryRole();
         $status = $user->approvalStatus();
+        $profile = $user->roleProfile();
         $roleForUi = $role === 'print_provider' ? 'printer' : $role;
         $roleLabel = match ($role) {
             'designer' => 'مصمم',
@@ -41,6 +42,7 @@ class AccountStatusController extends Controller
                 $user->created_at->format('Y'),
                 $user->id
             ),
+            'accountAdminNotes' => $profile?->admin_notes,
         ]);
     }
 }

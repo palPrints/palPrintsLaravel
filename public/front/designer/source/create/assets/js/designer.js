@@ -1,56 +1,38 @@
 const selection = JSON.parse(sessionStorage.getItem("palprintsDesignerSelection") || "null");
 
-const catalog = {
-    "product-001": {
-        name: "تي شيرت كلاسيكي",
-        price: 29,
-        colorName: { white: "أبيض", black: "أسود", navy: "كحلي", red: "أحمر", green: "أخضر" },
-        image: "assets/images/tshirt.webp",
-        colors: [{ id: "white", value: "#fff" }, { id: "black", value: "#111" }, { id: "navy", value: "#173b87" }, { id: "red", value: "#d52a3c" }, { id: "green", value: "#2e9b42" }],
-        sizes: ["S", "M", "L", "XL", "XXL"],
-        areas: [{ id: "front", name: "الأمام", image: "assets/images/printing-areas/tshirt/tshirt-front-removebg-preview.png", dimensions: "28 × 36 سم" }, { id: "back", name: "الخلف", image: "assets/images/printing-areas/tshirt/tshirt-back-removebg-preview.png", dimensions: "28 × 36 سم" }, { id: "right-sleeve", name: "الكم الأيمن", image: "assets/images/printing-areas/tshirt/tshirt-rightSleeve-removebg-preview.png", dimensions: "10 × 12 سم" }, { id: "left-sleeve", name: "الكم الأيسر", image: "assets/images/printing-areas/tshirt/tshirt-leftSleeve-removebg-preview.png", dimensions: "10 × 12 سم" }]
-    },
-    "product-002": {
-        name: "هودي بسيط", price: 79, colorName: { white: "أبيض", black: "أسود" }, colors: [{ id: "white", value: "#fff", image: "assets/images/hoodie.png" }, { id: "black", value: "#111", image: "assets/images/hoodie-black.png" }], sizes: ["S", "M", "L", "XL"], areas: [{ id: "front", name: "الأمام", image: "assets/images/printing-areas/hoodie/hoodie-front.png", dimensions: "28 × 36 سم" }, { id: "back", name: "الخلف", image: "assets/images/printing-areas/hoodie/hoodie-back.png", dimensions: "28 × 36 سم" }]
-    },
-    "product-003": { name: "كوب سيراميك", price: 19, colorName: { white: "أبيض" }, image: "assets/images/cup.webp", colors: [{ id: "white", value: "#fff" }], sizes: ["قياسي"], areas: [{ id: "front", name: "الواجهة", image: "assets/images/cup.webp", dimensions: "20 × 9 سم" }] },
-    "product-004": { name: "حقيبة قماشية", price: 39, colorName: { white: "أبيض" }, image: "assets/images/bag.png", colors: [{ id: "white", value: "#fff" }], sizes: ["قياسي"], areas: [{ id: "front", name: "الأمام", image: "assets/images/bag.png", dimensions: "28 × 30 سم" }, { id: "back", name: "الخلف", image: "assets/images/bag.png", dimensions: "28 × 30 سم" }] },
-    "product-005": {
-        name: "تي شيرت ثقيل باهت",
-        price: 49,
-        colorName: { "faded-black": "أسود باهت", "faded-brown": "بني باهت", "faded-cream": "كريمي باهت", "faded-navy": "كحلي باهت" },
-        colors: [
-            { id: "faded-black", value: "#4a4a48", image: "assets/products/tshirt-2/tshirt-dyed-heavyweight-faded-black-removebg-preview.png" },
-            { id: "faded-brown", value: "#9b816a", image: "assets/products/tshirt-2/tshirt-dyed-heavyweight-faded-brown-removebg-preview.png" },
-            { id: "faded-cream", value: "#f1ebdd", image: "assets/products/tshirt-2/tshirt-dyed-heavyweight-faded-cream-removebg-preview.png" },
-            { id: "faded-navy", value: "#345775", image: "assets/products/tshirt-2/tshirt-dyed-heavyweight-faded-navy-removebg-preview.png" }
-        ],
-        sizes: ["S", "M", "L", "XL", "XXL"],
-        areas: [{ id: "front", name: "الأمام", image: "assets/images/printing-areas/tshirt/tshirt-front-removebg-preview.png", dimensions: "28 × 36 سم" }, { id: "back", name: "الخلف", image: "assets/images/printing-areas/tshirt/tshirt-back-removebg-preview.png", dimensions: "28 × 36 سم" }, { id: "right-sleeve", name: "الكم الأيمن", image: "assets/images/printing-areas/tshirt/tshirt-rightSleeve-removebg-preview.png", dimensions: "10 × 12 سم" }, { id: "left-sleeve", name: "الكم الأيسر", image: "assets/images/printing-areas/tshirt/tshirt-leftSleeve-removebg-preview.png", dimensions: "10 × 12 سم" }],
+/* =============================================================
+   BACKEND DATA
+
+   Product/color/size/print-area data is provided by the server
+   via window.palPrintsCatalogData (see Designer\ProductCatalogController
+   and resources/views/designer/designs/editor.blade.php).
+
+   Layout-only overrides (canvasWidth, canvasMobileWidth, printZone)
+   stay here since they are purely visual placement for the canvas
+   editor and are not part of the catalog data.
+============================================================= */
+
+const CATALOG_LAYOUT_OVERRIDES = {
+    "tshirt-heavyweight-faded": {
         canvasWidth: "min(56%, 455px)",
         canvasMobileWidth: "76%",
         printZone: { top: "31%", left: "32%", width: "36%", height: "36%" }
     },
-    "product-006": {
-        name: "قبعة كلاسيكية",
-        price: 25,
-        colorName: { black: "أسود", navy: "كحلي", storm: "رمادي فاتح", walnut: "جوزي" },
-        colors: [
-            { id: "black", value: "#171717", image: "assets/products/cap/cap-black-removebg-preview.png" },
-            { id: "navy", value: "#1d1e2b", image: "assets/products/cap/cap-navy-removebg-preview.png" },
-            { id: "storm", value: "#d3d3d3", image: "assets/products/cap/cap-storm-removebg-preview.png" },
-            { id: "walnut", value: "#786551", image: "assets/products/cap/cap-wallnut-removebg-preview.png" }
-        ],
-        sizes: ["قياسي"],
-        areas: [{ id: "front", name: "الواجهة", dimensions: "18 × 8 سم" }],
+    "cap-classic": {
         canvasWidth: "min(56%, 455px)",
         canvasMobileWidth: "76%",
         printZone: { top: "29%", left: "31%", width: "38%", height: "20%" }
     }
 };
 
-const productId = selection?.productId || "product-001";
-const product = catalog[productId] || catalog["product-001"];
+const catalogProducts = window.palPrintsCatalogData?.products || [];
+const catalog = Object.fromEntries(catalogProducts.map(catalogProduct => [
+    String(catalogProduct.id),
+    { ...catalogProduct, ...(CATALOG_LAYOUT_OVERRIDES[catalogProduct.code] || {}) }
+]));
+
+const productId = String(selection?.productId ?? catalogProducts[0]?.id ?? "");
+const product = catalog[productId] || catalogProducts[0];
 const storedDesignerState = JSON.parse(sessionStorage.getItem("palprintsDesignerState") || "null");
 const restoredState = storedDesignerState?.productId === productId ? storedDesignerState : null;
 const requestedAreaId = restoredState?.areaId || selection?.printAreaIds?.[0] || "front";
@@ -58,7 +40,7 @@ const initialAreaId = product.areas.some(area => area.id === requestedAreaId) ? 
 const state = {
     productId,
     colorId: restoredState?.colorId || selection?.colorId || product.colors[0].id,
-    sizeId: restoredState?.sizeId || selection?.sizeId || product.sizes[0],
+    sizeId: restoredState?.sizeId || selection?.sizeId || product.sizes[0].id,
     areaId: initialAreaId,
     zoom: 1,
     tool: "upload",
@@ -378,7 +360,7 @@ function renderProduct() {
     const activeColor = product.colors.find(color => color.id === state.colorId) || product.colors[0];
     const productImage = $("productImage");
     const area = activeArea();
-    productImage.src = (area.id === "front" && (activeColor.image || product.image)) || area.image || activeColor.image || product.image;
+    productImage.src = (area.id === "front" && (activeColor.image || product.thumbnail)) || area.image || activeColor.image || product.thumbnail;
     productImage.alt = `${product.name} - ${area.name}`;
     if (productImage.complete && productImage.naturalWidth) updateProductAspectRatio();
     $("areaDimensions").textContent = area.dimensions;
@@ -422,8 +404,8 @@ function fitProductToStage() {
     canvas.style.setProperty("--product-render-width", `${Math.max(1, Math.min(preferredWidth, heightFitWidth))}px`);
 }
 function renderAreas() { const select = $("areaSelect"); select.innerHTML = product.areas.map(area => `<option value="${area.id}">${area.name}</option>`).join(""); select.value = state.areaId; }
-function renderColors() { $("swatches").innerHTML = product.colors.map(color => `<button class="swatch ${color.id === state.colorId ? "active" : ""}" type="button" data-color="${color.id}" style="background:${color.value}" aria-label="${product.colorName[color.id]}"></button>`).join(""); document.querySelectorAll("[data-color]").forEach(button => button.addEventListener("click", () => { state.colorId = button.dataset.color; renderColors(); renderProduct(); showToast(`تم اختيار اللون ${product.colorName[state.colorId]}`); })); }
-function renderSizes() { $("sizes").innerHTML = product.sizes.map(size => `<button class="size-button ${size === state.sizeId ? "active" : ""}" type="button" data-size="${size}">${size}</button>`).join(""); document.querySelectorAll("[data-size]").forEach(button => button.addEventListener("click", () => { state.sizeId = button.dataset.size; renderSizes(); renderProduct(); })); }
+function renderColors() { $("swatches").innerHTML = product.colors.map(color => `<button class="swatch ${color.id === state.colorId ? "active" : ""}" type="button" data-color="${color.id}" style="background:${color.value}" aria-label="${color.name}"></button>`).join(""); document.querySelectorAll("[data-color]").forEach(button => button.addEventListener("click", () => { state.colorId = button.dataset.color; renderColors(); renderProduct(); const chosen = product.colors.find(color => color.id === state.colorId); showToast(`تم اختيار اللون ${chosen.name}`); })); }
+function renderSizes() { $("sizes").innerHTML = product.sizes.map(size => `<button class="size-button ${size.id === state.sizeId ? "active" : ""}" type="button" data-size="${size.id}">${size.name}</button>`).join(""); document.querySelectorAll("[data-size]").forEach(button => button.addEventListener("click", () => { state.sizeId = button.dataset.size; renderSizes(); renderProduct(); })); }
 
 function renderComponentsLibrary() {
     $("componentsGrid").innerHTML = componentAssets.map(asset => `
@@ -1101,7 +1083,7 @@ function serializeDesignerHistoryState() {
 
 function restoreDesignerHistoryState(snapshot) {
     state.colorId = product.colors.some(color => color.id === snapshot.colorId) ? snapshot.colorId : product.colors[0].id;
-    state.sizeId = product.sizes.includes(snapshot.sizeId) ? snapshot.sizeId : product.sizes[0];
+    state.sizeId = product.sizes.some(size => size.id === snapshot.sizeId) ? snapshot.sizeId : product.sizes[0].id;
     state.areaId = product.areas.some(area => area.id === snapshot.areaId) ? snapshot.areaId : product.areas[0].id;
     state.designsByArea = Object.fromEntries(Object.entries(snapshot.designsByArea || {}).map(([areaId, design]) => [areaId, {
         images: (design.images || []).map(image => {

@@ -77,6 +77,12 @@
       rejectedNowTitle: "ما الخطوة التالية؟",
       rejectedNow: "راجع بيانات الطلب والملاحظات التي يرسلها فريق PALPRINTS، ثم حدّث المعلومات المطلوبة وأعد الإرسال.",
       rejectedNext: "إذا لم تكن الملاحظات واضحة، استخدم رقم الطلب عند التواصل مع الدعم.",
+      changes_requestedEyebrow: "تحديث على طلب الحساب",
+      changes_requestedTitle: "طلبك يحتاج إلى تعديل",
+      changes_requestedDescription: "راجعت الإدارة طلبك وتحتاج إلى تحديث بعض البيانات قبل إعادة الإرسال.",
+      changes_requestedNowTitle: "ما الخطوة التالية؟",
+      changes_requestedNow: "عدّل البيانات المطلوبة ثم أعد إرسال الطلب للمراجعة.",
+      changes_requestedNext: "راجع ملاحظة الإدارة قبل تعديل الملف.",
       stepReceived: "تم استلام الطلب",
       stepReview: "قيد المراجعة",
       stepActivated: "تفعيل الحساب",
@@ -146,6 +152,12 @@
       rejectedNowTitle: "What should you do next?",
       rejectedNow: "Review your request details and any notes sent by the PALPRINTS team, then update the required information and resubmit.",
       rejectedNext: "If the notes aren't clear, use the request reference when contacting support.",
+      changes_requestedEyebrow: "Account request update",
+      changes_requestedTitle: "Your request needs changes",
+      changes_requestedDescription: "The administration reviewed your request and needs some details updated before resubmission.",
+      changes_requestedNowTitle: "What should you do next?",
+      changes_requestedNow: "Update the requested details and resubmit your request for review.",
+      changes_requestedNext: "Review the administrator note before editing your profile.",
       stepReceived: "Request received",
       stepReview: "Under review",
       stepActivated: "Account activation",
@@ -349,7 +361,13 @@
     const stepReviewLabel = document.getElementById("statusStepReviewLabel");
     const stepActivatedLabel = document.getElementById("statusStepActivatedLabel");
 
-    const state = status === "approved" ? "approved" : status === "rejected" ? "rejected" : "pending";
+    const state = status === "approved"
+      ? "approved"
+      : status === "rejected"
+        ? "rejected"
+        : status === "changes_requested"
+          ? "changes_requested"
+          : "pending";
     document.body.dataset.accountStatus = state;
     if (eyebrow) eyebrow.textContent = t(`${state}Eyebrow`);
     if (title) title.textContent = t(`${state}Title`);
@@ -391,7 +409,7 @@
       if (state === "approved") {
         primary.textContent = t("login");
         primary.href = primary.dataset.loginUrl || "login.html";
-      } else if (state === "rejected") {
+      } else if (state === "rejected" || state === "changes_requested") {
         primary.textContent = t("updateRequest");
         const registerUrl = primary.dataset.registerUrl || "index.html";
         primary.href = role ? registerUrl + "?role=" + encodeURIComponent(role) : registerUrl;

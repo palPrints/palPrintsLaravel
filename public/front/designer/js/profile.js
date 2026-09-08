@@ -166,10 +166,13 @@
       }, 3400);
     }
 
-    document.querySelectorAll('[data-dialog-open=designerEditDialog]').forEach(function (trigger) {
-      trigger.addEventListener('click', function () {
+    document.addEventListener('click', function (event) {
+      const trigger = event.target.closest('[data-dialog-open="designerEditDialog"]');
+
+      if (trigger) {
+        event.preventDefault();
         openDialog(trigger);
-      });
+      }
     });
 
     dialog?.querySelectorAll('[data-dialog-close]').forEach(function (button) {

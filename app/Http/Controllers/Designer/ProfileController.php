@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Designer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Requests\Designer\UpdateProfileRequest;
 use App\Models\AuditLog;
 use App\Models\DesignerProfile;
@@ -81,6 +82,10 @@ class ProfileController extends Controller
                     $profile->profile_image = $newImagePath;
                 }
 
+                if ($this->hasSubmissionData($validated, $skills)) {
+                    $profile->profile_completed_at ??= now();
+                }
+
                 $profile->save();
 
                 AuditLog::create([
@@ -113,9 +118,21 @@ class ProfileController extends Controller
             Storage::disk('public')->delete($oldImagePath);
         }
 
+        if ($profile->profile_completed_at !== null
+            && in_array($profile->approval_status, ['draft', 'changes_requested', 'rejected'], true)) {
+            return app(OnboardingController::class)->submit($request);
+        }
+
         return redirect()
             ->route('designer.profile')
             ->with('profile_status', 'updated');
+    }
+
+    private function hasSubmissionData(array $validated, array $skills): bool
+    {
+        return filled($validated['bio'] ?? null)
+            && $skills !== []
+            && filled($validated['portfolio_url'] ?? null);
     }
 
     private function approvalPresentation(string $status): array
@@ -128,7 +145,7 @@ class ProfileController extends Controller
                 'label_ar' => 'مصمم معتمد',
                 'label_en' => 'Verified designer',
             ],
-            'rejected' => [
+            'rejected', 'changes_requested' => [
                 'status' => $status,
                 'class' => 'is-rejected',
                 'icon' => 'bi-x-circle-fill',

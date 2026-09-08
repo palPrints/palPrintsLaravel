@@ -35,14 +35,31 @@ class OnboardingController extends Controller
 
         $approvalRequest = DB::transaction(function () use ($request, $user, $profile): ApprovalRequest {
             $submittedAt = now();
-            $approvalRequest = ApprovalRequest::create([
-                'user_id' => $user->id,
-                'role' => $user->primaryRole(),
-                'request_number' => 'APR-'.$submittedAt->format('Ymd').'-'.Str::upper((string) Str::ulid()),
+            $approvalRequest = ApprovalRequest::query()
+                ->where('user_id', $user->id)
+                ->where('role', $user->primaryRole())
+                ->whereIn('status', ['changes_requested', 'rejected'])
+                ->latest('submitted_at')
+                ->first();
+
+            $requestData = [
                 'status' => 'submitted',
                 'profile_snapshot' => Arr::except($profile->toArray(), ['api_key']),
                 'submitted_at' => $submittedAt,
-            ]);
+                'reviewed_at' => null,
+                'reviewed_by' => null,
+                'admin_notes' => null,
+            ];
+
+            if ($approvalRequest) {
+                $approvalRequest->update($requestData);
+            } else {
+                $approvalRequest = ApprovalRequest::create(array_merge($requestData, [
+                    'user_id' => $user->id,
+                    'role' => $user->primaryRole(),
+                    'request_number' => 'APR-'.$submittedAt->format('Ymd').'-'.Str::upper((string) Str::ulid()),
+                ]));
+            }
 
             $profile->update([
                 'approval_status' => 'submitted',
@@ -78,7 +95,7 @@ class OnboardingController extends Controller
         });
 
         return redirect()
-            ->route($user->dashboardRouteName())
+            ->route($user->hasRole('designer') ? 'designer.profile' : $user->dashboardRouteName())
             ->with('success', 'تم إرسال طلب الاعتماد بنجاح. رقم الطلب: '.$approvalRequest->request_number);
     }
 }

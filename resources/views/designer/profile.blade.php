@@ -31,9 +31,12 @@
                 </span>
 
                 <div>
-                    @if($approval['status'] === 'rejected')
+                    @if(in_array($approval['status'], ['rejected', 'changes_requested'], true))
                         <h2 data-copy-ar='ملفك يحتاج إلى بعض التعديلات' data-copy-en='Your profile needs a few changes'>ملفك يحتاج إلى بعض التعديلات</h2>
                         <p data-copy-ar='راجع بياناتك المهنية وحدّثها قبل إرسالها للمراجعة مجددًا.' data-copy-en='Review and update your professional information before submitting it again.'>راجع بياناتك المهنية وحدّثها قبل إرسالها للمراجعة مجددًا.</p>
+                        @if(filled($profile->admin_notes))
+                            <p class='designer-admin-note'><i class='bi bi-chat-left-text' aria-hidden='true'></i><strong data-copy-ar='ملاحظة الإدارة:' data-copy-en='Admin note:'>ملاحظة الإدارة:</strong> {{ $profile->admin_notes }}</p>
+                        @endif
                     @elseif(in_array($approval['status'], ['submitted', 'under_review'], true))
                         <h2 data-copy-ar='ملفك قيد المراجعة' data-copy-en='Your profile is under review'>ملفك قيد المراجعة</h2>
                         <p data-copy-ar='استلمنا بياناتك وسنحدّث حالة الحساب بعد انتهاء المراجعة.' data-copy-en='We received your details and will update the account status after review.'>استلمنا بياناتك وسنحدّث حالة الحساب بعد انتهاء المراجعة.</p>
@@ -43,9 +46,11 @@
                     @endif
                 </div>
 
-                <a href='{{ route('account.status') }}' class='profile-button is-outline is-small'>
-                    <span data-copy-ar='عرض حالة الحساب' data-copy-en='View account status'>عرض حالة الحساب</span>
-                </a>
+                @if(! in_array($approval['status'], ['submitted', 'under_review'], true))
+                    <button type='button' class='profile-button is-outline is-small' data-dialog-open='designerEditDialog'>
+                        <span data-copy-ar='تعديل وإعادة الإرسال' data-copy-en='Edit and resubmit'>{{ in_array($approval['status'], ['rejected', 'changes_requested'], true) ? 'تعديل وإعادة الإرسال' : 'إكمال الملف' }}</span>
+                    </button>
+                @endif
             </section>
         @endif
         <section class='profile-card profile-hero' aria-labelledby='designerName'>
@@ -554,13 +559,13 @@
     </dialog>
 
     <div
-        class='profile-toast @if(session('profile_status') === 'updated') is-visible @endif'
+        class='profile-toast @if(session('success') || session('profile_status') === 'updated') is-visible @endif'
         id='profileToast'
         role='status'
         aria-live='polite'
-        data-copy-ar='تم تحديث الملف الشخصي بنجاح.'
-        data-copy-en='Your profile was updated successfully.'
-    >تم تحديث الملف الشخصي بنجاح.</div>
+        data-copy-ar='{{ session('success', session('profile_status') === 'updated' ? 'تم حفظ بيانات الملف الشخصي بنجاح.' : '') }}'
+        data-copy-en='Your profile was saved successfully.'
+    >{{ session('success', session('profile_status') === 'updated' ? 'تم حفظ بيانات الملف الشخصي بنجاح.' : '') }}</div>
 @endsection
 
 @push('scripts')
