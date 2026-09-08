@@ -87,7 +87,7 @@ test('social login links an existing user by verified email', function () {
         ->withSession(['social_auth' => ['source' => 'login', 'account_type' => null]])
         ->get(route('social.callback', ['provider' => 'google']));
 
-    $response->assertRedirect(route('customer.dashboard', absolute: false));
+    $response->assertRedirect(route('customer.store', absolute: false));
     $this->assertAuthenticatedAs($user);
     $this->assertDatabaseHas('social_accounts', [
         'user_id' => $user->id,

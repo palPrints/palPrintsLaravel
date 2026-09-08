@@ -107,7 +107,7 @@ class User extends Authenticatable
     {
         return match ($this->primaryRole()) {
             'admin' => 'admin.dashboard',
-            'customer' => 'customer.dashboard',
+            'customer' => 'customer.store',
             'designer' => 'designer.dashboard',
             'print_provider' => 'print-provider.dashboard',
             default => 'dashboard',
