@@ -129,8 +129,8 @@ return new class extends Migration
             $table->foreignId('print_area_id')->constrained()->cascadeOnDelete();
             $table->foreignId('printing_method_id')->constrained()->restrictOnDelete();
             $table->boolean('applies_to_all_variants')->default(true);
-            $table->decimal('max_width_mm', 10, 2);
-            $table->decimal('max_height_mm', 10, 2);
+            $table->decimal('max_width_mm', 8, 2);
+            $table->decimal('max_height_mm', 8, 2);
             $table->boolean('is_active')->default(true)->index();
             $table->unique(['print_area_id', 'printing_method_id']);
         });
