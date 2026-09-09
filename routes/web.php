@@ -38,8 +38,9 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::get('/admin/dashboard', [RoleDashboardController::class, 'show'])
         ->defaults('dashboard_role', 'admin')->middleware('role:admin')->name('admin.dashboard');
-    Route::get('/customer/dashboard', [RoleDashboardController::class, 'show'])
-        ->defaults('dashboard_role', 'customer')->middleware('role:customer')->name('customer.dashboard');
+    Route::middleware('role:customer')->prefix('customer')->name('customer.')->group(function () {
+        Route::view('/store', 'customer.store')->name('store');
+    });
     Route::get('/designer/dashboard', DesignerDashboardController::class)
         ->middleware('role:designer')->name('designer.dashboard');
     Route::get('/print-provider/dashboard', [RoleDashboardController::class, 'show'])

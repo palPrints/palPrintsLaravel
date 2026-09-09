@@ -118,7 +118,7 @@ test('users can logout', function () {
     $response->assertRedirect('/');
 });
 
-test('customer is redirected to the customer dashboard', function () {
+test('customer is redirected to the customer store', function () {
     $this->seed(RoleAndPermissionSeeder::class);
     $user = User::factory()->create();
     $user->assignRole('customer');
@@ -128,7 +128,7 @@ test('customer is redirected to the customer dashboard', function () {
         'password' => 'password',
     ]);
 
-    $response->assertRedirect(route('customer.dashboard', absolute: false));
+    $response->assertRedirect(route('customer.store', absolute: false));
     expect($user->fresh()->last_login_at)->not->toBeNull();
     $this->assertDatabaseHas('audit_logs', [
         'user_id' => $user->id,
