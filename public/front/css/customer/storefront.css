@@ -1813,21 +1813,21 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 }
 
 .storefront-page .product-card[data-product="cups"] .product-card__media img {
-  width: 75%;
-  height: 75%;
+  width: 80%;
+  height: 80%;
   transform: none !important;
 }
 
 .storefront-page .product-card[data-product="stickers"] .product-card__media img {
   width: 88%;
   height: 88%;
-  margin-top: -6px;
+  margin-top: 0;
   transform: none !important;
 }
 
 .storefront-page .product-card[data-product="paper"] .product-card__media img {
-  width: 60%;
-  height: 65%;
+  width: 74%;
+  height: 78%;
   transform: none !important;
 }
 
@@ -1842,14 +1842,6 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 .storefront-page .product-card:focus-within .product-card__media img,
 .storefront-page .product-card.is-image-hovered .product-card__media img {
   transform: scale(1.08) !important;
-}
-
-.storefront-page .product-card[data-product="shirt"]:hover .product-card__media img.is-hover-image,
-.storefront-page .product-card[data-product="shirt"]:focus-within .product-card__media img.is-hover-image,
-.storefront-page .product-card[data-product="shirt"].is-image-hovered .product-card__media img.is-hover-image {
-  width: 75%;
-  height: 75%;
-  transform: translateY(-70px) scale(1.08) !important;
 }
 
 .storefront-page .product-card[data-product="phone-case"]:hover .product-card__media img,
@@ -1883,4 +1875,13 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 
 .storefront-page .product-card[data-product="hoodie"] .product-card__media img.is-hover-image {
   height: calc(80% - 15px);
+}
+
+.storefront-page .product-card[data-product="shirt"]:hover .product-card__media img.is-hover-image,
+.storefront-page .product-card[data-product="shirt"]:focus-within .product-card__media img.is-hover-image,
+.storefront-page .product-card[data-product="shirt"].is-image-hovered .product-card__media img.is-hover-image {
+  width: 75%;
+  height: 75%;
+  margin-top: -20px;
+  transform: scale(1.08) !important;
 }
