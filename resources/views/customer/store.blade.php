@@ -1,10 +1,7 @@
 {{--
     Ported from palPrintFront/storefront.html (product grid + hero section).
     Products below are the same 12 static demo cards from the front-end repo —
-    not pulled from the database yet. The "هودي" card links to hoodies.html
-    in the original repo; that product-detail page was intentionally NOT
-    pulled in this pass (customer asked for the storefront only), so its
-    link below points to "#" for now.
+    not pulled from the database yet.
 --}}
 
 @extends('customer.layouts.app')
@@ -18,7 +15,7 @@
                 <img src="{{ asset('front/assets/images/customer/palprints-hero-collage.png') }}" alt="منتجات PalPrints وتطبيقاتها" class="hero-visual__image">
             </div>
             <div class="hero-copy hero-copy--card">
-                <h1><span>متجر</span><strong>PalPrints</strong></h1>
+                <h1><span>منصة </span><strong>PalPrints</strong></h1>
                 <p class="hero-copy__text"><span class="hero-copy__line hero-copy__line--dark">منتجات عالية الجودة تناسب كل احتياجاتك</span><br><span class="hero-copy__line hero-copy__line--accent">اطلب الآن واطبع بطريقتك الخاصة</span></p>
             </div>
         </div>
@@ -41,12 +38,12 @@
                         <p>تصاميم مخصصة بطباعة واضحة ومظهر يومي أنيق.</p>
                     </div>
                 </article>
-                <article class="product-card" data-category="clothing" data-product="hoodie" data-order="2">
+                <article class="product-card" data-category="clothing" data-product="hoodie" data-order="2" data-href="{{ route('customer.hoodies') }}">
                     <div class="product-card__media">
                         <img src="{{ asset('front/assets/images/customer/products/2.png') }}" alt="هودي">
                     </div>
                     <div class="product-card__body">
-                        <h3><a href="#" style="color: inherit; text-decoration: none;">هودي</a></h3>
+                        <h3>هودي</h3>
                         <p>خيار مريح بطباعة مميزة يناسب الاستخدام اليومي.</p>
                     </div>
                 </article>

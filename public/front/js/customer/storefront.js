@@ -440,6 +440,16 @@
     card.addEventListener("focusout", () => setHovered(false));
   });
 
+  cards.forEach((card) => {
+    const href = card.dataset.href;
+    if (!href || card.dataset.available === "false") return;
+
+    card.addEventListener("click", (event) => {
+      if (event.target.closest("a, button")) return;
+      window.location.href = href;
+    });
+  });
+
   let selectedCategory = "all";
 
   form.addEventListener("submit", (event) => {
