@@ -1,0 +1,181 @@
+/* =========================================================
+   PalPrints — صفحة الهودي
+   File: assets/css/pages/hoodies.css
+
+   00. خلفية الصفحة (هوية PalPrints الجديدة)
+   ========================================================= */
+
+/* ألوان الهوية الجديدة — منقولة من نظام التصميم في main.css
+   (PALPRINTS — DESIGN SYSTEM: cyan → blue → indigo → purple) */
+body.hoodies-page {
+  --pal-cyan: #12bfd0;
+  --pal-blue: #168fdf;
+  --pal-indigo: #5266e9;
+  --pal-page-bg: #fcfdff;
+  --pal-surface: #fff;
+  --pal-border: #e8eaf2;
+
+  /* إلغاء خلفية المتجر الموروثة (storefront.css) واعتماد
+     خلفية جديدة مبنية على ألوان الهوية فقط */
+  background: var(--pal-page-bg);
+}
+
+/* طبقة الأضواء اللونية: ثابتة خلف المحتوى ولا تتمدد مع طول الصفحة
+   خلفية مائلة للأبيض — لمسات تركواز وأزرق خفيفة جداً، بدون موف */
+body.hoodies-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 10% 6%, rgb(18 191 208 / 6%), transparent 40%),
+    radial-gradient(circle at 92% 4%, rgb(22 143 223 / 5%), transparent 42%),
+    radial-gradient(circle at 82% 84%, rgb(18 191 208 / 4%), transparent 44%),
+    radial-gradient(circle at 4% 92%, rgb(22 143 223 / 4%), transparent 40%),
+    linear-gradient(140deg, #fff 0%, #fbfdff 50%, #fdffff 100%);
+}
+
+/* الوضع الليلي وفق نفس النظام */
+html[data-bs-theme="dark"] body.hoodies-page {
+  --pal-page-bg: #080d1c;
+  --pal-surface: #11182b;
+  --pal-border: #2b3650;
+}
+
+html[data-bs-theme="dark"] body.hoodies-page::before {
+  background:
+    radial-gradient(circle at 10% 6%, rgb(18 191 208 / 10%), transparent 40%),
+    radial-gradient(circle at 92% 4%, rgb(22 143 223 / 11%), transparent 42%),
+    radial-gradient(circle at 82% 84%, rgb(18 191 208 / 9%), transparent 44%),
+    radial-gradient(circle at 4% 92%, rgb(22 143 223 / 8%), transparent 40%),
+    linear-gradient(140deg, #080d1c 0%, #091226 48%, #0a1524 100%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body.hoodies-page::before { transition: background .3s ease; }
+}
+
+.hoodies-page { --hoodie-accent: #ff6b00; --hoodie-accent-soft: #fff1e8; --hoodie-accent-text: #c2410c; }
+.hoodies-page .catalog-topline { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 24px 8px; }
+.catalog-breadcrumb { display: flex; flex-wrap: wrap; gap: 10px; color: var(--store-muted); font-size: .85rem; }
+.catalog-breadcrumb a,
+.catalog-breadcrumb [aria-current="page"] { display: inline-flex; align-items: center; padding: 3px 7px; color: inherit; border-radius: 7px; text-decoration: none; transition: color .18s ease, background-color .18s ease, transform .18s ease; }
+.catalog-breadcrumb a:hover,
+.catalog-breadcrumb a:focus-visible,
+.catalog-breadcrumb [aria-current="page"]:hover { color: var(--store-primary); background: var(--store-primary-soft); transform: translateY(-2px); }
+.catalog-breadcrumb [aria-current="page"] { color: var(--store-navy); font-weight: 700; cursor: default; }
+.catalog-back { display: inline-flex; align-items: center; gap: 10px; padding: 6px 16px; border: 1px solid var(--store-primary); border-radius: 12px; color: var(--store-primary); background: transparent; text-decoration: none; font-size: .88rem; white-space: nowrap; transition: color .18s ease, background-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.catalog-back i { transition: transform .18s ease; }
+.catalog-back:hover { color: #fff; background: var(--store-primary); box-shadow: 0 6px 16px rgb(22 119 255 / 24%); transform: translateY(-2px); }
+.catalog-back:hover i { transform: translateX(-3px); }
+.catalog-heading { text-align: center; padding: 8px 0 22px; }
+.catalog-heading h1 { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 0; color: var(--store-navy); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; }
+.catalog-heading h1 img { width: 46px; height: 46px; padding: 8px; background: transparent; }
+.catalog-heading p { color: var(--store-muted); margin: 8px 0 0; line-height: 1.9; }
+.hoodie-filters { display: flex; justify-content: center; gap: 14px; margin-bottom: 24px; }
+
+/* Storefront-style entrance: page copy first, then filters and product cards. */
+@media (prefers-reduced-motion: no-preference) {
+  .hoodies-motion-ready .catalog-topline,
+  .hoodies-motion-ready .catalog-heading,
+  .hoodies-motion-ready .hoodie-filters,
+  .hoodies-motion-ready .product-card {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+      opacity 520ms ease,
+      transform 680ms cubic-bezier(.16, 1, .3, 1);
+  }
+
+  .hoodies-motion-ready .catalog-topline.is-revealed,
+  .hoodies-motion-ready .catalog-heading.is-revealed,
+  .hoodies-motion-ready .hoodie-filters.is-revealed,
+  .hoodies-motion-ready .product-card.is-revealed {
+    opacity: 1;
+    transform: none;
+  }
+
+  .hoodies-motion-ready .product-card.is-revealed:hover,
+  .hoodies-motion-ready .product-card.is-revealed:focus-within {
+    transform: translateY(-6px);
+  }
+
+  .hoodies-motion-ready .product-card.is-floating {
+    animation: productCardFloat 4.8s ease-in-out infinite;
+  }
+
+  .hoodies-motion-ready .product-card.is-floating:nth-child(3n + 1) {
+    animation-delay: 0s;
+  }
+
+  .hoodies-motion-ready .product-card.is-floating:nth-child(3n + 2) {
+    animation-delay: .7s;
+  }
+
+  .hoodies-motion-ready .product-card.is-floating:nth-child(3n) {
+    animation-delay: 1.3s;
+  }
+
+  .hoodies-motion-ready .product-card.is-floating:hover,
+  .hoodies-motion-ready .product-card.is-floating:focus-within {
+    animation-play-state: paused;
+  }
+}
+
+.hoodie-filters button { flex: 1; max-width: 240px; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px; border: 1px solid var(--store-border); border-radius: 12px; background: #fff; color: var(--store-navy); font: 700 1rem Cairo, sans-serif; cursor: pointer; }
+.hoodie-filters i { font-size: 1.5rem; }
+.hoodie-filters button:hover { color: var(--store-primary); border-color: var(--store-primary-border); background: var(--store-primary-soft); }
+.hoodie-filters button[aria-pressed="true"] { background: var(--store-primary); border-color: var(--store-primary); color: #fff; box-shadow: 0 6px 16px rgb(22 119 255 / 20%); }
+.hoodies-page .products-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.hoodies-page .product-card { cursor: default; background: #fff; border-color: var(--store-border); box-shadow: var(--store-shadow); }
+.hoodies-page .product-card:hover { border-color: var(--store-primary-border); box-shadow: 0 12px 28px rgb(15 23 42 / 12%); }
+.hoodies-page .product-card:focus-within { outline: none; }
+.hoodies-page .product-card__media { position: relative; display: grid; place-items: center; padding: 10px 16px; box-sizing: border-box; background: var(--store-surface-muted); }
+.hoodies-page .product-card__media > img { display: block; width: auto; height: 100%; max-width: 88%; object-fit: contain; object-position: center; }
+.hoodies-page .product-card:hover .product-card__media > img,
+.hoodies-page .product-card:focus-within .product-card__media > img,
+.hoodies-page .product-card.is-image-hovered .product-card__media > img { transform: scale(1.07) !important; }
+.hoodies-page .product-card__body { align-items: stretch; text-align: start; padding: 14px; }
+.hoodies-page .product-card__body h3 { font-size: 1.04rem; cursor: default; }
+.hoodies-page .product-card__body p { margin: 2px 0 10px; font-size: .86rem; }
+.hoodie-favorite { position: absolute; top: 10px; left: 10px; z-index: 2; width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--store-navy); cursor: pointer; font-size: 21px; }
+.hoodie-favorite:hover { color: var(--store-danger); background: transparent; transform: scale(1.12); }
+.hoodie-favorite[aria-pressed="true"] { color: var(--store-danger); background: transparent; }
+.hoodie-badge-accent { position: absolute; top: 12px; right: 12px; z-index: 2; display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; color: #fff; background: var(--hoodie-accent); border-radius: 999px; box-shadow: 0 5px 14px rgb(255 107 0 / 24%); font-size: .75rem; font-weight: 700; line-height: 1.4; transition: color .18s ease, background-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.hoodie-badge-accent i { color: inherit; }
+.hoodie-badge-accent:hover,
+.hoodies-page .product-card:hover .hoodie-badge-accent { color: #fff; background: #e85f00; box-shadow: 0 7px 18px rgb(255 107 0 / 32%); transform: translateY(-2px) scale(1.03); }
+.hoodie-credit { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.hoodie-credit > span { color: var(--store-muted); font-size: .85rem; }
+.hoodie-credit strong { color: var(--store-primary); font-size: .95rem; }
+.hoodie-designer { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; color: var(--store-muted); }
+.hoodie-designer i { display: grid; place-items: center; background: var(--store-primary-soft); color: var(--store-primary); border-radius: 50%; width: 25px; height: 25px; }
+.hoodie-preview { display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; border: 1px solid var(--store-primary); border-radius: 10px; background: var(--store-primary); color: #fff; box-shadow: 0 4px 12px rgb(22 119 255 / 16%); font: 600 .9rem Cairo, sans-serif; cursor: pointer; }
+.hoodie-preview:hover { background: var(--store-primary-hover); border-color: var(--store-primary-hover); }
+.hoodie-print { position: absolute; top: 42%; left: 38%; width: 24%; display: flex; flex-direction: column; align-items: center; text-align: center; color: #173b30; pointer-events: none; line-height: 1.15; font: 800 clamp(9px, 1vw, 15px)/1.2 Arial, sans-serif; }
+.hoodie-print i { font-size: clamp(22px, 3vw, 40px); margin-bottom: 3px; }
+.hoodie-print--light { color: #fff; }
+.hoodie-print--arabic { font-family: Cairo, sans-serif; font-size: clamp(18px, 2.5vw, 32px); }
+.hoodie-tone--cream { filter: sepia(.3) saturate(.8); }
+.hoodie-tone--black { filter: brightness(.2) contrast(1.35); }
+.hoodie-tone--pink { filter: sepia(.5) saturate(2) hue-rotate(295deg) brightness(.95); }
+.hoodie-tone--blue { filter: sepia(.5) saturate(2) hue-rotate(165deg) brightness(.95); }
+.hoodie-tone--purple { filter: sepia(1) saturate(3) hue-rotate(220deg) brightness(.5); }
+.hoodie-tone--green { filter: sepia(1) saturate(2) hue-rotate(95deg) brightness(.45); }
+.catalog-pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 44px 0 12px; }
+.catalog-pagination button { width: 32px; height: 32px; border: 1px solid var(--store-border); border-radius: 8px; background: #fff; color: var(--store-navy); font: 700 .85rem Cairo, sans-serif; }
+.catalog-pagination button[aria-current] { background: var(--store-primary); color: #fff; }
+.catalog-pagination button:disabled { opacity: .4; }
+.catalog-pagination[hidden] { display: none; }
+.catalog-count { text-align: center; color: var(--store-muted); font-size: .8rem; }
+.hoodies-page button:focus-visible, .hoodies-page a:focus-visible { outline: 3px solid var(--store-primary); outline-offset: 3px; }
+.hoodies-page .hoodie-favorite.pal-pressable { overflow: visible; box-shadow: none; }
+.hoodies-page .hoodie-favorite.pal-pressable:hover,
+.hoodies-page .hoodie-favorite.pal-pressable:focus-visible { outline: 0; box-shadow: none; background: transparent; color: var(--store-danger); filter: drop-shadow(0 0 3px rgb(220 38 38 / 28%)); }
+.hoodies-page .hoodie-favorite .pal-ripple { display: none; }
+@media (max-width: 1199px) { .hoodies-page .products-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 991px) { .hoodies-page .products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .catalog-topline { flex-wrap: wrap; } .catalog-heading p { font-size: .88rem; } .hoodie-filters { gap: 6px; } .hoodie-filters button { font-size: .8rem; gap: 5px; } .hoodie-filters i { font-size: 1.15rem; } }
+@media (max-width: 480px) { .hoodies-page .products-grid { grid-template-columns: 1fr; } .hoodie-print { font-size: 15px; } .hoodie-print i { font-size: 38px; } .hoodie-print--arabic { font-size: 30px; } }
+@media (prefers-reduced-motion: reduce) { .hoodies-page .product-card, .hoodies-page .product-card__media img, .hoodie-badge-accent, .catalog-back, .catalog-back i { transition: none; } .hoodies-page .product-card:hover { transform: none; } }
