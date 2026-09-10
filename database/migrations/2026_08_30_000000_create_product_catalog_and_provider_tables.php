@@ -118,8 +118,8 @@ return new class extends Migration
             $table->foreignId('provider_offering_id')->constrained()->cascadeOnDelete();
             $table->string('code');
             $table->string('name');
-            $table->decimal('max_width_mm', 10, 2);
-            $table->decimal('max_height_mm', 10, 2);
+            $table->decimal('max_width_mm', 8, 2);
+            $table->decimal('max_height_mm', 8, 2);
             $table->boolean('is_active')->default(true)->index();
             $table->unique(['provider_offering_id', 'code']);
         });
