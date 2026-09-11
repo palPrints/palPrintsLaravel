@@ -48,13 +48,13 @@ body.storefront-page {
      يبدأون وينتهون على هذا الخط تماماً */
   --store-gutter: calc(clamp(16px, 6vw, 110px) + clamp(16px, 1.8vw, 22px));
 
-  /* القائمة الجانبية: العرض، وبعدها عن حافة الشاشة،
-     والمسافة الفاصلة بينها وبين المحتوى.
-     الدفع الذي يأخذه المحتوى = مجموع الثلاثة */
-  --store-sidebar-width: 226px;
-  --store-sidebar-inset: 14px;
-  --store-sidebar-clearance: 34px;
+  /* ارتفاع الهيدير المسطّح — القائمة الجانبية تبدأ من تحته مباشرة */
+  --store-header-height: 60px;
 
+  /* القائمة الجانبية: قائمة منسدلة (Drawer) ملتصقة بحافة الشاشة بعرض ثابت */
+  --store-sidebar-width: min(256px, 86vw);
+
+  margin: 0;
   background: var(--pal-page-bg);
   color: var(--store-navy);
   font-family: "Cairo", sans-serif;
@@ -105,7 +105,6 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   width: min(100% - 44px, 1240px);
 }
 
-.store-header .container-palprints,
 .store-main .container-palprints {
   width: 100%;
   max-width: none;
@@ -127,56 +126,262 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   top: 14px;
 }
 
+/* هيدير مسطّح بعرض الشاشة الكامل — بدون هوامش أو استدارة أو ظل "عائم" */
 .store-header {
   position: sticky;
-  top: 12px;
+  top: 0;
   z-index: 1030;
-  min-height: 40px;
-  margin: 12px var(--store-gutter) 4px;
-  padding: 4px 14px;
+  min-height: var(--store-header-height);
   background: #fff;
-  border: 1px solid var(--store-border);
-  border-radius: 18px;
-  box-shadow: var(--store-shadow);
+  border-bottom: 1px solid var(--store-border);
+  transition: box-shadow 200ms ease;
 }
 
+/* أثناء التمرير: نفس الارتفاع، بس بظل خفيف يفصلها عن المحتوى تحتها */
+.store-header.is-scrolled {
+  box-shadow: 0 6px 18px rgb(15 23 42 / 8%);
+}
+
+/* ثلاث مناطق: بداية (القائمة+الشعار) · وسط ("المتجر" في مركز الهيدير تمامًا،
+   بفضل عمودي 1fr متساويين على الجانبين) · نهاية (البحث + الأيقونات) */
 .store-header__inner {
   position: relative;
-  min-height: 40px;
+  min-height: var(--store-header-height);
   min-width: 0;
   display: grid;
-  grid-template-columns: auto minmax(220px, 410px);
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 12px;
-  justify-content: start;
+  column-gap: 18px;
+  /* حشوة غير متماثلة: جهة الشعار (البداية) تضل قريبة من الحافة بنفس محاذاة
+     القائمة الجانبية الملتصقة فيها تمامًا، حتى ما يبين فراغ بينهم لما تنفتح؛
+     جهة البحث/السلة (النهاية) خذت حشوة المحتوى (--store-gutter) الأكبر حتى
+     تبعد عن حافة الشاشة فعليًا بدل ما تكون ملتصقة فيها */
+  padding-inline-start: 20px;
+  padding-inline-end: var(--store-gutter);
 }
 
+.store-header__start {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+}
+
+.store-header__end {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  justify-self: stretch;
+}
+
+.store-header__brand {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.store-header__brand .store-brand__wordmark {
+  font-size: 20px;
+}
+
+/* روابط التصفح الرئيسية في الهيدير — بمنتصف الهيدير تمامًا */
+.store-nav {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.store-nav__item {
+  position: relative;
+  height: 100%;
+}
+
+.store-nav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  padding-inline: 2px;
+  color: var(--store-body);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.store-nav__chevron {
+  font-size: 10px;
+  color: var(--store-muted);
+  transition: transform 160ms ease, color 160ms ease;
+}
+
+.store-nav__link:hover,
+.store-nav__link:focus-visible,
+.store-nav__item.is-open .store-nav__link {
+  color: var(--store-primary);
+  border-color: var(--store-primary);
+}
+
+.store-nav__link:focus-visible {
+  outline: 2px solid var(--store-primary);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+.store-nav__item.is-open .store-nav__chevron {
+  color: var(--store-primary);
+  transform: rotate(180deg);
+}
+
+/* القائمة المنسدلة (mega menu) — قائمة عمود واحد مقسومة لمجموعتين واضحتين:
+   "متوفر الآن" (بلون العلامة الأزرق) ثم "قريبًا" (بلون محايد رمادي) —
+   بدل ما تكون كل المنتجات مبعثرة بنفس اللون بدون تمييز */
+.store-mega {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  width: 250px;
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+  margin-top: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: #fff;
+  border: 1px solid var(--store-border);
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgb(20 44 84 / 14%);
+}
+
+.store-mega[hidden] {
+  display: none;
+}
+
+.store-mega__label {
+  margin: 0;
+  padding: 10px 10px 6px;
+  color: var(--store-muted);
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+.store-mega__label:not(:first-child) {
+  margin-top: 4px;
+  border-top: 1px solid var(--store-border);
+}
+
+.store-mega__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--store-body);
+  font-size: .86rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.store-mega__item i {
+  flex: none;
+  width: 20px;
+  text-align: center;
+  color: var(--store-primary);
+  font-size: 1rem;
+}
+
+.store-mega__item:hover,
+.store-mega__item:focus-visible {
+  color: var(--store-primary);
+  background: var(--store-primary-soft);
+}
+
+.store-mega__item:focus-visible {
+  outline: 2px solid var(--store-primary);
+  outline-offset: -2px;
+}
+
+.store-mega__item span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* عناصر "قريبًا": رمادية محايدة بدل الأزرق حتى تنفصل بصريًا عن المنتجات المتوفرة فعليًا */
+.store-mega__item.is-soon {
+  color: var(--store-muted);
+}
+
+.store-mega__item.is-soon i {
+  color: var(--store-muted);
+}
+
+.store-mega__item.is-soon:hover,
+.store-mega__item.is-soon:focus-visible {
+  color: var(--store-body);
+  background: var(--store-surface-muted);
+}
+
+/* قائمة الحساب الجانبية — تبدأ من تحت الهيدير مباشرة (مش من فوق الشاشة)، حتى
+   يضل الهيدير بشعاره ظاهر بالكامل دايمًا، وما يصير شعارين جنب بعض بنفس الصف.
+   ملتصقة بحافة الشاشة بدون هامش أو استدارة من الخارج.
+   بالديسكتوب/التابلت (≥992px) بتدفع المحتوى وتظهر جنبه بدون تعتيم.
+   بالموبايل الشاشة أضيق فبتظهر فوق المحتوى بخلفية معتمة (سلوك قياسي بكل التطبيقات). */
 .store-sidebar,
 .sidebar-backdrop {
   position: fixed;
-  inset-block: var(--store-sidebar-inset);
+  top: var(--store-header-height);
+  bottom: 0;
 }
 
 .store-sidebar {
-  inset-inline-start: var(--store-sidebar-inset);
+  inset-inline-start: 0;
   z-index: 1200;
   width: var(--store-sidebar-width);
   display: flex;
   flex-direction: column;
-  padding: 14px 14px 12px;
   overflow: hidden;
   background: #fff;
-  border: 1px solid var(--store-border);
-  border-radius: 20px;
-  box-shadow: var(--store-shadow);
-  transform: translateX(0);
-  visibility: visible;
-  transition: transform 300ms ease, visibility 300ms ease;
+  border-inline-start: 1px solid var(--store-border);
+  border-block-start: 1px solid var(--store-border);
+  box-shadow: -18px 0 34px -20px rgb(11 31 58 / 22%);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform 280ms ease, visibility 280ms ease;
 }
 
-.store-sidebar.is-collapsed {
-  transform: translateX(calc(100% + 22px));
-  visibility: hidden;
+.store-sidebar.is-open {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+@media (min-width: 992px) {
+  /* بدون ظل جانبي لما تكون جنب المحتوى بدل ما تعلو فوقه */
+  .store-sidebar.is-open {
+    box-shadow: none;
+    border-inline-start-color: var(--store-border);
+  }
+
+  /* الهيدير يضل بعرضه الكامل دايمًا — ما بيتأثر بفتح/إغلاق القائمة إطلاقًا،
+     فقط المحتوى (والفوتر) هما يللي بيتحركوا جنب القائمة. فراغ إضافي (24px)
+     بعد عرض القائمة حتى ما يضل المحتوى ملتصق فيها مباشرة */
+  body.storefront-page.sidebar-push-open .store-main,
+  body.storefront-page.sidebar-push-open .site-footer {
+    margin-inline-start: calc(var(--store-sidebar-width) + 24px);
+  }
 }
 
 .store-sidebar[hidden],
@@ -184,66 +389,19 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   display: none;
 }
 
-@media (min-width: 992px) {
-  /* دفع واحد للثلاثة، فتبقى الحواف على خط واحد */
-  .storefront-page.sidebar-layout-open .store-header,
-  .storefront-page.sidebar-layout-open .store-main,
-  .storefront-page.sidebar-layout-open .store-footer {
-    margin-inline-start:
-      calc(
-        var(--store-sidebar-width) +
-        var(--store-sidebar-inset) +
-        var(--store-sidebar-clearance)
-      ) !important;
-  }
-}
-
 .sidebar-backdrop {
   inset-inline: 0;
   z-index: 1050;
   background: rgb(12 16 38 / 45%);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-}
-
-.store-sidebar__header {
-  position: relative;
-  flex: 0 0 auto;
-  min-height: 78px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 6px;
-  border-bottom: 1px solid #e7e9f1;
-}
-
-.sidebar-close {
-  position: absolute;
-  top: 2px;
-  inset-inline-end: 0;
-  width: 36px;
-  height: 36px;
-  display: none;
-  place-items: center;
-  background: #f7f8fc;
-  border: 0;
-  border-radius: 10px;
-  font-size: 17px;
-}
-
-.sidebar-close:hover,
-.sidebar-close:focus-visible {
-  color: #e5384f;
-  background: #fdecee;
 }
 
 .sidebar-toggle {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   background: #fff;
   border-color: #e7e9f1;
   border-radius: 12px;
-  font-size: 19px;
+  font-size: 20px;
 }
 
 .storefront-page .icon-button.sidebar-toggle,
@@ -290,9 +448,8 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-block-start: 14px;
-  padding-inline-end: 4px;
+  gap: 6px;
+  padding: 12px 12px 4px;
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -330,6 +487,15 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   background: var(--store-primary-soft);
 }
 
+.store-sidebar__item:focus-visible {
+  box-shadow: 0 0 0 3px rgb(22 119 255 / 18%);
+}
+
+.store-sidebar__item.active:focus-visible,
+.store-sidebar__item[aria-current="page"]:focus-visible {
+  box-shadow: 0 6px 16px rgb(22 119 255 / 24%), 0 0 0 3px rgb(22 119 255 / 18%);
+}
+
 .store-sidebar__item.active,
 .store-sidebar__item[aria-current="page"] {
   color: #fff;
@@ -353,27 +519,30 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 .store-sidebar__divider {
   flex: 0 0 auto;
   height: 1px;
-  margin: 8px 10px;
+  margin: 8px 14px;
   background: var(--store-border);
 }
 
 .store-sidebar__logout {
+  width: calc(100% - 24px);
+  box-sizing: border-box;
   flex: 0 0 auto;
-  min-height: 38px;
+  min-height: 44px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 10px;
-  padding: 6px 12px;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 12px 14px;
+  padding: 10px 16px;
   line-height: 1.2;
   color: var(--store-danger);
   background: transparent;
   border: 1px solid transparent;
   border-radius: 12px;
   font: inherit;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  text-align: start;
+  text-align: center;
   cursor: pointer;
   transition: background 220ms ease, border-color 220ms ease;
 }
@@ -392,12 +561,15 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   border-color: rgb(229 56 79 / 22%);
 }
 
+.store-sidebar__logout:focus-visible {
+  box-shadow: 0 0 0 3px rgb(229 56 79 / 16%);
+}
+
 .store-search {
-  height: 32px;
-  min-height: 32px;
-  width: 100%;
-  max-width: 410px;
-  justify-self: start;
+  height: 36px;
+  min-height: 36px;
+  flex: 1 1 200px;
+  max-width: 340px;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -445,22 +617,27 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 }
 
 .store-header__actions {
-  position: absolute;
-  inset-inline-end: 0;
-  top: 50%;
+  flex: none;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 0;
-  transform: translateY(-50%);
+  gap: 10px;
+}
+
+/* خط رفيع يفصل أيقونات الحساب (الملف الشخصي، الإشعارات) عن السلة —
+   أهم إجراء تجاري بالهيدير — فتبرز كأولوية بأقصى الطرف */
+.store-header__actions-divider {
+  inline-size: 1px;
+  block-size: 22px;
+  margin-inline: 2px;
+  background: var(--store-border);
 }
 
 .icon-button {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   display: inline-grid;
-  font-size: 19px;
+  font-size: 20px;
   place-items: center;
   color: var(--store-primary);
   background: transparent;
@@ -471,38 +648,12 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
 }
 
-.icon-button.sidebar-close {
-  display: none;
-}
-
 .icon-button:hover,
 .icon-button:focus-visible {
   color: var(--store-primary-hover);
   background: var(--store-primary-soft);
   border-color: var(--store-primary-border);
   box-shadow: 0 7px 20px rgb(26 33 74 / 7%);
-}
-
-.icon-button.sidebar-close:hover,
-.icon-button.sidebar-close:focus-visible {
-  color: #e5384f !important;
-  background: #fdecee !important;
-  border-color: transparent !important;
-}
-
-.icon-button.sidebar-close:hover > i,
-.icon-button.sidebar-close:focus-visible > i {
-  color: #e5384f !important;
-}
-
-.icon-button.sidebar-close.is-hovered {
-  color: #e5384f !important;
-  background: #fdecee !important;
-  border-color: transparent !important;
-}
-
-.icon-button.sidebar-close.is-hovered > i {
-  color: #e5384f !important;
 }
 
 .icon-button.sidebar-toggle[aria-expanded="true"]:hover,
@@ -521,9 +672,9 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 .store-search__icon i,
 .icon-button i {
   display: inline-block;
-  width: 20px;
-  height: 20px;
-  font-size: 17px;
+  width: 21px;
+  height: 21px;
+  font-size: 18px;
   line-height: 1;
 }
 
@@ -591,8 +742,14 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   color: var(--store-primary);
   background: transparent;
   border: 0;
+  border-radius: 6px;
   font: 600 .75rem Cairo, sans-serif;
   cursor: pointer;
+}
+
+.notifications-clear:focus-visible {
+  outline: 2px solid var(--store-primary);
+  outline-offset: 2px;
 }
 
 .notifications-list {
@@ -736,6 +893,11 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   border-color: transparent;
 }
 
+.profile-dropdown__item:focus-visible {
+  background: var(--store-primary-soft);
+  box-shadow: 0 0 0 3px rgb(22 119 255 / 18%);
+}
+
 .profile-dropdown__logout {
   color: #27588f;
 }
@@ -751,6 +913,7 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  transition: margin-inline-start 280ms ease;
 }
 
 .store-main .section-space {
@@ -870,14 +1033,74 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 
 .hero-copy__line {
   display: inline-block;
+  color: var(--store-navy);
+  transition: opacity 500ms ease, transform 500ms ease;
+}
+
+.storefront-motion-ready .hero-copy .hero-copy__line {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.storefront-motion-ready .hero-copy.is-revealed .hero-copy__line {
+  opacity: 1;
+  transform: none;
 }
 
 .hero-copy__line--dark {
-  color: var(--store-navy);
+  font-size: 1.18em;
+  font-weight: 800;
+  transition-delay: 0ms;
 }
 
 .hero-copy__line--accent {
+  font-size: 0.9em;
+  font-weight: 500;
+  transition-delay: 160ms;
+}
+
+.hero-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 22px 0 0;
+}
+
+.hero-cta__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.7rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font: 700 1rem "Cairo", sans-serif;
+  text-decoration: none;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.hero-cta__btn--primary {
+  background: var(--store-primary);
+  color: #fff;
+  box-shadow: 0 6px 16px rgb(22 119 255 / 24%);
+}
+
+.hero-cta__btn--primary:hover {
+  background: var(--store-primary-hover);
+  transform: translateY(-2px);
+}
+
+.hero-cta__btn--outline {
+  background: transparent;
   color: var(--store-primary);
+  border-color: var(--store-primary-border);
+}
+
+.hero-cta__btn--outline:hover {
+  background: var(--store-primary-soft);
+  border-color: var(--store-primary);
+  transform: translateY(-2px);
 }
 
 .section-heading {
@@ -1282,120 +1505,9 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 
 /* =========================================================
    06. الفوتر
+   الفوتر نفسه صار جزء مشترك — شكله ومحتواه بملف
+   front/css/shared/site-footer.css (.site-footer)، مش هون.
    ========================================================= */
-
-.store-footer {
-  position: relative;
-  overflow: hidden;
-  width: auto;
-  margin: 36px var(--store-gutter) 28px;
-  padding: 28px clamp(16px, 1.8vw, 22px) 12px;
-  color: var(--store-navy);
-  background: #fff;
-  border: 1px solid var(--store-border);
-  border-radius: 16px;
-  box-shadow: var(--store-shadow);
-}
-
-.store-footer__inner {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(260px, 1.8fr) repeat(3, minmax(140px, 1fr));
-  gap: 24px;
-  max-width: none;
-  margin-inline: auto;
-}
-
-.store-footer__brand {
-  max-width: 340px;
-}
-
-.store-footer__logo {
-  width: 135px;
-  height: auto;
-  display: block;
-  margin-bottom: 8px;
-}
-
-.store-footer__brand p {
-  margin: 0;
-  color: #62677f;
-  font-size: 0.88rem;
-  line-height: 1.65;
-}
-
-.store-footer__social {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.store-footer__social a {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  color: #27588f;
-  border: 1px solid #d8dcea;
-  border-radius: 50%;
-  text-decoration: none;
-  transition: color 220ms ease, background-color 220ms ease, border-color 220ms ease,
-    transform 220ms ease;
-}
-
-.store-footer__social a:hover,
-.store-footer__social a:focus-visible {
-  color: #fff;
-  background: var(--store-primary);
-  border-color: var(--store-primary);
-  transform: translateY(-2px);
-}
-
-.store-footer__column {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-}
-
-.store-footer__column h2 {
-  margin: 0 0 4px;
-  color: var(--store-navy);
-  font-size: 0.92rem;
-  font-weight: 800;
-}
-
-.store-footer__column a {
-  color: #62677f;
-  font-size: 0.82rem;
-  text-decoration: none;
-  transition: color 180ms ease, transform 180ms ease;
-}
-
-.store-footer__column a:hover,
-.store-footer__column a:focus-visible {
-  transform: translateX(-3px);
-}
-
-.store-footer__bottom {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  max-width: 1240px;
-  margin: 24px auto 0;
-  padding-top: 12px;
-  color: #62677f;
-  border-top: 1px solid #e7e9f1;
-  font-size: 0.78rem;
-}
-
-.store-footer__bottom p {
-  margin: 0;
-}
 
 .product-card__body {
   flex: 1;
@@ -1482,46 +1594,19 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 
 @media (max-width: 991px) {
   .store-header__inner {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 8px;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
   }
 
-  .store-brand { grid-area: auto; }
-  .store-search {
-    grid-area: auto;
-    max-width: 410px;
-    justify-self: stretch;
-  }
-  .store-header__actions {
-    position: static;
-    grid-area: auto;
-    margin: 0;
-    transform: none;
+  .store-header__brand,
+  .store-nav {
+    display: none;
   }
 
-  .store-sidebar {
-    inset-block: 0;
-    inset-inline-start: 0;
-    width: min(290px, 84vw);
-    height: 100vh;
-    height: 100dvh;
-    border-radius: 0;
-    border-inline-start: 0;
-    transform: translateX(100%);
-    visibility: hidden;
-  }
-
-  .store-sidebar.is-open {
-    transform: translateX(0);
-    visibility: visible;
-  }
-
-  .sidebar-backdrop {
-    inset: 0;
-  }
-
-  .icon-button.sidebar-close {
-    display: grid;
+  /* مساحات لمس أوسع (44px) لعناصر القائمة الجانبية على الموبايل والتابلت */
+  .store-sidebar__item,
+  .store-sidebar__logout {
+    min-height: 44px;
   }
 
   .products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1547,12 +1632,6 @@ html[data-bs-theme="dark"] body.storefront-page::before {
     inset-inline-end: 0;
   }
 
-  .store-header {
-    width: calc(100% - 32px) !important;
-    margin-inline: auto;
-    padding: 2px 8px;
-  }
-
   .storefront-page .container-palprints {
     width: min(100% - 32px, 1240px);
   }
@@ -1566,57 +1645,10 @@ html[data-bs-theme="dark"] body.storefront-page::before {
     width: 100%;
   }
 
-  .store-header .container-palprints {
-    width: 100%;
-  }
-
   .store-header__inner {
-    min-height: auto;
-    padding-block: 5px;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 6px;
-  }
-
-  .store-sidebar {
-    padding: 18px 14px;
-  }
-
-  .store-footer {
-    width: calc(100% - 32px);
-    margin: 28px auto 18px;
+    min-height: 52px;
     padding-inline: 16px;
-  }
-
-  .store-footer__inner {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 22px;
-  }
-
-  .store-footer__brand {
-    grid-column: auto;
-    max-width: none;
-    text-align: center;
-  }
-
-  .store-footer__logo {
-    margin-inline: auto;
-  }
-
-  .store-footer__social {
-    justify-content: center;
-  }
-
-  .store-footer__bottom {
-    align-items: center;
-    flex-direction: column;
     gap: 6px;
-    margin-top: 30px;
-    text-align: center;
-  }
-
-  .store-footer__column {
-    align-items: center;
-    text-align: center;
   }
 
   .store-search {
@@ -1626,8 +1658,8 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   }
 
   .icon-button {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
   }
 
   .hero-copy h1 {
@@ -1654,6 +1686,12 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .store-header,
+  .store-main,
+  .store-sidebar {
+    transition: none;
+  }
+
   .storefront-motion-ready .hero-copy,
   .storefront-motion-ready .hero-visual,
   .storefront-motion-ready .section-heading,
@@ -1688,10 +1726,6 @@ html[data-bs-theme="dark"] body.storefront-page::before {
     width: 100%;
   }
 
-  .store-header__inner {
-    row-gap: 8px;
-  }
-
   .store-search {
     min-height: 34px;
     padding-inline: 12px;
@@ -1702,18 +1736,6 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   }
 }
 
-.store-footer__column a,
-.store-footer__bottom,
-.store-footer__brand p {
-  color: var(--store-body);
-}
-
-.store-footer__social a,
-.store-footer__column a:hover,
-.store-footer__column a:focus-visible {
-  color: var(--store-primary);
-}
-
 .storefront-page .category-pill.is-active,
 .storefront-page .category-quick-pill.is-active,
 .storefront-page .category-submenu-toggle[aria-expanded="true"] {
@@ -1722,8 +1744,7 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   border-color: var(--store-primary-border);
 }
 
-.storefront-page .store-brand__wordmark,
-.storefront-page .store-footer__wordmark {
+.storefront-page .store-brand__wordmark {
   display: inline-flex;
   align-items: baseline;
   direction: ltr;
@@ -1732,38 +1753,21 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   letter-spacing: -0.08em;
   line-height: 1;
   white-space: nowrap;
-}
-
-.storefront-page .store-brand__wordmark {
   font-size: 27px;
 }
 
-.storefront-page .store-footer__wordmark {
-  margin-bottom: 8px;
-  font-size: 34px;
-}
-
-.storefront-page .store-brand__wordmark span,
-.storefront-page .store-footer__wordmark span {
+.storefront-page .store-brand__wordmark span {
   color: var(--store-navy);
 }
 
-.storefront-page .store-brand__wordmark strong,
-.storefront-page .store-footer__wordmark strong {
+.storefront-page .store-brand__wordmark strong {
   color: var(--store-primary);
   font-weight: 800;
 }
 
 .storefront-page .store-brand:hover .store-brand__wordmark,
-.storefront-page .store-brand:focus-visible .store-brand__wordmark,
-.storefront-page .store-footer__logo-link:hover .store-footer__wordmark {
+.storefront-page .store-brand:focus-visible .store-brand__wordmark {
   filter: drop-shadow(0 4px 8px rgb(22 119 255 / 18%));
-}
-
-@media (max-width: 640px) {
-  .storefront-page .store-footer__wordmark {
-    font-size: 30px;
-  }
 }
 
 .storefront-page .product-card[data-available="false"] {

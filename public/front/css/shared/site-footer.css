@@ -1,0 +1,202 @@
+/* =========================================================
+   PalPrints — الفوتر الموحّد لكل صفحات الموقع
+   يستخدمه: resources/views/partials/footer.blade.php
+   (مضمّن من layouts/front و customer/layouts/app، حتى يظهر
+   بنفس الشكل بالصفحة الرئيسية وصفحات المتجر معًا)
+
+   قيم ثابتة (مش متغيّرات CSS) عن قصد، حتى يشتغل الملف لحاله
+   بدون ما يعتمد على متغيّرات storefront.css المحصورة بصفحات المتجر.
+   ========================================================= */
+
+.site-footer {
+  position: relative;
+  overflow: hidden;
+  width: auto;
+  margin: 36px clamp(16px, 6vw, 132px) 28px;
+  padding: 28px clamp(16px, 1.8vw, 22px) 12px;
+  color: #0b1f3a;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgb(15 23 42 / 8%);
+  font-family: "Cairo", sans-serif;
+}
+
+.site-footer__inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(240px, 1.6fr) repeat(4, minmax(120px, 1fr));
+  gap: 24px;
+  max-width: none;
+  margin-inline: auto;
+}
+
+.site-footer__brand {
+  max-width: 320px;
+}
+
+.site-footer__wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  margin-bottom: 8px;
+  direction: ltr;
+  font-family: Arial, sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.08em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.site-footer__wordmark span {
+  color: #0b1f3a;
+}
+
+.site-footer__wordmark strong {
+  color: #1677ff;
+  font-weight: 800;
+}
+
+.site-footer__logo-link:hover .site-footer__wordmark,
+.site-footer__logo-link:focus-visible .site-footer__wordmark {
+  filter: drop-shadow(0 4px 8px rgb(22 119 255 / 18%));
+}
+
+.site-footer__brand p {
+  margin: 0;
+  color: #62677f;
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.site-footer__social {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.site-footer__social a {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  color: #1677ff;
+  border: 1px solid #d8dcea;
+  border-radius: 50%;
+  text-decoration: none;
+  transition: color 220ms ease, background-color 220ms ease, border-color 220ms ease,
+    transform 220ms ease;
+}
+
+.site-footer__social a:hover,
+.site-footer__social a:focus-visible {
+  color: #fff;
+  background: #1677ff;
+  border-color: #1677ff;
+  transform: translateY(-2px);
+}
+
+.site-footer__column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.site-footer__column h2 {
+  margin: 0 0 4px;
+  color: #0b1f3a;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.site-footer__column a {
+  color: #62677f;
+  font-size: 0.82rem;
+  text-decoration: none;
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.site-footer__column a:hover,
+.site-footer__column a:focus-visible {
+  color: #1677ff;
+  transform: translateX(-3px);
+}
+
+.site-footer__bottom {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1240px;
+  margin: 24px auto 0;
+  padding-top: 12px;
+  color: #62677f;
+  border-top: 1px solid #e7e9f1;
+  font-size: 0.78rem;
+}
+
+.site-footer__bottom p {
+  margin: 0;
+}
+
+@media (max-width: 991px) {
+  .site-footer__inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+  }
+
+  .site-footer__brand {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .site-footer {
+    width: calc(100% - 32px);
+    margin: 28px auto 18px;
+    padding-inline: 16px;
+  }
+
+  .site-footer__inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .site-footer__brand {
+    grid-column: auto;
+    text-align: center;
+  }
+
+  .site-footer__wordmark {
+    font-size: 27px;
+  }
+
+  .site-footer__social {
+    justify-content: center;
+  }
+
+  .site-footer__column {
+    align-items: center;
+    text-align: center;
+  }
+
+  .site-footer__bottom {
+    align-items: center;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 30px;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-footer__social a,
+  .site-footer__column a {
+    transition: none;
+  }
+}

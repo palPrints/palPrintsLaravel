@@ -16,7 +16,11 @@
             </div>
             <div class="hero-copy hero-copy--card">
                 <h1><span>منصة </span><strong>PalPrints</strong></h1>
-                <p class="hero-copy__text"><span class="hero-copy__line hero-copy__line--dark">منتجات عالية الجودة تناسب كل احتياجاتك</span><br><span class="hero-copy__line hero-copy__line--accent">اطلب الآن واطبع بطريقتك الخاصة</span></p>
+                <p class="hero-copy__text"><span class="hero-copy__line hero-copy__line--dark"> منصتك لطباعة أفكارك على منتجات حقيقية</span><br><span class="hero-copy__line hero-copy__line--accent">تصاميم جاهزة من مصممين، أو تصميمك الخاص، بلمسة واحدة</span></p>
+                <div class="hero-cta">
+                    <a href="#products" class="hero-cta__btn hero-cta__btn--primary">تصفح المنتجات</a>
+                    <a href="#" class="hero-cta__btn hero-cta__btn--outline">ارفع تصميمك الخاص</a>
+                </div>
             </div>
         </div>
     </section>
