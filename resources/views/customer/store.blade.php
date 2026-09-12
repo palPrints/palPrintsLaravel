@@ -123,7 +123,7 @@
                         <p>بوسترات مطبوعة بجودة واضحة لعرض الأفكار والديكور.</p>
                     </div>
                 </article>
-                <article class="product-card" data-category="office" data-product="stickers" data-order="4">
+                <article class="product-card" data-category="office" data-product="stickers" data-order="4" data-href="{{ route('customer.stickers') }}">
                     <div class="product-card__media">
                         <img src="{{ asset('front/assets/images/customer/products/11.png') }}" alt="ستيكرات">
                     </div>
