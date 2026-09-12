@@ -495,8 +495,8 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 22px;
+  justify-content: flex-start;
+  gap: 8px;
   padding: 12px 12px 4px;
   overflow-x: hidden;
   overflow-y: auto;
@@ -693,6 +693,7 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   border-radius: 13px;
   cursor: pointer;
   box-shadow: none;
+  text-decoration: none;
   transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
 }
 
@@ -758,9 +759,34 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   display: none;
 }
 
+/* سهم صغير يوصل لوحة الإشعارات بأيقونة الجرس اللي طلعت منها */
+.notifications-menu::before {
+  content: "";
+  position: absolute;
+  inset-block-start: calc(100% + 5px);
+  inset-inline-start: 50%;
+  width: 14px;
+  height: 14px;
+  margin-inline-start: -7px;
+  background: #fff;
+  border-inline-start: 1px solid #d6e1ef;
+  border-block-start: 1px solid #d6e1ef;
+  border-radius: 3px 0 0 0;
+  transform: rotate(45deg);
+  z-index: 41;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 120ms ease;
+}
+
+.notifications-menu:has(.notifications-panel:not([hidden]))::before {
+  opacity: 1;
+  visibility: visible;
+}
+
 .notifications-panel {
   position: absolute;
-  inset-block-start: calc(100% + 10px);
+  inset-block-start: calc(100% + 14px);
   inset-inline-end: -48px;
   z-index: 40;
   width: min(330px, calc(100vw - 32px));
@@ -880,13 +906,191 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   font-size: 1.1rem;
 }
 
+.cart-menu {
+  position: relative;
+}
+
+/* سهم صغير يوصل القائمة المنسدلة بأيقونة السلة اللي طلعت منها */
+.cart-menu::before {
+  content: "";
+  position: absolute;
+  inset-block-start: calc(100% + 5px);
+  inset-inline-start: 50%;
+  width: 14px;
+  height: 14px;
+  margin-inline-start: -7px;
+  background: #fff;
+  border-inline-start: 1px solid #d6e1ef;
+  border-block-start: 1px solid #d6e1ef;
+  border-radius: 3px 0 0 0;
+  transform: rotate(45deg);
+  z-index: 41;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 120ms ease;
+}
+
+.cart-menu:has(.cart-dropdown:not([hidden]))::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.cart-dropdown[hidden] {
+  display: none;
+}
+
+.cart-dropdown {
+  position: absolute;
+  inset-block-start: calc(100% + 14px);
+  left: 0;
+  right: auto;
+  transform: none;
+  z-index: 40;
+  width: min(320px, calc(100vw - 32px));
+  overflow: hidden;
+  color: var(--store-navy);
+  background: #fff;
+  border: 1px solid #d6e1ef;
+  border-radius: 16px;
+  box-shadow: 0 18px 45px rgb(20 44 84 / 18%);
+}
+
+.cart-dropdown__header {
+  padding: 14px 16px 11px;
+  border-bottom: 1px solid var(--store-border);
+}
+
+.cart-dropdown__header strong {
+  font-size: .95rem;
+}
+
+.cart-dropdown__list {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.cart-dropdown__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--store-border);
+}
+
+.cart-dropdown__item-media {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  background: var(--store-surface-muted);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.cart-dropdown__item-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cart-dropdown__item-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.cart-dropdown__item-body h4 {
+  margin: 0;
+  color: var(--store-navy);
+  font-size: .85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cart-dropdown__item-body p {
+  margin: 2px 0 0;
+  color: var(--store-muted);
+  font-size: .76rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cart-dropdown__item-price {
+  flex: 0 0 auto;
+  color: var(--store-primary);
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+.cart-dropdown__empty {
+  margin: 0;
+  padding: 24px 16px;
+  color: var(--store-muted);
+  font-size: .82rem;
+  text-align: center;
+}
+
+.cart-dropdown__empty[hidden] {
+  display: none;
+}
+
+.cart-dropdown__footer {
+  padding: 10px 12px;
+  border-top: 1px solid var(--store-border);
+}
+
+.cart-dropdown__view {
+  display: block;
+  padding: 9px;
+  color: #fff;
+  background: var(--store-primary);
+  border-radius: 10px;
+  font: 700 .84rem Cairo, sans-serif;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 160ms ease;
+}
+
+.cart-dropdown__view:hover,
+.cart-dropdown__view:focus-visible {
+  background: var(--store-primary-hover);
+}
+
 .profile-menu {
   position: relative;
 }
 
+/* سهم صغير يوصل قائمة الملف الشخصي بأيقونته اللي طلعت منها */
+.profile-menu::before {
+  content: "";
+  position: absolute;
+  inset-block-start: calc(100% + 3px);
+  inset-inline-start: 50%;
+  width: 14px;
+  height: 14px;
+  margin-inline-start: -7px;
+  background: #fff;
+  border-inline-start: 1px solid #d6e1ef;
+  border-block-start: 1px solid #d6e1ef;
+  border-radius: 3px 0 0 0;
+  transform: rotate(45deg);
+  z-index: 31;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 120ms ease;
+}
+
+.profile-menu:has(.profile-dropdown:not([hidden]))::before {
+  opacity: 1;
+  visibility: visible;
+}
+
 .profile-dropdown {
   position: absolute;
-  inset-block-start: calc(100% + 8px);
+  inset-block-start: calc(100% + 12px);
   left: 50%;
   right: auto;
   z-index: 30;

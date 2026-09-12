@@ -26,6 +26,8 @@
   const notificationsList = document.querySelector(".notifications-list");
   const notificationsEmpty = document.querySelector(".notifications-empty");
   const notificationsClear = document.querySelector(".notifications-clear");
+  const cartButton = document.getElementById("cartButton");
+  const cartDropdown = document.getElementById("cartDropdown");
   const sidebarToggle = document.getElementById("sidebarToggle");
   const storeSidebar = document.getElementById("storeSidebar");
   const sidebarBackdrop = document.getElementById("sidebarBackdrop");
@@ -118,8 +120,6 @@
     });
   };
 
-  if (!form || !input || !grid || !emptyState) return;
-
   if (notificationsToggle && notificationsPanel && notificationsBadge && notificationsList && notificationsEmpty) {
     const storageKey = "palprints-store-notifications";
     let notifications = [];
@@ -211,6 +211,10 @@
           profileDropdown.hidden = true;
           profileMenuToggle.setAttribute("aria-expanded", "false");
         }
+        if (cartDropdown && cartButton) {
+          cartDropdown.hidden = true;
+          cartButton.setAttribute("aria-expanded", "false");
+        }
         notifications.forEach((notification) => { notification.unread = false; });
         saveNotifications();
         renderNotifications();
@@ -249,6 +253,10 @@
         notificationsPanel.hidden = true;
         notificationsToggle.setAttribute("aria-expanded", "false");
       }
+      if (!isOpen && cartDropdown && cartButton) {
+        cartDropdown.hidden = true;
+        cartButton.setAttribute("aria-expanded", "false");
+      }
     });
 
     document.addEventListener("click", (event) => {
@@ -263,6 +271,129 @@
       profileMenuToggle.setAttribute("aria-expanded", "false");
       profileMenuToggle.focus();
     });
+  }
+
+  const cartDropdownList = document.getElementById("cartDropdownList");
+  const cartDropdownEmpty = document.getElementById("cartDropdownEmpty");
+
+  if (cartButton && cartDropdown && cartDropdownList && cartDropdownEmpty) {
+    const CART_STORAGE_KEY = "palprints-basket-cart";
+    const assets = window.palPrintsCustomerAssets || {};
+    const basketUrl = assets.basketUrl || "#";
+    const emptyBasketUrl = assets.emptyBasketUrl || "#";
+    const cartDropdownView = cartDropdown.querySelector(".cart-dropdown__view");
+    const cartCountBadge = document.getElementById("cartCount");
+
+    const readCart = () => {
+      try {
+        const saved = JSON.parse(localStorage.getItem(CART_STORAGE_KEY));
+        if (Array.isArray(saved)) return saved;
+      } catch (_) { /* Fall through to the seed below. */ }
+      return Array.isArray(assets.basketSeed) ? assets.basketSeed : [];
+    };
+
+    const saveCart = (cartItems) => {
+      try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems)); }
+      catch (_) { /* Session-only fallback. */ }
+    };
+
+    // Seed localStorage on first visit so every page agrees on the same cart.
+    if (localStorage.getItem(CART_STORAGE_KEY) === null) saveCart(readCart());
+
+    // Breadcrumb on the empty-basket page should only lead to the products
+    // page when the cart actually has items; otherwise stay put.
+    const basketCrumbLink = document.getElementById("basketCrumbLink");
+    if (basketCrumbLink) {
+      if (readCart().length) {
+        basketCrumbLink.href = basketUrl;
+      } else {
+        basketCrumbLink.removeAttribute("href");
+        basketCrumbLink.addEventListener("click", (event) => event.preventDefault());
+      }
+    }
+
+    const renderCartDropdown = () => {
+      const cartItems = readCart();
+      const total = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+
+      if (cartCountBadge) {
+        cartCountBadge.textContent = total;
+        cartCountBadge.hidden = total === 0;
+      }
+      cartButton.setAttribute("aria-label", total ? `سلة التسوق، ${total} منتجات` : "سلة التسوق، فارغة");
+
+      cartDropdownList.replaceChildren();
+      cartItems.slice(-2).reverse().forEach((item) => {
+        const row = document.createElement("div");
+        const media = document.createElement("div");
+        const image = document.createElement("img");
+        const body = document.createElement("div");
+        const title = document.createElement("h4");
+        const desc = document.createElement("p");
+        const price = document.createElement("span");
+
+        row.className = "cart-dropdown__item";
+        media.className = "cart-dropdown__item-media";
+        image.src = item.image;
+        image.alt = item.title;
+        body.className = "cart-dropdown__item-body";
+        title.textContent = item.title;
+        desc.textContent = item.description || "";
+        price.className = "cart-dropdown__item-price";
+        price.textContent = `$${item.price}`;
+
+        media.append(image);
+        body.append(title, desc);
+        row.append(media, body, price);
+        cartDropdownList.append(row);
+      });
+
+      cartDropdownList.hidden = cartItems.length === 0;
+      cartDropdownEmpty.hidden = cartItems.length > 0;
+      if (cartDropdownView) cartDropdownView.href = cartItems.length ? basketUrl : emptyBasketUrl;
+    };
+
+    window.PalPrintCart = {
+      getItems: readCart,
+      save(cartItems) {
+        saveCart(cartItems);
+        renderCartDropdown();
+      }
+    };
+
+    cartButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const willOpen = cartDropdown.hidden;
+      cartDropdown.hidden = !willOpen;
+      cartButton.setAttribute("aria-expanded", String(willOpen));
+
+      if (willOpen) {
+        if (profileDropdown && profileMenuToggle) {
+          profileDropdown.hidden = true;
+          profileMenuToggle.setAttribute("aria-expanded", "false");
+        }
+        if (notificationsPanel && notificationsToggle) {
+          notificationsPanel.hidden = true;
+          notificationsToggle.setAttribute("aria-expanded", "false");
+        }
+        renderCartDropdown();
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      if (event.target.closest(".cart-menu")) return;
+      cartDropdown.hidden = true;
+      cartButton.setAttribute("aria-expanded", "false");
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || cartDropdown.hidden) return;
+      cartDropdown.hidden = true;
+      cartButton.setAttribute("aria-expanded", "false");
+      cartButton.focus();
+    });
+
+    renderCartDropdown();
   }
 
   // قائمة الحساب الجانبية — بالديسكتوب/التابلت بتدفع المحتوى وتظهر جنبه
@@ -336,6 +467,10 @@
 
   // Category pages reuse the store shell and provide their own catalog behavior.
   if (document.body.classList.contains("hoodies-page")) return;
+
+  // Pages without a store product grid (e.g. the basket) only need the
+  // header/sidebar wiring above — nothing below here applies to them.
+  if (!form || !input || !grid || !emptyState) return;
 
   const normalize = (value) => value
     .toLocaleLowerCase("ar")
