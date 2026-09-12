@@ -28,6 +28,37 @@
     <script>
         window.palPrintsCustomerAssets = {
             products: @json(asset('front/assets/images/customer/products')),
+            basketUrl: @json(route('customer.basket')),
+            emptyBasketUrl: @json(route('customer.basket.empty')),
+            basketSeed: [
+                {
+                    id: 'tshirt-explore-more',
+                    title: 'تيشيرت كلاسيك',
+                    description: 'تصميم Explore More',
+                    image: @json(asset('front/assets/images/customer/orderBasket/explore-more-tshirt.png')),
+                    price: 20,
+                    quantity: 2,
+                    meta: ['المقاس: L', 'اللون: أسود', 'الطباعة: أمامي']
+                },
+                {
+                    id: 'hoodie-good-vibes',
+                    title: 'هودي',
+                    description: 'تصميم Good Vibes',
+                    image: @json(asset('front/assets/images/customer/orderBasket/good-vibes-hoodie.png')),
+                    price: 28,
+                    quantity: 1,
+                    meta: ['المقاس: M', 'اللون: رمادي']
+                },
+                {
+                    id: 'cap-mountain',
+                    title: 'طاقية',
+                    description: 'تصميم Mountain',
+                    image: @json(asset('front/assets/images/customer/orderBasket/mountain-cap.png')),
+                    price: 15,
+                    quantity: 3,
+                    meta: ['المقاس: مقاس واحد', 'اللون: أخضر']
+                }
+            ],
         };
     </script>
     <script src="{{ asset('front/js/customer/storefront.js') }}?v={{ filemtime(public_path('front/js/customer/storefront.js')) }}"></script>

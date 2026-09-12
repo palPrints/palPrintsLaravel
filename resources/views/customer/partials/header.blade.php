@@ -82,10 +82,22 @@
                     </div>
                 </div>
                 <span class="store-header__actions-divider" aria-hidden="true"></span>
-                <button type="button" class="icon-button" id="cartButton" aria-label="سلة التسوق">
-                    <i class="bi bi-cart3" aria-hidden="true"></i>
-                    <span class="icon-badge" id="cartCount" aria-hidden="true">2</span>
-                </button>
+                <div class="cart-menu">
+                    <button type="button" class="icon-button" id="cartButton" aria-label="سلة التسوق" aria-expanded="false" aria-controls="cartDropdown">
+                        <i class="bi bi-cart3" aria-hidden="true"></i>
+                        <span class="icon-badge" id="cartCount" aria-hidden="true">2</span>
+                    </button>
+                    <div class="cart-dropdown" id="cartDropdown" hidden>
+                        <div class="cart-dropdown__header">
+                            <strong>سلة التسوق</strong>
+                        </div>
+                        <div class="cart-dropdown__list" id="cartDropdownList"></div>
+                        <p class="cart-dropdown__empty" id="cartDropdownEmpty" hidden>سلتك فارغة حاليًا</p>
+                        <div class="cart-dropdown__footer">
+                            <a href="{{ route('customer.basket') }}" class="cart-dropdown__view">عرض السلة</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
