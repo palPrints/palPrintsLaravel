@@ -33,7 +33,7 @@
             </div>
 
             <div class="products-grid" id="productGrid">
-                <article class="product-card" data-category="clothing" data-product="shirt" data-order="1">
+                <article class="product-card" data-category="clothing" data-product="shirt" data-order="1" data-href="{{ route('customer.tshirts') }}">
                     <div class="product-card__media">
                         <img src="{{ asset('front/assets/images/customer/products/1.png') }}" alt="تيشيرت">
                     </div>

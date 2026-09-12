@@ -24,7 +24,7 @@
                 </a>
                 <div class="store-mega" id="storeNavShopMenu" aria-label="منتجات المتجر" hidden>
                     <p class="store-mega__label">متوفر الآن</p>
-                    <a href="{{ route('customer.store') }}#products" class="store-mega__item"><i class="bi bi-bag" aria-hidden="true"></i><span>تيشيرت</span></a>
+                    <a href="{{ route('customer.tshirts') }}" class="store-mega__item"><i class="bi bi-bag" aria-hidden="true"></i><span>تيشيرت</span></a>
                     <a href="{{ route('customer.hoodies') }}" class="store-mega__item"><i class="bi bi-bag" aria-hidden="true"></i><span>هودي</span></a>
                     <a href="{{ route('customer.mugs') }}" class="store-mega__item"><i class="bi bi-cup-hot" aria-hidden="true"></i><span>اكواب</span></a>
                     <a href="{{ route('customer.store') }}#products" class="store-mega__item"><i class="bi bi-journal-bookmark" aria-hidden="true"></i><span>طباعة ورق</span></a>
