@@ -87,7 +87,7 @@
                         <p>حماية أنيقة للموبايل مع تصاميم قابلة للتخصيص.</p>
                     </div>
                 </article>
-                <article class="product-card" data-category="drinkware" data-product="cups" data-order="5">
+                <article class="product-card" data-category="drinkware" data-product="cups" data-order="5" data-href="{{ route('customer.mugs') }}">
                     <div class="product-card__media">
                         <img src="{{ asset('front/assets/images/customer/products/7.png') }}" alt="اكواب">
                     </div>

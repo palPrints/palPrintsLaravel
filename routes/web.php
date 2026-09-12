@@ -41,6 +41,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::middleware('role:customer')->prefix('customer')->name('customer.')->group(function () {
         Route::view('/store', 'customer.store')->name('store');
         Route::view('/hoodies', 'customer.hoodies')->name('hoodies');
+        Route::view('/mugs', 'customer.mugs')->name('mugs');
     });
     Route::get('/designer/dashboard', DesignerDashboardController::class)
         ->middleware('role:designer')->name('designer.dashboard');

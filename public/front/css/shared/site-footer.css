@@ -12,13 +12,14 @@
   position: relative;
   overflow: hidden;
   width: auto;
-  margin: 36px clamp(16px, 6vw, 132px) 28px;
-  padding: 28px clamp(16px, 1.8vw, 22px) 12px;
+  margin: 36px 0 0;
+  padding: 28px 0 12px;
   color: #0b1f3a;
   background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  box-shadow: 0 4px 14px rgb(15 23 42 / 8%);
+  border: 0;
+  border-top: 1px solid #e2e8f0;
+  border-radius: 0;
+  box-shadow: none;
   font-family: "Cairo", sans-serif;
 }
 
@@ -28,7 +29,7 @@
   display: grid;
   grid-template-columns: minmax(240px, 1.6fr) repeat(4, minmax(120px, 1fr));
   gap: 24px;
-  max-width: none;
+  width: min(100% - 44px, 1240px);
   margin-inline: auto;
 }
 
@@ -36,30 +37,15 @@
   max-width: 320px;
 }
 
-.site-footer__wordmark {
-  display: inline-flex;
-  align-items: baseline;
+.site-footer__logo {
+  display: block;
+  height: 56px;
+  width: auto;
   margin-bottom: 8px;
-  direction: ltr;
-  font-family: Arial, sans-serif;
-  font-size: 30px;
-  font-weight: 800;
-  letter-spacing: -0.08em;
-  line-height: 1;
-  white-space: nowrap;
 }
 
-.site-footer__wordmark span {
-  color: #0b1f3a;
-}
-
-.site-footer__wordmark strong {
-  color: #1677ff;
-  font-weight: 800;
-}
-
-.site-footer__logo-link:hover .site-footer__wordmark,
-.site-footer__logo-link:focus-visible .site-footer__wordmark {
+.site-footer__logo-link:hover .site-footer__logo,
+.site-footer__logo-link:focus-visible .site-footer__logo {
   filter: drop-shadow(0 4px 8px rgb(22 119 255 / 18%));
 }
 
@@ -124,6 +110,18 @@
   transform: translateX(-3px);
 }
 
+.site-footer__column--contact span {
+  color: #62677f;
+  font-size: 0.82rem;
+}
+
+.site-footer__column--contact a,
+.site-footer__column--contact span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .site-footer__bottom {
   position: relative;
   z-index: 1;
@@ -131,7 +129,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  max-width: 1240px;
+  width: min(100% - 44px, 1240px);
   margin: 24px auto 0;
   padding-top: 12px;
   color: #62677f;
@@ -157,9 +155,7 @@
 
 @media (max-width: 640px) {
   .site-footer {
-    width: calc(100% - 32px);
-    margin: 28px auto 18px;
-    padding-inline: 16px;
+    margin: 28px 0 0;
   }
 
   .site-footer__inner {
