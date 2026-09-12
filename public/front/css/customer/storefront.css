@@ -43,6 +43,7 @@ body.storefront-page {
   --store-border: #e2e8f0;
   --store-surface-muted: #f8fafc;
   --store-shadow: 0 4px 14px rgb(15 23 42 / 8%);
+  --store-divider-accent: var(--store-border);
 
   /* الحافة الموحّدة لكل الصفحة: الهيدر والمحتوى والفوتر
      يبدأون وينتهون على هذا الخط تماماً */
@@ -58,6 +59,18 @@ body.storefront-page {
   background: var(--pal-page-bg);
   color: var(--store-navy);
   font-family: "Cairo", sans-serif;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html:has(body.storefront-page) {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+body.storefront-page::-webkit-scrollbar,
+html:has(body.storefront-page)::-webkit-scrollbar {
+  display: none;
 }
 
 body.storefront-page::before {
@@ -137,6 +150,24 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   transition: box-shadow 200ms ease;
 }
 
+/* خط عمودي بنفس محاذاة حافة القائمة الجانبية بالضبط، حتى يبين الاثنين
+   كخط واحد متواصل من الهيدير لحد تحت — يظهر بس لما القائمة مفتوحة */
+.store-header::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  inset-inline-start: var(--store-sidebar-width);
+  width: 1px;
+  background: var(--store-divider-accent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.store-header:has(.sidebar-toggle[aria-expanded="true"])::after {
+  opacity: 1;
+}
+
 /* أثناء التمرير: نفس الارتفاع، بس بظل خفيف يفصلها عن المحتوى تحتها */
 .store-header.is-scrolled {
   box-shadow: 0 6px 18px rgb(15 23 42 / 8%);
@@ -186,6 +217,12 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 
 .store-header__brand .store-brand__wordmark {
   font-size: 20px;
+}
+
+.store-brand__logo {
+  height: 56px;
+  width: auto;
+  display: block;
 }
 
 /* روابط التصفح الرئيسية في الهيدير — بمنتصف الهيدير تمامًا */
@@ -251,6 +288,8 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   width: 250px;
   max-height: min(70vh, 520px);
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   margin-top: 8px;
   padding: 10px;
   display: flex;
@@ -260,6 +299,10 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   border: 1px solid var(--store-border);
   border-radius: 14px;
   box-shadow: 0 18px 40px rgb(20 44 84 / 14%);
+}
+
+.store-mega::-webkit-scrollbar {
+  display: none;
 }
 
 .store-mega[hidden] {
@@ -355,7 +398,7 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   flex-direction: column;
   overflow: hidden;
   background: #fff;
-  border-inline-start: 1px solid var(--store-border);
+  border-inline-end: 1px solid var(--store-border);
   border-block-start: 1px solid var(--store-border);
   box-shadow: -18px 0 34px -20px rgb(11 31 58 / 22%);
   transform: translateX(100%);
@@ -366,21 +409,25 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 .store-sidebar.is-open {
   transform: translateX(0);
   visibility: visible;
+  border-inline-end-color: var(--store-divider-accent);
 }
 
 @media (min-width: 992px) {
   /* بدون ظل جانبي لما تكون جنب المحتوى بدل ما تعلو فوقه */
   .store-sidebar.is-open {
     box-shadow: none;
-    border-inline-start-color: var(--store-border);
   }
 
   /* الهيدير يضل بعرضه الكامل دايمًا — ما بيتأثر بفتح/إغلاق القائمة إطلاقًا،
      فقط المحتوى (والفوتر) هما يللي بيتحركوا جنب القائمة. فراغ إضافي (24px)
-     بعد عرض القائمة حتى ما يضل المحتوى ملتصق فيها مباشرة */
-  body.storefront-page.sidebar-push-open .store-main,
-  body.storefront-page.sidebar-push-open .site-footer {
+     بعد عرض القائمة حتى ما يضل المحتوى ملتصق فيها مباشرة — الفوتر وحده
+     ملتصق بدون فراغ لأنه المستخدم طلب هيك بالتحديد */
+  body.storefront-page.sidebar-push-open .store-main {
     margin-inline-start: calc(var(--store-sidebar-width) + 24px);
+  }
+
+  body.storefront-page.sidebar-push-open .site-footer {
+    margin-inline-start: var(--store-sidebar-width);
   }
 }
 
@@ -448,7 +495,8 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  justify-content: center;
+  gap: 22px;
   padding: 12px 12px 4px;
   overflow-x: hidden;
   overflow-y: auto;

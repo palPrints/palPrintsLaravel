@@ -8,52 +8,45 @@
     <div class="site-footer__inner">
         <div class="site-footer__brand">
             <a href="{{ route('home') }}" class="site-footer__logo-link" aria-label="PalPrints">
-                <span class="site-footer__wordmark" aria-hidden="true"><span>PAL</span><strong>PRINTS</strong></span>
+                <img src="{{ asset('front/assets/images/customer/palprints-wordmark-transparent.png') }}" alt="PalPrints" class="site-footer__logo">
             </a>
-            <p>منصة الطباعة عند الطلب تربط بين المصممين والعملاء لتقديم منتجات فريدة بجودة عالية وتجربة استثنائية.</p>
-            <div class="site-footer__social" aria-label="حسابات التواصل الاجتماعي">
-                <a href="#" aria-label="Instagram"><i class="bi bi-instagram" aria-hidden="true"></i></a>
-                <a href="#" aria-label="Facebook"><i class="bi bi-facebook" aria-hidden="true"></i></a>
-                <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x" aria-hidden="true"></i></a>
-                <a href="#" aria-label="TikTok"><i class="bi bi-tiktok" aria-hidden="true"></i></a>
-            </div>
+            <p>من فكرة إلى واقع.<br>صنع بكل حب لكم.</p>
         </div>
         <div class="site-footer__column">
-            <h2>تسوق</h2>
-            <a href="#">تيشيرتات</a>
-            <a href="#">هوديز</a>
-            <a href="#">حقائب</a>
-            <a href="#">طواقي</a>
-            <a href="#">دفاتر</a>
-            <a href="#">أكواب</a>
+            <h2>المتجر</h2>
+            <a href="{{ route('customer.store') }}#products">كل المنتجات</a>
+            <a href="{{ route('customer.store') }}#products">التصنيفات</a>
+            <a href="{{ route('customer.store') }}#products">الإكسسوارات</a>
+            <a href="{{ route('customer.store') }}#products">الأكثر مبيعًا</a>
         </div>
         <div class="site-footer__column">
-            <h2>روابط سريعة</h2>
-            <a href="{{ url('/') }}">الرئيسية</a>
-            <a href="{{ url('/#designs') }}">التصاميم</a>
-            <a href="{{ url('/#about') }}">عن المنصة</a>
-            <a href="{{ url('/#about') }}">كيف تعمل؟</a>
+            <h2>حسابك</h2>
+            <a href="#">الملف الشخصي</a>
+            <a href="#">طلباتي</a>
+            <a href="#">المفضلة</a>
+            <a href="#">سلة المشتريات</a>
+        </div>
+        <div class="site-footer__column">
+            <h2>المساعدة</h2>
+            <a href="#">الدعم الفني</a>
             <a href="#">الأسئلة الشائعة</a>
-            <a href="{{ url('/#contact') }}">تواصل معنا</a>
-        </div>
-        <div class="site-footer__column">
-            <h2>للمصممين</h2>
-            <a href="#">انضم كمصمم</a>
-            <a href="#">لوحة تحكم المصمم</a>
-            <a href="#">دليل المصمم</a>
-            <a href="#">سياسة المصمم</a>
-        </div>
-        <div class="site-footer__column">
-            <h2>مساعدة</h2>
-            <a href="#">مركز المساعدة</a>
             <a href="{{ route('privacy') }}">سياسة الخصوصية</a>
             <a href="{{ route('terms') }}">الشروط والأحكام</a>
-            <a href="#">سياسة الإرجاع</a>
-            <a href="#">تتبع الطلب</a>
+        </div>
+        <div class="site-footer__column site-footer__column--contact">
+            <h2>تواصل معنا</h2>
+            <a href="mailto:support@palprints.com"><i class="bi bi-envelope" aria-hidden="true"></i> support@palprints.com</a>
+            <a href="tel:+970599000000"><i class="bi bi-telephone" aria-hidden="true"></i> <span dir="ltr">+970 59 900 0000</span></a>
+            <span><i class="bi bi-geo-alt" aria-hidden="true"></i> رام الله، فلسطين</span>
         </div>
     </div>
     <div class="site-footer__bottom">
         <p>© {{ now()->year }} PalPrints. جميع الحقوق محفوظة.</p>
-        <span>صُنع بحب للطباعة والإبداع</span>
+        <div class="site-footer__social" aria-label="حسابات التواصل الاجتماعي">
+            <a href="#" aria-label="Instagram"><i class="bi bi-instagram" aria-hidden="true"></i></a>
+            <a href="#" aria-label="Facebook"><i class="bi bi-facebook" aria-hidden="true"></i></a>
+            <a href="#" aria-label="TikTok"><i class="bi bi-tiktok" aria-hidden="true"></i></a>
+            <a href="#" aria-label="WhatsApp"><i class="bi bi-whatsapp" aria-hidden="true"></i></a>
+        </div>
     </div>
 </footer>
