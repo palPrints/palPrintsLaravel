@@ -28,7 +28,7 @@
                     <a href="{{ route('customer.hoodies') }}" class="store-mega__item"><i class="bi bi-bag" aria-hidden="true"></i><span>هودي</span></a>
                     <a href="{{ route('customer.mugs') }}" class="store-mega__item"><i class="bi bi-cup-hot" aria-hidden="true"></i><span>اكواب</span></a>
                     <a href="{{ route('customer.store') }}#products" class="store-mega__item"><i class="bi bi-journal-bookmark" aria-hidden="true"></i><span>طباعة ورق</span></a>
-                    <a href="{{ route('customer.store') }}#products" class="store-mega__item"><i class="bi bi-journal-bookmark" aria-hidden="true"></i><span>ستيكرات</span></a>
+                    <a href="{{ route('customer.stickers') }}" class="store-mega__item"><i class="bi bi-journal-bookmark" aria-hidden="true"></i><span>ستيكرات</span></a>
 
                     <p class="store-mega__label">قريبًا</p>
                     <a href="{{ route('customer.store') }}#products" class="store-mega__item is-soon"><i class="bi bi-bag" aria-hidden="true"></i><span>قبعات</span></a>
@@ -82,9 +82,9 @@
                     </div>
                 </div>
                 <span class="store-header__actions-divider" aria-hidden="true"></span>
-                <button type="button" class="icon-button" aria-label="سلة التسوق">
+                <button type="button" class="icon-button" id="cartButton" aria-label="سلة التسوق">
                     <i class="bi bi-cart3" aria-hidden="true"></i>
-                    <span class="icon-badge" aria-hidden="true">2</span>
+                    <span class="icon-badge" id="cartCount" aria-hidden="true">2</span>
                 </button>
             </div>
         </div>

@@ -43,6 +43,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::view('/hoodies', 'customer.hoodies')->name('hoodies');
         Route::view('/mugs', 'customer.mugs')->name('mugs');
         Route::view('/tshirts', 'customer.tshirts')->name('tshirts');
+        Route::view('/stickers', 'customer.stickers')->name('stickers');
     });
     Route::get('/designer/dashboard', DesignerDashboardController::class)
         ->middleware('role:designer')->name('designer.dashboard');
