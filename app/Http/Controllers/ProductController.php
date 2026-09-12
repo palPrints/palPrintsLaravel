@@ -11,6 +11,6 @@ class ProductController extends Controller
 // ويبعتها ايجيب كل المنتجات
         $products = Product::all();
 
-        return view('products.index', compact('products'));
+        return view('designs.index', compact('products'));
     }
 }

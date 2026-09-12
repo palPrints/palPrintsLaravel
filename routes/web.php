@@ -89,6 +89,9 @@ Route::middleware(['auth', 'active'])->group(function () {
 require __DIR__.'/auth.php';
 
 // designer routes
-use App\Http\Controllers\ProductController;
 
-Route::get('/products', [ProductController::class, 'index']);
+use App\Http\Controllers\Designer\DesignController;
+
+
+Route::get('/designer/designs', [DesignController::class, 'index'])
+    ->name('designer.designs.index');
