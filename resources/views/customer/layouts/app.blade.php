@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('front/css/customer/storefront.css') }}?v={{ filemtime(public_path('front/css/customer/storefront.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/css/customer/interactions.css') }}?v={{ filemtime(public_path('front/css/customer/interactions.css')) }}">
+    <link rel="stylesheet" href="{{ asset('front/css/shared/site-footer.css') }}?v={{ filemtime(public_path('front/css/shared/site-footer.css')) }}">
     @stack('styles')
 </head>
 <body class="@yield('body-class', 'storefront-page')">
@@ -22,7 +23,7 @@
         @yield('content')
     </main>
 
-    @include('customer.partials.footer')
+    @include('partials.footer')
 
     <script>
         window.palPrintsCustomerAssets = {

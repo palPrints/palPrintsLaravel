@@ -27,10 +27,87 @@
   const notificationsEmpty = document.querySelector(".notifications-empty");
   const notificationsClear = document.querySelector(".notifications-clear");
   const sidebarToggle = document.getElementById("sidebarToggle");
-  const sidebarClose = document.getElementById("sidebarClose");
   const storeSidebar = document.getElementById("storeSidebar");
   const sidebarBackdrop = document.getElementById("sidebarBackdrop");
   const sidebarLogout = document.getElementById("storeSidebarLogout");
+
+  // هيدر مصغّر أثناء التمرير — يبقى لاصقاً بأعلى الصفحة لكن بارتفاع أقل
+  const storeHeader = document.querySelector(".store-header");
+  if (storeHeader) {
+    const HEADER_SCROLL_OFFSET = 8;
+    const syncHeaderScrollState = () => {
+      storeHeader.classList.toggle("is-scrolled", window.scrollY > HEADER_SCROLL_OFFSET);
+    };
+    window.addEventListener("scroll", syncHeaderScrollState, { passive: true });
+    syncHeaderScrollState();
+  }
+
+  // القائمة المنسدلة "المتجر" بالهيدير — تفتح بالتمرير فوقها (ماوس)،
+  // أو باللمس/الكيبورد بالضغطة الأولى، وتنتقل للرابط عادي بالضغطة الثانية
+  const shopNavItem = document.getElementById("storeNavShop");
+  const shopTrigger = document.getElementById("storeNavShopTrigger");
+  const shopMenu = document.getElementById("storeNavShopMenu");
+
+  if (shopNavItem && shopTrigger && shopMenu) {
+    const hoverCapable = window.matchMedia("(hover: hover)");
+    let hoverCloseTimer = null;
+
+    const openShopMenu = () => {
+      window.clearTimeout(hoverCloseTimer);
+      shopMenu.hidden = false;
+      shopNavItem.classList.add("is-open");
+      shopTrigger.setAttribute("aria-expanded", "true");
+    };
+
+    const closeShopMenu = () => {
+      shopMenu.hidden = true;
+      shopNavItem.classList.remove("is-open");
+      shopTrigger.setAttribute("aria-expanded", "false");
+    };
+
+    shopNavItem.addEventListener("pointerenter", (event) => {
+      if (event.pointerType === "touch" || !hoverCapable.matches) return;
+      openShopMenu();
+    });
+
+    shopNavItem.addEventListener("pointerleave", (event) => {
+      if (event.pointerType === "touch" || !hoverCapable.matches) return;
+      hoverCloseTimer = window.setTimeout(closeShopMenu, 150);
+    });
+
+    shopTrigger.addEventListener("click", (event) => {
+      if (hoverCapable.matches) return;
+      if (shopMenu.hidden) {
+        event.preventDefault();
+        openShopMenu();
+      }
+    });
+
+    shopTrigger.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        openShopMenu();
+        shopMenu.querySelector(".store-mega__item")?.focus();
+      } else if (event.key === "Escape") {
+        closeShopMenu();
+      }
+    });
+
+    shopMenu.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      closeShopMenu();
+      shopTrigger.focus();
+    });
+
+    document.addEventListener("click", (event) => {
+      if (event.target.closest("#storeNavShop")) return;
+      closeShopMenu();
+    });
+
+    document.addEventListener("focusin", (event) => {
+      if (!shopNavItem.contains(event.target)) closeShopMenu();
+    });
+  }
 
   const closeSubmenus = () => {
     submenus.forEach((submenu) => {
@@ -188,79 +265,59 @@
     });
   }
 
-  if (sidebarToggle && sidebarClose && storeSidebar && sidebarBackdrop) {
-    const mobileScreen = window.matchMedia("(max-width: 991px)");
+  // قائمة الحساب الجانبية — بالديسكتوب/التابلت بتدفع المحتوى وتظهر جنبه
+  // (بدون تعتيم فوق الصفحة)، وبالموبايل الشاشة صغيرة فبتظهر فوق المحتوى
+  // بخلفية معتمة لأنه ما في مساحة تدفع فيها المحتوى بدون ما يتكسر.
+  if (sidebarToggle && storeSidebar && sidebarBackdrop) {
+    const wideScreen = window.matchMedia("(min-width: 992px)");
+    const sidebarToggleIcon = sidebarToggle.querySelector("i");
+    storeSidebar.hidden = false;
+    storeSidebar.setAttribute("aria-hidden", "true");
 
-    const isMobile = () => mobileScreen.matches;
+    const openSidebar = () => {
+      storeSidebar.classList.add("is-open");
+      sidebarToggle.setAttribute("aria-expanded", "true");
+      sidebarToggle.setAttribute("aria-label", "إغلاق القائمة الجانبية");
+      storeSidebar.setAttribute("aria-hidden", "false");
+      sidebarToggleIcon?.classList.replace("bi-list", "bi-x-lg");
 
-    const syncSidebar = () => {
-      storeSidebar.hidden = false;
-
-      if (isMobile()) {
-        storeSidebar.classList.remove("is-collapsed");
-        storeSidebar.classList.remove("is-open");
-        document.body.classList.remove("sidebar-layout-open");
-        storeSidebar.setAttribute("aria-hidden", "true");
+      if (wideScreen.matches) {
+        document.body.classList.add("sidebar-push-open");
       } else {
-        storeSidebar.classList.remove("is-open");
-        storeSidebar.classList.add("is-collapsed");
-        document.body.classList.remove("sidebar-layout-open");
-        storeSidebar.setAttribute("aria-hidden", "true");
+        sidebarBackdrop.hidden = false;
+        document.body.style.overflow = "hidden";
       }
+      storeSidebar.querySelector(".store-sidebar__item")?.focus();
     };
 
     const closeSidebar = () => {
       storeSidebar.classList.remove("is-open");
       sidebarToggle.setAttribute("aria-expanded", "false");
       sidebarToggle.setAttribute("aria-label", "فتح القائمة الجانبية");
-      sidebarToggle.querySelector("i")?.classList.replace("bi-x-lg", "bi-list");
-
-      if (isMobile()) {
-        sidebarBackdrop.hidden = true;
-        storeSidebar.setAttribute("aria-hidden", "true");
-        document.body.style.overflow = "";
-      } else {
-        storeSidebar.classList.add("is-collapsed");
-        document.body.classList.remove("sidebar-layout-open");
-        storeSidebar.setAttribute("aria-hidden", "true");
-      }
+      storeSidebar.setAttribute("aria-hidden", "true");
+      sidebarToggleIcon?.classList.replace("bi-x-lg", "bi-list");
+      document.body.classList.remove("sidebar-push-open");
+      sidebarBackdrop.hidden = true;
+      document.body.style.overflow = "";
     };
+
+    wideScreen.addEventListener("change", () => {
+      if (!storeSidebar.classList.contains("is-open")) return;
+      closeSidebar();
+    });
 
     sidebarToggle.addEventListener("click", () => {
       if (storeSidebar.classList.contains("is-open")) {
         closeSidebar();
-        return;
-      }
-
-      storeSidebar.classList.remove("is-collapsed");
-      window.requestAnimationFrame(() => storeSidebar.classList.add("is-open"));
-      sidebarToggle.setAttribute("aria-expanded", "true");
-      sidebarToggle.setAttribute("aria-label", "إغلاق القائمة الجانبية");
-      sidebarToggle.querySelector("i")?.classList.replace("bi-list", "bi-x-lg");
-      storeSidebar.setAttribute("aria-hidden", "false");
-
-      if (isMobile()) {
-        sidebarBackdrop.hidden = false;
-        document.body.style.overflow = "hidden";
-        sidebarClose.focus();
       } else {
-        document.body.classList.add("sidebar-layout-open");
+        openSidebar();
       }
     });
 
-    sidebarClose.addEventListener("click", closeSidebar);
     sidebarBackdrop.addEventListener("click", closeSidebar);
 
-    sidebarClose.addEventListener("pointerenter", () => {
-      sidebarClose.classList.add("is-hovered");
-    });
-
-    sidebarClose.addEventListener("pointerleave", () => {
-      sidebarClose.classList.remove("is-hovered");
-    });
-
     storeSidebar.addEventListener("click", (event) => {
-      if (event.target.closest("a") && isMobile()) closeSidebar();
+      if (event.target.closest("a")) closeSidebar();
     });
 
     if (sidebarLogout) {
@@ -271,20 +328,10 @@
     }
 
     document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape") return;
+      if (event.key !== "Escape" || !storeSidebar.classList.contains("is-open")) return;
       closeSidebar();
       sidebarToggle.focus();
     });
-
-    mobileScreen.addEventListener("change", () => {
-      sidebarBackdrop.hidden = true;
-      document.body.style.overflow = "";
-      sidebarToggle.setAttribute("aria-expanded", "false");
-      sidebarToggle.querySelector("i")?.classList.replace("bi-x-lg", "bi-list");
-      syncSidebar();
-    });
-
-    syncSidebar();
   }
 
   // Category pages reuse the store shell and provide their own catalog behavior.
