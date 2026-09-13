@@ -2,12 +2,36 @@
   "use strict";
 
   const list = document.getElementById("basketItems");
+  if (!list) return;
+
+  const CART_STORAGE_KEY = "palprints-basket-cart";
+  const assets = window.palPrintsCustomerAssets || {};
   const count = document.getElementById("itemsCount");
   const toast = document.querySelector(".toast");
-  const emptyBasketUrl = window.palPrintsCustomerAssets?.emptyBasketUrl || "";
+  const emptyBasketUrl = assets.emptyBasketUrl || "";
   let toastTimer;
 
-  if (!list || !window.PalPrintCart) return;
+  // Self-sufficient cart read/write so this page never depends on
+  // storefront.js having finished running first — it uses window.PalPrintCart
+  // when available (to keep the header dropdown in sync) but falls back to
+  // talking to localStorage directly otherwise.
+  function readCart() {
+    if (window.PalPrintCart) return window.PalPrintCart.getItems();
+    try {
+      const saved = JSON.parse(localStorage.getItem(CART_STORAGE_KEY));
+      if (Array.isArray(saved)) return saved;
+    } catch (_) { /* Fall through to the seed below. */ }
+    return Array.isArray(assets.basketSeed) ? assets.basketSeed : [];
+  }
+
+  function saveCart(items) {
+    if (window.PalPrintCart) {
+      window.PalPrintCart.save(items);
+      return;
+    }
+    try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items)); }
+    catch (_) { /* Session-only fallback. */ }
+  }
 
   function message(text) {
     if (!toast) return;
@@ -37,7 +61,7 @@
   }
 
   function render() {
-    const items = window.PalPrintCart.getItems();
+    const items = readCart();
     list.innerHTML = items.map(itemTemplate).join("");
     if (count) count.textContent = items.length;
     return items;
@@ -47,13 +71,13 @@
     const article = event.target.closest(".basket-item");
     if (!article) return;
 
-    const items = window.PalPrintCart.getItems();
+    const items = readCart();
     const index = items.findIndex((item) => item.id === article.dataset.id);
     if (index === -1) return;
 
     if (event.target.closest(".remove-item")) {
-      const [removed] = items.splice(index, 1);
-      window.PalPrintCart.save(items);
+      items.splice(index, 1);
+      saveCart(items);
       render();
       message("تم حذف المنتج من السلة");
       if (!items.length && emptyBasketUrl) {
@@ -68,7 +92,7 @@
     items[index].quantity = action.dataset.action === "increase"
       ? items[index].quantity + 1
       : Math.max(1, items[index].quantity - 1);
-    window.PalPrintCart.save(items);
+    saveCart(items);
     render();
   });
 

@@ -12,7 +12,7 @@
     <nav class="store-sidebar__nav" aria-label="روابط الحساب">
         <a href="{{ route('customer.store') }}" class="store-sidebar__item active pal-pressable" aria-current="page"><i class="bi bi-shop" aria-hidden="true"></i><span>متجر PalPrint</span></a>
         <a href="#" class="store-sidebar__item pal-pressable"><i class="bi bi-person" aria-hidden="true"></i><span>الملف الشخصي</span></a>
-        <a href="#" class="store-sidebar__item pal-pressable"><i class="bi bi-bag" aria-hidden="true"></i><span>طلباتي</span></a>
+        <a href="{{ route('customer.orders') }}" class="store-sidebar__item pal-pressable"><i class="bi bi-bag" aria-hidden="true"></i><span>طلباتي</span></a>
         <a href="#" class="store-sidebar__item pal-pressable"><i class="bi bi-heart" aria-hidden="true"></i><span>المفضلة</span></a>
         <a href="#" class="store-sidebar__item pal-pressable"><i class="bi bi-gear" aria-hidden="true"></i><span>الإعدادات</span></a>
         <a href="#" class="store-sidebar__item pal-pressable"><i class="bi bi-headset" aria-hidden="true"></i><span>الدعم الفني</span></a>

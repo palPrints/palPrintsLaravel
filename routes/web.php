@@ -46,6 +46,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::view('/stickers', 'customer.stickers')->name('stickers');
         Route::view('/basket', 'customer.basket')->name('basket');
         Route::view('/basket/empty', 'customer.basket-empty')->name('basket.empty');
+        Route::view('/checkout', 'customer.checkout')->name('checkout');
+        Route::view('/orders', 'customer.orders')->name('orders');
     });
     Route::get('/designer/dashboard', DesignerDashboardController::class)
         ->middleware('role:designer')->name('designer.dashboard');
