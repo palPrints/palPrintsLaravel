@@ -22,7 +22,7 @@
         <div class="site-footer__column">
             <h2>حسابك</h2>
             <a href="#">الملف الشخصي</a>
-            <a href="#">طلباتي</a>
+            <a href="{{ route('customer.orders') }}">طلباتي</a>
             <a href="#">المفضلة</a>
             <a href="#">سلة المشتريات</a>
         </div>

@@ -31,7 +31,7 @@
         <h2 class="sr-only" id="basketTitle">منتجات السلة</h2>
         <div class="basket-items" id="basketItems"></div>
         <div class="basket-actions">
-            <a href="{{ route('customer.store') }}#products" class="primary-action"><i class="bi bi-arrow-left"></i> متابعة لإتمام الطلب</a>
+            <a href="{{ route('customer.checkout') }}" class="primary-action"><i class="bi bi-arrow-left"></i> متابعة لإتمام الطلب</a>
             <a href="{{ route('customer.store') }}" class="secondary-action">العودة إلى متجر المنتجات <i class="bi bi-arrow-right"></i></a>
         </div>
     </section>

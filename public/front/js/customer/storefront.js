@@ -297,8 +297,19 @@
       catch (_) { /* Session-only fallback. */ }
     };
 
-    // Seed localStorage on first visit so every page agrees on the same cart.
-    if (localStorage.getItem(CART_STORAGE_KEY) === null) saveCart(readCart());
+    // Seed localStorage whenever the cart is empty, so testing always has demo
+    // data to work with (there's no real cart/checkout backend yet — once
+    // there is, this should only seed on true first-visit, not every time
+    // the cart happens to be empty). Skipped on the empty-basket page itself
+    // so that page can actually show/stay in the empty state when visited.
+    if (
+      !document.body.classList.contains("empty-basket-page")
+      && readCart().length === 0
+      && Array.isArray(assets.basketSeed)
+      && assets.basketSeed.length
+    ) {
+      saveCart(assets.basketSeed);
+    }
 
     // Breadcrumb on the empty-basket page should only lead to the products
     // page when the cart actually has items; otherwise stay put.
