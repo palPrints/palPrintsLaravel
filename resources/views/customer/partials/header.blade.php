@@ -62,8 +62,8 @@
                         <i class="bi bi-person" aria-hidden="true"></i>
                     </button>
                     <div class="profile-dropdown" id="profileDropdown" hidden>
-                        <a href="#" class="profile-dropdown__item"><i class="bi bi-person-circle" aria-hidden="true"></i><span>الملف الشخصي</span></a>
-                        <a href="#" class="profile-dropdown__item"><i class="bi bi-heart" aria-hidden="true"></i><span>المفضلة</span></a>
+                        <a href="{{ route('customer.profile') }}" class="profile-dropdown__item"><i class="bi bi-person-circle" aria-hidden="true"></i><span>الملف الشخصي</span></a>
+                        <a href="{{ route('customer.favorites') }}" class="profile-dropdown__item"><i class="bi bi-heart" aria-hidden="true"></i><span>المفضلة</span></a>
                         <button type="button" class="profile-dropdown__item profile-dropdown__logout"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>تسجيل الخروج</span></button>
                     </div>
                 </div>

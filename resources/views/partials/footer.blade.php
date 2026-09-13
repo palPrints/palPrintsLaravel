@@ -21,9 +21,9 @@
         </div>
         <div class="site-footer__column">
             <h2>حسابك</h2>
-            <a href="#">الملف الشخصي</a>
+            <a href="{{ route('customer.profile') }}">الملف الشخصي</a>
             <a href="{{ route('customer.orders') }}">طلباتي</a>
-            <a href="#">المفضلة</a>
+            <a href="{{ route('customer.favorites') }}">المفضلة</a>
             <a href="#">سلة المشتريات</a>
         </div>
         <div class="site-footer__column">

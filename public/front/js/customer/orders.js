@@ -37,15 +37,54 @@
     closeModal();
   });
 
-  document.querySelectorAll(".details-button").forEach((button) => {
-    button.addEventListener("click", () => {
-      const order = button.dataset.order;
-      button.innerHTML = `<i class="bi bi-receipt"></i> الطلب #${order}`;
-      window.setTimeout(() => { button.innerHTML = 'عرض التفاصيل<i class="bi bi-arrow-left"></i>'; }, 1800);
+  const detailsModal = document.getElementById("orderDetailsModal");
+  const detailsItems = document.getElementById("detailsItems");
+  const detailsOrderNumber = document.getElementById("detailsOrderNumber");
+  const detailsDate = document.getElementById("detailsDate");
+  const detailsAddress = document.getElementById("detailsAddress");
+  const detailsPayment = document.getElementById("detailsPayment");
+  const detailsTotal = document.getElementById("detailsTotal");
+  const detailsStatus = document.getElementById("detailsStatus");
+  let selectedDetailsButton = null;
+
+  function closeDetailsModal() {
+    detailsModal.hidden = true;
+    document.body.style.overflow = "";
+    selectedDetailsButton?.focus();
+  }
+
+  function itemRow(item) {
+    return `<div class="details-modal__item"><img src="${item.image}" alt="${item.title}"><div><strong>${item.title}</strong><small>${item.desc} · الكمية: ${item.qty}</small></div><b>${item.price}</b></div>`;
+  }
+
+  if (detailsModal) {
+    document.querySelectorAll(".details-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        selectedDetailsButton = button;
+        const data = button.dataset;
+        let items = [];
+        try { items = JSON.parse(data.items || "[]"); } catch (_) { items = []; }
+        detailsItems.innerHTML = items.map(itemRow).join("");
+        detailsOrderNumber.textContent = `#${data.order}`;
+        detailsDate.textContent = data.date;
+        detailsAddress.textContent = data.address;
+        detailsPayment.textContent = data.payment;
+        detailsTotal.textContent = data.total;
+        detailsStatus.className = `status ${data.statusClass}`;
+        detailsStatus.innerHTML = `<i class="bi ${data.statusIcon}"></i>${data.status}`;
+        detailsModal.hidden = false;
+        document.body.style.overflow = "hidden";
+        detailsModal.querySelector(".modal-close").focus();
+      });
     });
-  });
+
+    detailsModal.querySelector(".modal-close").addEventListener("click", closeDetailsModal);
+    detailsModal.addEventListener("click", (event) => { if (event.target === detailsModal) closeDetailsModal(); });
+  }
 
   window.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !cancelModal.hidden) closeModal();
+    if (event.key !== "Escape") return;
+    if (!cancelModal.hidden) closeModal();
+    if (detailsModal && !detailsModal.hidden) closeDetailsModal();
   });
 })();
