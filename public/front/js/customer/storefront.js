@@ -413,10 +413,14 @@
   if (sidebarToggle && storeSidebar && sidebarBackdrop) {
     const wideScreen = window.matchMedia("(min-width: 992px)");
     const sidebarToggleIcon = sidebarToggle.querySelector("i");
+    const SIDEBAR_STORAGE_KEY = "palprints-sidebar-open";
     storeSidebar.hidden = false;
     storeSidebar.setAttribute("aria-hidden", "true");
 
-    const openSidebar = () => {
+    // القائمة تضل مفتوحة عبر تصفح صفحات الموقع (حالة محفوظة بالمتصفح) ولا
+    // تنسكر إلا بالضغط على زر الفتح/الإغلاق نفسه — طلب المستخدم بالتحديد،
+    // فما في إغلاق تلقائي عند الضغط على رابط بالقائمة أو الخلفية أو Escape.
+    const applyOpen = (shouldFocus) => {
       storeSidebar.classList.add("is-open");
       sidebarToggle.setAttribute("aria-expanded", "true");
       sidebarToggle.setAttribute("aria-label", "إغلاق القائمة الجانبية");
@@ -425,11 +429,19 @@
 
       if (wideScreen.matches) {
         document.body.classList.add("sidebar-push-open");
+        sidebarBackdrop.hidden = true;
+        document.body.style.overflow = "";
       } else {
+        document.body.classList.remove("sidebar-push-open");
         sidebarBackdrop.hidden = false;
         document.body.style.overflow = "hidden";
       }
-      storeSidebar.querySelector(".store-sidebar__item")?.focus();
+      if (shouldFocus) storeSidebar.querySelector(".store-sidebar__item")?.focus();
+    };
+
+    const openSidebar = () => {
+      applyOpen(true);
+      try { localStorage.setItem(SIDEBAR_STORAGE_KEY, "1"); } catch (_) { /* Session-only fallback. */ }
     };
 
     const closeSidebar = () => {
@@ -441,11 +453,11 @@
       document.body.classList.remove("sidebar-push-open");
       sidebarBackdrop.hidden = true;
       document.body.style.overflow = "";
+      try { localStorage.setItem(SIDEBAR_STORAGE_KEY, "0"); } catch (_) { /* Session-only fallback. */ }
     };
 
     wideScreen.addEventListener("change", () => {
-      if (!storeSidebar.classList.contains("is-open")) return;
-      closeSidebar();
+      if (storeSidebar.classList.contains("is-open")) applyOpen(false);
     });
 
     sidebarToggle.addEventListener("click", () => {
@@ -456,12 +468,6 @@
       }
     });
 
-    sidebarBackdrop.addEventListener("click", closeSidebar);
-
-    storeSidebar.addEventListener("click", (event) => {
-      if (event.target.closest("a")) closeSidebar();
-    });
-
     if (sidebarLogout) {
       sidebarLogout.addEventListener("click", () => {
         const confirmed = window.confirm("هل تريد تسجيل الخروج من حسابك؟");
@@ -469,11 +475,9 @@
       });
     }
 
-    document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape" || !storeSidebar.classList.contains("is-open")) return;
-      closeSidebar();
-      sidebarToggle.focus();
-    });
+    let wasOpen = false;
+    try { wasOpen = localStorage.getItem(SIDEBAR_STORAGE_KEY) === "1"; } catch (_) { /* Defaults to closed. */ }
+    if (wasOpen) applyOpen(false);
   }
 
   // Category pages reuse the store shell and provide their own catalog behavior.
