@@ -20,7 +20,6 @@
 @section('content')
     <section class="favorites-content" aria-labelledby="pageTitle">
         <div class="page-heading"><h1 id="pageTitle">المفضلة</h1><p>كل التصاميم التي أعجبتك في مكان واحد.</p></div>
-        <label class="favorites-search"><input id="favoritesSearch" type="search" placeholder="ابحث في المفضلة ..." aria-label="البحث في المفضلة"><i class="bi bi-search"></i></label>
         <div class="favorites-grid" id="favoritesGrid" aria-live="polite"></div>
         <section class="favorites-empty" id="favoritesEmpty" aria-labelledby="favoritesEmptyTitle" hidden>
             <div class="favorites-empty__visual" aria-hidden="true"><span class="heart-card heart-card--back"><i class="bi bi-heart"></i></span><span class="heart-card heart-card--front"><i class="bi bi-heart"></i></span><span class="empty-heart"><i class="bi bi-heart"></i></span></div>

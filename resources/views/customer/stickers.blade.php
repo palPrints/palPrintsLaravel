@@ -11,6 +11,7 @@
 @section('title', 'ستيكرات')
 @section('meta-description', 'اختر من تصاميم ستيكرات PalPrints الجاهزة أو ارفع تصميم البراند الخاص بك وخصصه للطباعة')
 @section('body-class', 'storefront-page stickers-page')
+@section('main-class', 'stickers-main')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('front/css/customer/stickers.css') }}?v={{ filemtime(public_path('front/css/customer/stickers.css')) }}">

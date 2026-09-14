@@ -10,6 +10,8 @@
 @section('title', 'السلة فارغة')
 @section('meta-description', 'سلة التسوق الفارغة في متجر PalPrints')
 @section('body-class', 'storefront-page order-basket-page empty-basket-page')
+@section('main-class', 'empty-basket-main')
+@section('main-id', 'emptyBasketMain')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('front/css/customer/orderBasket.css') }}?v={{ filemtime(public_path('front/css/customer/orderBasket.css')) }}">
