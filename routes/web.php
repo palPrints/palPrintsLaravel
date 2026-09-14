@@ -44,6 +44,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::view('/mugs', 'customer.mugs')->name('mugs');
         Route::view('/tshirts', 'customer.tshirts')->name('tshirts');
         Route::view('/stickers', 'customer.stickers')->name('stickers');
+        Route::view('/paper-printing', 'customer.paperPrinting')->name('paperPrinting');
         Route::view('/basket', 'customer.basket')->name('basket');
         Route::view('/basket/empty', 'customer.basket-empty')->name('basket.empty');
         Route::view('/checkout', 'customer.checkout')->name('checkout');

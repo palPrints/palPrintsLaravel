@@ -11,6 +11,8 @@
 @section('title', 'سلة التسوق')
 @section('meta-description', 'سلة التسوق في متجر PalPrints')
 @section('body-class', 'storefront-page order-basket-page')
+@section('main-class', 'basket-main')
+@section('main-id', 'basketMain')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('front/css/customer/orderBasket.css') }}?v={{ filemtime(public_path('front/css/customer/orderBasket.css')) }}">

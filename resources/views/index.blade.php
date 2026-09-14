@@ -491,7 +491,7 @@
           <!-- طباعة ورق -->
 
           <a
-            href="#"
+            href="{{ route('customer.paperPrinting') }}"
             class="category-card"
           >
             <div class="category-card__icon">

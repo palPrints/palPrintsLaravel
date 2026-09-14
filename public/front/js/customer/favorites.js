@@ -20,7 +20,6 @@
     ]}
   ];
 
-  const search = document.getElementById("favoritesSearch");
   const emptyState = document.getElementById("favoritesEmpty");
   const suggestions = document.getElementById("favoritesSuggestions");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -37,8 +36,7 @@
   }
 
   function render() {
-    const query = search.value.trim().toLocaleLowerCase("ar");
-    const visible = favorites.filter((item) => `${item.title} ${item.description} ${item.designer}`.toLocaleLowerCase("ar").includes(query));
+    const visible = favorites;
     const isEmpty = favorites.length === 0;
     grid.hidden = isEmpty;
     emptyState.hidden = !isEmpty;
@@ -66,7 +64,6 @@
     render();
   });
 
-  search.addEventListener("input", render);
   readFavorites();
   render();
 })();

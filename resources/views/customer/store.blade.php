@@ -96,7 +96,7 @@
                         <p>أكواب مطبوعة بجودة عالية تناسب البيت والعمل.</p>
                     </div>
                 </article>
-                <article class="product-card" data-category="office" data-product="paper" data-order="3">
+                <article class="product-card" data-category="office" data-product="paper" data-order="3" data-href="{{ route('customer.paperPrinting') }}">
                     <div class="product-card__media">
                         <img src="{{ asset('front/assets/images/customer/products/8.png') }}" alt="طباعة ورق">
                     </div>
