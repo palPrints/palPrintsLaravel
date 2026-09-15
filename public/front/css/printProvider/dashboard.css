@@ -1,0 +1,1161 @@
+:root {
+  --pp-blue-50: #eff6ff;
+  --pp-blue-100: #dae9ff;
+  --pp-blue-200: #bed9ff;
+  --pp-blue-600: #1677ff;
+  --pp-blue-700: #0a68eb;
+  --pp-blue-800: #0f58be;
+  --pp-blue-rgb: 22, 119, 255;
+  --pp-navy-50: #f7fafd;
+  --pp-navy-100: #eff4fb;
+  --pp-navy-200: #dfe8f3;
+  --pp-navy-300: #c6d4e6;
+  --pp-navy-400: #8ca2c0;
+  --pp-navy-500: #5b7394;
+  --pp-navy-700: #2c405c;
+  --pp-navy-800: #182941;
+  --pp-navy-900: #0b1f3a;
+  --pp-navy-rgb: 11, 31, 58;
+  --pp-orange-50: #fff6ed;
+  --pp-orange-100: #ffe9d5;
+  --pp-orange-500: #ff7a00;
+  --pp-orange-600: #f07606;
+  --pp-success: #16a34a;
+  --pp-warning: #d97706;
+  --pp-danger: #dc2626;
+  --pp-surface: #ffffff;
+  --pp-bg: #f7fafd;
+  --pp-border: var(--pp-navy-200);
+  --pp-radius-sm: 8px;
+  --pp-radius: 12px;
+  --pp-radius-lg: 16px;
+  --pp-radius-pill: 999px;
+  --pp-shadow-sm: 0 1px 2px rgba(var(--pp-navy-rgb), 0.06);
+  --pp-shadow: 0 4px 14px rgba(var(--pp-navy-rgb), 0.08);
+  --pp-shadow-lg: 0 12px 28px rgba(var(--pp-navy-rgb), 0.12);
+  --pp-shadow-primary: 0 6px 16px rgba(var(--pp-blue-rgb), 0.24);
+  --printshop-sidebar-width: 230px;
+  --printshop-topbar-height: 64px;
+  --printshop-content-max: 1200px;
+  --printshop-content-max-expanded: 1280px;
+}
+
+html[data-bs-theme="dark"] {
+  --pp-navy-50: var(--profile-soft);
+  --pp-navy-100: var(--profile-soft-strong);
+  --pp-navy-200: var(--profile-border);
+  --pp-navy-300: var(--profile-border-strong);
+  --pp-navy-400: var(--profile-muted);
+  --pp-navy-500: var(--profile-secondary);
+  --pp-navy-700: var(--profile-text);
+  --pp-navy-900: var(--profile-text);
+  --pp-surface: var(--profile-surface);
+  --pp-bg: var(--profile-body);
+  --pp-border: var(--profile-border);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--pp-bg);
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--pp-navy-900);
+  background: var(--pp-bg);
+  font-family: "Cairo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The dashboard uses the same account shell as designerEarnings.html. */
+.printshop-dashboard-page .profile-brand-image {
+  width: 188px;
+  height: 78px;
+}
+
+.printshop-dashboard-page .profile-topbar {
+  max-width: 1060px;
+}
+
+body.is-sidebar-locked {
+  overflow: hidden;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--pp-blue-600);
+  outline-offset: 3px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.printshop-visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.printshop-skip-link {
+  position: fixed;
+  z-index: 2000;
+  inset-block-start: 8px;
+  inset-inline-start: 8px;
+  padding: 10px 16px;
+  color: #fff;
+  background: var(--pp-blue-700);
+  border-radius: var(--pp-radius-sm);
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 0.18s ease;
+}
+
+.printshop-skip-link:focus {
+  transform: translateY(0);
+}
+
+.printshop-app {
+  min-height: 100vh;
+}
+
+.printshop-sidebar {
+  position: fixed;
+  z-index: 100;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: var(--printshop-sidebar-width);
+  display: flex;
+  flex-direction: column;
+  background: var(--pp-surface);
+  border-inline-end: 1px solid var(--pp-border);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.printshop-sidebar__header {
+  min-height: var(--printshop-topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  border-block-end: 1px solid var(--pp-border);
+}
+
+.printshop-brand {
+  width: 76px;
+  display: block;
+}
+
+.printshop-brand img {
+  width: 100%;
+  height: 32px;
+  object-fit: contain;
+}
+
+.printshop-sidebar__close {
+  display: none !important;
+}
+
+.printshop-sidebar__nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.printshop-nav-link {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 10px 16px;
+  color: var(--pp-navy-700);
+  border: 1px solid transparent;
+  border-radius: var(--pp-radius);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
+}
+
+.printshop-nav-link i {
+  width: 20px;
+  color: var(--pp-navy-500);
+  font-size: 18px;
+  line-height: 1;
+  text-align: center;
+}
+
+.printshop-nav-link:hover {
+  color: var(--pp-blue-700);
+  background: var(--pp-blue-50);
+}
+
+.printshop-nav-link.is-active {
+  color: #fff;
+  background: var(--pp-blue-600);
+  box-shadow: var(--pp-shadow-primary);
+}
+
+.printshop-nav-link.is-active i {
+  color: currentColor;
+}
+
+.printshop-logout {
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 24px;
+  color: var(--pp-danger);
+  background: var(--pp-surface);
+  border: 0;
+  border-block-start: 1px solid var(--pp-border);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+
+.printshop-logout:hover {
+  background: #fef2f2;
+}
+
+.printshop-sidebar-backdrop {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  display: none;
+  padding: 0;
+  background: rgba(var(--pp-navy-rgb), 0.44);
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.printshop-shell {
+  min-height: 100vh;
+  margin-inline-start: var(--printshop-sidebar-width);
+  transition: margin-inline-start 0.22s ease;
+}
+
+.printshop-topbar {
+  position: sticky;
+  z-index: 50;
+  inset-block-start: 0;
+  min-height: var(--printshop-topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 32px;
+  background: rgba(255, 255, 255, 0.96);
+  border-block-end: 1px solid var(--pp-border);
+  box-shadow: var(--pp-shadow-sm);
+  backdrop-filter: blur(12px);
+}
+
+.printshop-topbar__actions {
+  position: absolute;
+  left: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2px;
+  direction: ltr;
+}
+
+.printshop-icon-button,
+.printshop-user-button {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--pp-navy-700);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
+}
+
+.printshop-icon-button:hover,
+.printshop-user-button:hover {
+  color: var(--pp-blue-700);
+  background: var(--pp-blue-50);
+}
+
+.printshop-user-button {
+  color: var(--pp-blue-700);
+  background: var(--pp-blue-100);
+}
+
+.printshop-notification-dot {
+  position: absolute;
+  inset-block-start: 8px;
+  inset-inline-end: 7px;
+  width: 6px;
+  height: 6px;
+  background: var(--pp-orange-500);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-sizing: content-box;
+}
+
+.printshop-search {
+  position: absolute;
+  left: calc(50% + (var(--printshop-sidebar-width) / 2) + 25px);
+  width: min(460px, calc(100% - 390px));
+  transform: translateX(-50%);
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 15px;
+  color: var(--pp-navy-500);
+  background: var(--pp-navy-50);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius-pill);
+  transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.printshop-search:focus-within {
+  background: #fff;
+  border-color: var(--pp-blue-600);
+  box-shadow: 0 0 0 3px rgba(var(--pp-blue-rgb), 0.12);
+}
+
+.printshop-search > i {
+  font-size: 17px;
+}
+
+.printshop-search input {
+  min-width: 0;
+  flex: 1;
+  padding: 7px 0;
+  color: var(--pp-navy-900);
+  background: transparent;
+  border: 0;
+  outline: 0;
+}
+
+.printshop-search input::placeholder {
+  color: var(--pp-navy-400);
+}
+
+.printshop-search input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.printshop-search__clear {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: var(--pp-navy-500);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.printshop-search__clear:hover {
+  color: var(--pp-navy-900);
+  background: var(--pp-navy-100);
+}
+
+.printshop-panel__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.printshop-panel__actions > a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--pp-blue-700);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.printshop-panel__actions > a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.printshop-orders-search {
+  position: relative;
+  left: auto;
+  width: min(280px, 34vw);
+  min-height: 38px;
+  transform: none;
+}
+
+.printshop-main {
+  width: 100%;
+  max-width: var(--printshop-content-max);
+  margin-inline: auto;
+  padding: 27px 28px 50px;
+  transition: max-width 0.22s ease;
+}
+
+.printshop-dashboard-page.sidebar-collapsed .printshop-main {
+  max-width: var(--printshop-content-max-expanded);
+}
+
+.printshop-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-block-end: 22px;
+}
+
+.printshop-page-heading h1 {
+  margin: 0;
+  color: var(--pp-navy-900);
+  font-size: 22px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+
+.printshop-page-heading p {
+  margin: 4px 0 0;
+  color: var(--pp-navy-500);
+  font-size: 13px;
+}
+
+.printshop-primary-button,
+.printshop-accent-button,
+.printshop-secondary-button,
+.printshop-view-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border: 1px solid transparent;
+  border-radius: var(--pp-radius);
+  font-weight: 700;
+  line-height: 1.35;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.printshop-primary-button {
+  color: #fff;
+  background: var(--pp-blue-600);
+  box-shadow: var(--pp-shadow-primary);
+}
+
+.printshop-page-heading .printshop-primary-button {
+  min-height: 40px;
+  padding-inline: 16px;
+}
+
+.printshop-primary-button:hover {
+  background: var(--pp-blue-700);
+  transform: translateY(-1px);
+}
+
+.printshop-profile-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-block-end: 20px;
+  padding: 15px 20px;
+  background: var(--pp-orange-50);
+  border: 1px solid var(--pp-orange-100);
+  border-radius: var(--pp-radius-lg);
+}
+
+.printshop-profile-alert__message {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.printshop-profile-alert__icon,
+.printshop-alert-item__icon,
+.printshop-stat-card__icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: var(--pp-radius);
+  line-height: 1;
+}
+
+.printshop-profile-alert__icon {
+  width: 42px;
+  height: 42px;
+  color: var(--pp-orange-600);
+  background: var(--pp-orange-100);
+  font-size: 19px;
+}
+
+.printshop-profile-alert h2 {
+  margin: 0;
+  color: var(--pp-orange-600);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.printshop-profile-alert p {
+  margin: 2px 0 0;
+  color: var(--pp-navy-500);
+  font-size: 13px;
+}
+
+.printshop-accent-button {
+  padding-inline: 20px;
+  color: #fff;
+  background: var(--pp-orange-500);
+  box-shadow: 0 5px 14px rgba(255, 122, 0, 0.2);
+}
+
+.printshop-accent-button:hover {
+  background: var(--pp-orange-600);
+  transform: translateY(-1px);
+}
+
+.printshop-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-block-end: 20px;
+}
+
+.printshop-stat-card {
+  min-width: 0;
+  min-height: 118px;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 17px 16px;
+  background: var(--pp-surface);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius-lg);
+  box-shadow: var(--pp-shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.printshop-stat-card:hover {
+  border-color: var(--pp-blue-200);
+  box-shadow: var(--pp-shadow);
+  transform: translateY(-2px);
+}
+
+.printshop-stat-card__icon {
+  width: 36px;
+  height: 36px;
+  font-size: 17px;
+}
+
+.printshop-stat-card__icon.is-green {
+  color: #159447;
+  background: #dcfce7;
+}
+
+.printshop-stat-card__icon.is-blue {
+  color: var(--pp-blue-700);
+  background: var(--pp-blue-50);
+}
+
+.printshop-stat-card__icon.is-amber {
+  color: #bd7908;
+  background: #fef3c7;
+}
+
+.printshop-stat-card__icon.is-purple {
+  color: #7c3aed;
+  background: #f3e8ff;
+}
+
+.printshop-stat-card__content {
+  min-width: 0;
+  flex: 1;
+}
+
+.printshop-stat-card h2 {
+  min-height: 23px;
+  margin: 0 0 8px;
+  color: var(--pp-navy-500);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.printshop-stat-card strong {
+  display: block;
+  margin-block-end: 4px;
+  color: var(--pp-navy-900);
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.printshop-stat-card p {
+  margin: 0;
+  color: var(--pp-navy-500);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.printshop-trend {
+  color: var(--pp-success);
+  font-weight: 700;
+}
+
+.printshop-panel {
+  margin-block-end: 20px;
+  background: var(--pp-surface);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius-lg);
+  box-shadow: var(--pp-shadow-sm);
+  overflow: hidden;
+}
+
+.printshop-panel__header {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 6px 20px;
+}
+
+.printshop-panel__header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--pp-navy-900);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.printshop-panel__header h2 i,
+.printshop-panel__header > a {
+  color: var(--pp-blue-700);
+}
+
+.printshop-panel__header > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.printshop-panel__header > a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.printshop-alert-list {
+  padding-inline: 20px;
+}
+
+.printshop-alert-item {
+  min-height: 70px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 13px;
+  padding: 10px 0;
+  border-block-start: 1px solid var(--pp-border);
+}
+
+.printshop-alert-item__icon {
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+}
+
+.printshop-alert-item__icon.is-warning {
+  color: #b77900;
+  background: #fef3c7;
+}
+
+.printshop-alert-item__icon.is-danger {
+  color: var(--pp-danger);
+  background: #fee2e2;
+}
+
+.printshop-alert-item__icon.is-success {
+  color: var(--pp-success);
+  background: #dcfce7;
+}
+
+.printshop-alert-item h3 {
+  margin: 0;
+  color: var(--pp-navy-900);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.printshop-alert-item p {
+  margin: 1px 0 0;
+  color: var(--pp-navy-500);
+  font-size: 11px;
+}
+
+.printshop-secondary-button,
+.printshop-view-button {
+  min-height: 36px;
+  padding: 7px 14px;
+  color: var(--pp-navy-800);
+  background: #fff;
+  border-color: var(--pp-border);
+  border-radius: var(--pp-radius-sm);
+  font-size: 12px;
+}
+
+.printshop-secondary-button:hover,
+.printshop-view-button:hover {
+  color: var(--pp-blue-700);
+  background: var(--pp-blue-50);
+  border-color: var(--pp-blue-200);
+}
+
+.printshop-table-wrapper {
+  overflow-x: auto;
+  border-block-start: 1px solid var(--pp-border);
+  scrollbar-width: thin;
+  scrollbar-color: var(--pp-navy-300) transparent;
+}
+
+.printshop-orders-table {
+  width: 100%;
+  min-width: 750px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.printshop-orders-table th,
+.printshop-orders-table td {
+  padding: 12px 20px;
+  text-align: start;
+  white-space: nowrap;
+}
+
+.printshop-orders-table thead {
+  color: var(--pp-navy-500);
+  background: var(--pp-navy-50);
+}
+
+.printshop-orders-table th {
+  font-weight: 700;
+}
+
+.printshop-orders-table tbody tr {
+  min-height: 54px;
+  border-block-start: 1px solid var(--pp-border);
+  transition: background-color 0.16s ease;
+}
+
+.printshop-orders-table tbody tr:first-child {
+  border-block-start: 0;
+}
+
+.printshop-orders-table tbody tr:not(.printshop-empty-search):hover {
+  background: var(--pp-navy-50);
+}
+
+.printshop-orders-table td:first-child strong {
+  color: var(--pp-navy-900);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.printshop-orders-table time {
+  color: var(--pp-navy-500);
+}
+
+.printshop-status {
+  min-width: 60px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: var(--pp-radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.printshop-status.is-new {
+  color: var(--pp-navy-700);
+  background: var(--pp-navy-100);
+}
+
+.printshop-status.is-progress {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.printshop-status.is-complete {
+  color: #15803d;
+  background: #dcfce7;
+}
+
+.printshop-view-button {
+  min-width: 66px;
+  min-height: 34px;
+  padding: 6px 12px;
+}
+
+.printshop-empty-search td {
+  padding: 34px 20px;
+  color: var(--pp-navy-500);
+  text-align: center;
+}
+
+.printshop-empty-search i,
+.printshop-empty-search strong,
+.printshop-empty-search span {
+  display: block;
+}
+
+.printshop-empty-search i {
+  margin-block-end: 7px;
+  color: var(--pp-blue-600);
+  font-size: 24px;
+}
+
+.printshop-empty-search strong {
+  color: var(--pp-navy-900);
+  font-size: 14px;
+}
+
+.printshop-toast {
+  position: fixed;
+  z-index: 300;
+  inset-inline-start: 24px;
+  inset-block-end: 24px;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 11px 16px;
+  color: #fff;
+  background: var(--pp-navy-900);
+  border-radius: var(--pp-radius);
+  box-shadow: var(--pp-shadow-lg);
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.printshop-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Wallet-page motion language applied to the dashboard content. */
+.printshop-stat-card,
+.printshop-panel,
+.printshop-profile-alert {
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.printshop-stat-card__icon,
+.printshop-stat-card strong {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.printshop-stat-card:hover {
+  z-index: 1;
+  transform: translateY(-2px);
+  border-color: #b9d3f4;
+  box-shadow: 0 7px 16px rgb(11 31 58 / 8%);
+}
+
+.printshop-stat-card:hover .printshop-stat-card__icon {
+  transform: scale(1.03) rotate(-2deg);
+}
+
+.printshop-stat-card:hover strong {
+  transform: translateX(-1px);
+}
+
+.printshop-panel:hover,
+.printshop-profile-alert:hover {
+  border-color: #c8d8eb;
+  box-shadow: 0 7px 16px rgb(11 31 58 / 7%);
+}
+
+.printshop-primary-button:hover {
+  background: #075fd7;
+  border-color: #075fd7;
+  box-shadow: 0 9px 20px rgb(22 119 255 / 32%);
+  transform: translateY(-2px);
+}
+
+.printshop-primary-button:active,
+.printshop-accent-button:active,
+.printshop-secondary-button:active,
+.printshop-view-button:active {
+  box-shadow: none;
+  transform: translateY(0) scale(0.98);
+}
+
+.printshop-app.sidebar-collapsed .printshop-sidebar {
+  transform: translateX(100%);
+}
+
+.printshop-app.sidebar-collapsed .printshop-shell {
+  margin-inline-start: 0;
+}
+
+.printshop-app.sidebar-collapsed .printshop-search {
+  left: calc(50% + 25px);
+}
+
+@media (max-width: 1180px) {
+  .printshop-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .printshop-stat-card h2,
+  .printshop-stat-card p {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .printshop-sidebar {
+    width: min(290px, 86vw);
+    border-inline-end: 0;
+    box-shadow: -12px 0 32px rgba(var(--pp-navy-rgb), 0.14);
+    transform: translateX(105%);
+  }
+
+  .printshop-sidebar__close {
+    display: inline-grid !important;
+  }
+
+  .printshop-shell,
+  .printshop-app.sidebar-collapsed .printshop-shell {
+    margin-inline-start: 0;
+  }
+
+  .printshop-app.sidebar-open .printshop-sidebar {
+    transform: translateX(0);
+  }
+
+  .printshop-app.sidebar-open .printshop-sidebar-backdrop {
+    display: block;
+    opacity: 1;
+  }
+
+  .printshop-topbar {
+    display: grid;
+    grid-template-columns: auto minmax(180px, 1fr);
+    gap: 14px;
+    padding-inline: 20px;
+  }
+
+  .printshop-topbar__actions {
+    position: static;
+    grid-column: 1;
+  }
+
+  .printshop-search {
+    position: static;
+    grid-column: 2;
+    width: auto;
+    transform: none;
+  }
+
+  .printshop-icon-button,
+  .printshop-user-button {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+  }
+
+  .printshop-main {
+    padding-inline: 20px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .printshop-topbar {
+    min-height: auto;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    padding-block: 10px;
+  }
+
+  .printshop-topbar__actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .printshop-search {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+  }
+
+  .printshop-main {
+    padding-block-start: 22px;
+  }
+
+  .printshop-orders-panel .printshop-panel__header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 6px;
+    padding-block: 12px;
+  }
+
+  .printshop-panel__actions {
+    width: 100%;
+  }
+
+  .printshop-orders-search {
+    width: 100%;
+    flex: 1;
+  }
+
+  .printshop-page-heading,
+  .printshop-profile-alert {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .printshop-primary-button,
+  .printshop-accent-button {
+    align-self: flex-start;
+  }
+
+  .printshop-alert-item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .printshop-alert-item .printshop-secondary-button {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .printshop-main {
+    padding: 20px 14px 42px;
+  }
+
+  .printshop-topbar {
+    padding-inline: 14px;
+  }
+
+  .printshop-topbar__actions {
+    gap: 1px;
+  }
+
+  .printshop-stats {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .printshop-stat-card {
+    min-height: 104px;
+  }
+
+  .printshop-panel__header,
+  .printshop-alert-list {
+    padding-inline: 14px;
+  }
+
+  .printshop-alert-item {
+    gap: 10px;
+  }
+
+  .printshop-profile-alert {
+    padding: 16px;
+  }
+
+  .printshop-profile-alert__message {
+    align-items: flex-start;
+  }
+
+  .printshop-toast {
+    inset-inline: 16px;
+    inset-block-end: 16px;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
