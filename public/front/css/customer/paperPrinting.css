@@ -214,7 +214,48 @@ body.paper-printing-page::after {
 }
 
 .paper-printing-page .profile-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--profile-secondary);
   font-size: 14px;
+  list-style: none;
+  padding: 0;
+}
+
+.paper-printing-page .profile-breadcrumb li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.paper-printing-page .profile-breadcrumb li:not(:last-child)::after {
+  content: "/";
+  color: var(--profile-border-strong);
+}
+
+.paper-printing-page .profile-breadcrumb a,
+.paper-printing-page .profile-breadcrumb [aria-current="page"] {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 7px;
+  color: inherit;
+  border-radius: 7px;
+  text-decoration: none;
+  transition: color .18s ease, background-color .18s ease, transform .18s ease;
+}
+
+.paper-printing-page .profile-breadcrumb a:hover,
+.paper-printing-page .profile-breadcrumb a:focus-visible {
+  color: var(--profile-primary);
+  background: var(--profile-primary-soft);
+  transform: translateY(-2px);
+}
+
+.paper-printing-page .profile-breadcrumb [aria-current="page"] {
+  color: var(--profile-text);
+  font-weight: 700;
+  cursor: default;
 }
 
 .paper-printing-page .profile-sidebar-link:hover,

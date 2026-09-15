@@ -44,6 +44,9 @@
 
 .store-main, .store-main *, .store-main *::before, .store-main *::after { box-sizing: border-box; }
 .orders-content { width: min(100%, 1200px); margin-inline: auto; }
+.breadcrumbs { display: flex; flex-wrap: wrap; gap: 8px; color: var(--pp-text-muted); font-size: .82rem; }
+.breadcrumbs a { color: inherit; text-decoration: none; transition: color .16s; }
+.breadcrumbs a:hover { color: var(--pp-primary); }
 .orders-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--sp-4); padding-block-end: var(--sp-5); }
 .orders-total, .section-count { display: inline-flex; align-items: center; gap: var(--sp-2); color: var(--pp-blue-800); background: var(--pp-primary-soft); border: 1px solid var(--pp-primary-border); border-radius: var(--pp-radius-pill); padding: .35rem .8rem; font-size: .78rem; font-weight: 700; white-space: nowrap; }
 .orders-section { overflow: hidden; margin-block-end: var(--sp-4); background: var(--pp-surface); border: 1px solid var(--pp-border); border-radius: var(--pp-radius-lg); box-shadow: var(--pp-shadow-sm); }

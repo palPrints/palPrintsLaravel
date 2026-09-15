@@ -30,6 +30,7 @@
             products: @json(asset('front/assets/images/customer/products')),
             basketUrl: @json(route('customer.basket')),
             emptyBasketUrl: @json(route('customer.basket.empty')),
+            productPreviewUrl: @json(route('customer.productPreview')),
             basketSeed: [
                 {
                     id: 'tshirt-explore-more',
