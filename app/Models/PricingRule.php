@@ -9,7 +9,7 @@ class PricingRule extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['provider_offering_id', 'provider_offering_variant_id', 'print_capability_id', 'min_quantity', 'max_quantity', 'pricing_type', 'amount', 'priority', 'is_active', 'valid_from', 'valid_until'];
+    protected $fillable = ['provider_offering_id', 'provider_offering_variant_id', 'print_capability_id', 'min_quantity', 'max_quantity', 'pricing_type', 'value_type', 'amount', 'priority', 'is_active', 'valid_from', 'valid_until'];
 
     protected function casts(): array
     {

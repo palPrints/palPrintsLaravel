@@ -69,7 +69,10 @@ const repository = {
         if (!endpoint) return { ok: true, mode: "session", data: payload };
         const response = await fetch(endpoint, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || ""
+            },
             credentials: "include",
             body: JSON.stringify(payload)
         });

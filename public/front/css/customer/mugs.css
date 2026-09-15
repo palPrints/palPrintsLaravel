@@ -1,0 +1,389 @@
+/* PalPrints — صفحة الأكواب */
+body.mugs-page {
+  --pal-cyan: #12bfd0;
+  --pal-blue: #168fdf;
+  --pal-indigo: #5266e9;
+  --pal-page-bg: #fcfdff;
+  --pal-surface: #fff;
+  --pal-border: #e8eaf2;
+  --mug-accent: #ff6b00;
+  background: var(--pal-page-bg);
+}
+
+body.mugs-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 10% 6%, rgb(18 191 208 / 6%), transparent 40%),
+    radial-gradient(circle at 92% 4%, rgb(22 143 223 / 5%), transparent 42%),
+    radial-gradient(circle at 82% 84%, rgb(18 191 208 / 4%), transparent 44%),
+    radial-gradient(circle at 4% 92%, rgb(22 143 223 / 4%), transparent 40%),
+    linear-gradient(140deg, #fff 0%, #fbfdff 50%, #fdffff 100%);
+}
+
+html[data-bs-theme="dark"] body.mugs-page {
+  --pal-page-bg: #080d1c;
+  --pal-surface: #11182b;
+  --pal-border: #2b3650;
+}
+
+html[data-bs-theme="dark"] body.mugs-page::before {
+  background:
+    radial-gradient(circle at 10% 6%, rgb(18 191 208 / 10%), transparent 40%),
+    radial-gradient(circle at 92% 4%, rgb(22 143 223 / 11%), transparent 42%),
+    radial-gradient(circle at 82% 84%, rgb(18 191 208 / 9%), transparent 44%),
+    radial-gradient(circle at 4% 92%, rgb(22 143 223 / 8%), transparent 40%),
+    linear-gradient(140deg, #080d1c 0%, #091226 48%, #0a1524 100%);
+}
+
+.mugs-page .catalog-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 24px 8px;
+}
+
+.catalog-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--store-muted);
+  font-size: .85rem;
+}
+
+.catalog-breadcrumb a,
+.catalog-breadcrumb [aria-current="page"] {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 7px;
+  color: inherit;
+  border-radius: 7px;
+  text-decoration: none;
+  transition: color .18s ease, background-color .18s ease, transform .18s ease;
+}
+
+.catalog-breadcrumb a:hover,
+.catalog-breadcrumb a:focus-visible,
+.catalog-breadcrumb [aria-current="page"]:hover {
+  color: var(--store-primary);
+  background: var(--store-primary-soft);
+  transform: translateY(-2px);
+}
+
+.catalog-breadcrumb [aria-current="page"] {
+  color: var(--store-navy);
+  font-weight: 700;
+  cursor: default;
+}
+
+.catalog-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  border: 1px solid var(--store-primary);
+  border-radius: 12px;
+  color: var(--store-primary);
+  background: transparent;
+  text-decoration: none;
+  font-size: .88rem;
+  white-space: nowrap;
+  transition: color .18s ease, background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.catalog-back i { transition: transform .18s ease; }
+.catalog-back:hover {
+  color: #fff;
+  background: var(--store-primary);
+  box-shadow: 0 6px 16px rgb(22 119 255 / 24%);
+  transform: translateY(-2px);
+}
+.catalog-back:hover i { transform: translateX(-3px); }
+
+.catalog-heading {
+  max-width: 760px;
+  margin-inline: auto;
+  padding: 8px 0 26px;
+  text-align: center;
+}
+
+.catalog-heading h1 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin: 0;
+  color: var(--store-navy);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 800;
+}
+
+.catalog-heading h1 img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+}
+
+.catalog-heading p {
+  margin: 8px 0 0;
+  color: var(--store-muted);
+  line-height: 1.9;
+}
+
+.mugs-page .products-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.mugs-page .product-card {
+  cursor: default;
+  background: #fff;
+  border-color: var(--store-border);
+  box-shadow: var(--store-shadow);
+}
+
+.mugs-page .product-card:hover {
+  border-color: var(--store-primary-border);
+  box-shadow: 0 12px 28px rgb(15 23 42 / 12%);
+}
+
+.mugs-page .product-card:focus-within {
+  outline: none;
+}
+
+.mugs-page .product-card__media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 10px 16px;
+  background: var(--store-surface-muted);
+}
+
+.mugs-page .product-card__media > img {
+  display: block;
+  width: auto;
+  height: 100%;
+  max-width: 88%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.mugs-page .product-card__media > img.is-fallback {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+}
+
+.mugs-page .product-card:hover .product-card__media > img,
+.mugs-page .product-card:focus-within .product-card__media > img,
+.mugs-page .product-card.is-image-hovered .product-card__media > img {
+  transform: none !important;
+}
+
+.mugs-page .product-card__body {
+  align-items: stretch;
+  padding: 14px;
+  text-align: start;
+}
+
+.mugs-page .product-card__body h3 {
+  font-size: 1.04rem;
+  cursor: default;
+}
+
+.mugs-page .product-card__body p {
+  margin: 2px 0 10px;
+  font-size: .86rem;
+}
+
+.mug-favorite {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--store-navy);
+  cursor: pointer;
+  font-size: 21px;
+}
+
+.mug-favorite:hover { color: var(--store-danger); background: transparent; transform: scale(1.12); }
+.mug-favorite[aria-pressed="true"] { color: var(--store-danger); background: transparent; }
+
+.mug-badge-accent {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  color: #fff;
+  background: var(--mug-accent);
+  border-radius: 999px;
+  box-shadow: 0 5px 14px rgb(255 107 0 / 24%);
+  font-size: .75rem;
+  font-weight: 700;
+  line-height: 1.4;
+  transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.mugs-page .product-card:hover .mug-badge-accent {
+  background: #e85f00;
+  box-shadow: 0 7px 18px rgb(255 107 0 / 32%);
+  transform: translateY(-2px) scale(1.03);
+}
+
+.mug-credit {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mug-credit > span { color: var(--store-muted); font-size: .85rem; }
+.mug-credit strong { color: var(--store-primary); font-size: 1.1rem; }
+
+.mug-designer {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--store-muted);
+  font-size: .72rem;
+}
+
+.mug-designer i {
+  width: 25px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  color: var(--store-primary);
+  background: var(--store-primary-soft);
+  border-radius: 50%;
+}
+
+.mug-preview {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--store-primary);
+  border-radius: 10px;
+  color: #fff;
+  background: var(--store-primary);
+  box-shadow: 0 4px 12px rgb(22 119 255 / 16%);
+  font: 600 .9rem Cairo, sans-serif;
+  cursor: pointer;
+}
+
+.mug-preview:hover {
+  background: var(--store-primary-hover);
+  border-color: var(--store-primary-hover);
+}
+
+.catalog-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 24px 0 12px;
+}
+
+.catalog-pagination button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--store-border);
+  border-radius: 9px;
+  color: var(--store-navy);
+  background: #fff;
+  font: 700 1rem Cairo, sans-serif;
+}
+
+.catalog-pagination button[aria-current] { color: #fff; background: var(--store-primary); }
+.catalog-pagination button:disabled { opacity: .4; }
+.catalog-pagination[hidden] { display: none; }
+.catalog-count { color: var(--store-muted); text-align: center; font-size: .8rem; }
+
+.mugs-page button:focus-visible,
+.mugs-page a:focus-visible {
+  outline: 3px solid var(--store-primary);
+  outline-offset: 3px;
+}
+
+.mugs-page .mug-favorite.pal-pressable {
+  overflow: visible;
+  box-shadow: none;
+}
+
+.mugs-page .mug-favorite.pal-pressable:hover,
+.mugs-page .mug-favorite.pal-pressable:focus-visible {
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--store-danger);
+  filter: drop-shadow(0 0 3px rgb(220 38 38 / 28%));
+}
+
+.mugs-page .mug-favorite .pal-ripple { display: none; }
+
+@media (prefers-reduced-motion: no-preference) {
+  body.mugs-page::before { transition: background .3s ease; }
+
+  .mugs-motion-ready .catalog-topline,
+  .mugs-motion-ready .catalog-heading,
+  .mugs-motion-ready .product-card {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity 520ms ease, transform 680ms cubic-bezier(.16, 1, .3, 1);
+  }
+
+  .mugs-motion-ready .catalog-topline.is-revealed,
+  .mugs-motion-ready .catalog-heading.is-revealed,
+  .mugs-motion-ready .product-card.is-revealed {
+    opacity: 1;
+    transform: none;
+  }
+
+  .mugs-motion-ready .product-card.is-revealed:hover,
+  .mugs-motion-ready .product-card.is-revealed:focus-within {
+    transform: translateY(-6px);
+  }
+
+  .mugs-motion-ready .product-card.is-floating { animation: productCardFloat 4.8s ease-in-out infinite; }
+  .mugs-motion-ready .product-card.is-floating:nth-child(3n + 1) { animation-delay: 0s; }
+  .mugs-motion-ready .product-card.is-floating:nth-child(3n + 2) { animation-delay: .7s; }
+  .mugs-motion-ready .product-card.is-floating:nth-child(3n) { animation-delay: 1.3s; }
+  .mugs-motion-ready .product-card.is-floating:hover,
+  .mugs-motion-ready .product-card.is-floating:focus-within { animation-play-state: paused; }
+}
+
+@media (max-width: 1199px) { .mugs-page .products-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 991px) { .mugs-page .products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  .mugs-page .catalog-topline { flex-wrap: wrap; }
+  .catalog-heading p { font-size: .88rem; }
+}
+@media (max-width: 480px) { .mugs-page .products-grid { grid-template-columns: 1fr; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .mugs-page .product-card,
+  .mugs-page .product-card__media img,
+  .mug-badge-accent,
+  .catalog-back,
+  .catalog-back i { transition: none; }
+  .mugs-page .product-card:hover { transform: none; }
+}

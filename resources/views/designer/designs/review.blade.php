@@ -166,6 +166,11 @@
             review: @json(route('designer.designs.review')),
             dashboard: @json(route('designer.dashboard'))
         };
+        window.palPrintsDesignerCatalog = @json($designerCatalog);
+        window.PALPRINTS_API = {
+            saveDraft: @json(route('designer.designs.store')),
+            publish: @json(route('designer.designs.store')),
+        };
     </script>
     <script src='{{ asset('front/designer/source/create/assets/js/review.js') }}'></script>
 @endpush

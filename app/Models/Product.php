@@ -36,4 +36,9 @@ class Product extends Model
     {
         return $this->hasMany(ProviderOffering::class);
     }
+
+    public function designs(): HasMany
+    {
+        return $this->hasMany(Design::class);
+    }
 }

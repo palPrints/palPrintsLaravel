@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\DashboardRedirectController;
 use App\Http\Controllers\Designer\DashboardController as DesignerDashboardController;
+use App\Http\Controllers\Designer\DesignController;
 use App\Http\Controllers\Designer\ProfileController as DesignerProfileController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleDashboardController;
+use App\Http\Controllers\Customer\CatalogController as CustomerCatalogController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,17 +41,28 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/admin/dashboard', [RoleDashboardController::class, 'show'])
         ->defaults('dashboard_role', 'admin')->middleware('role:admin')->name('admin.dashboard');
     Route::middleware('role:customer')->prefix('customer')->name('customer.')->group(function () {
-        Route::view('/store', 'customer.store')->name('store');
+        Route::get('/store', [CustomerCatalogController::class, 'store'])->name('store');
+        Route::get('/hoodies', [CustomerCatalogController::class, 'hoodies'])->name('hoodies');
+        Route::get('/mugs', [CustomerCatalogController::class, 'mugs'])->name('mugs');
+        Route::get('/tshirts', [CustomerCatalogController::class, 'tshirts'])->name('tshirts');
+        Route::view('/stickers', 'customer.stickers')->name('stickers');
+        Route::view('/basket', 'customer.basket')->name('basket');
+        Route::view('/basket/empty', 'customer.basket-empty')->name('basket.empty');
+        Route::view('/checkout', 'customer.checkout')->name('checkout');
+        Route::view('/orders', 'customer.orders')->name('orders');
+        Route::view('/profile', 'customer.profile')->name('profile');
+        Route::view('/favorites', 'customer.favorites')->name('favorites');
     });
     Route::get('/designer/dashboard', DesignerDashboardController::class)
         ->middleware('role:designer')->name('designer.dashboard');
     Route::get('/print-provider/dashboard', [RoleDashboardController::class, 'show'])
         ->defaults('dashboard_role', 'print_provider')->middleware('role:print_provider')->name('print-provider.dashboard');
     Route::middleware('role:designer')->prefix('designer')->name('designer.')->group(function () {
-        Route::view('/designs', 'designer.designs.index')->name('designs.index');
-        Route::view('/designs/create', 'designer.designs.create')->name('designs.create');
-        Route::view('/designs/editor', 'designer.designs.editor')->name('designs.editor');
-        Route::view('/designs/review', 'designer.designs.review')->name('designs.review');
+        Route::get('/designs', [DesignController::class, 'index'])->name('designs.index');
+        Route::get('/designs/create', [DesignController::class, 'create'])->name('designs.create');
+        Route::get('/designs/editor', [DesignController::class, 'editor'])->name('designs.editor');
+        Route::get('/designs/review', [DesignController::class, 'review'])->name('designs.review');
+        Route::post('/designs', [DesignController::class, 'store'])->name('designs.store');
         Route::get('/profile', [DesignerProfileController::class, 'show'])->name('profile');
         Route::patch('/profile', [DesignerProfileController::class, 'update'])->name('profile.update');
         Route::view('/earnings', 'designer.earnings')->name('earnings');
@@ -87,11 +100,3 @@ Route::middleware(['auth', 'active'])->group(function () {
 */
 
 require __DIR__.'/auth.php';
-
-// designer routes
-
-use App\Http\Controllers\Designer\DesignController;
-
-
-Route::get('/designer/designs', [DesignController::class, 'index'])
-    ->name('designer.designs.index');

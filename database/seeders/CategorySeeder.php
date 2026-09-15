@@ -13,11 +13,20 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        Category::firstOrCreate(
+        Category::updateOrCreate(
             ['slug' => 'apparel'],
             [
                 'parent_id' => null,
                 'name' => 'Apparel',
+                'is_active' => true,
+            ]
+        );
+
+        Category::updateOrCreate(
+            ['slug' => 'accessories'],
+            [
+                'parent_id' => null,
+                'name' => 'Accessories',
                 'is_active' => true,
             ]
         );

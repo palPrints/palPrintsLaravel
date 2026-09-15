@@ -223,6 +223,7 @@
             review: @json(route('designer.designs.review')),
             dashboard: @json(route('designer.dashboard'))
         };
+        window.palPrintsDesignerCatalogResponse = @json($designerCatalog);
     </script>
     <script src='{{ asset('front/designer/source/create/assets/js/choose-product.js') }}'></script>
 @endpush

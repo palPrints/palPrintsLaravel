@@ -26,11 +26,90 @@
   const notificationsList = document.querySelector(".notifications-list");
   const notificationsEmpty = document.querySelector(".notifications-empty");
   const notificationsClear = document.querySelector(".notifications-clear");
+  const cartButton = document.getElementById("cartButton");
+  const cartDropdown = document.getElementById("cartDropdown");
   const sidebarToggle = document.getElementById("sidebarToggle");
-  const sidebarClose = document.getElementById("sidebarClose");
   const storeSidebar = document.getElementById("storeSidebar");
   const sidebarBackdrop = document.getElementById("sidebarBackdrop");
   const sidebarLogout = document.getElementById("storeSidebarLogout");
+
+  // هيدر مصغّر أثناء التمرير — يبقى لاصقاً بأعلى الصفحة لكن بارتفاع أقل
+  const storeHeader = document.querySelector(".store-header");
+  if (storeHeader) {
+    const HEADER_SCROLL_OFFSET = 8;
+    const syncHeaderScrollState = () => {
+      storeHeader.classList.toggle("is-scrolled", window.scrollY > HEADER_SCROLL_OFFSET);
+    };
+    window.addEventListener("scroll", syncHeaderScrollState, { passive: true });
+    syncHeaderScrollState();
+  }
+
+  // القائمة المنسدلة "المتجر" بالهيدير — تفتح بالتمرير فوقها (ماوس)،
+  // أو باللمس/الكيبورد بالضغطة الأولى، وتنتقل للرابط عادي بالضغطة الثانية
+  const shopNavItem = document.getElementById("storeNavShop");
+  const shopTrigger = document.getElementById("storeNavShopTrigger");
+  const shopMenu = document.getElementById("storeNavShopMenu");
+
+  if (shopNavItem && shopTrigger && shopMenu) {
+    const hoverCapable = window.matchMedia("(hover: hover)");
+    let hoverCloseTimer = null;
+
+    const openShopMenu = () => {
+      window.clearTimeout(hoverCloseTimer);
+      shopMenu.hidden = false;
+      shopNavItem.classList.add("is-open");
+      shopTrigger.setAttribute("aria-expanded", "true");
+    };
+
+    const closeShopMenu = () => {
+      shopMenu.hidden = true;
+      shopNavItem.classList.remove("is-open");
+      shopTrigger.setAttribute("aria-expanded", "false");
+    };
+
+    shopNavItem.addEventListener("pointerenter", (event) => {
+      if (event.pointerType === "touch" || !hoverCapable.matches) return;
+      openShopMenu();
+    });
+
+    shopNavItem.addEventListener("pointerleave", (event) => {
+      if (event.pointerType === "touch" || !hoverCapable.matches) return;
+      hoverCloseTimer = window.setTimeout(closeShopMenu, 150);
+    });
+
+    shopTrigger.addEventListener("click", (event) => {
+      if (hoverCapable.matches) return;
+      if (shopMenu.hidden) {
+        event.preventDefault();
+        openShopMenu();
+      }
+    });
+
+    shopTrigger.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        openShopMenu();
+        shopMenu.querySelector(".store-mega__item")?.focus();
+      } else if (event.key === "Escape") {
+        closeShopMenu();
+      }
+    });
+
+    shopMenu.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      closeShopMenu();
+      shopTrigger.focus();
+    });
+
+    document.addEventListener("click", (event) => {
+      if (event.target.closest("#storeNavShop")) return;
+      closeShopMenu();
+    });
+
+    document.addEventListener("focusin", (event) => {
+      if (!shopNavItem.contains(event.target)) closeShopMenu();
+    });
+  }
 
   const closeSubmenus = () => {
     submenus.forEach((submenu) => {
@@ -40,8 +119,6 @@
       toggle.setAttribute("aria-expanded", "false");
     });
   };
-
-  if (!form || !input || !grid || !emptyState) return;
 
   if (notificationsToggle && notificationsPanel && notificationsBadge && notificationsList && notificationsEmpty) {
     const storageKey = "palprints-store-notifications";
@@ -134,6 +211,10 @@
           profileDropdown.hidden = true;
           profileMenuToggle.setAttribute("aria-expanded", "false");
         }
+        if (cartDropdown && cartButton) {
+          cartDropdown.hidden = true;
+          cartButton.setAttribute("aria-expanded", "false");
+        }
         notifications.forEach((notification) => { notification.unread = false; });
         saveNotifications();
         renderNotifications();
@@ -172,6 +253,10 @@
         notificationsPanel.hidden = true;
         notificationsToggle.setAttribute("aria-expanded", "false");
       }
+      if (!isOpen && cartDropdown && cartButton) {
+        cartDropdown.hidden = true;
+        cartButton.setAttribute("aria-expanded", "false");
+      }
     });
 
     document.addEventListener("click", (event) => {
@@ -188,79 +273,199 @@
     });
   }
 
-  if (sidebarToggle && sidebarClose && storeSidebar && sidebarBackdrop) {
-    const mobileScreen = window.matchMedia("(max-width: 991px)");
+  const cartDropdownList = document.getElementById("cartDropdownList");
+  const cartDropdownEmpty = document.getElementById("cartDropdownEmpty");
 
-    const isMobile = () => mobileScreen.matches;
+  if (cartButton && cartDropdown && cartDropdownList && cartDropdownEmpty) {
+    const CART_STORAGE_KEY = "palprints-basket-cart";
+    const assets = window.palPrintsCustomerAssets || {};
+    const basketUrl = assets.basketUrl || "#";
+    const emptyBasketUrl = assets.emptyBasketUrl || "#";
+    const cartDropdownView = cartDropdown.querySelector(".cart-dropdown__view");
+    const cartCountBadge = document.getElementById("cartCount");
 
-    const syncSidebar = () => {
-      storeSidebar.hidden = false;
+    const readCart = () => {
+      try {
+        const saved = JSON.parse(localStorage.getItem(CART_STORAGE_KEY));
+        if (Array.isArray(saved)) return saved;
+      } catch (_) { /* Fall through to the seed below. */ }
+      return Array.isArray(assets.basketSeed) ? assets.basketSeed : [];
+    };
 
-      if (isMobile()) {
-        storeSidebar.classList.remove("is-collapsed");
-        storeSidebar.classList.remove("is-open");
-        document.body.classList.remove("sidebar-layout-open");
-        storeSidebar.setAttribute("aria-hidden", "true");
+    const saveCart = (cartItems) => {
+      try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems)); }
+      catch (_) { /* Session-only fallback. */ }
+    };
+
+    // Seed localStorage whenever the cart is empty, so testing always has demo
+    // data to work with (there's no real cart/checkout backend yet — once
+    // there is, this should only seed on true first-visit, not every time
+    // the cart happens to be empty). Skipped on the empty-basket page itself
+    // so that page can actually show/stay in the empty state when visited.
+    if (
+      !document.body.classList.contains("empty-basket-page")
+      && readCart().length === 0
+      && Array.isArray(assets.basketSeed)
+      && assets.basketSeed.length
+    ) {
+      saveCart(assets.basketSeed);
+    }
+
+    // Breadcrumb on the empty-basket page should only lead to the products
+    // page when the cart actually has items; otherwise stay put.
+    const basketCrumbLink = document.getElementById("basketCrumbLink");
+    if (basketCrumbLink) {
+      if (readCart().length) {
+        basketCrumbLink.href = basketUrl;
       } else {
-        storeSidebar.classList.remove("is-open");
-        storeSidebar.classList.add("is-collapsed");
-        document.body.classList.remove("sidebar-layout-open");
-        storeSidebar.setAttribute("aria-hidden", "true");
+        basketCrumbLink.removeAttribute("href");
+        basketCrumbLink.addEventListener("click", (event) => event.preventDefault());
       }
+    }
+
+    const renderCartDropdown = () => {
+      const cartItems = readCart();
+      const total = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+
+      if (cartCountBadge) {
+        cartCountBadge.textContent = total;
+        cartCountBadge.hidden = total === 0;
+      }
+      cartButton.setAttribute("aria-label", total ? `سلة التسوق، ${total} منتجات` : "سلة التسوق، فارغة");
+
+      cartDropdownList.replaceChildren();
+      cartItems.slice(-2).reverse().forEach((item) => {
+        const row = document.createElement("div");
+        const media = document.createElement("div");
+        const image = document.createElement("img");
+        const body = document.createElement("div");
+        const title = document.createElement("h4");
+        const desc = document.createElement("p");
+        const price = document.createElement("span");
+
+        row.className = "cart-dropdown__item";
+        media.className = "cart-dropdown__item-media";
+        image.src = item.image;
+        image.alt = item.title;
+        body.className = "cart-dropdown__item-body";
+        title.textContent = item.title;
+        desc.textContent = item.description || "";
+        price.className = "cart-dropdown__item-price";
+        price.textContent = `$${item.price}`;
+
+        media.append(image);
+        body.append(title, desc);
+        row.append(media, body, price);
+        cartDropdownList.append(row);
+      });
+
+      cartDropdownList.hidden = cartItems.length === 0;
+      cartDropdownEmpty.hidden = cartItems.length > 0;
+      if (cartDropdownView) cartDropdownView.href = cartItems.length ? basketUrl : emptyBasketUrl;
+    };
+
+    window.PalPrintCart = {
+      getItems: readCart,
+      save(cartItems) {
+        saveCart(cartItems);
+        renderCartDropdown();
+      }
+    };
+
+    cartButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const willOpen = cartDropdown.hidden;
+      cartDropdown.hidden = !willOpen;
+      cartButton.setAttribute("aria-expanded", String(willOpen));
+
+      if (willOpen) {
+        if (profileDropdown && profileMenuToggle) {
+          profileDropdown.hidden = true;
+          profileMenuToggle.setAttribute("aria-expanded", "false");
+        }
+        if (notificationsPanel && notificationsToggle) {
+          notificationsPanel.hidden = true;
+          notificationsToggle.setAttribute("aria-expanded", "false");
+        }
+        renderCartDropdown();
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      if (event.target.closest(".cart-menu")) return;
+      cartDropdown.hidden = true;
+      cartButton.setAttribute("aria-expanded", "false");
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || cartDropdown.hidden) return;
+      cartDropdown.hidden = true;
+      cartButton.setAttribute("aria-expanded", "false");
+      cartButton.focus();
+    });
+
+    renderCartDropdown();
+  }
+
+  // قائمة الحساب الجانبية — بالديسكتوب/التابلت بتدفع المحتوى وتظهر جنبه
+  // (بدون تعتيم فوق الصفحة)، وبالموبايل الشاشة صغيرة فبتظهر فوق المحتوى
+  // بخلفية معتمة لأنه ما في مساحة تدفع فيها المحتوى بدون ما يتكسر.
+  if (sidebarToggle && storeSidebar && sidebarBackdrop) {
+    const wideScreen = window.matchMedia("(min-width: 992px)");
+    const sidebarToggleIcon = sidebarToggle.querySelector("i");
+    const SIDEBAR_STORAGE_KEY = "palprints-sidebar-open";
+    storeSidebar.hidden = false;
+    storeSidebar.setAttribute("aria-hidden", "true");
+
+    // القائمة تضل مفتوحة عبر تصفح صفحات الموقع (حالة محفوظة بالمتصفح) ولا
+    // تنسكر إلا بالضغط على زر الفتح/الإغلاق نفسه — طلب المستخدم بالتحديد،
+    // فما في إغلاق تلقائي عند الضغط على رابط بالقائمة أو الخلفية أو Escape.
+    const applyOpen = (shouldFocus) => {
+      storeSidebar.classList.add("is-open");
+      sidebarToggle.setAttribute("aria-expanded", "true");
+      sidebarToggle.setAttribute("aria-label", "إغلاق القائمة الجانبية");
+      storeSidebar.setAttribute("aria-hidden", "false");
+      sidebarToggleIcon?.classList.replace("bi-list", "bi-x-lg");
+
+      if (wideScreen.matches) {
+        document.body.classList.add("sidebar-push-open");
+        sidebarBackdrop.hidden = true;
+        document.body.style.overflow = "";
+      } else {
+        document.body.classList.remove("sidebar-push-open");
+        sidebarBackdrop.hidden = false;
+        document.body.style.overflow = "hidden";
+      }
+      if (shouldFocus) storeSidebar.querySelector(".store-sidebar__item")?.focus();
+    };
+
+    const openSidebar = () => {
+      applyOpen(true);
+      try { localStorage.setItem(SIDEBAR_STORAGE_KEY, "1"); } catch (_) { /* Session-only fallback. */ }
     };
 
     const closeSidebar = () => {
       storeSidebar.classList.remove("is-open");
       sidebarToggle.setAttribute("aria-expanded", "false");
       sidebarToggle.setAttribute("aria-label", "فتح القائمة الجانبية");
-      sidebarToggle.querySelector("i")?.classList.replace("bi-x-lg", "bi-list");
-
-      if (isMobile()) {
-        sidebarBackdrop.hidden = true;
-        storeSidebar.setAttribute("aria-hidden", "true");
-        document.body.style.overflow = "";
-      } else {
-        storeSidebar.classList.add("is-collapsed");
-        document.body.classList.remove("sidebar-layout-open");
-        storeSidebar.setAttribute("aria-hidden", "true");
-      }
+      storeSidebar.setAttribute("aria-hidden", "true");
+      sidebarToggleIcon?.classList.replace("bi-x-lg", "bi-list");
+      document.body.classList.remove("sidebar-push-open");
+      sidebarBackdrop.hidden = true;
+      document.body.style.overflow = "";
+      try { localStorage.setItem(SIDEBAR_STORAGE_KEY, "0"); } catch (_) { /* Session-only fallback. */ }
     };
+
+    wideScreen.addEventListener("change", () => {
+      if (storeSidebar.classList.contains("is-open")) applyOpen(false);
+    });
 
     sidebarToggle.addEventListener("click", () => {
       if (storeSidebar.classList.contains("is-open")) {
         closeSidebar();
-        return;
-      }
-
-      storeSidebar.classList.remove("is-collapsed");
-      window.requestAnimationFrame(() => storeSidebar.classList.add("is-open"));
-      sidebarToggle.setAttribute("aria-expanded", "true");
-      sidebarToggle.setAttribute("aria-label", "إغلاق القائمة الجانبية");
-      sidebarToggle.querySelector("i")?.classList.replace("bi-list", "bi-x-lg");
-      storeSidebar.setAttribute("aria-hidden", "false");
-
-      if (isMobile()) {
-        sidebarBackdrop.hidden = false;
-        document.body.style.overflow = "hidden";
-        sidebarClose.focus();
       } else {
-        document.body.classList.add("sidebar-layout-open");
+        openSidebar();
       }
-    });
-
-    sidebarClose.addEventListener("click", closeSidebar);
-    sidebarBackdrop.addEventListener("click", closeSidebar);
-
-    sidebarClose.addEventListener("pointerenter", () => {
-      sidebarClose.classList.add("is-hovered");
-    });
-
-    sidebarClose.addEventListener("pointerleave", () => {
-      sidebarClose.classList.remove("is-hovered");
-    });
-
-    storeSidebar.addEventListener("click", (event) => {
-      if (event.target.closest("a") && isMobile()) closeSidebar();
     });
 
     if (sidebarLogout) {
@@ -270,25 +475,17 @@
       });
     }
 
-    document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape") return;
-      closeSidebar();
-      sidebarToggle.focus();
-    });
-
-    mobileScreen.addEventListener("change", () => {
-      sidebarBackdrop.hidden = true;
-      document.body.style.overflow = "";
-      sidebarToggle.setAttribute("aria-expanded", "false");
-      sidebarToggle.querySelector("i")?.classList.replace("bi-x-lg", "bi-list");
-      syncSidebar();
-    });
-
-    syncSidebar();
+    let wasOpen = false;
+    try { wasOpen = localStorage.getItem(SIDEBAR_STORAGE_KEY) === "1"; } catch (_) { /* Defaults to closed. */ }
+    if (wasOpen) applyOpen(false);
   }
 
   // Category pages reuse the store shell and provide their own catalog behavior.
   if (document.body.classList.contains("hoodies-page")) return;
+
+  // Pages without a store product grid (e.g. the basket) only need the
+  // header/sidebar wiring above — nothing below here applies to them.
+  if (!form || !input || !grid || !emptyState) return;
 
   const normalize = (value) => value
     .toLocaleLowerCase("ar")
@@ -405,7 +602,8 @@
     const price = document.createElement("span");
     price.className = "product-card__price";
     price.dir = "ltr";
-    price.textContent = `$${productPrices[card.dataset.product].toFixed(2)}`;
+    const cardPrice = Number(card.dataset.price || productPrices[card.dataset.product] || 0);
+    price.textContent = `$${cardPrice.toFixed(2)}`;
     body.append(price);
   });
 
@@ -416,11 +614,11 @@
 
     const product = card.dataset.product;
     const productImagesBase = window.palPrintsCustomerAssets?.products || "/front/assets/images/customer/products";
-    const originalSrc = `${productImagesBase}/${productImages[product]}`;
+    const originalSrc = productImages[product] ? `${productImagesBase}/${productImages[product]}` : image.src;
     const hoverSrc = hoverImages[product]
       ? `${productImagesBase}/${hoverImages[product]}`
       : null;
-    image.src = originalSrc;
+    if (originalSrc) image.src = originalSrc;
 
     if (hoverSrc) {
       const hoverImage = new Image();
@@ -438,6 +636,16 @@
     card.addEventListener("pointerleave", () => setHovered(false));
     card.addEventListener("focusin", () => setHovered(true));
     card.addEventListener("focusout", () => setHovered(false));
+  });
+
+  cards.forEach((card) => {
+    const href = card.dataset.href;
+    if (!href || card.dataset.available === "false") return;
+
+    card.addEventListener("click", (event) => {
+      if (event.target.closest("a, button")) return;
+      window.location.href = href;
+    });
   });
 
   let selectedCategory = "all";
