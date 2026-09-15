@@ -15,7 +15,7 @@
                 <i class="bi bi-person" aria-hidden="true"></i>
             </button>
             <div class="account-dropdown" id="accountDropdown" role="menu" aria-label="قائمة الحساب" hidden>
-                <a href="#" role="menuitem"><i class="bi bi-person" aria-hidden="true"></i><span>الملف الشخصي</span></a>
+                <a href="{{ route('print-provider.profile') }}" role="menuitem"><i class="bi bi-person" aria-hidden="true"></i><span>الملف الشخصي</span></a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="logout-link" role="menuitem"><i class="bi bi-box-arrow-left" aria-hidden="true"></i><span>تسجيل الخروج</span></button>
