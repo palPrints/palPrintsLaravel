@@ -55,8 +55,8 @@ Route::middleware(['auth', 'active'])->group(function () {
     });
     Route::get('/designer/dashboard', DesignerDashboardController::class)
         ->middleware('role:designer')->name('designer.dashboard');
-    Route::get('/print-provider/dashboard', [RoleDashboardController::class, 'show'])
-        ->defaults('dashboard_role', 'print_provider')->middleware('role:print_provider')->name('print-provider.dashboard');
+    Route::view('/print-provider/dashboard', 'printProvider.dashboard')
+        ->middleware('role:print_provider')->name('print-provider.dashboard');
     Route::middleware('role:designer')->prefix('designer')->name('designer.')->group(function () {
         Route::view('/designs', 'designer.designs.index')->name('designs.index');
         Route::view('/designs/create', 'designer.designs.create')->name('designs.create');
