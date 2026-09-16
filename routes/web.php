@@ -59,6 +59,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->middleware('role:print_provider')->name('print-provider.dashboard');
     Route::view('/print-provider/profile', 'printProvider.profile')
         ->middleware('role:print_provider')->name('print-provider.profile');
+    Route::view('/print-provider/requests', 'printProvider.requests')
+        ->middleware('role:print_provider')->name('print-provider.requests');
     Route::middleware('role:designer')->prefix('designer')->name('designer.')->group(function () {
         Route::view('/designs', 'designer.designs.index')->name('designs.index');
         Route::view('/designs/create', 'designer.designs.create')->name('designs.create');
