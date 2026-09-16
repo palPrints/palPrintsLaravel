@@ -3,7 +3,9 @@
         <a href="{{ route('print-provider.dashboard') }}" @class(['active' => request()->routeIs('print-provider.dashboard')]) @if(request()->routeIs('print-provider.dashboard')) aria-current="page" @endif>
             <i class="bi bi-grid" aria-hidden="true"></i><span>لوحة التحكم</span>
         </a>
-        <a href="#"><i class="bi bi-person" aria-hidden="true"></i><span>الملف الشخصي</span></a>
+        <a href="{{ route('print-provider.profile') }}" @class(['active' => request()->routeIs('print-provider.profile')]) @if(request()->routeIs('print-provider.profile')) aria-current="page" @endif>
+            <i class="bi bi-person" aria-hidden="true"></i><span>الملف الشخصي</span>
+        </a>
         <a href="#"><i class="bi bi-printer" aria-hidden="true"></i><span>خدمات الطباعة</span></a>
         <a href="#"><i class="bi bi-clipboard-check" aria-hidden="true"></i><span>طلبات الطباعة</span></a>
         <a href="#"><i class="bi bi-wallet2" aria-hidden="true"></i><span>الأرباح والمحفظة</span></a>
