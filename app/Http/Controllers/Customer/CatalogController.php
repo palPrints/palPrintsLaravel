@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Design;
 use App\Models\Product;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Collection;
 
 class CatalogController extends Controller
 {
@@ -14,10 +13,11 @@ class CatalogController extends Controller
     {
         $products = Product::query()
             ->with(['category', 'providerOfferings'])
-            ->where('is_active', true)
             ->orderBy('id')
             ->get()
-            ->map(fn (Product $product) => $this->storeProduct($product));
+            ->map(fn (Product $product) => $this->storeProduct($product))
+            ->sortBy('order')
+            ->values();
 
         return view('customer.store', ['products' => $products]);
     }
@@ -70,6 +70,7 @@ class CatalogController extends Controller
     {
         $meta = $this->productMeta($product);
         $price = $product->providerOfferings->where('is_active', true)->min('base_price');
+        $isAvailable = $product->is_active && isset($meta['route']);
 
         return [
             'id' => $product->id,
@@ -78,8 +79,9 @@ class CatalogController extends Controller
             'description' => $product->description,
             'category' => $meta['store_category'] ?? $product->category?->slug ?? 'catalog',
             'product_key' => $meta['product_key'] ?? str($product->code)->lower()->replace('_', '-')->toString(),
-            'image' => asset($meta['store_image'] ?? 'front/assets/images/customer/products/1.png'),
-            'route' => $meta['route'] ?? null,
+            'image' => asset($product->image ?: 'front/assets/images/customer/products/1.png'),
+            'route' => $isAvailable ? $meta['route'] : null,
+            'available' => $isAvailable,
             'price' => $price ? (float) $price : null,
             'order' => $meta['order'] ?? $product->id,
         ];
@@ -113,7 +115,6 @@ class CatalogController extends Controller
                 'store_name' => 'تيشيرت',
                 'store_category' => 'clothing',
                 'product_key' => 'shirt',
-                'store_image' => 'front/assets/images/customer/products/1.png',
                 'route' => route('customer.tshirts'),
                 'order' => 1,
             ],
@@ -121,25 +122,78 @@ class CatalogController extends Controller
                 'store_name' => 'هودي',
                 'store_category' => 'clothing',
                 'product_key' => 'hoodie',
-                'store_image' => 'front/assets/images/customer/products/2.png',
                 'route' => route('customer.hoodies'),
                 'order' => 2,
             ],
+            'PAPER-PRINT' => [
+                'store_name' => 'طباعة ورق',
+                'store_category' => 'office',
+                'product_key' => 'paper',
+                'route' => null,
+                'order' => 3,
+            ],
+            'STICKER-CUSTOM' => [
+                'store_name' => 'ستيكرات',
+                'store_category' => 'office',
+                'product_key' => 'stickers',
+                'route' => route('customer.stickers'),
+                'order' => 4,
+            ],
             'MUG-CERAMIC' => [
-                'store_name' => 'أكواب',
+                'store_name' => 'اكواب',
                 'store_category' => 'drinkware',
                 'product_key' => 'cups',
-                'store_image' => 'front/assets/images/customer/products/7.png',
                 'route' => route('customer.mugs'),
                 'order' => 5,
+            ],
+            'CAP-CLASSIC' => [
+                'store_name' => 'قبعات',
+                'store_category' => 'clothing',
+                'product_key' => 'cap',
+                'route' => null,
+                'order' => 6,
             ],
             'TOTE-CANVAS' => [
                 'store_name' => 'حقائب',
                 'store_category' => 'accessories',
                 'product_key' => 'bag',
-                'store_image' => 'front/assets/images/customer/products/4.png',
                 'route' => null,
                 'order' => 7,
+            ],
+            'SCARF-CUSTOM' => [
+                'store_name' => 'وشاحات',
+                'store_category' => 'accessories',
+                'product_key' => 'scarf',
+                'route' => null,
+                'order' => 8,
+            ],
+            'PHONE-CASE' => [
+                'store_name' => 'كفرات موبايل',
+                'store_category' => 'accessories',
+                'product_key' => 'phone-case',
+                'route' => null,
+                'order' => 9,
+            ],
+            'NOTEBOOK-CUSTOM' => [
+                'store_name' => 'دفاتر',
+                'store_category' => 'office',
+                'product_key' => 'notebooks',
+                'route' => null,
+                'order' => 10,
+            ],
+            'POSTER-PRINT' => [
+                'store_name' => 'بوسترات',
+                'store_category' => 'office',
+                'product_key' => 'posters',
+                'route' => null,
+                'order' => 11,
+            ],
+            'WEDDING-CARDS' => [
+                'store_name' => 'كروت افراح',
+                'store_category' => 'office',
+                'product_key' => 'wedding-cards',
+                'route' => null,
+                'order' => 12,
             ],
             default => [],
         };

@@ -23,12 +23,14 @@ class CatalogProductData
             ])
             ->where('is_active', true)
             ->orderBy('id')
-            ->get();
+            ->get()
+            ->sortBy(fn (Product $product) => self::productOrder($product->code))
+            ->values();
 
         $categories = collect([['id' => 'all', 'name' => 'الكل']])
             ->merge($products->pluck('category')->filter()->unique('id')->map(fn ($category) => [
                 'id' => $category->slug,
-                'name' => $category->name,
+                'name' => self::categoryName($category->slug, $category->name),
             ]))
             ->values()
             ->all();
@@ -56,10 +58,11 @@ class CatalogProductData
     private static function product(Product $product): array
     {
         $meta = self::meta($product->code);
+        $thumbnail = self::productImage($product, $meta);
         $attributes = self::attributeValues($product);
-        $colors = self::colors($attributes['color'] ?? collect(), $meta);
+        $colors = self::colors($attributes['color'] ?? collect(), $thumbnail);
         $sizes = self::sizes($attributes['size'] ?? collect());
-        $areas = self::printAreas($product, $meta);
+        $areas = self::printAreas($product, $meta, $thumbnail);
         $price = $product->providerOfferings->where('is_active', true)->min('base_price') ?? 0;
 
         return [
@@ -73,7 +76,8 @@ class CatalogProductData
             'colors' => $colors,
             'sizes' => $sizes,
             'printAreas' => $areas,
-            'thumbnail' => $colors[0]['image'] ?? $meta['thumbnail'],
+            'thumbnail' => $thumbnail,
+            'order' => self::productOrder($product->code),
         ];
     }
 
@@ -128,27 +132,29 @@ class CatalogProductData
      * @param  array<string, mixed>  $meta
      * @return array<int, array<string, string>>
      */
-    private static function colors(Collection $values, array $meta): array
+    private static function colors(Collection $values, string $thumbnail): array
     {
         $swatches = [
             'white' => '#ffffff',
             'black' => '#111111',
             'navy' => '#173b87',
             'natural' => '#e5d7bd',
+            'gray' => '#737373',
+            'red' => '#b91c1c',
+            'green' => '#15803d',
+            'clear' => '#dbeafe',
         ];
-
-        $image = $meta['thumbnail'];
 
         return $values->map(fn (AttributeValue $value) => [
             'id' => $value->code,
             'name' => $value->value,
             'value' => $swatches[$value->code] ?? '#888888',
-            'image' => $meta['color_images'][$value->code] ?? $image,
+            'image' => $thumbnail,
         ])->values()->all() ?: [[
             'id' => 'standard',
             'name' => 'قياسي',
             'value' => '#ffffff',
-            'image' => $image,
+            'image' => $thumbnail,
         ]];
     }
 
@@ -168,7 +174,7 @@ class CatalogProductData
      * @param  array<string, mixed>  $meta
      * @return array<int, array<string, string>>
      */
-    private static function printAreas(Product $product, array $meta): array
+    private static function printAreas(Product $product, array $meta, string $thumbnail): array
     {
         $areas = $product->providerOfferings
             ->flatMap->printAreas
@@ -179,9 +185,48 @@ class CatalogProductData
             'id' => $area->code,
             'name' => $area->name,
             'icon' => $meta['area_icons'][$area->code] ?? 'bi bi-bounding-box',
-            'image' => $meta['area_images'][$area->code] ?? $meta['thumbnail'],
+            'image' => $meta['area_images'][$area->code] ?? $thumbnail,
             'dimensions' => (int) $area->max_width_mm.' x '.(int) $area->max_height_mm.' مم',
         ])->all();
+    }
+
+    private static function productImage(Product $product, array $meta): string
+    {
+        if ($product->image) {
+            return asset($product->image);
+        }
+
+        return asset('front/designer/source/create/'.$meta['thumbnail']);
+    }
+
+    private static function categoryName(string $slug, string $fallback): string
+    {
+        return match ($slug) {
+            'apparel' => 'ملابس',
+            'accessories' => 'اكسسوارات',
+            'drinkware' => 'أكواب',
+            'office' => 'مطبوعات',
+            default => $fallback,
+        };
+    }
+
+    private static function productOrder(string $code): int
+    {
+        return match ($code) {
+            'TSHIRT-CLASSIC' => 1,
+            'HOODIE-PREMIUM' => 2,
+            'PAPER-PRINT' => 3,
+            'STICKER-CUSTOM' => 4,
+            'MUG-CERAMIC' => 5,
+            'CAP-CLASSIC' => 6,
+            'TOTE-CANVAS' => 7,
+            'SCARF-CUSTOM' => 8,
+            'PHONE-CASE' => 9,
+            'NOTEBOOK-CUSTOM' => 10,
+            'POSTER-PRINT' => 11,
+            'WEDDING-CARDS' => 12,
+            default => 100,
+        };
     }
 
     /**
@@ -194,7 +239,10 @@ class CatalogProductData
                 'designer_name' => 'هودي بسيط',
                 'thumbnail' => 'assets/images/hoodie.png',
                 'color_images' => ['black' => 'assets/images/hoodie-black.png'],
-                'area_images' => ['front' => 'assets/images/printing-areas/hoodie/hoodie-front.png', 'back' => 'assets/images/printing-areas/hoodie/hoodie-back.png'],
+                'area_images' => [
+                    'front' => 'assets/images/printing-areas/hoodie/hoodie-front.png',
+                    'back' => 'assets/images/printing-areas/hoodie/hoodie-back.png',
+                ],
             ],
             'MUG-CERAMIC' => [
                 'designer_name' => 'كوب سيراميك',
@@ -204,6 +252,43 @@ class CatalogProductData
             'TOTE-CANVAS' => [
                 'designer_name' => 'حقيبة قماشية',
                 'thumbnail' => 'assets/images/bag.png',
+            ],
+            'CAP-CLASSIC' => [
+                'designer_name' => 'قبعة كلاسيكية',
+                'thumbnail' => 'assets/products/cap/cap-black-removebg-preview.png',
+                'color_images' => [
+                    'black' => 'assets/products/cap/cap-black-removebg-preview.png',
+                    'navy' => 'assets/products/cap/cap-navy-removebg-preview.png',
+                    'gray' => 'assets/products/cap/cap-storm-removebg-preview.png',
+                ],
+            ],
+            'SCARF-CUSTOM' => [
+                'designer_name' => 'وشاح مخصص',
+                'thumbnail' => 'assets/images/tshirt.webp',
+            ],
+            'PHONE-CASE' => [
+                'designer_name' => 'كفر موبايل',
+                'thumbnail' => 'assets/images/cup.webp',
+            ],
+            'PAPER-PRINT' => [
+                'designer_name' => 'طباعة ورق',
+                'thumbnail' => 'assets/images/tshirt.webp',
+            ],
+            'NOTEBOOK-CUSTOM' => [
+                'designer_name' => 'دفتر مخصص',
+                'thumbnail' => 'assets/images/bag.png',
+            ],
+            'POSTER-PRINT' => [
+                'designer_name' => 'بوستر',
+                'thumbnail' => 'assets/images/tshirt.webp',
+            ],
+            'STICKER-CUSTOM' => [
+                'designer_name' => 'ستيكر',
+                'thumbnail' => 'assets/images/cup.webp',
+            ],
+            'WEDDING-CARDS' => [
+                'designer_name' => 'كرت افراح',
+                'thumbnail' => 'assets/images/tshirt.webp',
             ],
             default => [
                 'designer_name' => 'تي شيرت كلاسيكي',

@@ -10,7 +10,7 @@ class Product extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['category_id', 'name', 'code', 'description', 'is_active'];
+    protected $fillable = ['category_id', 'name', 'code', 'description', 'image', 'is_active'];
 
     protected function casts(): array
     {

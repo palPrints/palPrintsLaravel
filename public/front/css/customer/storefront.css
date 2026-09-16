@@ -2055,6 +2055,28 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   opacity: 0.72;
 }
 
+.storefront-page .product-card[data-available="false"] .product-card__media::after {
+  content: none;
+}
+
+.storefront-page .product-card__availability {
+  position: absolute;
+  inset-block-start: 12px;
+  inset-inline-end: 12px;
+  inset-inline-start: auto;
+  z-index: 2;
+  padding: 0.15rem 0.65rem;
+  color: #fff;
+  background: var(--store-orange);
+  border: 1px solid var(--store-orange);
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 .storefront-page .product-card[data-product="shirt"] .product-card__media img,
 .storefront-page .product-card[data-product="hoodie"] .product-card__media img,
 .storefront-page .product-card[data-product="cap"] .product-card__media img,

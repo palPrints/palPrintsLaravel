@@ -42,7 +42,8 @@ class CatalogDemoSeeder extends Seeder
         $data = [
             'apparel' => 'Apparel',
             'accessories' => 'Accessories',
-            'home-office' => 'Home & Office',
+            'drinkware' => 'Drinkware',
+            'office' => 'Office Printing',
         ];
 
         $categories = [];
@@ -68,23 +69,38 @@ class CatalogDemoSeeder extends Seeder
                 'black' => 'Black',
                 'navy' => 'Navy',
                 'natural' => 'Natural',
+                'gray' => 'Gray',
+                'red' => 'Red',
+                'green' => 'Green',
+                'clear' => 'Clear',
             ]),
             'size' => $this->attribute('Size', 'size', [
                 's' => 'S',
                 'm' => 'M',
                 'l' => 'L',
                 'xl' => 'XL',
+                'a4' => 'A4',
+                'a5' => 'A5',
+                'a3' => 'A3',
+                'one-size' => 'One Size',
             ]),
             'material' => $this->attribute('Material', 'material', [
                 'cotton' => 'Cotton',
                 'fleece' => 'Fleece',
                 'ceramic' => 'Ceramic',
                 'canvas' => 'Canvas',
+                'cotton-twill' => 'Cotton Twill',
+                'polyester' => 'Polyester',
+                'polycarbonate' => 'Polycarbonate',
+                'paper' => 'Paper',
+                'cardstock' => 'Cardstock',
+                'vinyl' => 'Vinyl',
             ]),
             'print_side' => $this->attribute('Print Side', 'print_side', [
                 'front' => 'Front',
                 'back' => 'Back',
                 'wrap' => 'Full Wrap',
+                'cover' => 'Cover',
             ]),
         ];
     }
@@ -100,21 +116,85 @@ class CatalogDemoSeeder extends Seeder
                 'category' => 'apparel',
                 'name' => 'Classic T-Shirt',
                 'description' => 'Cotton unisex t-shirt for everyday custom printing.',
+                'image' => 'front/assets/images/customer/products/1.png',
+                'is_active' => true,
             ],
             'HOODIE-PREMIUM' => [
                 'category' => 'apparel',
                 'name' => 'Premium Hoodie',
                 'description' => 'Warm fleece hoodie with front and back print support.',
+                'image' => 'front/assets/images/customer/products/2.png',
+                'is_active' => true,
             ],
             'MUG-CERAMIC' => [
-                'category' => 'accessories',
+                'category' => 'drinkware',
                 'name' => 'Ceramic Mug',
                 'description' => '330 ml ceramic mug for full-color sublimation.',
+                'image' => 'front/assets/images/customer/products/7.png',
+                'is_active' => true,
             ],
             'TOTE-CANVAS' => [
-                'category' => 'home-office',
+                'category' => 'accessories',
                 'name' => 'Canvas Tote Bag',
                 'description' => 'Reusable canvas tote bag with a wide printable area.',
+                'image' => 'front/assets/images/customer/products/4.png',
+                'is_active' => false,
+            ],
+            'CAP-CLASSIC' => [
+                'category' => 'apparel',
+                'name' => 'Classic Cap',
+                'description' => 'Adjustable cap ready for front embroidery or print.',
+                'image' => 'front/assets/images/customer/products/3.png',
+                'is_active' => false,
+            ],
+            'SCARF-CUSTOM' => [
+                'category' => 'accessories',
+                'name' => 'Custom Scarf',
+                'description' => 'Soft scarf for personalized artwork and branding.',
+                'image' => 'front/assets/images/customer/products/5.png',
+                'is_active' => false,
+            ],
+            'PHONE-CASE' => [
+                'category' => 'accessories',
+                'name' => 'Phone Case',
+                'description' => 'Protective phone case with printable back panel.',
+                'image' => 'front/assets/images/customer/products/6.png',
+                'is_active' => false,
+            ],
+            'PAPER-PRINT' => [
+                'category' => 'office',
+                'name' => 'Paper Printing',
+                'description' => 'Document and flyer printing for everyday needs.',
+                'image' => 'front/assets/images/customer/products/8.png',
+                'is_active' => false,
+            ],
+            'NOTEBOOK-CUSTOM' => [
+                'category' => 'office',
+                'name' => 'Custom Notebook',
+                'description' => 'Notebook with a printable custom cover.',
+                'image' => 'front/assets/images/customer/products/9.png',
+                'is_active' => false,
+            ],
+            'POSTER-PRINT' => [
+                'category' => 'office',
+                'name' => 'Poster Print',
+                'description' => 'Large format poster printing for artwork and campaigns.',
+                'image' => 'front/assets/images/customer/products/10.png',
+                'is_active' => false,
+            ],
+            'STICKER-CUSTOM' => [
+                'category' => 'office',
+                'name' => 'Custom Sticker',
+                'description' => 'Vinyl stickers for packaging, laptops, and branding.',
+                'image' => 'front/assets/images/customer/products/11.png',
+                'is_active' => true,
+            ],
+            'WEDDING-CARDS' => [
+                'category' => 'office',
+                'name' => 'Wedding Cards',
+                'description' => 'Printed wedding invitation cards on premium cardstock.',
+                'image' => 'front/assets/images/customer/products/12.png',
+                'is_active' => false,
             ],
         ];
 
@@ -127,7 +207,8 @@ class CatalogDemoSeeder extends Seeder
                     'category_id' => $categories[$product['category']]->id,
                     'name' => $product['name'],
                     'description' => $product['description'],
-                    'is_active' => true,
+                    'image' => $product['image'],
+                    'is_active' => $product['is_active'],
                 ],
             );
         }
@@ -163,6 +244,54 @@ class CatalogDemoSeeder extends Seeder
             'TOTE-CANVAS' => [
                 'color' => ['natural', 'black'],
                 'material' => ['canvas'],
+                'print_side' => ['front'],
+            ],
+            'CAP-CLASSIC' => [
+                'color' => ['black', 'navy', 'gray'],
+                'size' => ['one-size'],
+                'material' => ['cotton-twill'],
+                'print_side' => ['front'],
+            ],
+            'SCARF-CUSTOM' => [
+                'color' => ['white', 'black', 'red', 'green'],
+                'size' => ['one-size'],
+                'material' => ['polyester'],
+                'print_side' => ['front'],
+            ],
+            'PHONE-CASE' => [
+                'color' => ['clear', 'black'],
+                'size' => ['one-size'],
+                'material' => ['polycarbonate'],
+                'print_side' => ['back'],
+            ],
+            'PAPER-PRINT' => [
+                'color' => ['white'],
+                'size' => ['a4', 'a5'],
+                'material' => ['paper'],
+                'print_side' => ['front'],
+            ],
+            'NOTEBOOK-CUSTOM' => [
+                'color' => ['white', 'black', 'navy'],
+                'size' => ['a5'],
+                'material' => ['paper'],
+                'print_side' => ['cover'],
+            ],
+            'POSTER-PRINT' => [
+                'color' => ['white'],
+                'size' => ['a3'],
+                'material' => ['paper'],
+                'print_side' => ['front'],
+            ],
+            'STICKER-CUSTOM' => [
+                'color' => ['white', 'clear'],
+                'size' => ['one-size'],
+                'material' => ['vinyl'],
+                'print_side' => ['front'],
+            ],
+            'WEDDING-CARDS' => [
+                'color' => ['white'],
+                'size' => ['one-size'],
+                'material' => ['cardstock'],
                 'print_side' => ['front'],
             ],
         ];
@@ -325,7 +454,7 @@ class CatalogDemoSeeder extends Seeder
             [
                 'provider' => 'ramallah-print-house',
                 'product' => 'TSHIRT-CLASSIC',
-                'base_price' => 25,
+                'base_price' => 15,
                 'capacity' => 120,
                 'areas' => [
                     ['code' => 'front', 'name' => 'Front', 'width' => 300, 'height' => 400, 'method' => 'dtg'],
@@ -335,7 +464,7 @@ class CatalogDemoSeeder extends Seeder
             [
                 'provider' => 'ramallah-print-house',
                 'product' => 'MUG-CERAMIC',
-                'base_price' => 18,
+                'base_price' => 12,
                 'capacity' => 80,
                 'areas' => [
                     ['code' => 'wrap', 'name' => 'Full Wrap', 'width' => 200, 'height' => 80, 'method' => 'sublimation'],
@@ -344,7 +473,7 @@ class CatalogDemoSeeder extends Seeder
             [
                 'provider' => 'gaza-creative-press',
                 'product' => 'HOODIE-PREMIUM',
-                'base_price' => 55,
+                'base_price' => 35,
                 'capacity' => 60,
                 'areas' => [
                     ['code' => 'front', 'name' => 'Front', 'width' => 280, 'height' => 340, 'method' => 'dtg'],
@@ -354,11 +483,83 @@ class CatalogDemoSeeder extends Seeder
             [
                 'provider' => 'gaza-creative-press',
                 'product' => 'TOTE-CANVAS',
-                'base_price' => 22,
+                'base_price' => 50,
                 'capacity' => 100,
                 'areas' => [
                     ['code' => 'front', 'name' => 'Front', 'width' => 260, 'height' => 300, 'method' => 'screen-print'],
                     ['code' => 'patch', 'name' => 'Patch', 'width' => 90, 'height' => 90, 'method' => 'embroidery'],
+                ],
+            ],
+            [
+                'provider' => 'gaza-creative-press',
+                'product' => 'CAP-CLASSIC',
+                'base_price' => 20,
+                'capacity' => 90,
+                'areas' => [
+                    ['code' => 'front', 'name' => 'Front', 'width' => 120, 'height' => 60, 'method' => 'embroidery'],
+                ],
+            ],
+            [
+                'provider' => 'ramallah-print-house',
+                'product' => 'SCARF-CUSTOM',
+                'base_price' => 18,
+                'capacity' => 70,
+                'areas' => [
+                    ['code' => 'front', 'name' => 'Front', 'width' => 280, 'height' => 120, 'method' => 'sublimation'],
+                ],
+            ],
+            [
+                'provider' => 'ramallah-print-house',
+                'product' => 'PHONE-CASE',
+                'base_price' => 25,
+                'capacity' => 110,
+                'areas' => [
+                    ['code' => 'back', 'name' => 'Back', 'width' => 75, 'height' => 150, 'method' => 'sublimation'],
+                ],
+            ],
+            [
+                'provider' => 'gaza-creative-press',
+                'product' => 'PAPER-PRINT',
+                'base_price' => 10,
+                'capacity' => 300,
+                'areas' => [
+                    ['code' => 'front', 'name' => 'Front', 'width' => 210, 'height' => 297, 'method' => 'screen-print'],
+                ],
+            ],
+            [
+                'provider' => 'ramallah-print-house',
+                'product' => 'NOTEBOOK-CUSTOM',
+                'base_price' => 15,
+                'capacity' => 140,
+                'areas' => [
+                    ['code' => 'cover', 'name' => 'Cover', 'width' => 148, 'height' => 210, 'method' => 'screen-print'],
+                ],
+            ],
+            [
+                'provider' => 'gaza-creative-press',
+                'product' => 'POSTER-PRINT',
+                'base_price' => 20,
+                'capacity' => 100,
+                'areas' => [
+                    ['code' => 'front', 'name' => 'Front', 'width' => 297, 'height' => 420, 'method' => 'screen-print'],
+                ],
+            ],
+            [
+                'provider' => 'ramallah-print-house',
+                'product' => 'STICKER-CUSTOM',
+                'base_price' => 8,
+                'capacity' => 250,
+                'areas' => [
+                    ['code' => 'front', 'name' => 'Front', 'width' => 100, 'height' => 100, 'method' => 'screen-print'],
+                ],
+            ],
+            [
+                'provider' => 'gaza-creative-press',
+                'product' => 'WEDDING-CARDS',
+                'base_price' => 30,
+                'capacity' => 120,
+                'areas' => [
+                    ['code' => 'front', 'name' => 'Front', 'width' => 150, 'height' => 210, 'method' => 'screen-print'],
                 ],
             ],
         ];

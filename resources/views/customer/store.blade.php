@@ -32,15 +32,19 @@
             <div class="products-grid" id="productGrid">
                 @forelse($products as $product)
                     <article
-                        class="product-card"
+                        class="product-card @unless($product['available']) is-unavailable @endunless"
                         data-category="{{ $product['category'] }}"
                         data-product="{{ $product['product_key'] }}"
                         data-order="{{ $product['order'] }}"
                         data-price="{{ $product['price'] }}"
-                        @if($product['route']) data-href="{{ $product['route'] }}" @else data-available="false" @endif
+                        data-available="{{ $product['available'] ? 'true' : 'false' }}"
+                        @if($product['route']) data-href="{{ $product['route'] }}" @endif
                     >
                         <div class="product-card__media">
                             <img src="{{ $product['image'] }}" alt="{{ $product['name'] }}">
+                            @unless($product['available'])
+                                <span class="product-card__availability">غير متاح</span>
+                            @endunless
                         </div>
                         <div class="product-card__body">
                             <h3>{{ $product['name'] }}</h3>
