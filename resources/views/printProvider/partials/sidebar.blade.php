@@ -6,7 +6,9 @@
         <a href="{{ route('print-provider.profile') }}" @class(['active' => request()->routeIs('print-provider.profile')]) @if(request()->routeIs('print-provider.profile')) aria-current="page" @endif>
             <i class="bi bi-person" aria-hidden="true"></i><span>الملف الشخصي</span>
         </a>
-        <a href="#"><i class="bi bi-printer" aria-hidden="true"></i><span>خدمات الطباعة</span></a>
+        <a href="{{ route('print-provider.services') }}" @class(['active' => request()->routeIs('print-provider.services')]) @if(request()->routeIs('print-provider.services')) aria-current="page" @endif>
+            <i class="bi bi-printer" aria-hidden="true"></i><span>خدمات الطباعة</span>
+        </a>
         <a href="{{ route('print-provider.requests') }}" @class(['active' => request()->routeIs('print-provider.requests')]) @if(request()->routeIs('print-provider.requests')) aria-current="page" @endif>
             <i class="bi bi-clipboard-check" aria-hidden="true"></i><span>طلبات الطباعة</span>
         </a>
