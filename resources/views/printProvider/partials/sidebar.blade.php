@@ -10,7 +10,9 @@
         <a href="{{ route('print-provider.requests') }}" @class(['active' => request()->routeIs('print-provider.requests')]) @if(request()->routeIs('print-provider.requests')) aria-current="page" @endif>
             <i class="bi bi-clipboard-check" aria-hidden="true"></i><span>طلبات الطباعة</span>
         </a>
-        <a href="#"><i class="bi bi-wallet2" aria-hidden="true"></i><span>الأرباح والمحفظة</span></a>
+        <a href="{{ route('print-provider.earnings') }}" @class(['active' => request()->routeIs('print-provider.earnings')]) @if(request()->routeIs('print-provider.earnings')) aria-current="page" @endif>
+            <i class="bi bi-wallet2" aria-hidden="true"></i><span>الأرباح والمحفظة</span>
+        </a>
         <a href="#"><i class="bi bi-gear" aria-hidden="true"></i><span>الإعدادات</span></a>
         <a href="#"><i class="bi bi-headphones" aria-hidden="true"></i><span>الدعم الفني</span></a>
     </nav>
