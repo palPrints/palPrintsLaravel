@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{{ asset('front/css/printProvider/shell.css') }}?v={{ filemtime(public_path('front/css/printProvider/shell.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/css/printProvider/dashboard.css') }}?v={{ filemtime(public_path('front/css/printProvider/dashboard.css')) }}">
 </head>
-<body class="printshop-dashboard-page sidebar-collapsed">
+<body class="printshop-dashboard-page sidebar-collapsed @yield('bodyClass')">
     <a class="skip-link" href="#printshopDashboardMain">تخطي إلى المحتوى</a>
 
     @include('printProvider.partials.sidebar')
