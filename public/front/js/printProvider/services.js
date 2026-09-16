@@ -251,6 +251,13 @@
     });
 
     renderProducts();
+
+    if (new URLSearchParams(window.location.search).get("openCatalog")) {
+      renderCatalog();
+      dialogOrigin = document.getElementById("openCatalog");
+      catalogDialog.showModal();
+      window.history.replaceState(null, "", window.location.pathname);
+    }
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initialize, { once: true });

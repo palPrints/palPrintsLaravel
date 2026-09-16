@@ -8,7 +8,7 @@
             <h1 id="dashboardTitle">لوحة التحكم</h1>
             <p><time datetime="{{ now()->toDateString() }}">{{ now()->translatedFormat('l، j F Y') }}</time></p>
         </div>
-        <a class="printshop-primary-button" href="#">
+        <a class="printshop-primary-button" href="{{ route('print-provider.services', ['openCatalog' => 1]) }}">
             <i class="bi bi-plus-lg" aria-hidden="true"></i>
             <span>إضافة منتج جديد</span>
         </a>
