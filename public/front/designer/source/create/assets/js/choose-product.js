@@ -91,7 +91,7 @@ const state = {
 
 ============================================================= */
 
-const backendResponse = {
+const backendResponse = window.palPrintsDesignerCatalogResponse || {
 
     categories: [
 

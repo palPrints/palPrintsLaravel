@@ -241,6 +241,7 @@
             review: @json(route('designer.designs.review')),
             dashboard: @json(route('designer.dashboard'))
         };
+        window.palPrintsDesignerCatalog = @json($designerCatalog);
     </script>
     <script src='{{ asset('front/designer/source/create/assets/js/utils/canvas-history-manager.js') }}'></script>
     <script src='{{ asset('front/designer/source/create/assets/js/designer.js') }}'></script>

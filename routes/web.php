@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\DashboardRedirectController;
 use App\Http\Controllers\Designer\DashboardController as DesignerDashboardController;
+use App\Http\Controllers\Designer\DesignController;
 use App\Http\Controllers\Designer\ProfileController as DesignerProfileController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleDashboardController;
+use App\Http\Controllers\OnboardingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,6 +38,9 @@ Route::view('/privacy', 'legal.placeholder', [
 Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', DashboardRedirectController::class)->name('dashboard');
 
+    Route::post('/onboarding/submit', [OnboardingController::class, 'submit'])
+        ->name('onboarding.submit');
+
     Route::get('/admin/dashboard', [RoleDashboardController::class, 'show'])
         ->defaults('dashboard_role', 'admin')->middleware('role:admin')->name('admin.dashboard');
     Route::middleware('role:customer')->prefix('customer')->name('customer.')->group(function () {
@@ -64,10 +69,11 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::view('/print-provider/earnings', 'printProvider.earnings')
         ->middleware('role:print_provider')->name('print-provider.earnings');
     Route::middleware('role:designer')->prefix('designer')->name('designer.')->group(function () {
-        Route::view('/designs', 'designer.designs.index')->name('designs.index');
-        Route::view('/designs/create', 'designer.designs.create')->name('designs.create');
-        Route::view('/designs/editor', 'designer.designs.editor')->name('designs.editor');
-        Route::view('/designs/review', 'designer.designs.review')->name('designs.review');
+        Route::get('/designs', [DesignController::class, 'index'])->name('designs.index');
+        Route::get('/designs/create', [DesignController::class, 'create'])->name('designs.create');
+        Route::get('/designs/editor', [DesignController::class, 'editor'])->name('designs.editor');
+        Route::get('/designs/review', [DesignController::class, 'review'])->name('designs.review');
+        Route::post('/designs', [DesignController::class, 'store'])->name('designs.store');
         Route::get('/profile', [DesignerProfileController::class, 'show'])->name('profile');
         Route::patch('/profile', [DesignerProfileController::class, 'update'])->name('profile.update');
         Route::view('/earnings', 'designer.earnings')->name('earnings');

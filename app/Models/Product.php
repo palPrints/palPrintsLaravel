@@ -10,7 +10,7 @@ class Product extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['category_id', 'name', 'code', 'description', 'is_active'];
+    protected $fillable = ['category_id', 'name', 'code', 'description', 'image', 'is_active'];
 
     protected function casts(): array
     {
@@ -35,5 +35,10 @@ class Product extends Model
     public function providerOfferings(): HasMany
     {
         return $this->hasMany(ProviderOffering::class);
+    }
+
+    public function designs(): HasMany
+    {
+        return $this->hasMany(Design::class);
     }
 }

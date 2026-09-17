@@ -21,7 +21,9 @@ const fallbackProduct = {
 const designerState = readSession("palprintsDesignerState", {});
 const selection = readSession("palprintsDesignerSelection", {});
 const savedReview = readSession("palprintsReviewState", {});
-const product = designerState.product || fallbackProduct;
+const catalog = window.palPrintsDesignerCatalog || {};
+const productId = designerState.productId || selection.productId;
+const product = catalog[productId] || designerState.product || fallbackProduct;
 const validAreaIds = new Set(product.areas.map(area => area.id));
 const state = {
     areaId: validAreaIds.has(designerState.areaId) ? designerState.areaId : product.areas[0].id,
@@ -69,7 +71,10 @@ const repository = {
         if (!endpoint) return { ok: true, mode: "session", data: payload };
         const response = await fetch(endpoint, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || ""
+            },
             credentials: "include",
             body: JSON.stringify(payload)
         });

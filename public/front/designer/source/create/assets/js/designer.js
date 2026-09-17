@@ -1,6 +1,6 @@
 const selection = JSON.parse(sessionStorage.getItem("palprintsDesignerSelection") || "null");
 
-const catalog = {
+const catalog = window.palPrintsDesignerCatalog || {
     "product-001": {
         name: "تي شيرت كلاسيكي",
         price: 29,
