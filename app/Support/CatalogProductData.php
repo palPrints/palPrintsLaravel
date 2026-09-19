@@ -129,7 +129,6 @@ class CatalogProductData
 
     /**
      * @param  Collection<int, AttributeValue>  $values
-     * @param  array<string, mixed>  $meta
      * @return array<int, array<string, string>>
      */
     private static function colors(Collection $values, string $thumbnail): array
@@ -238,7 +237,6 @@ class CatalogProductData
             'HOODIE-PREMIUM' => [
                 'designer_name' => 'هودي بسيط',
                 'thumbnail' => 'assets/images/hoodie.png',
-                'color_images' => ['black' => 'assets/images/hoodie-black.png'],
                 'area_images' => [
                     'front' => 'assets/images/printing-areas/hoodie/hoodie-front.png',
                     'back' => 'assets/images/printing-areas/hoodie/hoodie-back.png',
@@ -256,11 +254,6 @@ class CatalogProductData
             'CAP-CLASSIC' => [
                 'designer_name' => 'قبعة كلاسيكية',
                 'thumbnail' => 'assets/products/cap/cap-black-removebg-preview.png',
-                'color_images' => [
-                    'black' => 'assets/products/cap/cap-black-removebg-preview.png',
-                    'navy' => 'assets/products/cap/cap-navy-removebg-preview.png',
-                    'gray' => 'assets/products/cap/cap-storm-removebg-preview.png',
-                ],
             ],
             'SCARF-CUSTOM' => [
                 'designer_name' => 'وشاح مخصص',

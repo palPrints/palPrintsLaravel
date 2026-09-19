@@ -3,8 +3,11 @@
     The 8 mug designs (title/description/designer/price/image) are still
     hardcoded in mugs.js — same "demo data" situation the store page had
     before it was wired to the real products table. Needs the same DB wiring
-    later. The "معاينة المنتج" button also links to a product-preview page
-    that doesn't exist yet anywhere in the front-end repo.
+    later. The "معاينة المنتج" button now sends the product to the
+    product-preview page via sessionStorage, but each product only gets a
+    single "default" color and a placeholder "standard size" since the
+    catalog data has no real variants yet — a data-modeling gap, not a
+    wiring gap.
 --}}
 @extends('customer.layouts.app')
 

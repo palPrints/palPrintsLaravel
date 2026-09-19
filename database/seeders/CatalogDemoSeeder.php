@@ -112,103 +112,31 @@ class CatalogDemoSeeder extends Seeder
     private function seedProducts(array $categories): array
     {
         $data = [
-            'TSHIRT-CLASSIC' => [
-                'category' => 'apparel',
-                'name' => 'Classic T-Shirt',
-                'description' => 'Cotton unisex t-shirt for everyday custom printing.',
-                'image' => 'front/assets/images/customer/products/1.png',
-                'is_active' => true,
-            ],
-            'HOODIE-PREMIUM' => [
-                'category' => 'apparel',
-                'name' => 'Premium Hoodie',
-                'description' => 'Warm fleece hoodie with front and back print support.',
-                'image' => 'front/assets/images/customer/products/2.png',
-                'is_active' => true,
-            ],
-            'MUG-CERAMIC' => [
-                'category' => 'drinkware',
-                'name' => 'Ceramic Mug',
-                'description' => '330 ml ceramic mug for full-color sublimation.',
-                'image' => 'front/assets/images/customer/products/7.png',
-                'is_active' => true,
-            ],
-            'TOTE-CANVAS' => [
-                'category' => 'accessories',
-                'name' => 'Canvas Tote Bag',
-                'description' => 'Reusable canvas tote bag with a wide printable area.',
-                'image' => 'front/assets/images/customer/products/4.png',
-                'is_active' => false,
-            ],
-            'CAP-CLASSIC' => [
-                'category' => 'apparel',
-                'name' => 'Classic Cap',
-                'description' => 'Adjustable cap ready for front embroidery or print.',
-                'image' => 'front/assets/images/customer/products/3.png',
-                'is_active' => false,
-            ],
-            'SCARF-CUSTOM' => [
-                'category' => 'accessories',
-                'name' => 'Custom Scarf',
-                'description' => 'Soft scarf for personalized artwork and branding.',
-                'image' => 'front/assets/images/customer/products/5.png',
-                'is_active' => false,
-            ],
-            'PHONE-CASE' => [
-                'category' => 'accessories',
-                'name' => 'Phone Case',
-                'description' => 'Protective phone case with printable back panel.',
-                'image' => 'front/assets/images/customer/products/6.png',
-                'is_active' => false,
-            ],
-            'PAPER-PRINT' => [
-                'category' => 'office',
-                'name' => 'Paper Printing',
-                'description' => 'Document and flyer printing for everyday needs.',
-                'image' => 'front/assets/images/customer/products/8.png',
-                'is_active' => false,
-            ],
-            'NOTEBOOK-CUSTOM' => [
-                'category' => 'office',
-                'name' => 'Custom Notebook',
-                'description' => 'Notebook with a printable custom cover.',
-                'image' => 'front/assets/images/customer/products/9.png',
-                'is_active' => false,
-            ],
-            'POSTER-PRINT' => [
-                'category' => 'office',
-                'name' => 'Poster Print',
-                'description' => 'Large format poster printing for artwork and campaigns.',
-                'image' => 'front/assets/images/customer/products/10.png',
-                'is_active' => false,
-            ],
-            'STICKER-CUSTOM' => [
-                'category' => 'office',
-                'name' => 'Custom Sticker',
-                'description' => 'Vinyl stickers for packaging, laptops, and branding.',
-                'image' => 'front/assets/images/customer/products/11.png',
-                'is_active' => true,
-            ],
-            'WEDDING-CARDS' => [
-                'category' => 'office',
-                'name' => 'Wedding Cards',
-                'description' => 'Printed wedding invitation cards on premium cardstock.',
-                'image' => 'front/assets/images/customer/products/12.png',
-                'is_active' => false,
-            ],
+            'TSHIRT-CLASSIC' => ['apparel', 'Classic T-Shirt', 'Cotton unisex t-shirt for everyday custom printing.', 'front/assets/images/customer/products/1.png', true],
+            'HOODIE-PREMIUM' => ['apparel', 'Premium Hoodie', 'Warm fleece hoodie with front and back print support.', 'front/assets/images/customer/products/2.png', true],
+            'PAPER-PRINT' => ['office', 'Paper Printing', 'Document and flyer printing for everyday needs.', 'front/assets/images/customer/products/8.png', false],
+            'STICKER-CUSTOM' => ['office', 'Custom Sticker', 'Vinyl stickers for packaging, laptops, and branding.', 'front/assets/images/customer/products/11.png', true],
+            'MUG-CERAMIC' => ['drinkware', 'Ceramic Mug', '330 ml ceramic mug for full-color sublimation.', 'front/assets/images/customer/products/7.png', true],
+            'CAP-CLASSIC' => ['apparel', 'Classic Cap', 'Adjustable cap ready for front embroidery or print.', 'front/assets/images/customer/products/3.png', false],
+            'TOTE-CANVAS' => ['accessories', 'Canvas Tote Bag', 'Reusable canvas tote bag with a wide printable area.', 'front/assets/images/customer/products/4.png', false],
+            'SCARF-CUSTOM' => ['accessories', 'Custom Scarf', 'Soft scarf for personalized artwork and branding.', 'front/assets/images/customer/products/5.png', false],
+            'PHONE-CASE' => ['accessories', 'Phone Case', 'Protective phone case with printable back panel.', 'front/assets/images/customer/products/6.png', false],
+            'NOTEBOOK-CUSTOM' => ['office', 'Custom Notebook', 'Notebook with a printable custom cover.', 'front/assets/images/customer/products/9.png', false],
+            'POSTER-PRINT' => ['office', 'Poster Print', 'Large format poster printing for artwork and campaigns.', 'front/assets/images/customer/products/10.png', false],
+            'WEDDING-CARDS' => ['office', 'Wedding Cards', 'Printed wedding invitation cards on premium cardstock.', 'front/assets/images/customer/products/12.png', false],
         ];
 
         $products = [];
 
-        foreach ($data as $code => $product) {
+        foreach ($data as $code => [$category, $name, $description, $image, $isActive]) {
             $products[$code] = Product::updateOrCreate(
                 ['code' => $code],
                 [
-                    'category_id' => $categories[$product['category']]->id,
-                    'name' => $product['name'],
-                    'description' => $product['description'],
-                    'image' => $product['image'],
-                    'is_active' => $product['is_active'],
+                    'category_id' => $categories[$category]->id,
+                    'name' => $name,
+                    'description' => $description,
+                    'image' => $image,
+                    'is_active' => $isActive,
                 ],
             );
         }
@@ -224,88 +152,29 @@ class CatalogDemoSeeder extends Seeder
     private function seedProductAttributesAndVariants(array $products, array $attributes): array
     {
         $variantData = [
-            'TSHIRT-CLASSIC' => [
-                'color' => ['white', 'black', 'navy'],
-                'size' => ['s', 'm', 'l', 'xl'],
-                'material' => ['cotton'],
-                'print_side' => ['front', 'back'],
-            ],
-            'HOODIE-PREMIUM' => [
-                'color' => ['black', 'navy'],
-                'size' => ['m', 'l', 'xl'],
-                'material' => ['fleece'],
-                'print_side' => ['front', 'back'],
-            ],
-            'MUG-CERAMIC' => [
-                'color' => ['white'],
-                'material' => ['ceramic'],
-                'print_side' => ['wrap'],
-            ],
-            'TOTE-CANVAS' => [
-                'color' => ['natural', 'black'],
-                'material' => ['canvas'],
-                'print_side' => ['front'],
-            ],
-            'CAP-CLASSIC' => [
-                'color' => ['black', 'navy', 'gray'],
-                'size' => ['one-size'],
-                'material' => ['cotton-twill'],
-                'print_side' => ['front'],
-            ],
-            'SCARF-CUSTOM' => [
-                'color' => ['white', 'black', 'red', 'green'],
-                'size' => ['one-size'],
-                'material' => ['polyester'],
-                'print_side' => ['front'],
-            ],
-            'PHONE-CASE' => [
-                'color' => ['clear', 'black'],
-                'size' => ['one-size'],
-                'material' => ['polycarbonate'],
-                'print_side' => ['back'],
-            ],
-            'PAPER-PRINT' => [
-                'color' => ['white'],
-                'size' => ['a4', 'a5'],
-                'material' => ['paper'],
-                'print_side' => ['front'],
-            ],
-            'NOTEBOOK-CUSTOM' => [
-                'color' => ['white', 'black', 'navy'],
-                'size' => ['a5'],
-                'material' => ['paper'],
-                'print_side' => ['cover'],
-            ],
-            'POSTER-PRINT' => [
-                'color' => ['white'],
-                'size' => ['a3'],
-                'material' => ['paper'],
-                'print_side' => ['front'],
-            ],
-            'STICKER-CUSTOM' => [
-                'color' => ['white', 'clear'],
-                'size' => ['one-size'],
-                'material' => ['vinyl'],
-                'print_side' => ['front'],
-            ],
-            'WEDDING-CARDS' => [
-                'color' => ['white'],
-                'size' => ['one-size'],
-                'material' => ['cardstock'],
-                'print_side' => ['front'],
-            ],
+            'TSHIRT-CLASSIC' => ['color' => ['white', 'black', 'navy'], 'size' => ['s', 'm', 'l', 'xl'], 'material' => ['cotton'], 'print_side' => ['front', 'back']],
+            'HOODIE-PREMIUM' => ['color' => ['black', 'navy'], 'size' => ['m', 'l', 'xl'], 'material' => ['fleece'], 'print_side' => ['front', 'back']],
+            'MUG-CERAMIC' => ['color' => ['white'], 'size' => ['one-size'], 'material' => ['ceramic'], 'print_side' => ['wrap']],
+            'STICKER-CUSTOM' => ['color' => ['white', 'clear'], 'size' => ['one-size'], 'material' => ['vinyl'], 'print_side' => ['front']],
+            'PAPER-PRINT' => ['color' => ['white'], 'size' => ['a4', 'a5'], 'material' => ['paper'], 'print_side' => ['front']],
+            'CAP-CLASSIC' => ['color' => ['black', 'navy', 'gray'], 'size' => ['one-size'], 'material' => ['cotton-twill'], 'print_side' => ['front']],
+            'TOTE-CANVAS' => ['color' => ['natural', 'black'], 'size' => ['one-size'], 'material' => ['canvas'], 'print_side' => ['front']],
+            'SCARF-CUSTOM' => ['color' => ['white', 'black', 'red', 'green'], 'size' => ['one-size'], 'material' => ['polyester'], 'print_side' => ['front']],
+            'PHONE-CASE' => ['color' => ['clear', 'black'], 'size' => ['one-size'], 'material' => ['polycarbonate'], 'print_side' => ['back']],
+            'NOTEBOOK-CUSTOM' => ['color' => ['white', 'black', 'navy'], 'size' => ['a5'], 'material' => ['paper'], 'print_side' => ['cover']],
+            'POSTER-PRINT' => ['color' => ['white'], 'size' => ['a3'], 'material' => ['paper'], 'print_side' => ['front']],
+            'WEDDING-CARDS' => ['color' => ['white'], 'size' => ['one-size'], 'material' => ['cardstock'], 'print_side' => ['front']],
         ];
 
         $variants = [];
 
         foreach ($variantData as $productCode => $attributeCodes) {
-            $product = $products[$productCode];
             $productAttributes = [];
 
             foreach ($attributeCodes as $attributeCode => $valueCodes) {
                 $attribute = reset($attributes[$attributeCode])->attribute;
                 $productAttribute = ProductAttribute::updateOrCreate(
-                    ['product_id' => $product->id, 'attribute_id' => $attribute->id],
+                    ['product_id' => $products[$productCode]->id, 'attribute_id' => $attribute->id],
                     [
                         'is_variant_axis' => in_array($attributeCode, ['color', 'size'], true),
                         'is_required' => true,
@@ -315,10 +184,7 @@ class CatalogDemoSeeder extends Seeder
 
                 foreach ($valueCodes as $valueCode) {
                     ProductAttributeValue::updateOrCreate(
-                        [
-                            'product_attribute_id' => $productAttribute->id,
-                            'attribute_value_id' => $attributes[$attributeCode][$valueCode]->id,
-                        ],
+                        ['product_attribute_id' => $productAttribute->id, 'attribute_value_id' => $attributes[$attributeCode][$valueCode]->id],
                         ['is_active' => true],
                     );
                 }
@@ -326,7 +192,7 @@ class CatalogDemoSeeder extends Seeder
                 $productAttributes[$attributeCode] = $productAttribute;
             }
 
-            $variants[$productCode] = $this->variantsForProduct($product, $productAttributes, $attributes, $attributeCodes);
+            $variants[$productCode] = $this->variantsForProduct($products[$productCode], $productAttributes, $attributes, $attributeCodes);
         }
 
         return $variants;
@@ -340,38 +206,26 @@ class CatalogDemoSeeder extends Seeder
      */
     private function variantsForProduct(Product $product, array $productAttributes, array $attributes, array $attributeCodes): array
     {
-        $colors = $attributeCodes['color'] ?? ['standard'];
-        $sizes = $attributeCodes['size'] ?? ['one-size'];
         $created = [];
 
-        foreach ($colors as $colorCode) {
-            foreach ($sizes as $sizeCode) {
-                $skuParts = [$product->code, $colorCode];
+        foreach ($attributeCodes['color'] ?? ['standard'] as $colorCode) {
+            foreach ($attributeCodes['size'] ?? ['one-size'] as $sizeCode) {
+                $sku = Str::upper($product->code.'-'.$colorCode.($sizeCode !== 'one-size' ? '-'.$sizeCode : ''));
+                $variant = Variant::updateOrCreate(['sku' => $sku], ['product_id' => $product->id, 'is_active' => true]);
 
-                if ($sizeCode !== 'one-size') {
-                    $skuParts[] = $sizeCode;
-                }
-
-                $variant = Variant::updateOrCreate(
-                    ['sku' => Str::upper(implode('-', $skuParts))],
-                    ['product_id' => $product->id, 'is_active' => true],
-                );
-
-                if (isset($productAttributes['color'], $attributes['color'][$colorCode])) {
+                if (isset($productAttributes['color'])) {
                     $this->variantValue($variant, $productAttributes['color'], $attributes['color'][$colorCode]);
                 }
 
-                if ($sizeCode !== 'one-size' && isset($productAttributes['size'], $attributes['size'][$sizeCode])) {
+                if (isset($productAttributes['size'])) {
                     $this->variantValue($variant, $productAttributes['size'], $attributes['size'][$sizeCode]);
                 }
 
                 foreach (['material', 'print_side'] as $attributeCode) {
-                    if (! isset($productAttributes[$attributeCode], $attributeCodes[$attributeCode][0])) {
-                        continue;
+                    $valueCode = $attributeCodes[$attributeCode][0] ?? null;
+                    if ($valueCode && isset($productAttributes[$attributeCode])) {
+                        $this->variantValue($variant, $productAttributes[$attributeCode], $attributes[$attributeCode][$valueCode]);
                     }
-
-                    $valueCode = $attributeCodes[$attributeCode][0];
-                    $this->variantValue($variant, $productAttributes[$attributeCode], $attributes[$attributeCode][$valueCode]);
                 }
 
                 $created[] = $variant;
@@ -386,20 +240,10 @@ class CatalogDemoSeeder extends Seeder
      */
     private function seedPrintingMethods(): array
     {
-        $data = [
-            'dtg' => 'Direct to Garment',
-            'sublimation' => 'Sublimation',
-            'screen-print' => 'Screen Print',
-            'embroidery' => 'Embroidery',
-        ];
-
         $methods = [];
 
-        foreach ($data as $code => $name) {
-            $methods[$code] = PrintingMethod::updateOrCreate(
-                ['code' => $code],
-                ['name' => $name, 'is_active' => true],
-            );
+        foreach (['dtg' => 'Direct to Garment', 'sublimation' => 'Sublimation', 'screen-print' => 'Screen Print', 'embroidery' => 'Embroidery'] as $code => $name) {
+            $methods[$code] = PrintingMethod::updateOrCreate(['code' => $code], ['name' => $name, 'is_active' => true]);
         }
 
         return $methods;
@@ -410,36 +254,12 @@ class CatalogDemoSeeder extends Seeder
      */
     private function seedProviders(): array
     {
-        $data = [
-            'ramallah-print-house' => [
-                'name' => 'Ramallah Print House',
-                'phone' => '+970599000101',
-                'email' => 'catalog.ramallah@palprint.test',
-                'license_number' => 'CAT-RPH-001',
-            ],
-            'gaza-creative-press' => [
-                'name' => 'Gaza Creative Press',
-                'phone' => '+970599000202',
-                'email' => 'catalog.gaza@palprint.test',
-                'license_number' => 'CAT-GCP-002',
-            ],
+        return [
+            'default' => Provider::updateOrCreate(
+                ['email' => 'catalog.provider@palprint.test'],
+                ['name' => 'PalPrints Catalog Provider', 'phone' => '+970599000000', 'license_number' => 'CAT-DEMO-001', 'status' => 'active'],
+            ),
         ];
-
-        $providers = [];
-
-        foreach ($data as $key => $provider) {
-            $providers[$key] = Provider::updateOrCreate(
-                ['email' => $provider['email']],
-                [
-                    'name' => $provider['name'],
-                    'phone' => $provider['phone'],
-                    'license_number' => $provider['license_number'],
-                    'status' => 'active',
-                ],
-            );
-        }
-
-        return $providers;
     }
 
     /**
@@ -450,172 +270,50 @@ class CatalogDemoSeeder extends Seeder
      */
     private function seedProviderCatalog(array $providers, array $products, array $variants, array $methods): void
     {
-        $offerings = [
-            [
-                'provider' => 'ramallah-print-house',
-                'product' => 'TSHIRT-CLASSIC',
-                'base_price' => 15,
-                'capacity' => 120,
-                'areas' => [
-                    ['code' => 'front', 'name' => 'Front', 'width' => 300, 'height' => 400, 'method' => 'dtg'],
-                    ['code' => 'back', 'name' => 'Back', 'width' => 320, 'height' => 420, 'method' => 'screen-print'],
-                ],
-            ],
-            [
-                'provider' => 'ramallah-print-house',
-                'product' => 'MUG-CERAMIC',
-                'base_price' => 12,
-                'capacity' => 80,
-                'areas' => [
-                    ['code' => 'wrap', 'name' => 'Full Wrap', 'width' => 200, 'height' => 80, 'method' => 'sublimation'],
-                ],
-            ],
-            [
-                'provider' => 'gaza-creative-press',
-                'product' => 'HOODIE-PREMIUM',
-                'base_price' => 35,
-                'capacity' => 60,
-                'areas' => [
-                    ['code' => 'front', 'name' => 'Front', 'width' => 280, 'height' => 340, 'method' => 'dtg'],
-                    ['code' => 'back', 'name' => 'Back', 'width' => 320, 'height' => 380, 'method' => 'screen-print'],
-                ],
-            ],
-            [
-                'provider' => 'gaza-creative-press',
-                'product' => 'TOTE-CANVAS',
-                'base_price' => 50,
-                'capacity' => 100,
-                'areas' => [
-                    ['code' => 'front', 'name' => 'Front', 'width' => 260, 'height' => 300, 'method' => 'screen-print'],
-                    ['code' => 'patch', 'name' => 'Patch', 'width' => 90, 'height' => 90, 'method' => 'embroidery'],
-                ],
-            ],
-            [
-                'provider' => 'gaza-creative-press',
-                'product' => 'CAP-CLASSIC',
-                'base_price' => 20,
-                'capacity' => 90,
-                'areas' => [
-                    ['code' => 'front', 'name' => 'Front', 'width' => 120, 'height' => 60, 'method' => 'embroidery'],
-                ],
-            ],
-            [
-                'provider' => 'ramallah-print-house',
-                'product' => 'SCARF-CUSTOM',
-                'base_price' => 18,
-                'capacity' => 70,
-                'areas' => [
-                    ['code' => 'front', 'name' => 'Front', 'width' => 280, 'height' => 120, 'method' => 'sublimation'],
-                ],
-            ],
-            [
-                'provider' => 'ramallah-print-house',
-                'product' => 'PHONE-CASE',
-                'base_price' => 25,
-                'capacity' => 110,
-                'areas' => [
-                    ['code' => 'back', 'name' => 'Back', 'width' => 75, 'height' => 150, 'method' => 'sublimation'],
-                ],
-            ],
-            [
-                'provider' => 'gaza-creative-press',
-                'product' => 'PAPER-PRINT',
-                'base_price' => 10,
-                'capacity' => 300,
-                'areas' => [
-                    ['code' => 'front', 'name' => 'Front', 'width' => 210, 'height' => 297, 'method' => 'screen-print'],
-                ],
-            ],
-            [
-                'provider' => 'ramallah-print-house',
-                'product' => 'NOTEBOOK-CUSTOM',
-                'base_price' => 15,
-                'capacity' => 140,
-                'areas' => [
-                    ['code' => 'cover', 'name' => 'Cover', 'width' => 148, 'height' => 210, 'method' => 'screen-print'],
-                ],
-            ],
-            [
-                'provider' => 'gaza-creative-press',
-                'product' => 'POSTER-PRINT',
-                'base_price' => 20,
-                'capacity' => 100,
-                'areas' => [
-                    ['code' => 'front', 'name' => 'Front', 'width' => 297, 'height' => 420, 'method' => 'screen-print'],
-                ],
-            ],
-            [
-                'provider' => 'ramallah-print-house',
-                'product' => 'STICKER-CUSTOM',
-                'base_price' => 8,
-                'capacity' => 250,
-                'areas' => [
-                    ['code' => 'front', 'name' => 'Front', 'width' => 100, 'height' => 100, 'method' => 'screen-print'],
-                ],
-            ],
-            [
-                'provider' => 'gaza-creative-press',
-                'product' => 'WEDDING-CARDS',
-                'base_price' => 30,
-                'capacity' => 120,
-                'areas' => [
-                    ['code' => 'front', 'name' => 'Front', 'width' => 150, 'height' => 210, 'method' => 'screen-print'],
-                ],
-            ],
+        $prices = [
+            'TSHIRT-CLASSIC' => [15, [['front', 'Front', 300, 400, 'dtg'], ['back', 'Back', 320, 420, 'screen-print']]],
+            'HOODIE-PREMIUM' => [35, [['front', 'Front', 280, 340, 'dtg'], ['back', 'Back', 320, 380, 'screen-print']]],
+            'MUG-CERAMIC' => [12, [['wrap', 'Full Wrap', 200, 80, 'sublimation']]],
+            'STICKER-CUSTOM' => [8, [['front', 'Front', 100, 100, 'screen-print']]],
+            'PAPER-PRINT' => [10, [['front', 'Front', 210, 297, 'screen-print']]],
+            'CAP-CLASSIC' => [20, [['front', 'Front', 120, 60, 'embroidery']]],
+            'TOTE-CANVAS' => [50, [['front', 'Front', 260, 300, 'screen-print']]],
+            'SCARF-CUSTOM' => [18, [['front', 'Front', 280, 120, 'sublimation']]],
+            'PHONE-CASE' => [25, [['back', 'Back', 75, 150, 'sublimation']]],
+            'NOTEBOOK-CUSTOM' => [15, [['cover', 'Cover', 148, 210, 'screen-print']]],
+            'POSTER-PRINT' => [20, [['front', 'Front', 297, 420, 'screen-print']]],
+            'WEDDING-CARDS' => [30, [['front', 'Front', 150, 210, 'screen-print']]],
         ];
 
-        foreach ($offerings as $item) {
-            $product = $products[$item['product']];
+        foreach ($prices as $productCode => [$basePrice, $areas]) {
             $offering = ProviderOffering::updateOrCreate(
-                ['provider_id' => $providers[$item['provider']]->id, 'product_id' => $product->id],
-                [
-                    'base_price' => $item['base_price'],
-                    'currency' => 'ILS',
-                    'production_time_min' => 1,
-                    'production_time_max' => 3,
-                    'daily_capacity' => $item['capacity'],
-                    'is_active' => true,
-                ],
+                ['provider_id' => $providers['default']->id, 'product_id' => $products[$productCode]->id],
+                ['base_price' => $basePrice, 'currency' => 'ILS', 'production_time_min' => 1, 'production_time_max' => 3, 'daily_capacity' => 100, 'is_active' => true],
             );
 
-            $offeringVariants = [];
-
-            foreach ($variants[$item['product']] as $variant) {
-                $offeringVariants[] = ProviderOfferingVariant::updateOrCreate(
+            $offeringVariants = collect($variants[$productCode])
+                ->map(fn (Variant $variant) => ProviderOfferingVariant::updateOrCreate(
                     ['provider_offering_id' => $offering->id, 'variant_id' => $variant->id],
-                    ['provider_sku' => "CAT-{$variant->sku}", 'is_available' => true],
-                );
-            }
+                    ['provider_sku' => 'CAT-'.$variant->sku, 'is_available' => true],
+                ));
 
-            foreach ($item['areas'] as $areaData) {
+            foreach ($areas as [$code, $name, $width, $height, $method]) {
                 $area = PrintArea::updateOrCreate(
-                    ['provider_offering_id' => $offering->id, 'code' => $areaData['code']],
-                    [
-                        'name' => $areaData['name'],
-                        'max_width_mm' => $areaData['width'],
-                        'max_height_mm' => $areaData['height'],
-                        'is_active' => true,
-                    ],
+                    ['provider_offering_id' => $offering->id, 'code' => $code],
+                    ['name' => $name, 'max_width_mm' => $width, 'max_height_mm' => $height, 'is_active' => true],
                 );
 
                 $capability = PrintCapability::updateOrCreate(
-                    ['print_area_id' => $area->id, 'printing_method_id' => $methods[$areaData['method']]->id],
-                    [
-                        'applies_to_all_variants' => true,
-                        'max_width_mm' => $areaData['width'],
-                        'max_height_mm' => $areaData['height'],
-                        'is_active' => true,
-                    ],
+                    ['print_area_id' => $area->id, 'printing_method_id' => $methods[$method]->id],
+                    ['applies_to_all_variants' => true, 'max_width_mm' => $width, 'max_height_mm' => $height, 'is_active' => true],
                 );
 
-                foreach ($offeringVariants as $offeringVariant) {
-                    $capability->variants()->firstOrCreate([
-                        'provider_offering_variant_id' => $offeringVariant->id,
-                    ]);
-                }
+                $offeringVariants->each(fn (ProviderOfferingVariant $variant) => $capability->variants()->firstOrCreate([
+                    'provider_offering_variant_id' => $variant->id,
+                ]));
 
-                $this->pricingRule($offering, null, $capability, 1, 9, 8, 20);
-                $this->pricingRule($offering, null, $capability, 10, null, 6, 10);
+                $this->pricingRule($offering, $capability, 1, 9, 8, 20);
+                $this->pricingRule($offering, $capability, 10, null, 6, 10);
             }
         }
     }
@@ -626,11 +324,7 @@ class CatalogDemoSeeder extends Seeder
      */
     private function attribute(string $name, string $code, array $values): array
     {
-        $attribute = Attribute::updateOrCreate(
-            ['code' => $code],
-            ['name' => $name, 'data_type' => 'select', 'is_active' => true],
-        );
-
+        $attribute = Attribute::updateOrCreate(['code' => $code], ['name' => $name, 'data_type' => 'select', 'is_active' => true]);
         $created = [];
 
         foreach ($values as $valueCode => $value) {
@@ -646,43 +340,18 @@ class CatalogDemoSeeder extends Seeder
     private function variantValue(Variant $variant, ProductAttribute $productAttribute, AttributeValue $attributeValue): void
     {
         $productAttributeValue = ProductAttributeValue::updateOrCreate(
-            [
-                'product_attribute_id' => $productAttribute->id,
-                'attribute_value_id' => $attributeValue->id,
-            ],
+            ['product_attribute_id' => $productAttribute->id, 'attribute_value_id' => $attributeValue->id],
             ['is_active' => true],
         );
 
-        VariantValue::firstOrCreate([
-            'variant_id' => $variant->id,
-            'product_attribute_value_id' => $productAttributeValue->id,
-        ]);
+        VariantValue::firstOrCreate(['variant_id' => $variant->id, 'product_attribute_value_id' => $productAttributeValue->id]);
     }
 
-    private function pricingRule(
-        ProviderOffering $offering,
-        ?ProviderOfferingVariant $variant,
-        ?PrintCapability $capability,
-        int $minQuantity,
-        ?int $maxQuantity,
-        int $amount,
-        int $priority,
-    ): void {
+    private function pricingRule(ProviderOffering $offering, PrintCapability $capability, int $minQuantity, ?int $maxQuantity, int $amount, int $priority): void
+    {
         PricingRule::updateOrCreate(
-            [
-                'provider_offering_id' => $offering->id,
-                'provider_offering_variant_id' => $variant?->id,
-                'print_capability_id' => $capability?->id,
-                'min_quantity' => $minQuantity,
-            ],
-            [
-                'max_quantity' => $maxQuantity,
-                'pricing_type' => 'print',
-                'value_type' => 'fixed',
-                'amount' => $amount,
-                'priority' => $priority,
-                'is_active' => true,
-            ],
+            ['provider_offering_id' => $offering->id, 'print_capability_id' => $capability->id, 'min_quantity' => $minQuantity],
+            ['max_quantity' => $maxQuantity, 'pricing_type' => 'print', 'value_type' => 'fixed', 'amount' => $amount, 'priority' => $priority, 'is_active' => true],
         );
     }
 }

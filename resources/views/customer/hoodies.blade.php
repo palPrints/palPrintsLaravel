@@ -3,8 +3,9 @@
     The 8 hoodie designs (title/description/designer/price/tone) are still
     hardcoded in hoodies.js — same "demo data" situation the store page had
     before it was wired to the real products table. Needs the same DB wiring
-    later. The "معاينة المنتج" button also links to a product-preview page
-    that doesn't exist yet anywhere in the front-end repo.
+    later. The "معاينة المنتج" button now sends the clicked design to the
+    product-preview page via sessionStorage (colors/sizes/print area are
+    still a fixed demo shape, not per-product real data).
 --}}
 @extends('customer.layouts.app')
 

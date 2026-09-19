@@ -14,8 +14,8 @@ class DesignController extends Controller
 {
     public function index()
     {
-
         $designs = Design::query()
+            ->with('product')
             ->where('designer_id', Auth::id())
             ->latest()
             ->get();
@@ -48,7 +48,7 @@ class DesignController extends Controller
     {
         $validated = $request->validate([
             'status' => ['required', 'in:draft,submitted'],
-            'productId' => ['required'],
+            'productId' => ['required', 'integer', 'exists:products,id'],
             'colorId' => ['nullable', 'string', 'max:80'],
             'sizeId' => ['nullable', 'string', 'max:80'],
             'designName' => ['required', 'string', 'max:100'],
@@ -57,12 +57,17 @@ class DesignController extends Controller
             'pricing.profit' => ['nullable', 'numeric', 'min:0'],
             'printAreas' => ['nullable', 'array'],
             'warnings' => ['nullable', 'array'],
-            'rightsConfirmed' => ['accepted'],
+            'rightsConfirmed' => ['exclude_if:status,draft', 'accepted'],
         ]);
 
-        $product = Product::query()->findOrFail((int) $validated['productId']);
+        $product = Product::query()
+            ->where('is_active', true)
+            ->findOrFail((int) $validated['productId']);
+
         $status = $validated['status'] === 'submitted' ? 'review' : 'draft';
         $pricing = $validated['pricing'] ?? [];
+        $basePrice = (float) ($pricing['basePrice'] ?? 0);
+        $sellingPrice = (float) $pricing['sellingPrice'];
 
         $design = Design::create([
             'designer_id' => $request->user()->id,
@@ -70,13 +75,12 @@ class DesignController extends Controller
             'title' => $validated['designName'],
             'description' => $product->name,
             'image' => null,
-            'base_price' => $pricing['basePrice'] ?? 0,
-            'selling_price' => $pricing['sellingPrice'],
-            'designer_profit' => $pricing['profit'] ?? max(0, ($pricing['sellingPrice'] ?? 0) - ($pricing['basePrice'] ?? 0)),
+            'base_price' => $basePrice,
+            'selling_price' => $sellingPrice,
+            'designer_profit' => (float) ($pricing['profit'] ?? max(0, $sellingPrice - $basePrice)),
             'selected_options' => [
                 'color_id' => $validated['colorId'] ?? null,
                 'size_id' => $validated['sizeId'] ?? null,
-                'display_category' => 'adults',
             ],
             'design_payload' => $request->all(),
             'status' => $status,

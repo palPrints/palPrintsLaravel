@@ -15,11 +15,11 @@
     <link rel="stylesheet" href="{{ asset('front/css/shared/site-footer.css') }}?v={{ filemtime(public_path('front/css/shared/site-footer.css')) }}">
     @stack('styles')
 </head>
-<body class="@yield('body-class', 'storefront-page')">
+<body class="@yield('body-class', 'storefront-page')" data-authenticated="{{ auth()->check() ? 'true' : 'false' }}">
     @include('customer.partials.header')
     @include('customer.partials.sidebar')
 
-    <main id="mainContent" class="store-main">
+    <main id="@yield('main-id', 'mainContent')" class="store-main @yield('main-class')">
         @yield('content')
     </main>
 
@@ -30,6 +30,7 @@
             products: @json(asset('front/assets/images/customer/products')),
             basketUrl: @json(route('customer.basket')),
             emptyBasketUrl: @json(route('customer.basket.empty')),
+            productPreviewUrl: @json(route('customer.productPreview')),
             basketSeed: [
                 {
                     id: 'tshirt-explore-more',

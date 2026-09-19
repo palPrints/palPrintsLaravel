@@ -1,0 +1,143 @@
+/* Printing services: the account shell is shared with dashboardPrintShops. */
+.print-services-root { min-width: 0; }
+.print-services-page { min-width: 0; }
+/* Main width and responsive padding inherit the dashboard's .printshop-main. */
+.print-services-page .services-breadcrumb { margin-bottom: 8px; }
+.print-services-page .services-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+.print-services-page .services-heading h1 { margin: 0; color: var(--pp-navy-900); font-size: 26px; font-weight: 800; }
+.print-services-page .services-heading h1 i { margin-inline-end: 8px; color: var(--pp-blue-600); }
+.print-services-page .services-heading p { margin: 4px 0 12px; color: var(--pp-navy-500); font-size: 13px; }
+.print-services-page .services-summary { display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--pp-surface); border: 1px solid var(--pp-border); border-radius: var(--pp-radius-sm); color: var(--pp-navy-500); font-size: 12px; }
+.print-services-page .services-summary i { color: var(--pp-navy-900); font-size: 22px; }
+.print-services-page .services-summary strong { color: var(--pp-navy-900); }
+.print-services-page .services-button { display: inline-flex; justify-content: center; align-items: center; gap: 9px; min-height: 40px; padding: 9px 17px; border: 1px solid transparent; border-radius: var(--pp-radius-sm); font: 700 13px/1.5 Cairo, sans-serif; cursor: pointer; transition: background .18s, box-shadow .18s; }
+.print-services-page .services-button--primary { color: #fff; background: var(--pp-blue-600); }
+.print-services-page .services-button--primary:hover { background: var(--pp-blue-700); box-shadow: var(--pp-shadow-primary); }
+.print-services-page .services-button--secondary { color: var(--pp-navy-900); background: #fff; border-color: var(--pp-border); }
+.print-services-page .services-button--secondary:hover { background: var(--pp-blue-50); color: var(--pp-blue-600); }
+.print-services-page #openCatalog { flex-shrink: 0; min-width: 240px; margin-bottom: 2px; }
+.print-services-page .services-panel { padding: 0; }
+.print-services-page .services-panel > header h2 { margin: 0; font-size: 18px; font-weight: 800; color: var(--pp-navy-900); }
+.print-services-page .services-panel > header h2 i { color: var(--pp-blue-600); margin-inline-end: 7px; }
+.print-services-page .services-panel > header p { margin: 2px 0 16px; color: var(--pp-navy-500); font-size: 11px; }
+.print-services-page .services-products { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.print-services-page .services-product { min-width: 0; position: relative; display: flex; flex-direction: column; padding: 17px 16px; border: 1px solid var(--pp-border); border-radius: var(--pp-radius-lg); background: var(--pp-surface); box-shadow: var(--pp-shadow-sm); }
+.print-services-page .services-product-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.print-services-page .services-badge { padding: 3px 11px; color: #15803d; background: #e6f8ee; border-radius: var(--pp-radius-pill); font-size: 10px; font-weight: 700; }
+.print-services-page .services-badge--paused { color: #dc2626; background: #fef2f2; }
+.print-services-page .services-switch { width: 38px; height: 22px; padding: 3px; background: #a5b1c2; border: 0; border-radius: 99px; cursor: pointer; direction: ltr; flex-shrink: 0; }
+.print-services-page .services-switch::after { content: ""; display: block; width: 16px; height: 16px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px #0b1f3a26; transition: transform .18s; }
+.print-services-page .services-switch[aria-checked="true"] { background: var(--pp-blue-600); }
+.print-services-page .services-switch[aria-checked="true"]::after { transform: translateX(16px); }
+.print-services-page .services-product-art { position: relative; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; min-width: 0; overflow: hidden; height: 140px; margin: 4px 0 8px; }
+.print-services-page .services-product-photo { position: relative; justify-self: center; min-height: 0; height: 100%; max-width: 100%; aspect-ratio: var(--product-ratio, 1); }
+.print-services-page .services-product-photo > img:not(.services-brand) { display: block; width: 100%; height: 100%; object-fit: contain; }
+.print-services-page .services-product h3, .print-services-page .services-product-preview h3 { margin: 0; font-size: 15px; color: var(--pp-navy-900); font-weight: 800; }
+.print-services-page .services-product > .services-product-art { height: 180px; margin-block: 12px; }
+.print-services-page .services-product > h3 { font-size: 17px; }
+.print-services-page .services-product > .services-category { font-size: 13px; margin-bottom: 10px; }
+.print-services-page .services-category { margin: 0 0 6px; color: var(--pp-navy-500); font-size: 11px; }
+.print-services-page .services-details { display: grid; gap: 6px; margin: 0 0 14px; padding: 0; list-style: none; font-size: 13px; color: var(--pp-navy-500); }
+.print-services-page .services-details li { display: flex; align-items: center; gap: 8px; }
+.print-services-page .services-details i { color: var(--pp-navy-900); width: 15px; text-align: center; }
+.print-services-page .services-details .services-money { color: var(--pp-success); font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.print-services-page .services-edit { width: 100%; margin-top: auto; background: var(--pp-blue-50); color: var(--pp-blue-800); min-height: 40px; padding: 9px; font-size: 13px; }
+.print-services-page .services-edit:hover { background: var(--pp-blue-100); }
+.print-services-page .services-empty { padding: 45px 16px; text-align: center; color: var(--pp-navy-500); }
+.print-services-page .services-empty > i { color: var(--pp-blue-600); font-size: 28px; }
+.print-services-page .services-empty h3 { color: var(--pp-navy-900); font-size: 16px; }
+.print-services-page .services-empty p { font-size: 13px; }
+.print-services-page [hidden] { display: none !important; }
+.print-services-page :where(button, input, a):focus-visible { outline: 3px solid var(--pp-blue-600); outline-offset: 3px; }
+.print-services-page .services-dialog { width: min(840px, calc(100% - 32px)); max-height: calc(100dvh - 40px); margin: auto; padding: 20px; overflow-y: auto; border: 1px solid var(--pp-border); border-radius: var(--pp-radius); color: var(--pp-navy-900); background: #fff; box-shadow: var(--pp-shadow-lg); }
+.print-services-page .services-dialog::backdrop { background: rgb(11 31 58 / 48%); backdrop-filter: blur(2px); }
+.print-services-page .services-dialog-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+.print-services-page .services-dialog-heading > div { display: flex; gap: 10px; align-items: center; }
+.print-services-page .services-dialog-heading h2 { margin: 0; font-size: 18px; font-weight: 800; }
+.print-services-page .services-dialog-heading p { margin: 2px 0 0; font-size: 11px; color: var(--pp-navy-500); }
+.print-services-page .services-dialog-icon { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; background: var(--pp-blue-50); color: var(--pp-blue-600); border-radius: var(--pp-radius-sm); font-size: 24px; }
+.print-services-page .services-close { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; background: var(--pp-navy-50); color: var(--pp-navy-900); border: 0; border-radius: 6px; cursor: pointer; flex-shrink: 0; }
+.print-services-page .services-close:hover { color: var(--pp-danger); background: #fef2f2; }
+.print-services-page .services-catalog-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.print-services-page .services-catalog-card { display: flex; flex-direction: column; text-align: center; padding: 10px; min-width: 0; border: 1px solid var(--pp-border); border-radius: var(--pp-radius-sm); }
+.print-services-page .services-catalog-card .services-product-art { height: 105px; margin: 0 0 7px; }
+.print-services-page .services-catalog-card h3 { font-size: 12px; margin: 0; font-weight: 800; }
+.print-services-page .services-catalog-card .services-category { font-size: 10px; }
+.print-services-page .services-catalog-card .services-button { margin-top: auto; min-height: 28px; padding: 5px; font-size: 11px; width: 100%; }
+.print-services-page .services-added { display: block; padding: 5px; margin-top: auto; border-radius: 6px; color: #15803d; background: #e6f8ee; font-size: 11px; font-weight: 700; }
+.print-services-page .services-settings-dialog { width: min(900px, calc(100% - 32px)); }
+.print-services-page .services-settings-body { display: grid; grid-template-columns: minmax(0, 1fr) 170px; gap: 22px; min-height: 270px; }
+.print-services-page .services-product-preview { grid-column: 2; grid-row: 1; text-align: center; align-self: start; border: 1px solid var(--pp-border); border-radius: 8px; background: var(--pp-navy-50); padding: 12px; }
+.print-services-page .services-product-preview .services-product-art { height: 150px; }
+.print-services-page .services-product-preview > p:last-child { margin: 10px 0 0; font-size: 10px; color: var(--pp-navy-500); }
+.print-services-page .services-settings-fields { min-width: 0; grid-column: 1; grid-row: 1; }
+.print-services-page .services-number-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.print-services-page .services-number-fields label { display: block; color: var(--pp-navy-900); font-size: 11px; font-weight: 700; }
+.print-services-page .services-required { color: var(--pp-danger); }
+.print-services-page .services-number-fields input { display: block; width: 100%; min-width: 0; height: 38px; margin-top: 7px; padding: 6px 10px; border: 1px solid var(--pp-border); border-radius: 6px; color: var(--pp-navy-900); background: #fff; direction: ltr; font-weight: 700; }
+.print-services-page .services-price-field { display: flex; align-items: baseline; gap: 8px; direction: ltr; height: 38px; margin-top: 7px; padding: 6px 10px; background: #fff; border: 1px solid var(--pp-border); border-radius: 6px; }
+.print-services-page .services-price-field input { flex: 1; width: 0; height: auto; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; line-height: 1.5; }
+.print-services-page .services-price-field b { order: -1; font: inherit; line-height: 1.5; }
+.print-services-page .services-price-field:focus-within { outline: 3px solid var(--pp-blue-600); outline-offset: 3px; }
+.print-services-page .services-price-field input:focus-visible { outline: none; }
+.print-services-page .services-options { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 16px 0 0; border: 0; }
+.print-services-page .services-options legend { margin-bottom: 8px; font-size: 13px; font-weight: 800; }
+.print-services-page .services-choice { display: inline-flex; align-items: center; gap: 7px; padding: 7px 8px; background: #fff; border: 1px solid var(--pp-border); border-radius: 6px; font-size: 11px; color: var(--pp-navy-500); cursor: pointer; }
+.print-services-page .services-choice:has(input:checked) { color: var(--pp-blue-800); background: #f8fbff; }
+.print-services-page .services-choice input { width: 15px; height: 15px; margin: 0; accent-color: var(--pp-blue-600); cursor: pointer; }
+.print-services-page .services-color { width: 23px; height: 23px; border: 1px solid #0b1f3a26; border-radius: 50%; background: var(--swatch); }
+.print-services-page .services-dialog-footer { display: flex; gap: 14px; margin-top: 24px; }
+.print-services-page .services-dialog-footer .services-button--primary { flex: 1; }
+.print-services-page .services-dialog-footer .services-button--secondary { min-width: 120px; }
+.print-services-page .services-form-error, .print-services-page .services-storage-warning { padding: 10px 12px; font-size: 12px; border-radius: 8px; color: #b25500; background: #fff6ed; }
+.print-services-page .services-toast { position: fixed; z-index: 100; bottom: 24px; left: 50%; width: max-content; max-width: calc(100% - 32px); padding: 12px 20px; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; border-radius: 10px; background: var(--pp-navy-900); color: #fff; box-shadow: var(--pp-shadow-lg); font-size: 13px; transition: opacity .18s, transform .18s; }
+.print-services-page .services-toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+/* Small compositions use the project's original product photography. */
+.print-services-page .services-brand { position: absolute; width: 34%; height: auto; top: 48%; left: 33%; }
+.print-services-page .services-art--mug .services-brand { top: 52%; left: 27%; width: 29%; }
+.print-services-page .services-art--hoodie .services-brand { top: 49%; }
+.print-services-page .services-art--phone .services-brand { top: 60%; width: 28%; left: 36%; }
+.print-services-page .services-art--bag .services-brand { top: 65%; }
+.print-services-page .services-art--cap .services-brand { top: 45%; width: 26%; left: 45%; }
+.print-services-page .services-stickers { position: relative; width: 115px; height: 100px; transform: rotate(-12deg); }
+.print-services-page .services-stickers span { position: absolute; border: 3px solid #fff; box-shadow: 0 2px 5px #0b1f3a26; border-radius: 18px; padding: 4px 9px; font: 800 15px/1.2 Cairo; direction: ltr; }
+.print-services-page .services-stickers span:nth-child(1) { top: 3px; left: 14px; background: #b94ce0; color: #fff; }
+.print-services-page .services-stickers span:nth-child(2) { top: 28px; left: 0; background: #ffdc59; color: var(--pp-navy-900); z-index: 2; }
+.print-services-page .services-stickers span:nth-child(3) { top: 59px; left: 20px; background: #1677ff; color: #fff; }
+.print-services-page .services-poster { padding: 8px 12px; background: #fff9ef; border: 5px solid #e8dfd6; box-shadow: 0 2px 5px #0b1f3a26; font: 900 15px/1.1 Cairo; direction: ltr; text-align: left; }
+.print-services-page .services-poster em { color: #d334a6; font-style: normal; }
+.print-services-page .services-mousepad { display: grid; place-items: center; width: 110px; height: 74px; background: #141414; border: 2px solid #343434; border-radius: 13px; transform: rotate(-15deg); box-shadow: 0 5px 6px #0b1f3a26; }
+.print-services-page .services-mousepad img { width: 78px; }
+@media (max-width: 1180px) { .print-services-page .services-products { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  .print-services-page .services-heading { align-items: stretch; flex-direction: column; gap: 12px; }
+  .print-services-page .services-heading h1 { font-size: 23px; }
+  .print-services-page #openCatalog { align-self: flex-start; }
+  .print-services-page .services-catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .print-services-page .services-settings-body { grid-template-columns: 1fr; gap: 16px; }
+  .print-services-page .services-product-preview { grid-column: 1; grid-row: 1; display: grid; grid-template-columns: 105px 1fr; align-items: center; column-gap: 12px; text-align: start; }
+  .print-services-page .services-product-preview .services-product-art { grid-row: 1 / 4; height: 100px; margin: 0; }
+  .print-services-page .services-settings-fields { grid-column: 1; grid-row: 2; }
+  .print-services-page .services-summary { font-size: 11px; }
+  .print-services-page .services-dialog { padding: 16px; }
+}
+@media (max-width: 575.98px) {
+  .print-services-page .services-products { grid-template-columns: 1fr; gap: 12px; }
+  .print-services-page .services-product > .services-product-art { height: 165px; }
+}
+@media (max-width: 480px) {
+  .print-services-page .services-product-art { height: 165px; }
+  .print-services-page .services-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .print-services-page .services-catalog-card .services-stickers { transform: rotate(-12deg) scale(.75); }
+  .print-services-page .services-catalog-card .services-mousepad { width: 80px; height: 60px; }
+  .print-services-page .services-number-fields { grid-template-columns: 1fr; }
+  .print-services-page .services-dialog-heading h2 { font-size: 15px; }
+  .print-services-page .services-dialog-footer { gap: 8px; }
+  .print-services-page .services-dialog-footer .services-button--secondary { min-width: 80px; }
+  .print-services-page .topbar { grid-template-columns: 88px 44px 1fr; }
+  .print-services-page .header-actions { display: flex; grid-column: 3; }
+  .print-services-page .search-box, .print-services-page .search-box:hover, .print-services-page .search-box:focus-within { display: flex; position: fixed; top: 72px; left: 12px; right: 12px; width: auto; height: 38px; z-index: 15; gap: 10px; padding-inline: 12px; background: #fff; border-color: var(--pp-border); }
+  .print-services-page .search-box input { width: auto; max-width: 100%; opacity: 1; pointer-events: auto; }
+  .print-services-page .wallet-shell { padding-top: 116px; }
+}
+@media (prefers-reduced-motion: reduce) { .print-services-page *, .print-services-page *::after { transition: none !important; } }

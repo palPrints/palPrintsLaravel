@@ -30,30 +30,114 @@
             </div>
 
             <div class="products-grid" id="productGrid">
-                @forelse($products as $product)
-                    <article
-                        class="product-card @unless($product['available']) is-unavailable @endunless"
-                        data-category="{{ $product['category'] }}"
-                        data-product="{{ $product['product_key'] }}"
-                        data-order="{{ $product['order'] }}"
-                        data-price="{{ $product['price'] }}"
-                        data-available="{{ $product['available'] ? 'true' : 'false' }}"
-                        @if($product['route']) data-href="{{ $product['route'] }}" @endif
-                    >
-                        <div class="product-card__media">
-                            <img src="{{ $product['image'] }}" alt="{{ $product['name'] }}">
-                            @unless($product['available'])
-                                <span class="product-card__availability">غير متاح</span>
-                            @endunless
-                        </div>
-                        <div class="product-card__body">
-                            <h3>{{ $product['name'] }}</h3>
-                            <p>{{ $product['description'] }}</p>
-                        </div>
-                    </article>
-                @empty
-                    <p class="products-empty" role="status">لا توجد منتجات متاحة حالياً.</p>
-                @endforelse
+                <article class="product-card" data-category="clothing" data-product="shirt" data-order="1" data-href="{{ route('customer.tshirts') }}">
+                    <div class="product-card__media">
+                        <img src="{{ asset('front/assets/images/customer/products/1.png') }}" alt="تيشيرت">
+                    </div>
+                    <div class="product-card__body">
+                        <h3>تيشيرت</h3>
+                        <p>تصاميم مخصصة بطباعة واضحة ومظهر يومي أنيق.</p>
+                    </div>
+                </article>
+                <article class="product-card" data-category="clothing" data-product="hoodie" data-order="2" data-href="{{ route('customer.hoodies') }}">
+                    <div class="product-card__media">
+                        <img src="{{ asset('front/assets/images/customer/products/2.png') }}" alt="هودي">
+                    </div>
+                    <div class="product-card__body">
+                        <h3>هودي</h3>
+                        <p>خيار مريح بطباعة مميزة يناسب الاستخدام اليومي.</p>
+                    </div>
+                </article>
+                <article class="product-card" data-category="clothing" data-product="cap" data-order="6" data-available="false">
+                    <div class="product-card__media">
+                        <img src="{{ asset('front/assets/images/customer/products/3.png') }}" alt="قبعات">
+                    </div>
+                    <div class="product-card__body">
+                        <h3>قبعات</h3>
+                        <p>قبعات بطابع بسيط مع إمكانية تخصيص التصميم.</p>
+                    </div>
+                </article>
+                <article class="product-card" data-category="accessories" data-product="bag" data-order="7" data-available="false">
+                    <div class="product-card__media">
+                        <img src="{{ asset('front/assets/images/customer/products/4.png') }}" alt="حقائب">
+                    </div>
+                    <div class="product-card__body">
+                        <h3>حقائب</h3>
+                        <p>حقائب عملية بتصاميم مطبوعة تناسب الهدايا والاستخدام.</p>
+                    </div>
+                </article>
+                <article class="product-card" data-category="accessories" data-product="scarf" data-order="8" data-available="false">
+                    <div class="product-card__media">
+                        <img src="{{ asset('front/assets/images/customer/products/5.png') }}" alt="وشاحات">
+                    </div>
+                    <div class="product-card__body">
+                        <h3>وشاحات</h3>
+                        <p>وشاحات بطباعة خاصة ولمسة ناعمة تناسب المناسبات.</p>
+                    </div>
+                </article>
+                <article class="product-card" data-category="accessories" data-product="phone-case" data-order="9" data-available="false">
+                    <div class="product-card__media">
+                        <img src="{{ asset('front/assets/images/customer/products/6.png') }}" alt="كفرات موبايل">
+                    </div>
+                    <div class="product-card__body">
+                        <h3>كفرات موبايل</h3>
+                        <p>حماية أنيقة للموبايل مع تصاميم قابلة للتخصيص.</p>
+                    </div>
+                </article>
+                <article class="product-card" data-category="drinkware" data-product="cups" data-order="5" data-href="{{ route('customer.mugs') }}">
+                    <div class="product-card__media">
+                        <img src="{{ asset('front/assets/images/customer/products/7.png') }}" alt="اكواب">
+                    </div>
+                    <div class="product-card__body">
+                        <h3>اكواب</h3>
+                        <p>أكواب مطبوعة بجودة عالية تناسب البيت والعمل.</p>
+                    </div>
+                </article>
+                <article class="product-card" data-category="office" data-product="paper" data-order="3" data-href="{{ route('customer.paperPrinting') }}">
+                    <div class="product-card__media">
+                        <img src="{{ asset('front/assets/images/customer/products/8.png') }}" alt="طباعة ورق">
+                    </div>
+                    <div class="product-card__body">
+                        <h3>طباعة ورق</h3>
+                        <p>طباعة ورق متنوعة للتغليف والعرض بطباعة مرتبة وأنيقة.</p>
+                    </div>
+                </article>
+                <article class="product-card" data-category="office" data-product="notebooks" data-order="10" data-available="false">
+                    <div class="product-card__media">
+                        <img src="{{ asset('front/assets/images/customer/products/9.png') }}" alt="دفاتر">
+                    </div>
+                    <div class="product-card__body">
+                        <h3>دفاتر</h3>
+                        <p>دفاتر بتصميم خاص تناسب الدراسة والعمل والهدايا.</p>
+                    </div>
+                </article>
+                <article class="product-card" data-category="office" data-product="posters" data-order="11" data-available="false">
+                    <div class="product-card__media">
+                        <img src="{{ asset('front/assets/images/customer/products/10.png') }}" alt="بوسترات">
+                    </div>
+                    <div class="product-card__body">
+                        <h3>بوسترات</h3>
+                        <p>بوسترات مطبوعة بجودة واضحة لعرض الأفكار والديكور.</p>
+                    </div>
+                </article>
+                <article class="product-card" data-category="office" data-product="stickers" data-order="4" data-href="{{ route('customer.stickers') }}">
+                    <div class="product-card__media">
+                        <img src="{{ asset('front/assets/images/customer/products/11.png') }}" alt="ستيكرات">
+                    </div>
+                    <div class="product-card__body">
+                        <h3>ستيكرات</h3>
+                        <p>ستيكرات مخصصة بأشكال متعددة ولمسات جذابة.</p>
+                    </div>
+                </article>
+                <article class="product-card" data-category="office" data-product="wedding-cards" data-order="12" data-available="false">
+                    <div class="product-card__media">
+                        <img src="{{ asset('front/assets/images/customer/products/12.png') }}" alt="كروت افراح">
+                    </div>
+                    <div class="product-card__body">
+                        <h3>كروت افراح</h3>
+                        <p>كروت أفراح بتصاميم فخمة تناسب المناسبات الخاصة.</p>
+                    </div>
+                </article>
             </div>
 
             <p class="products-empty" id="productsEmpty" role="status" aria-live="polite" hidden>لا توجد منتجات مطابقة لبحثك.</p>

@@ -13,7 +13,7 @@
     { id: "salam", category: "oversized", title: "تيشيرت أوفر سايز", description: "سلام", designer: "Yousef M.", price: 25, image: `${tshirtsBase}/oversized-salam.png` }
   ];
 
-  const previewPageUrl = "product-preview.html";
+  const previewPageUrl = assets.productPreviewUrl || "product-preview.html";
   const fallbackImage = assets.tshirtFallbackImage || "assets/images/tshirt.webp";
   const favoritesStorageKey = "palprints-tshirt-favorites";
   const grid = document.getElementById("productGrid");
@@ -41,6 +41,37 @@
     .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, "")
     .replace(/[أإآ]/g, "ا")
     .trim();
+
+  function buildPreviewPayload(product) {
+    return {
+      version: 2,
+      product: {
+        id: product.id,
+        name: product.title,
+        sellingPrice: product.price,
+        currency: "ILS",
+        colors: [{ id: "default", name: "الأساسي", value: "#dfe8f3", image: product.image, toneClass: "" }],
+        sizes: ["S", "M", "L", "XL", "XXL"].map((name) => ({ id: name.toLowerCase(), name })),
+        printAreas: [{ id: "front", name: "الأمام", image: product.image, fee: 0, placement: { top: 20, left: 20, width: 60, height: 60 } }]
+      },
+      design: {
+        id: product.id,
+        name: product.description,
+        designerName: product.designer,
+        preview: { images: [], texts: [], icons: [] }
+      },
+      selection: {
+        colorId: "default",
+        sizeId: "m",
+        quantity: 1,
+        printAreaIds: ["front"],
+        defaultItem: { colorId: "default", sizeId: "m", printAreaIds: ["front"] },
+        items: [{ colorId: "default", sizeId: "m", printAreaIds: ["front"] }],
+        activeItemIndex: 0
+      },
+      customerWarnings: []
+    };
+  }
 
   function reveal(element) {
     if (!element) return;
@@ -195,9 +226,9 @@
 
     const previewButton = event.target.closest("[data-preview]");
     if (previewButton) {
-      const target = new URL(previewPageUrl, window.location.href);
-      target.searchParams.set("id", previewButton.dataset.preview);
-      window.location.href = target.href;
+      const product = products.find((item) => item.id === previewButton.dataset.preview);
+      try { sessionStorage.setItem("palprintsCustomerPreview", JSON.stringify(buildPreviewPayload(product))); } catch (_) { /* Preview falls back to its own demo data. */ }
+      window.location.href = previewPageUrl;
     }
   });
 
