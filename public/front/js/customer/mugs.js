@@ -4,7 +4,7 @@
   const assets = window.palPrintsCustomerAssets || {};
   const mugsBase = assets.mugsImagesBase || "assets/images/mugs";
 
-  const products = [
+  const products = Array.isArray(assets.publishedDesigns) ? assets.publishedDesigns : [
     {
       id: "morning-calm",
       title: "كوب صباح هادئ",

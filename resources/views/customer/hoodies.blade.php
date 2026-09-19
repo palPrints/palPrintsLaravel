@@ -63,6 +63,7 @@
     <script>
         window.palPrintsCustomerAssets = window.palPrintsCustomerAssets || {};
         window.palPrintsCustomerAssets.hoodieImage = @json(asset('front/assets/images/customer/hoodie.png'));
+        window.palPrintsCustomerAssets.publishedDesigns = @json($publishedDesigns);
     </script>
     <script src="{{ asset('front/js/customer/hoodies.js') }}?v={{ filemtime(public_path('front/js/customer/hoodies.js')) }}"></script>
 @endpush

@@ -4,7 +4,7 @@
   const assets = window.palPrintsCustomerAssets || {};
   const tshirtsBase = assets.tshirtsImagesBase || "assets/images/tshirts";
 
-  const products = [
+  const products = Array.isArray(assets.publishedDesigns) ? assets.publishedDesigns : [
     { id: "flower-good-day", category: "kids", title: "تيشيرت أطفال", description: "يوم سعيد", designer: "Lina A.", price: 20, image: `${tshirtsBase}/kids-flower-good-day.png` },
     { id: "panda-music", category: "kids", title: "تيشيرت أطفال", description: "موسيقى دائماً", designer: "Omar K.", price: 20, image: `${tshirtsBase}/kids-panda-music.png` },
     { id: "little-explorer", category: "kids", title: "تيشيرت أطفال", description: "للمستكشف الصغير", designer: "Sara N.", price: 20, image: `${tshirtsBase}/kids-little-explorer.png` },

@@ -172,10 +172,15 @@
               ><span data-i18n="clearSearch">مسح البحث</span>
             </button>
           </section>
+
+
           <div id="designGroups" aria-live="polite"></div>
 
     </div>
 @endsection
+
+
+
 
 @push('scripts')
     <script>

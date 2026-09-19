@@ -602,7 +602,8 @@
     const price = document.createElement("span");
     price.className = "product-card__price";
     price.dir = "ltr";
-    price.textContent = `$${productPrices[card.dataset.product].toFixed(2)}`;
+    const cardPrice = Number(card.dataset.price || productPrices[card.dataset.product] || 0);
+    price.textContent = `$${cardPrice.toFixed(2)}`;
     body.append(price);
   });
 
@@ -613,11 +614,11 @@
 
     const product = card.dataset.product;
     const productImagesBase = window.palPrintsCustomerAssets?.products || "/front/assets/images/customer/products";
-    const originalSrc = `${productImagesBase}/${productImages[product]}`;
+    const originalSrc = productImages[product] ? `${productImagesBase}/${productImages[product]}` : image.src;
     const hoverSrc = hoverImages[product]
       ? `${productImagesBase}/${hoverImages[product]}`
       : null;
-    image.src = originalSrc;
+    if (originalSrc) image.src = originalSrc;
 
     if (hoverSrc) {
       const hoverImage = new Image();

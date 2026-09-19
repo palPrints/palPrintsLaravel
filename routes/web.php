@@ -44,10 +44,10 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/admin/dashboard', [RoleDashboardController::class, 'show'])
         ->defaults('dashboard_role', 'admin')->middleware('role:admin')->name('admin.dashboard');
     Route::middleware('role:customer')->prefix('customer')->name('customer.')->group(function () {
-        Route::view('/store', 'customer.store')->name('store');
-        Route::view('/hoodies', 'customer.hoodies')->name('hoodies');
-        Route::view('/mugs', 'customer.mugs')->name('mugs');
-        Route::view('/tshirts', 'customer.tshirts')->name('tshirts');
+        Route::get('/store', [CustomerCatalogController::class, 'store'])->name('store');
+        Route::get('/hoodies', [CustomerCatalogController::class, 'hoodies'])->name('hoodies');
+        Route::get('/mugs', [CustomerCatalogController::class, 'mugs'])->name('mugs');
+        Route::get('/tshirts', [CustomerCatalogController::class, 'tshirts'])->name('tshirts');
         Route::view('/stickers', 'customer.stickers')->name('stickers');
         Route::view('/paper-printing', 'customer.paperPrinting')->name('paperPrinting');
         Route::view('/product-preview', 'customer.productPreview')->name('productPreview');

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\PricingValueType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,7 +13,7 @@ class PricingRule extends Model
 
     protected function casts(): array
     {
-        return ['amount' => 'decimal:2', 'is_active' => 'boolean', 'valid_from' => 'datetime', 'valid_until' => 'datetime', 'value_type' => PricingValueType::class];
+        return ['amount' => 'decimal:2', 'is_active' => 'boolean', 'valid_from' => 'datetime', 'valid_until' => 'datetime'];
     }
 
     public function offering(): BelongsTo
