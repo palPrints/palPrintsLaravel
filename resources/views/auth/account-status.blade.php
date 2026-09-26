@@ -1,89 +1,73 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-theme="light">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="متابعة حالة طلب حساب المصمم أو المطبعة في PALPRINTS.">
-  <meta name="theme-color" content="#f8fafc">
-  <meta name="color-scheme" content="light dark">
-  <title>حالة الحساب | PALPRINTS</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=block" rel="stylesheet">
-  <link rel="stylesheet" href="{{ asset('front/css/auth/styles.css') }}">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="{{ asset('front/css/auth/visual-refresh.css') }}">
-  <link rel="stylesheet" href="{{ asset('front/css/auth/account-status-responsive.css') }}?v=8">
-  <script src="{{ asset('front/js/auth/auth-flow.js') }}?v=2" defer></script>
-  <script src="{{ asset('front/js/auth/page-i18n.js') }}" defer></script>
+  @include('auth.partials.head', [
+      'title' => 'حالة الحساب',
+      'description' => 'متابعة حالة مراجعة حسابك في PalPrints',
+      'css' => 'forgot-password',
+  ])
 </head>
-<body class="auth-flow-page account-status-page"
-      data-auth-flow="account-status-page"
-      data-account-role="{{ $accountRole ?? '' }}"
-      data-account-status-value="{{ $accountApprovalStatus ?? 'pending' }}"
-      data-account-reference="{{ $accountReference ?? '' }}">
-  <a class="skip-link" href="#main-content" data-i18n="skipToContent">انتقل إلى المحتوى الرئيسي</a>
-  <div class="auth-topbar">
-    <div class="auth-topbar__container">
-      <a class="brand" href="{{ route('home') }}" aria-label="PALPRINTS">
-        <img class="brand-logo brand-logo-light" src="{{ asset('front/assets/images/palprints-logo.png') }}" alt="شعار PALPRINTS" width="140" height="55">
-        <img class="brand-logo brand-logo-dark" src="{{ asset('front/assets/images/palprints-logo.png') }}" alt="" aria-hidden="true" width="140" height="55">
+<body>
+  @php
+    $status = $accountApprovalStatus ?? 'draft';
+    $needsChanges = in_array($status, ['rejected', 'changes_requested'], true);
+
+    [$icon, $eyebrow, $title, $description] = match (true) {
+        $status === 'approved' => ['bi-patch-check', 'حسابك جاهز', 'تم اعتماد حسابك', 'يمكنك الآن استخدام جميع خصائص حسابك في PalPrints.'],
+        in_array($status, ['submitted', 'under_review'], true) => ['bi-hourglass-split', 'قيد المراجعة', 'بانتظار مراجعة حسابك', 'تم استلام طلبك، ويقوم فريق PalPrints الآن بمراجعة بيانات حسابك.'],
+        $needsChanges => ['bi-exclamation-triangle', 'يلزم تعديل', 'حسابك يحتاج إلى تعديل', 'راجع ملاحظات الإدارة وعدّل بياناتك ثم أعد إرسال الطلب.'],
+        default => ['bi-person-vcard', 'حالة الحساب', 'أكمل ملفك وأرسل الطلب', 'أكمل بيانات ملفك الشخصي ثم أرسله للمراجعة لتفعيل حسابك.'],
+    };
+
+    // 0 = not submitted yet, 1 = under review, 2 = approved
+    $stage = match (true) {
+        $status === 'approved' => 2,
+        in_array($status, ['submitted', 'under_review'], true) => 1,
+        default => 0,
+    };
+    $steps = ['تم استلام الطلب', 'قيد المراجعة', 'تفعيل الحساب'];
+  @endphp
+
+  <main class="recovery-layout">
+    <section class="recovery-panel" aria-labelledby="statusTitle">
+      <a href="{{ route('home') }}" class="recovery-wordmark" aria-label="العودة إلى الصفحة الرئيسية">
+        <img src="{{ asset('front/auth/images/palprints-wordmark-approved.png') }}" alt="PalPrints">
       </a>
-      <nav class="auth-topbar__actions" aria-label="خيارات الواجهة" data-i18n-aria-label="headerNavLabel">
-        <button class="header-control language-toggle" id="languageToggle" type="button" aria-label="تغيير اللغة إلى الإنجليزية" data-i18n-aria-label="languageToggleLabel">
-          <i class="bi bi-globe2 icon external-ui-icon icon-language" aria-hidden="true"></i>
-          <span id="languageToggleText">EN</span>
-        </button>
-        <button class="header-control theme-toggle" id="themeToggle" type="button" aria-label="تفعيل الوضع الليلي" aria-pressed="false">
-          <i class="bi bi-moon-stars" id="themeToggleIcon" aria-hidden="true"></i>
-          <span class="visually-hidden" data-i18n="themeToggleText">تبديل المظهر</span>
-        </button>
-      </nav>
-    </div>
-  </div>
-  <main class="account-status-main" id="main-content" tabindex="-1">
-    <div class="account-status-shell">
-      <section class="login-card auth-flow-card account-status-card" aria-labelledby="status-title">
-          <header class="register-heading auth-flow-heading">
-            <p class="eyebrow" id="statusEyebrow">حالة الحساب</p>
-            <h1 id="status-title">بانتظار مراجعة حسابك</h1>
-            <p class="register-subtitle" id="statusDescription">تم استلام طلبك بنجاح، ويقوم فريق PALPRINTS الآن بمراجعة بيانات حسابك.</p>
-          </header>
 
-          <section class="status-review-summary" aria-labelledby="status-now-title">
-            <h2 id="status-now-title">ماذا يحدث الآن؟</h2>
-            <p id="statusNowDescription">نراجع البيانات المرسلة للتأكد من جاهزية الحساب قبل تفعيل الصلاحيات.</p>
-            <p class="status-next-note" id="statusNextNote">سنرسل لك إشعارًا عبر البريد الإلكتروني عند اكتمال المراجعة أو إذا احتجنا معلومات إضافية.</p>
-          </section>
+      <div class="recovery-card">
+        <div class="recovery-icon" aria-hidden="true"><i class="bi {{ $icon }}"></i></div>
+        <header class="recovery-heading">
+          <span class="eyebrow">{{ $eyebrow }}</span>
+          <h1 id="statusTitle">{{ $title }}</h1>
+          <p>{{ $description }}</p>
+        </header>
 
-          <ol class="status-progress" id="statusProgress" aria-label="مراحل مراجعة الحساب">
-            <li class="status-progress-step" id="statusStepReceived">
-              <span class="status-progress-marker" aria-hidden="true">✓</span>
-              <span class="status-progress-label" id="statusStepReceivedLabel">تم استلام الطلب</span>
-            </li>
-            <li class="status-progress-step" id="statusStepReview">
-              <span class="status-progress-marker" aria-hidden="true">2</span>
-              <span class="status-progress-label" id="statusStepReviewLabel">قيد المراجعة</span>
-            </li>
-            <li class="status-progress-step" id="statusStepActivated">
-              <span class="status-progress-marker" aria-hidden="true">3</span>
-              <span class="status-progress-label" id="statusStepActivatedLabel">تفعيل الحساب</span>
-            </li>
-          </ol>
+        @if ($accountReviewNote)
+          <p class="form-status is-error" role="alert"><strong>ملاحظة الإدارة:</strong> {{ $accountReviewNote }}</p>
+        @endif
 
-          <dl class="status-details" id="statusDetails">
-            <div><dt data-i18n="accountType">نوع الحساب</dt><dd id="statusRole">{{ $accountRoleLabel ?? '—' }}</dd></div>
-            <div id="statusReferenceRow"><dt data-i18n="requestReference">رقم الطلب</dt><dd id="statusReference">{{ $accountReference ?? '—' }}</dd></div>
-          </dl>
-          <div class="status-actions">
-            <a class="primary-button" id="statusPrimaryAction" href="{{ route('dashboard') }}" data-login-url="{{ route('dashboard') }}" data-register-url="{{ route('profile.edit') }}">متابعة</a>
-            <a class="primary-button guest-browse-button" href="{{ route('home') }}" data-i18n="browseAsGuest">تصفح المنصة كزائر</a>
-          </div>
-      </section>
-    </div>
+        <ol class="status-steps" aria-label="مراحل مراجعة الحساب">
+          @foreach ($steps as $index => $label)
+            <li @class(['status-step', 'is-done' => $index < $stage || ($index === 0 && $stage > 0), 'is-current' => $index === $stage])>
+              <span class="status-step__marker" aria-hidden="true">{{ $index < $stage ? '✓' : $index + 1 }}</span>
+              <span>{{ $label }}</span>
+            </li>
+          @endforeach
+        </ol>
+
+        <dl class="status-details">
+          <div><dt>نوع الحساب</dt><dd>{{ $accountRoleLabel ?? '—' }}</dd></div>
+          <div><dt>رقم الطلب</dt><dd dir="ltr">{{ $accountReference ?? '—' }}</dd></div>
+        </dl>
+
+        <a class="submit-button" href="{{ ($needsChanges || $stage === 0) && $accountRole === 'designer' ? route('designer.profile') : route('dashboard') }}">
+          <span>{{ $needsChanges || $stage === 0 ? 'إكمال الملف الشخصي' : 'متابعة' }}</span>
+          <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        </a>
+
+        <a class="back-link" href="{{ route('home') }}"><i class="bi bi-arrow-right" aria-hidden="true"></i> تصفح المنصة كزائر</a>
+      </div>
+    </section>
   </main>
-  <footer class="site-footer">
-    <p><span>©</span> <span id="currentYear">2026</span> <strong>PALPRINTS</strong> <span data-i18n="allRightsReserved">جميع الحقوق محفوظة.</span></p>
-  </footer>
 </body>
 </html>

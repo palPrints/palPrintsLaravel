@@ -1,7 +1,7 @@
 @extends('designer.layouts.app')
 
 @section('title', 'اختر المنتج')
-@section('main-class', 'source-create-main')
+@section('body-class', 'designer-create-flow')
 
 @push('styles')
     <base href='{{ asset('front/designer/source/create') }}/'>
@@ -9,6 +9,7 @@
 @endpush
 
 @section('content')
+<main class='designer-content-main source-create-main' id='designerMain'>
     <div class='source-product-picker page'>
         <section class="product-page" aria-labelledby="page-title">
             <header class="page-header">
@@ -80,6 +81,7 @@
 
         <div class="sr-only" id="liveRegion" role="status" aria-live="polite" aria-atomic="true"></div>
     </div>
+</main>
 @endsection
 
 @push('scripts')

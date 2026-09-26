@@ -1,8 +1,27 @@
 @extends('designer.layouts.app')
 
 @section('title', 'لوحة التحكم')
+@section('body-class', 'dashboard-page')
+
+@push('styles')
+    <link rel='stylesheet' href='{{ asset('front/designer/css/dashboard.css') }}?v={{ filemtime(public_path('front/designer/css/dashboard.css')) }}'>
+@endpush
 
 @section('content')
+<main class='designer-content-main dashboard-stack' id='designerMain'>
+    @include('designer.partials.flash')
+
+    @if ($accountNotice && ! session('warning'))
+        <section class='designer-flash designer-flash-notice' role='status' aria-live='polite'>
+            <i class='bi {{ $accountNotice['icon'] }}' aria-hidden='true'></i>
+            <div class='designer-flash-copy'>
+                <strong>{{ $accountNotice['title'] }}</strong>
+                <small>{{ $accountNotice['message'] }}</small>
+            </div>
+            <a href='{{ route('designer.profile') }}'>{{ $accountNotice['action'] }}</a>
+        </section>
+    @endif
+
     <section class='designer-intro' aria-label='ابدأ تصميمًا جديدًا' data-i18n-aria='designerIntroLabel'>
         <div class='designer-intro-copy'>
             <h1 class='designer-intro-text'>
@@ -15,10 +34,17 @@
             </p>
         </div>
 
-        <a href='{{ route('designer.designs.create') }}' class='designer-intro-action'>
-            <i class='bi bi-palette' aria-hidden='true'></i>
-            <span data-i18n='ctaAction'>ابدأ التصميم</span>
-        </a>
+        @if (auth()->user()->hasApprovedBusinessAccount())
+            <a href='{{ route('designer.designs.create') }}' class='designer-intro-action'>
+                <i class='bi bi-palette' aria-hidden='true'></i>
+                <span data-i18n='ctaAction'>ابدأ التصميم</span>
+            </a>
+        @else
+            <a href='{{ route('designer.profile') }}' class='designer-intro-action'>
+                <i class='bi bi-shield-lock' aria-hidden='true'></i>
+                <span data-i18n='completeProfileFirst'>أكمل التوثيق أولًا</span>
+            </a>
+        @endif
     </section>
 
     <div class='stats-grid' aria-label='ملخص لوحة التحكم' data-i18n-aria='dashboardSummary'>
@@ -72,7 +98,7 @@
                     <i class='bi bi-arrow-up' aria-hidden='true'></i>
                     <span
                         data-copy-ar='+{{ number_format($stats['earnings_this_month'], 2) }} ₪ هذا الشهر'
-                        data-copy-en='+₪{{ number_format($stats['earnings_this_month'], 2) }} this month'
+                        data-copy-en='+{{ number_format($stats['earnings_this_month'], 2) }} ₪ this month'
                     >+{{ number_format($stats['earnings_this_month'], 2) }} ₪ هذا الشهر</span>
                 </div>
             </div>
@@ -85,7 +111,7 @@
 
             <div class='stat-body'>
                 <h2 class='stat-title' data-i18n='averageRating'>متوسط التقييم</h2>
-                <strong
+                <strong dir='ltr'
                     class='stat-value'
                     data-copy-ar='{{ number_format($stats['average_rating'], 1) }} / 5'
                     data-copy-en='{{ number_format($stats['average_rating'], 1) }} / 5'
@@ -266,4 +292,9 @@
             </table>
         </div>
     </section>
+</main>
 @endsection
+
+@push('scripts')
+    <script src='{{ asset('front/designer/js/dashboard.js') }}?v={{ filemtime(public_path('front/designer/js/dashboard.js')) }}'></script>
+@endpush

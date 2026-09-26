@@ -68,12 +68,12 @@
             </div>
             <div class="payment-fields palpay-fields" data-payment-fields="palpay">
               <h3>بيانات الدفع عبر PalPay <i class="bi bi-phone"></i></h3>
-              <div class="form-grid"><label class="field"><span>رقم الجوال <b>*</b></span><span class="input-wrap"><i class="bi bi-telephone"></i><input id="payPhone" type="tel" placeholder="59 123 4567"></span></label><label class="field"><span>المبلغ المراد دفعه</span><span class="input-wrap"><i class="bi bi-currency-dollar"></i><input value="118.00" readonly></span></label></div>
+              <div class="form-grid"><label class="field"><span>رقم الجوال <b>*</b></span><span class="input-wrap"><i class="bi bi-telephone"></i><input id="payPhone" type="tel" placeholder="59 123 4567"></span></label><label class="field"><span>المبلغ المراد دفعه</span><span class="input-wrap"><i class="bi bi-cash-coin"></i><input value="118.00" readonly></span></label></div>
               <p class="info-line"><i class="bi bi-info-circle-fill"></i> سيصلك إشعار على محفظة PalPay لتأكيد عملية الدفع</p>
             </div>
             <div class="payment-fields jawwal-fields" data-payment-fields="jawwal" hidden>
               <h3>بيانات الدفع عبر جوال بي <i class="bi bi-phone"></i></h3>
-              <div class="form-grid"><label class="field"><span>رقم محفظة جوال بي <b>*</b></span><span class="input-wrap"><i class="bi bi-telephone"></i><input id="jawwalPhone" type="tel" inputmode="tel" placeholder="59 123 4567"></span></label><label class="field"><span>المبلغ المراد دفعه</span><span class="input-wrap"><i class="bi bi-currency-dollar"></i><input value="118.00" readonly></span></label></div>
+              <div class="form-grid"><label class="field"><span>رقم محفظة جوال بي <b>*</b></span><span class="input-wrap"><i class="bi bi-telephone"></i><input id="jawwalPhone" type="tel" inputmode="tel" placeholder="59 123 4567"></span></label><label class="field"><span>المبلغ المراد دفعه</span><span class="input-wrap"><i class="bi bi-cash-coin"></i><input value="118.00" readonly></span></label></div>
               <p class="info-line"><i class="bi bi-info-circle-fill"></i> سيتم إرسال رمز التحقق إلى رقم جوالك المسجل في جوال بي</p>
               <div class="otp-area"><span>رمز التحقق <b>*</b></span><div class="otp-inputs" dir="ltr"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"></div><small>تم إرسال رمز التحقق إلى جوالك · <b id="otpTimer">00:45</b></small></div>
             </div>
@@ -95,7 +95,7 @@
 
           <div class="step-panel success-panel" data-panel="5">
             <div class="success-hero"><span class="success-icon"><i class="bi bi-check-lg"></i></span><div><h2>تم استلام طلبك بنجاح!</h2><p>نحن نعمل الآن على تجهيز طلبك وشحنه إليك</p><div class="order-number"><small>رقم الطلب</small><strong>#PLP-2026-000478</strong><button type="button" id="copyOrder" data-no-press aria-label="نسخ رقم الطلب"><i class="bi bi-copy"></i></button></div></div></div>
-            <div class="order-details"><p><strong><i class="bi bi-receipt"></i> حالة الطلب</strong><span class="paid">تم الدفع <i class="bi bi-check"></i></span></p><p><strong><i class="bi bi-calendar3"></i> تاريخ الطلب</strong><span id="orderDate"></span></p><p><strong><i class="bi bi-receipt-cutoff"></i> إجمالي الطلب</strong><span>$118.00</span></p><p><strong><i class="bi bi-credit-card"></i> طريقة الدفع</strong><span>الدفع الإلكتروني (PalPay)</span></p><p><strong><i class="bi bi-geo-alt"></i> عنوان التوصيل</strong><span>غزة، الرمال، شارع الجلاء، بناية الخير</span></p></div>
+            <div class="order-details"><p><strong><i class="bi bi-receipt"></i> حالة الطلب</strong><span class="paid">تم الدفع <i class="bi bi-check"></i></span></p><p><strong><i class="bi bi-calendar3"></i> تاريخ الطلب</strong><span id="orderDate"></span></p><p><strong><i class="bi bi-receipt-cutoff"></i> إجمالي الطلب</strong><span>118.00 ₪</span></p><p><strong><i class="bi bi-credit-card"></i> طريقة الدفع</strong><span>الدفع الإلكتروني (PalPay)</span></p><p><strong><i class="bi bi-geo-alt"></i> عنوان التوصيل</strong><span>غزة، الرمال، شارع الجلاء، بناية الخير</span></p></div>
             <p class="shipping-note"><i class="bi bi-truck"></i> سنقوم بإعلامك عند شحن طلبك مع رقم التتبع</p>
             <a class="primary-btn" href="{{ route('customer.orders') }}">تتبع طلبك <i class="bi bi-box-seam"></i></a><a class="back-store" href="{{ route('customer.store') }}">العودة إلى المتجر <i class="bi bi-chevron-left"></i></a>
           </div>
@@ -105,11 +105,11 @@
       <aside class="checkout-card summary-card" aria-label="ملخص الطلب">
         <div class="card-heading"><i class="bi bi-receipt"></i><div><h2>ملخص الطلب</h2><p>3 منتجات في السلة</p></div></div>
         <div class="summary-products">
-          <article><img src="{{ asset('front/assets/images/customer/products/1.png') }}" alt="تيشيرت كلاسيك"><div><h3>تيشيرت كلاسيك</h3><strong>$40.00</strong><p>المقاس: L &nbsp;|&nbsp; اللون: أسود<br>الطباعة: أمامي</p></div><b>×2</b></article>
-          <article><img src="{{ asset('front/assets/images/customer/products/2.png') }}" alt="هودي"><div><h3>هودي</h3><strong>$28.00</strong><p>المقاس: M &nbsp;|&nbsp; اللون: رمادي</p></div><b>×1</b></article>
-          <article><img src="{{ asset('front/assets/images/customer/products/3.png') }}" alt="طاقية"><div><h3>طاقية</h3><strong>$45.00</strong><p>المقاس: مقاس واحد &nbsp;|&nbsp; اللون: أخضر</p></div><b>×3</b></article>
+          <article><img src="{{ asset('front/assets/images/customer/products/1.png') }}" alt="تيشيرت كلاسيك"><div><h3>تيشيرت كلاسيك</h3><strong>40.00 ₪</strong><p>المقاس: L &nbsp;|&nbsp; اللون: أسود<br>الطباعة: أمامي</p></div><b>×2</b></article>
+          <article><img src="{{ asset('front/assets/images/customer/products/2.png') }}" alt="هودي"><div><h3>هودي</h3><strong>28.00 ₪</strong><p>المقاس: M &nbsp;|&nbsp; اللون: رمادي</p></div><b>×1</b></article>
+          <article><img src="{{ asset('front/assets/images/customer/products/3.png') }}" alt="طاقية"><div><h3>طاقية</h3><strong>45.00 ₪</strong><p>المقاس: مقاس واحد &nbsp;|&nbsp; اللون: أخضر</p></div><b>×3</b></article>
         </div>
-        <div class="summary-totals"><p><span>المجموع الفرعي</span><strong>$113.00</strong></p><p class="shipping-row" hidden><span>تكلفة التوصيل</span><strong>$5.00</strong></p><p class="grand-total"><span>الإجمالي المتوقع</span><strong>$118.00</strong></p><small><i class="bi bi-shield-check"></i> الأسعار تشمل ضريبة القيمة المضافة</small></div>
+        <div class="summary-totals"><p><span>المجموع الفرعي</span><strong>113.00 ₪</strong></p><p class="shipping-row" hidden><span>تكلفة التوصيل</span><strong>5.00 ₪</strong></p><p class="grand-total"><span>الإجمالي المتوقع</span><strong>118.00 ₪</strong></p><small><i class="bi bi-shield-check"></i> الأسعار تشمل ضريبة القيمة المضافة</small></div>
       </aside>
     </div>
 

@@ -2,6 +2,24 @@
 
 @section('title', 'الأرباح والمحفظة')
 
+@php
+    $available = (float) ($wallet?->available_balance ?? 0);
+    $money = fn ($value) => number_format((float) $value, 2).' ₪';
+    $txStatus = [
+        'pending' => ['pending', 'معلق'],
+        'available' => ['available', 'متاح للسحب'],
+        'requested' => ['withdrawn', 'تم سحبه'],
+        'complete' => ['withdrawn', 'تم سحبه'],
+    ];
+    $wdStatus = [
+        'pending' => ['review', 'قيد المراجعة'],
+        'approved' => ['accepted', 'مقبول'],
+        'completed' => ['transferred', 'تم التحويل'],
+        'rejected' => ['rejected', 'مرفوض'],
+    ];
+    $methodLabels = ['bank-of-palestine' => 'بنك فلسطين', 'palpay' => 'PalPay', 'jawwal-pay' => 'جوال بي'];
+@endphp
+
 @section('content')
     <section class="wallet-overview">
         <div class="breadcrumb">
@@ -20,10 +38,10 @@
 
         <div class="summary-grid" aria-label="ملخص الأرباح">
             <article class="summary-card total">
-                <span class="card-icon"><i class="bi bi-currency-dollar"></i></span>
+                <span class="card-icon"><i class="bi bi-cash-coin"></i></span>
                 <div>
                     <h2>إجمالي الأرباح</h2>
-                    <strong dir="ltr" data-dashboard-counter="12850" data-counter-currency="true">$12,850.00</strong>
+                    <strong dir="ltr" data-dashboard-counter="{{ (float) ($wallet?->total_balance ?? 0) }}" data-counter-currency="true">{{ $money($wallet?->total_balance ?? 0) }}</strong>
                     <small>منذ بداية الحساب</small>
                 </div>
             </article>
@@ -32,7 +50,7 @@
                 <span class="card-icon"><i class="bi bi-wallet2"></i></span>
                 <div>
                     <h2>الأرباح القابلة للسحب</h2>
-                    <strong dir="ltr" data-dashboard-counter="2430" data-counter-currency="true">$2,430.00</strong>
+                    <strong dir="ltr" data-dashboard-counter="{{ $available }}" data-counter-currency="true">{{ $money($available) }}</strong>
                     <small><i class="bi bi-graph-up-arrow"></i> متاح للسحب الآن</small>
                 </div>
             </article>
@@ -41,7 +59,7 @@
                 <span class="card-icon"><i class="bi bi-clock"></i></span>
                 <div>
                     <h2>الأرباح المعلقة</h2>
-                    <strong dir="ltr" data-dashboard-counter="680" data-counter-currency="true">$680.00</strong>
+                    <strong dir="ltr" data-dashboard-counter="{{ (float) ($wallet?->pending_balance ?? 0) }}" data-counter-currency="true">{{ $money($wallet?->pending_balance ?? 0) }}</strong>
                     <small>بانتظار إتمام الطلبات</small>
                 </div>
             </article>
@@ -63,12 +81,12 @@
 
         <div class="withdraw-action">
             <button id="openWithdraw" type="button"><i class="bi bi-plus-lg"></i> طلب سحب</button>
-            <small>الحد الأدنى للسحب: <b dir="ltr">$100</b></small>
+            <small>الحد الأدنى للسحب: <b dir="ltr">{{ $minimumWithdrawal }} ₪</b></small>
         </div>
     </section>
 
     <section class="data-card">
-        <header><i class="bi bi-currency-dollar"></i><h2>سجل الأرباح</h2></header>
+        <header><i class="bi bi-cash-coin"></i><h2>سجل الأرباح</h2></header>
         <div class="table-wrap">
             <table>
                 <thead>
@@ -77,13 +95,19 @@
                     </tr>
                 </thead>
                 <tbody id="earningsRows">
-                    <tr data-days="2"><td><a href="#">#10358</a></td><td><b>تيشيرت مطبوع</b></td><td>أحمد ناصر</td><td>12 سبتمبر 2026</td><td class="money">$250.00</td><td><span class="status pending">معلق</span></td></tr>
-                    <tr data-days="3"><td><a href="#">#10357</a></td><td><b>أكواب مخصصة</b></td><td>سارة خالد</td><td>11 سبتمبر 2026</td><td class="money">$320.00</td><td><span class="status available">متاح للسحب</span></td></tr>
-                    <tr data-days="4"><td><a href="#">#10356</a></td><td><b>ستيكرات</b></td><td>محمد علي</td><td>10 سبتمبر 2026</td><td class="money">$180.00</td><td><span class="status withdrawn">تم سحبه</span></td></tr>
-                    <tr data-days="5"><td><a href="#">#10355</a></td><td><b>طباعة ورق</b></td><td>ريم حسن</td><td>9 سبتمبر 2026</td><td class="money">$140.00</td><td><span class="status available">متاح للسحب</span></td></tr>
-                    <tr data-days="6"><td><a href="#">#10354</a></td><td><b>كروت شخصية</b></td><td>خالد إبراهيم</td><td>8 سبتمبر 2026</td><td class="money">$90.00</td><td><span class="status pending">معلق</span></td></tr>
-                    <tr data-days="7"><td><a href="#">#10353</a></td><td><b>هودي مطبوع</b></td><td>نورة صالح</td><td>7 سبتمبر 2026</td><td class="money">$270.00</td><td><span class="status withdrawn">تم سحبه</span></td></tr>
-                    <tr data-days="8"><td><a href="#">#10352</a></td><td><b>أكواب مخصصة</b></td><td>فاطمة حسين</td><td>6 سبتمبر 2026</td><td class="money">$110.00</td><td><span class="status available">متاح للسحب</span></td></tr>
+                    @forelse ($transactions as $transaction)
+                        @php [$statusClass, $statusLabel] = $txStatus[$transaction->status] ?? ['available', $transaction->status]; @endphp
+                        <tr data-days="{{ (int) $transaction->created_at?->diffInDays(now()) }}">
+                            <td dir="ltr">{{ $transaction->reference_id ?: 'TRX-'.$transaction->id }}</td>
+                            <td><b>{{ $transaction->description ?: 'أرباح طباعة' }}</b></td>
+                            <td>—</td>
+                            <td>{{ $transaction->created_at?->locale('ar')->translatedFormat('j F Y') }}</td>
+                            <td class="money">{{ $money($transaction->amount) }}</td>
+                            <td><span class="status {{ $statusClass }}">{{ $statusLabel }}</span></td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" class="empty-row">لا توجد أرباح مسجلة حتى الآن.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -97,29 +121,42 @@
                     <tr><th>التاريخ</th><th>المبلغ</th><th>طريقة السحب</th><th>رقم المعاملة</th><th>الحالة</th><th>التفاصيل</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td>10 سبتمبر 2026</td><td class="money dark">$500.00</td><td>تحويل بنكي</td><td dir="ltr">TRX789456123</td><td><span class="status review">قيد المراجعة</span></td><td class="withdrawal-detail is-empty">—</td></tr>
-                    <tr><td>1 سبتمبر 2026</td><td class="money dark">$750.00</td><td>محفظة إلكترونية</td><td dir="ltr">PP456123789</td><td><span class="status accepted">مقبول</span></td><td class="withdrawal-detail is-empty">—</td></tr>
-                    <tr><td>20 أغسطس 2026</td><td class="money dark">$320.00</td><td>تحويل بنكي</td><td dir="ltr">TRX321654987</td><td><span class="status transferred">تم التحويل</span></td><td class="withdrawal-detail">تم التحويل في 22 أغسطس 2026</td></tr>
-                    <tr><td>10 أغسطس 2026</td><td class="money dark">$200.00</td><td>محفظة إلكترونية</td><td dir="ltr">PP987654321</td><td><span class="status rejected">مرفوض</span></td><td class="withdrawal-detail is-rejected">سبب الرفض: بيانات الحساب غير مكتملة</td></tr>
+                    @forelse ($withdrawals as $withdrawal)
+                        @php [$statusClass, $statusLabel] = $wdStatus[$withdrawal->status] ?? ['review', $withdrawal->status]; @endphp
+                        <tr>
+                            <td>{{ $withdrawal->created_at?->locale('ar')->translatedFormat('j F Y') }}</td>
+                            <td class="money dark">{{ $money($withdrawal->amount) }}</td>
+                            <td>{{ $methodLabels[$withdrawal->method] ?? $withdrawal->method }}</td>
+                            <td dir="ltr">{{ $withdrawal->reference_id }}</td>
+                            <td><span class="status {{ $statusClass }}">{{ $statusLabel }}</span></td>
+                            @if ($withdrawal->status === 'rejected' && $withdrawal->rejection_reason)
+                                <td class="withdrawal-detail is-rejected">{{ $withdrawal->rejection_reason }}</td>
+                            @else
+                                <td class="withdrawal-detail is-empty">—</td>
+                            @endif
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" class="empty-row">لا توجد طلبات سحب سابقة.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
     </section>
 
     <dialog id="withdrawDialog" class="withdraw-dialog">
-        <form id="withdrawForm">
+        <form id="withdrawForm" data-withdraw-url="{{ route('print-provider.earnings.withdraw') }}">
             <header>
                 <div>
                     <span class="dialog-icon"><i class="bi bi-wallet2"></i></span>
-                    <div><h2>طلب سحب الأرباح</h2><p>الرصيد المتاح: <b dir="ltr">$2,430.00</b></p></div>
+                    <div><h2>طلب سحب الأرباح</h2><p>الرصيد المتاح: <b dir="ltr">{{ $money($available) }}</b></p></div>
                 </div>
                 <button type="button" data-close aria-label="إغلاق"><i class="bi bi-x-lg"></i></button>
             </header>
 
             <div class="dialog-body">
                 <label>المبلغ المراد سحبه
-                    <span class="amount-field"><b>$</b><input id="withdrawAmount" type="number" min="100" max="2430" step="1" placeholder="100" required dir="ltr"></span>
-                    <small>الحد الأدنى $100، والحد الأعلى هو رصيدك المتاح.</small>
+                    <span class="amount-field"><b>$</b><input id="withdrawAmount" type="number" min="{{ $minimumWithdrawal }}" max="{{ $available }}" step="0.01" placeholder="{{ $minimumWithdrawal }}" required dir="ltr"></span>
+                    <small>الحد الأدنى {{ $minimumWithdrawal }} ₪، والحد الأعلى هو رصيدك المتاح.</small>
                 </label>
 
                 <fieldset class="withdraw-methods">
@@ -166,5 +203,6 @@
 @endsection
 
 @push('scripts')
+    <script>window.printProviderAvailableBalance = @json($available);</script>
     <script src="{{ asset('front/js/printProvider/earnings.js') }}"></script>
 @endpush

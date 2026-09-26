@@ -458,7 +458,7 @@
           >
             <div class="category-card__icon">
               <img
-                src="{{ asset('front/assets/images/hoddieIcon.svg') }}"
+                src="{{ asset('front/assets/images/customer/hoddieIcon.svg') }}"
                 alt="هوديز"
                 class="category-card__img"
               >

@@ -2,15 +2,16 @@
 
 use App\Models\Product;
 use App\Models\User;
-use Database\Seeders\DatabaseSeeder;
+use Database\Seeders\DemoDataSeeder;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 
 uses(RefreshDatabase::class);
 
 test('demo data seeder creates an idempotent catalog and demo accounts', function () {
-    $this->seed(DatabaseSeeder::class);
-    $this->seed(DatabaseSeeder::class);
+    $this->seed([RoleAndPermissionSeeder::class, DemoDataSeeder::class]);
+    $this->seed([RoleAndPermissionSeeder::class, DemoDataSeeder::class]);
 
     $designer = User::query()->where('email', 'designer@palprint.test')->firstOrFail();
 

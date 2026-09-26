@@ -19,6 +19,7 @@ class AccountStatusController extends Controller
 
         $role = $user->primaryRole();
         $status = $user->approvalStatus();
+        $profile = $user->roleProfile();
         $roleForUi = $role === 'print_provider' ? 'printer' : $role;
         $roleLabel = match ($role) {
             'designer' => 'مصمم',
@@ -35,6 +36,7 @@ class AccountStatusController extends Controller
             'accountRole' => $roleForUi,
             'accountRoleLabel' => $roleLabel,
             'accountApprovalStatus' => $status,
+            'accountReviewNote' => $profile?->admin_notes ?: $profile?->rejection_reason,
             'accountReference' => sprintf(
                 '%s-%s-%06d',
                 $prefix,

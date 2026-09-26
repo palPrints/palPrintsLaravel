@@ -1,4 +1,4 @@
-(function () {
+(function(){
   "use strict";
 
   const list = document.getElementById("basketItems");
@@ -40,24 +40,32 @@
     toast.classList.add("show");
     toastTimer = window.setTimeout(() => toast.classList.remove("show"), 1800);
   }
+  toggle.addEventListener("click",()=>setSidebar(!sidebar.classList.contains("is-open")));
+  closeButton.addEventListener("click",()=>setSidebar(false));
+  backdrop.addEventListener("click",()=>setSidebar(false));
+  sidebar.addEventListener("click",event=>{if(event.target.closest("a")&&mobileScreen.matches)setSidebar(false)});
+  mobileScreen.addEventListener("change",()=>setSidebar(false));
+  document.addEventListener("keydown",event=>{if(event.key==="Escape"&&sidebar.classList.contains("is-open")){setSidebar(false);toggle.focus()}});
 
-  function itemTemplate(item) {
-    const tags = (item.meta || []).map((tag) => `<span>${tag}</span>`).join("");
+  const profileToggle=document.getElementById("profileMenuToggle");
+  const profileDropdown=document.getElementById("profileDropdown");
+  const notificationsToggle=document.getElementById("notificationsToggle");
+  const notificationsPanel=document.getElementById("notificationsPanel");
+  function closeMenus(){profileDropdown.hidden=true;notificationsPanel.hidden=true;profileToggle.setAttribute("aria-expanded","false");notificationsToggle.setAttribute("aria-expanded","false")}
+  profileToggle.addEventListener("click",event=>{event.stopPropagation();const open=profileDropdown.hidden;closeMenus();profileDropdown.hidden=!open;profileToggle.setAttribute("aria-expanded",String(open))});
+  notificationsToggle.addEventListener("click",event=>{event.stopPropagation();const open=notificationsPanel.hidden;closeMenus();notificationsPanel.hidden=!open;notificationsToggle.setAttribute("aria-expanded",String(open))});
+  document.addEventListener("click",event=>{if(!event.target.closest(".profile-menu,.notifications-menu"))closeMenus()});
+  function logout(){if(window.confirm("هل تريد تسجيل الخروج من حسابك؟"))window.location.href="login.html"}
+  document.getElementById("storeSidebarLogout")?.addEventListener("click",logout);
+  document.querySelector(".profile-dropdown__logout")?.addEventListener("click",logout);
 
-    return `
-      <article class="basket-item" data-id="${item.id}" data-price="${item.price}">
-        <div class="product-info">
-          <div class="product-media"><img src="${item.image}" alt="${item.title} — ${item.description}"></div>
-          <div>
-            <h3>${item.title}</h3>
-            <p>${item.description}</p>
-            <div class="tags">${tags}</div>
-          </div>
-        </div>
-        <div class="item-price"><strong>$${(item.price * item.quantity).toFixed(2)}</strong><span><b>$${item.price.toFixed(2)}</b> × <b class="price-qty">${item.quantity}</b></span></div>
-        <div class="quantity" aria-label="تحديد كمية ${item.title}"><button data-action="increase" aria-label="زيادة الكمية">+</button><output>${item.quantity}</output><button data-action="decrease" aria-label="تقليل الكمية">−</button></div>
-        <button class="remove-item" type="button" aria-label="حذف ${item.title}"><i class="bi bi-trash3"></i></button>
-      </article>`;
+  function message(text){clearTimeout(toastTimer);toast.textContent=text;toast.classList.add("show");toastTimer=setTimeout(()=>toast.classList.remove("show"),1800)}
+  function syncCount(){
+    const total=items.querySelectorAll(".basket-item").length;
+    count.textContent=total;
+    cartBadge.textContent=total;
+    cartBadge.hidden=total===0;
+    return total;
   }
 
   function render() {
@@ -80,9 +88,7 @@
       saveCart(items);
       render();
       message("تم حذف المنتج من السلة");
-      if (!items.length && emptyBasketUrl) {
-        window.setTimeout(() => { window.location.href = emptyBasketUrl; }, 350);
-      }
+      if(!remaining)setTimeout(()=>{window.location.href="emptyBasket.html"},350);
       return;
     }
 
@@ -95,6 +101,5 @@
     saveCart(items);
     render();
   });
-
-  render();
+  document.querySelector(".notifications-clear")?.addEventListener("click",()=>{document.querySelector(".notifications-list").replaceChildren();document.querySelector(".notifications-empty").hidden=false;notificationsPanel.hidden=true;notificationsToggle.setAttribute("aria-expanded","false");message("تم مسح الإشعارات")});
 })();

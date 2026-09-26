@@ -146,7 +146,7 @@
           <h3>${product.title}</h3>
           <p>${product.description}</p>
           <div class="tshirt-credit">
-            <span>يبدأ من <strong dir="ltr">$${product.price}</strong></span>
+            <span>يبدأ من <strong dir="ltr">${product.price} ₪</strong></span>
             <span class="tshirt-designer" dir="ltr"><i class="bi bi-person" aria-hidden="true"></i>by ${product.designer}</span>
           </div>
           <button type="button" class="tshirt-preview pal-pressable" data-preview="${product.id}">

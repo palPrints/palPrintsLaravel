@@ -1,20 +1,9 @@
 (function () {
   "use strict";
 
-  window.addEventListener("error", function (event) {
-    try {
-      const banner = document.createElement("div");
-      banner.setAttribute("dir", "rtl");
-      banner.style.cssText = "position:fixed;z-index:99999;top:0;left:0;right:0;background:#dc2626;color:#fff;padding:12px 16px;font:700 13px/1.6 Cairo, sans-serif;text-align:center;";
-      banner.textContent = "خطأ بصفحة المعاينة: " + (event.message || "غير معروف") + " — سطر " + event.lineno;
-      document.body.appendChild(banner);
-    } catch (_) { /* Nothing more we can do if even the error banner fails. */ }
-  });
-
   const SESSION_KEY = "palprintsCustomerPreview";
   const CART_KEY = "palprints-product-cart";
   const ALLOWED_TONES = new Set([
-    "",
     "hoodie-tone--cream",
     "hoodie-tone--black",
     "hoodie-tone--pink",
@@ -81,15 +70,12 @@
     toast: document.getElementById("previewToast"),
     toastIcon: document.querySelector("#previewToast .preview-toast-icon i"),
     toastMessage: document.getElementById("previewToastMessage"),
-    cartBadge: document.getElementById("cartCount")
+    cartBadge: document.getElementById("cartBadge")
   };
 
   if (!elements.productCanvas) return;
 
   function createFallbackPayload() {
-    const assets = window.palPrintsCustomerAssets || {};
-    const frontImage = assets.hoodiePreviewImage || "assets/images/hoodie.png";
-    const backImage = assets.hoodiePreviewBackImage || "assets/images/hoodie-back-clean.png";
     return {
       version: 2,
       product: {
@@ -98,17 +84,17 @@
         sellingPrice: 20,
         currency: "ILS",
         colors: [
-          { id: "cream", name: "كريمي", value: "#eee6d6", image: frontImage, toneClass: "hoodie-tone--cream" },
-          { id: "black", name: "أسود", value: "#151719", image: frontImage, toneClass: "hoodie-tone--black" },
-          { id: "pink", name: "وردي", value: "#d9a6a9", image: frontImage, toneClass: "hoodie-tone--pink" },
-          { id: "purple", name: "بنفسجي", value: "#76758d", image: frontImage, toneClass: "hoodie-tone--purple" },
-          { id: "blue", name: "أزرق", value: "#7f9eb7", image: frontImage, toneClass: "hoodie-tone--blue" },
-          { id: "green", name: "أخضر", value: "#45605b", image: frontImage, toneClass: "hoodie-tone--green" }
+          { id: "cream", name: "كريمي", value: "#eee6d6", image: "assets/images/hoodie.png", toneClass: "hoodie-tone--cream" },
+          { id: "black", name: "أسود", value: "#151719", image: "assets/images/hoodie.png", toneClass: "hoodie-tone--black" },
+          { id: "pink", name: "وردي", value: "#d9a6a9", image: "assets/images/hoodie.png", toneClass: "hoodie-tone--pink" },
+          { id: "purple", name: "بنفسجي", value: "#76758d", image: "assets/images/hoodie.png", toneClass: "hoodie-tone--purple" },
+          { id: "blue", name: "أزرق", value: "#7f9eb7", image: "assets/images/hoodie.png", toneClass: "hoodie-tone--blue" },
+          { id: "green", name: "أخضر", value: "#45605b", image: "assets/images/hoodie.png", toneClass: "hoodie-tone--green" }
         ],
         sizes: ["S", "M", "L", "XL", "XXL"].map(function (name) { return { id: name.toLowerCase(), name: name }; }),
         printAreas: [
-          { id: "front", name: "الأمام", image: frontImage, fee: 5, placement: { top: 25, left: 29, width: 42, height: 42 } },
-          { id: "back", name: "الخلف", image: backImage, fee: 5, placement: { top: 26, left: 30, width: 40, height: 42 } }
+          { id: "front", name: "الأمام", image: "assets/images/hoodie.png", fee: 5, placement: { top: 25, left: 29, width: 42, height: 42 } },
+          { id: "back", name: "الخلف", image: "assets/images/hoodie-back-clean.png", fee: 5, placement: { top: 26, left: 30, width: 40, height: 42 } }
         ]
       },
       design: {
@@ -151,7 +137,7 @@
 
   function safeImageSource(value, fallback) {
     const source = typeof value === "string" ? value.trim() : "";
-    if (/^(assets\/|\/front\/|front\/|data:image\/(?:png|jpe?g|webp|gif);base64,|https?:\/\/)/i.test(source)) return source;
+    if (/^(assets\/|data:image\/(?:png|jpe?g|webp|gif);base64,|https:\/\/)/i.test(source)) return source;
     return fallback;
   }
 
@@ -252,7 +238,7 @@
       id: safeString(rawProduct.id, fallback.product.id, 80),
       name: safeString(rawProduct.name, fallback.product.name, 100),
       sellingPrice: safeNumber(rawProduct.sellingPrice, 20, 0, 999999),
-      currency: rawProduct.currency === "ILS" ? "ILS" : "ILS",
+      currency: "ILS",
       colors: colors.length ? colors : fallback.product.colors,
       sizes: sizes.length ? sizes : fallback.product.sizes,
       printAreas: areas.length ? areas : fallback.product.printAreas
@@ -736,7 +722,6 @@
     const count = cart.reduce(function (total, item) {
       return total + safeNumber(item && item.quantity, 0, 0, 9999);
     }, 0);
-    if (!elements.cartBadge) return;
     setText(elements.cartBadge, String(count));
     elements.cartBadge.hidden = count === 0;
   }
@@ -1028,6 +1013,7 @@
     window.requestAnimationFrame(function () {
       window.requestAnimationFrame(function () {
         document.body.classList.remove("preview-booting");
+        document.getElementById("productPreviewMain").setAttribute("aria-busy", "false");
       });
     });
   }

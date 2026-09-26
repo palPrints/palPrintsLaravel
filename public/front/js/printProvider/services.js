@@ -2,7 +2,6 @@
   "use strict";
 
   const STORAGE_KEY = "palprints:print-shop-services:v1";
-  const IMAGE_BASE = "/front/assets/images/customer/";
   const colors = [
     { id: "white", label: "أبيض", value: "#ffffff" },
     { id: "black", label: "أسود", value: "#141414" },
@@ -15,6 +14,7 @@
   ];
   const apparelCategories = ["رجال", "نساء", "أطفال", "أوفر سايز"];
   const apparelSizes = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
+  // Platform definitions stay separate from this shop's editable settings.
   const catalog = [
     { id: "tshirt", name: "تيشيرت قطن", category: "ملابس", image: "products/1.png", categories: apparelCategories, sizes: apparelSizes, colors: colors, defaults: { price: 8, days: 2, capacity: 100, categories: apparelCategories, sizes: ["S", "M", "L", "XL", "XXL"], colors: colors.map(function (color) { return color.id; }) } },
     { id: "hoodie", name: "هودي", category: "ملابس", image: "hoodie-black.png", categories: apparelCategories, sizes: apparelSizes, colors: colors.slice(0, 6), defaults: { price: 12, days: 4, capacity: 50, categories: apparelCategories, sizes: ["S", "M", "L", "XL"], colors: colors.slice(0, 6).map(function (color) { return color.id; }) } },
@@ -110,9 +110,9 @@
       art.setAttribute("aria-label", product.name);
       if (product.image) {
         const photo = element("div", "services-product-photo");
-        const image = element("img"); image.src = IMAGE_BASE + product.image; image.alt = ""; image.decoding = "async";
+        const image = element("img"); image.src = "assets/images/" + product.image; image.alt = ""; image.decoding = "async";
         image.addEventListener("load", function () { photo.style.setProperty("--product-ratio", String(image.naturalWidth / image.naturalHeight)); }, { once: true });
-        const brand = element("img", "services-brand"); brand.src = IMAGE_BASE + "palprints-wordmark-transparent.png"; brand.alt = "";
+        const brand = element("img", "services-brand"); brand.src = "assets/images/palprints-wordmark-transparent.png"; brand.alt = "";
         photo.append(image, brand);
         art.append(photo);
       } else if (product.art === "stickers") {
@@ -121,7 +121,7 @@
       } else if (product.art === "poster") {
         const poster = element("div", "services-poster"); poster.append(element("div", "", "GOOD"), element("div", "", "IDEAS"), element("em", "", "BRIGHT"), element("div", "", "PRINTS")); art.append(poster);
       } else {
-        const pad = element("div", "services-mousepad"); const brand = element("img"); brand.src = IMAGE_BASE + "palprints-wordmark-transparent.png"; brand.alt = ""; pad.append(brand); art.append(pad);
+        const pad = element("div", "services-mousepad"); const brand = element("img"); brand.src = "assets/images/palprints-wordmark-transparent.png"; brand.alt = ""; pad.append(brand); art.append(pad);
       }
       return art;
     }
@@ -143,7 +143,7 @@
         card.append(top, artwork(product), element("h3", "", product.name), element("p", "services-category", product.category));
         const details = element("ul", "services-details");
         const money = element("li", "services-money");
-        const amount = element("span", "", "$" + settings.price.toFixed(2));
+        const amount = element("span", "", settings.price.toFixed(2) + " ₪");
         amount.dir = "ltr";
         money.append(amount);
         details.append(money);
@@ -208,12 +208,12 @@
       } else if (dialogOrigin && dialogOrigin.isConnected) dialogOrigin.focus();
     }
 
-    document.getElementById("openCatalog").addEventListener("click", function () { renderCatalog(); dialogOrigin = this; catalogDialog.showModal(); });
+    document.getElementById("openCatalog").addEventListener("click", function () { closeDropdowns(); renderCatalog(); dialogOrigin = this; catalogDialog.showModal(); });
     products.addEventListener("click", function (event) {
       const toggle = event.target.closest("[data-toggle-product]");
       if (toggle) { const settings = shop.find(function (value) { return value.id === toggle.dataset.toggleProduct; }); settings.active = !settings.active; persist(); renderProducts(); const target = products.querySelector('[data-toggle-product="' + settings.id + '"]'); if (target) target.focus(); showToast(settings.active ? "تم تشغيل المنتج" : "تم إيقاف المنتج مؤقتًا"); return; }
       const edit = event.target.closest("[data-edit-product]");
-      if (edit) { openSettings(edit.dataset.editProduct, edit, false); }
+      if (edit) { closeDropdowns(); openSettings(edit.dataset.editProduct, edit, false); }
     });
     document.getElementById("catalogProducts").addEventListener("click", function (event) { const button = event.target.closest("[data-add-product]"); if (button) openSettings(button.dataset.addProduct, button, true); });
     search.addEventListener("input", renderProducts);

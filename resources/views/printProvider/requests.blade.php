@@ -110,21 +110,21 @@
                         <tr data-status="new" data-order-date="2026-09-12">
                             <td><a class="order-number" href="#">#10358</a></td>
                             <td><strong>تيشيرت قطن</strong><small>2 منتجات</small></td>
-                            <td>50</td><td class="price">$120.00</td><td>12 سبتمبر 2026</td><td>15 سبتمبر 2026</td>
+                            <td>50</td><td class="price">120.00 ₪</td><td>12 سبتمبر 2026</td><td>15 سبتمبر 2026</td>
                             <td><span class="order-status is-new">جديدة</span></td><td class="no-alert">—</td>
                             <td><button class="request-details-button" type="button"><i class="bi bi-eye"></i> عرض التفاصيل</button></td>
                         </tr>
                         <tr data-status="progress" data-order-date="2026-09-11">
                             <td><a class="order-number" href="#">#10357</a></td>
                             <td><strong>هودي</strong><small>4 منتجات</small></td>
-                            <td>20</td><td class="price">$240.00</td><td>11 سبتمبر 2026</td><td>14 سبتمبر 2026</td>
+                            <td>20</td><td class="price">240.00 ₪</td><td>11 سبتمبر 2026</td><td>14 سبتمبر 2026</td>
                             <td><span class="order-status is-progress">قيد التنفيذ</span></td><td class="no-alert">—</td>
                             <td><button class="request-details-button" type="button"><i class="bi bi-eye"></i> عرض التفاصيل</button></td>
                         </tr>
                         <tr data-status="ready" data-order-date="2026-09-10">
                             <td><a class="order-number" href="#">#10356</a></td>
                             <td><strong>أكواب سيراميك</strong><small>1 منتج</small></td>
-                            <td>100</td><td class="price">$350.00</td><td>10 سبتمبر 2026</td><td>12 سبتمبر 2026</td>
+                            <td>100</td><td class="price">350.00 ₪</td><td>10 سبتمبر 2026</td><td>12 سبتمبر 2026</td>
                             <td><span class="order-status is-ready">جاهزة للتسليم</span></td>
                             <td><span class="alert-text is-warning"><i class="bi bi-exclamation-triangle"></i> موعد التسليم قريب</span></td>
                             <td><button class="request-details-button" type="button"><i class="bi bi-eye"></i> عرض التفاصيل</button></td>
@@ -132,35 +132,35 @@
                         <tr data-status="completed" data-order-date="2026-09-09">
                             <td><a class="order-number" href="#">#10355</a></td>
                             <td><strong>ستيكرات</strong><small>1 منتج</small></td>
-                            <td>200</td><td class="price">$80.00</td><td>9 سبتمبر 2026</td><td>10 سبتمبر 2026</td>
+                            <td>200</td><td class="price">80.00 ₪</td><td>9 سبتمبر 2026</td><td>10 سبتمبر 2026</td>
                             <td><span class="order-status is-completed">مكتملة</span></td><td class="no-alert">—</td>
                             <td><button class="request-details-button" type="button"><i class="bi bi-eye"></i> عرض التفاصيل</button></td>
                         </tr>
                         <tr data-status="rejected" data-order-date="2026-09-08">
                             <td><a class="order-number" href="#">#10354</a></td>
                             <td><strong>طباعة ورق</strong><small>3 منتجات</small></td>
-                            <td>500</td><td class="price">$150.00</td><td>8 سبتمبر 2026</td><td>11 سبتمبر 2026</td>
+                            <td>500</td><td class="price">150.00 ₪</td><td>8 سبتمبر 2026</td><td>11 سبتمبر 2026</td>
                             <td><span class="order-status is-rejected">مرفوضة</span></td><td class="no-alert">—</td>
                             <td><button class="request-details-button" type="button"><i class="bi bi-eye"></i> عرض التفاصيل</button></td>
                         </tr>
                         <tr data-status="progress" data-order-date="2026-09-07">
                             <td><a class="order-number" href="#">#10353</a></td>
                             <td><strong>تيشيرت قطن</strong><small>2 منتجات</small></td>
-                            <td>30</td><td class="price">$75.00</td><td>7 سبتمبر 2026</td><td>9 سبتمبر 2026</td>
+                            <td>30</td><td class="price">75.00 ₪</td><td>7 سبتمبر 2026</td><td>9 سبتمبر 2026</td>
                             <td><span class="order-status is-progress">قيد التنفيذ</span></td><td class="no-alert">—</td>
                             <td><button class="request-details-button" type="button"><i class="bi bi-eye"></i> عرض التفاصيل</button></td>
                         </tr>
                         <tr data-status="new" data-order-date="2026-09-06">
                             <td><a class="order-number" href="#">#10352</a></td>
                             <td><strong>أكواب سيراميك</strong><small>1 منتج</small></td>
-                            <td>80</td><td class="price">$280.00</td><td>6 سبتمبر 2026</td><td>8 سبتمبر 2026</td>
+                            <td>80</td><td class="price">280.00 ₪</td><td>6 سبتمبر 2026</td><td>8 سبتمبر 2026</td>
                             <td><span class="order-status is-new">جديدة</span></td><td class="no-alert">—</td>
                             <td><button class="request-details-button" type="button"><i class="bi bi-eye"></i> عرض التفاصيل</button></td>
                         </tr>
                         <tr data-status="ready" data-order-date="2026-09-05">
                             <td><a class="order-number" href="#">#10351</a></td>
                             <td><strong>هودي</strong><small>1 منتج</small></td>
-                            <td>25</td><td class="price">$300.00</td><td>5 سبتمبر 2026</td><td>5 سبتمبر 2026</td>
+                            <td>25</td><td class="price">300.00 ₪</td><td>5 سبتمبر 2026</td><td>5 سبتمبر 2026</td>
                             <td><span class="order-status is-ready">جاهزة للتسليم</span></td>
                             <td><span class="alert-text is-late"><i class="bi bi-exclamation-circle"></i> متأخر عن موعد التسليم</span></td>
                             <td><button class="request-details-button" type="button"><i class="bi bi-eye"></i> عرض التفاصيل</button></td>
@@ -168,14 +168,14 @@
                         <tr data-status="completed" data-order-date="2026-09-04">
                             <td><a class="order-number" href="#">#10350</a></td>
                             <td><strong>ستيكرات</strong><small>1 منتج</small></td>
-                            <td>150</td><td class="price">$60.00</td><td>4 سبتمبر 2026</td><td>6 سبتمبر 2026</td>
+                            <td>150</td><td class="price">60.00 ₪</td><td>4 سبتمبر 2026</td><td>6 سبتمبر 2026</td>
                             <td><span class="order-status is-completed">مكتملة</span></td><td class="no-alert">—</td>
                             <td><button class="request-details-button" type="button"><i class="bi bi-eye"></i> عرض التفاصيل</button></td>
                         </tr>
                         <tr data-status="progress" data-order-date="2026-09-03">
                             <td><a class="order-number" href="#">#10349</a></td>
                             <td><strong>طباعة ورق</strong><small>1 منتج</small></td>
-                            <td>300</td><td class="price">$210.00</td><td>3 سبتمبر 2026</td><td>5 سبتمبر 2026</td>
+                            <td>300</td><td class="price">210.00 ₪</td><td>3 سبتمبر 2026</td><td>5 سبتمبر 2026</td>
                             <td><span class="order-status is-progress">قيد التنفيذ</span></td><td class="no-alert">—</td>
                             <td><button class="request-details-button" type="button"><i class="bi bi-eye"></i> عرض التفاصيل</button></td>
                         </tr>

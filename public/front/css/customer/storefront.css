@@ -19,6 +19,8 @@
    ========================================================= */
 
 body.storefront-page {
+  margin: 0;
+  min-height: 100%;
   --pal-cyan: #12bfd0;
   --pal-blue: #168fdf;
   --pal-indigo: #5266e9;
@@ -87,6 +89,16 @@ body.storefront-page::before {
     linear-gradient(140deg, #fff 0%, #fbfdff 50%, #fdffff 100%);
 }
 
+body.storefront-page::after {
+  content: "";
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 3000;
+  height: 3px;
+  pointer-events: none;
+  background: linear-gradient(100deg, var(--pal-cyan) 0%, var(--pal-blue) 55%, var(--pal-indigo) 100%);
+}
 
 html[data-bs-theme="dark"] body.storefront-page {
   --pal-page-bg: #080d1c;
@@ -565,9 +577,16 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 .store-sidebar__item > span {
   min-width: 0;
   flex: 1;
+  padding-block: 2px;
+  line-height: 1.6;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.store-sidebar__logout > span {
+  padding-block: 2px;
+  line-height: 1.6;
 }
 
 .store-sidebar__divider {
@@ -2108,6 +2127,7 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 .storefront-page .product-card[data-product="scarf"] .product-card__media img,
 .storefront-page .product-card[data-product="notebooks"] .product-card__media img,
 .storefront-page .product-card[data-product="posters"] .product-card__media img,
+.storefront-page .product-card[data-product="stickers"] .product-card__media img,
 .storefront-page .product-card[data-product="wedding-cards"] .product-card__media img {
   width: 80%;
   height: 80%;
