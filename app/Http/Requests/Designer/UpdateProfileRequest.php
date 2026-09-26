@@ -28,6 +28,10 @@ class UpdateProfileRequest extends FormRequest
             'portfolio_url' => $this->trimmedOrNull('portfolio_url'),
             'skills' => $this->trimmedOrNull('skills'),
             'bio' => $this->trimmedOrNull('bio'),
+            'job_title' => $this->trimmedOrNull('job_title'),
+            'experience' => $this->trimmedOrNull('experience'),
+            'location' => $this->trimmedOrNull('location'),
+            'specialization' => $this->trimmedOrNull('specialization'),
         ]);
     }
 
@@ -47,6 +51,10 @@ class UpdateProfileRequest extends FormRequest
             'portfolio_url' => ['nullable', 'string', 'url:http,https', 'max:255'],
             'skills' => ['nullable', 'string', 'max:500'],
             'bio' => ['nullable', 'string', 'max:1000'],
+            'job_title' => ['nullable', 'string', 'max:120'],
+            'experience' => ['nullable', 'string', 'max:60'],
+            'location' => ['nullable', 'string', 'max:120'],
+            'specialization' => ['nullable', 'string', 'max:1000'],
             'profile_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
         ];
     }
@@ -98,6 +106,10 @@ class UpdateProfileRequest extends FormRequest
             'skills.max' => 'The skills field must not exceed 500 characters.',
             'bio.string' => 'The bio must be text.',
             'bio.max' => 'The bio must not exceed 1,000 characters.',
+            'job_title.max' => 'The job title must not exceed 120 characters.',
+            'experience.max' => 'The experience must not exceed 60 characters.',
+            'location.max' => 'The location must not exceed 120 characters.',
+            'specialization.max' => 'The specialization must not exceed 1,000 characters.',
             'profile_image.image' => 'Choose a valid image file.',
             'profile_image.mimes' => 'Only PNG, JPG, and WEBP images are allowed.',
             'profile_image.max' => 'The profile image must not exceed 2 MB.',
@@ -126,6 +138,10 @@ class UpdateProfileRequest extends FormRequest
             'skills.max' => 'يجب ألا يتجاوز حقل المهارات 500 حرف.',
             'bio.string' => 'يجب أن تكون النبذة نصًا.',
             'bio.max' => 'يجب ألا تتجاوز النبذة 1000 حرف.',
+            'job_title.max' => 'يجب ألا يتجاوز المسمى المهني 120 حرفًا.',
+            'experience.max' => 'يجب ألا تتجاوز سنوات الخبرة 60 حرفًا.',
+            'location.max' => 'يجب ألا يتجاوز موقع العمل 120 حرفًا.',
+            'specialization.max' => 'يجب ألا يتجاوز التخصص 1000 حرف.',
             'profile_image.image' => 'اختر ملف صورة صحيحًا.',
             'profile_image.mimes' => 'يُسمح بصور PNG أو JPG أو WEBP فقط.',
             'profile_image.max' => 'يجب ألا يتجاوز حجم الصورة الشخصية 2 ميجابايت.',

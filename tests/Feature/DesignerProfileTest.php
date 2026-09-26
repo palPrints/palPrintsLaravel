@@ -40,14 +40,14 @@ test('designer profile renders real data inside the shared designer shell', func
         ->assertOk()
         ->assertViewIs('designer.profile')
         ->assertSee('profileSidebar', false)
-        ->assertSee('top-utility-bar', false)
+        ->assertSee('designer-printshop-topbar', false)
         ->assertSee('Sara Designer')
         ->assertSee('Brand identity and print designer.')
         ->assertSee('Illustrator')
         ->assertSee(route('designer.profile.update'), false)
         ->assertSee(route('designer.designs.create'), false)
-        ->assertSee('front/designer/css/profile.css', false)
-        ->assertSee('front/designer/js/profile.js', false)
+        ->assertSee('front/designer/css/designerProfile.css', false)
+        ->assertSee('front/designer/js/designerProfile.js', false)
         ->assertDontSee('designer/profile-images/missing.png', false);
 });
 
@@ -122,6 +122,30 @@ test('designer profile update returns localized validation errors', function () 
     expect(session('errors')->first('name'))->toBe('Enter your full name.')
         ->and(session('errors')->first('email'))->toBe('This email address is already in use.')
         ->and(session('errors')->first('portfolio_url'))->toBe('Enter a valid portfolio link starting with http or https.');
+});
+
+test('complete designer profile can submit an approval request', function () {
+    $designer = designerProfileTestUser();
+
+    $this->actingAs($designer)
+        ->patch(route('designer.profile.update'), [
+            'locale' => 'ar',
+            'name' => 'مصمم مكتمل',
+            'email' => 'complete@example.com',
+            'bio' => 'نبذة مهنية للمصمم.',
+            'skills' => 'تصميم، هوية بصرية',
+        ])
+        ->assertRedirect(route('designer.profile'));
+
+    $designer->refresh();
+    expect($designer->designerProfile->profile_completed_at)->not->toBeNull();
+
+    $this->actingAs($designer)
+        ->post(route('onboarding.submit'))
+        ->assertRedirect(route('designer.dashboard'));
+
+    expect($designer->fresh()->designerProfile->approval_status)->toBe('submitted')
+        ->and($designer->approvalRequests()->count())->toBe(1);
 });
 
 test('non designer accounts cannot access designer profile routes', function () {

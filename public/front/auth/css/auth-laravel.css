@@ -1,0 +1,36 @@
+/* Laravel-specific additions for the auth pages. */
+@font-face {
+  font-family: "Cairo";
+  src: url("../../designer/assets/fonts/Cairo-Variable.ttf") format("truetype");
+  font-weight: 200 1000;
+  font-display: swap;
+}
+
+.form-status:empty { display: none; }
+.form-status.is-error { color: var(--pp-danger, #dc2626); }
+.form-status.is-success { color: var(--pp-success, #16a34a); }
+
+/* Social sign-in buttons are links. */
+a.social-login__button { text-decoration: none; }
+
+.submit-button[disabled] { opacity: .7; cursor: progress; }
+.field-error:empty { visibility: hidden; }
+
+/* Account status page */
+.status-steps { display: grid; gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
+.status-step { display: flex; align-items: center; gap: 10px; color: var(--pp-navy-500); font-size: 12px; font-weight: 600; }
+.status-step__marker { width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--pp-navy-200); border-radius: 50%; background: #fff; font-size: 12px; font-weight: 800; }
+.status-step.is-current { color: var(--pp-blue-700); }
+.status-step.is-current .status-step__marker { color: #fff; border-color: var(--pp-blue-600); background: var(--pp-blue-600); }
+.status-step.is-done { color: var(--pp-success); }
+.status-step.is-done .status-step__marker { color: #fff; border-color: var(--pp-success); background: var(--pp-success); }
+
+.status-details { display: grid; gap: 8px; margin: 18px 0; padding: 12px 14px; border: 1px solid var(--pp-navy-200); border-radius: var(--pp-radius); background: var(--pp-navy-50); }
+.status-details div { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; }
+.status-details dt { color: var(--pp-navy-500); font-weight: 600; }
+.status-details dd { margin: 0; color: var(--pp-navy-900); font-weight: 800; }
+a.submit-button { text-decoration: none; }
+
+/* Buttons that look like the "back" link (logout form). */
+button.back-link { padding: 0; font: inherit; font-size: 11px; font-weight: 700; background: none; border: 0; cursor: pointer; }
+.recovery-card form + form { text-align: center; }

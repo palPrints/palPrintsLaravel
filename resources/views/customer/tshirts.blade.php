@@ -36,7 +36,7 @@
         </div>
 
         <div class="catalog-heading">
-            <h1><img src="{{ asset('front/assets/images/customer/t-shirt.png') }}" alt=""> تيشيرتات</h1>
+            <h1><img src="{{ asset('front/assets/images/t-shirt.png') }}" alt=""> تيشيرتات</h1>
             <p>اكتشف مجموعة مميزة من التيشيرتات بتصاميم فريدة تناسب كل الأذواق والمناسبات.</p>
         </div>
 

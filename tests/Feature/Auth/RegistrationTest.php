@@ -4,7 +4,7 @@ use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Support\Facades\Schema;
 
-test('database keeps authentication and product catalog tables while removing legacy domain tables', function () {
+test('database keeps authentication and product catalog tables while removing only legacy storefront tables', function () {
     foreach ([
         'users',
         'password_reset_tokens',
@@ -28,6 +28,12 @@ test('database keeps authentication and product catalog tables while removing le
         'provider_offerings',
         'provider_offering_variants',
         'print_areas',
+        'wallets',
+        'wallet_transactions',
+        'withdrawal_requests',
+        'designs',
+        'user_notifications',
+        'approval_requests',
         'print_capabilities',
         'print_capability_variants',
         'pricing_rules',
@@ -41,16 +47,10 @@ test('database keeps authentication and product catalog tables while removing le
         'orders',
         'order_items',
         'reviews',
-        'wallets',
-        'wallet_transactions',
-        'withdrawal_requests',
         'delivery_partners',
-        'designs',
         'design_products',
         'print_provider_products',
-        'user_notifications',
         'system_settings',
-        'approval_requests',
     ] as $table) {
         expect(Schema::hasTable($table))->toBeFalse();
     }

@@ -1,7 +1,7 @@
 @extends('designer.layouts.app')
 
 @section('title', 'معاينة وإعدادات النشر')
-@section('main-class', 'source-review-main')
+@section('body-class', 'designer-create-flow')
 
 @push('styles')
     <base href='{{ asset('front/designer/source/create') }}/'>
@@ -16,6 +16,7 @@
 @endpush
 
 @section('content')
+<main class='designer-content-main source-review-main' id='designerMain'>
     <div class='review-shell'>
         <header class="review-header">
             <div class="page-heading">
@@ -156,6 +157,7 @@
             <button id="closeDialog" type="button">حسنًا</button>
         </div>
     </div>
+</main>
 @endsection
 
 @push('scripts')

@@ -24,6 +24,17 @@ body.mugs-page::before {
     linear-gradient(140deg, #fff 0%, #fbfdff 50%, #fdffff 100%);
 }
 
+body.mugs-page::after {
+  content: "";
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 3000;
+  height: 3px;
+  pointer-events: none;
+  background: linear-gradient(100deg, var(--pal-cyan) 0%, var(--pal-blue) 55%, var(--pal-indigo) 100%);
+}
+
 html[data-bs-theme="dark"] body.mugs-page {
   --pal-page-bg: #080d1c;
   --pal-surface: #11182b;
@@ -141,15 +152,6 @@ html[data-bs-theme="dark"] body.mugs-page::before {
   background: #fff;
   border-color: var(--store-border);
   box-shadow: var(--store-shadow);
-}
-
-.mugs-page .product-card:hover {
-  border-color: var(--store-primary-border);
-  box-shadow: 0 12px 28px rgb(15 23 42 / 12%);
-}
-
-.mugs-page .product-card:focus-within {
-  outline: none;
 }
 
 .mugs-page .product-card__media {

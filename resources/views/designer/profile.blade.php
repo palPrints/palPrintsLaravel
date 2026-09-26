@@ -2,570 +2,252 @@
 
 @section('title', 'الملف الشخصي')
 
-@push('styles')
-    <link rel='stylesheet' href='{{ asset('front/designer/css/profile.css') }}?v={{ filemtime(public_path('front/designer/css/profile.css')) }}'>
-@endpush
+@php
+    $status = $approval['status'];
+    $needsChanges = in_array($status, ['rejected', 'changes_requested'], true);
+    $awaitingReview = in_array($status, ['submitted', 'under_review'], true);
+    $profileComplete = $profile->profile_completed_at !== null;
+    $adminNote = $profile->admin_notes ?: $profile->rejection_reason;
+    $skillsText = old('skills', $profileSkills->implode('، '));
+    $skillsForView = collect(preg_split('/[,،]/u', (string) $skillsText))->map(fn ($s) => trim($s))->filter()->values();
+    $portfolio = old('portfolio_url', $profile->portfolio_url);
+    $startEditing = $errors->any();
+    $dash = 'غير مضاف';
+@endphp
 
 @section('content')
-    <div class='designer-profile-page' id='designerProfilePage'>
-        <header class='profile-page-heading'>
-            <div>
-                <p class='profile-page-eyebrow' data-copy-ar='مساحتك الإبداعية' data-copy-en='Your creative space'>مساحتك الإبداعية</p>
-                <h1 data-copy-ar='الملف الشخصي' data-copy-en='Profile'>الملف الشخصي</h1>
-            </div>
+    <main class="designer-form-main" id="designerMain">
+        @include('designer.partials.flash')
 
-            <ol class='profile-breadcrumb' aria-label='مسار التنقل' data-profile-aria-ar='مسار التنقل' data-profile-aria-en='Breadcrumb'>
-                <li>
-                    <a href='{{ route('designer.dashboard') }}' data-copy-ar='لوحة التحكم' data-copy-en='Dashboard'>لوحة التحكم</a>
-                </li>
-                <li aria-current='page'>
-                    <span data-copy-ar='الملف الشخصي' data-copy-en='Profile'>الملف الشخصي</span>
-                </li>
-            </ol>
-        </header>
-
-        @if($approval['status'] !== 'approved')
-            <section @class(['designer-approval-alert', 'is-rejected' => $approval['status'] === 'rejected']) role='status'>
-                <span class='designer-approval-alert-icon' aria-hidden='true'>
-                    <i class='bi {{ $approval['status'] === 'rejected' ? 'bi-exclamation-triangle' : 'bi-info-circle' }}'></i>
-                </span>
-
-                <div>
-                    @if($approval['status'] === 'rejected')
-                        <h2 data-copy-ar='ملفك يحتاج إلى بعض التعديلات' data-copy-en='Your profile needs a few changes'>ملفك يحتاج إلى بعض التعديلات</h2>
-                        <p data-copy-ar='راجع بياناتك المهنية وحدّثها قبل إرسالها للمراجعة مجددًا.' data-copy-en='Review and update your professional information before submitting it again.'>راجع بياناتك المهنية وحدّثها قبل إرسالها للمراجعة مجددًا.</p>
-                    @elseif(in_array($approval['status'], ['submitted', 'under_review'], true))
-                        <h2 data-copy-ar='ملفك قيد المراجعة' data-copy-en='Your profile is under review'>ملفك قيد المراجعة</h2>
-                        <p data-copy-ar='استلمنا بياناتك وسنحدّث حالة الحساب بعد انتهاء المراجعة.' data-copy-en='We received your details and will update the account status after review.'>استلمنا بياناتك وسنحدّث حالة الحساب بعد انتهاء المراجعة.</p>
-                    @else
-                        <h2 data-copy-ar='أكمل ملفك ليظهر بصورة احترافية' data-copy-en='Complete your profile for a professional presence'>أكمل ملفك ليظهر بصورة احترافية</h2>
-                        <p data-copy-ar='أضف نبذتك ومهاراتك ورابط معرض الأعمال من زر تعديل الملف.' data-copy-en='Add your bio, skills, and portfolio link from the edit profile button.'>أضف نبذتك ومهاراتك ورابط معرض الأعمال من زر تعديل الملف.</p>
-                    @endif
-                </div>
-
-                <a href='{{ route('account.status') }}' class='profile-button is-outline is-small'>
-                    <span data-copy-ar='عرض حالة الحساب' data-copy-en='View account status'>عرض حالة الحساب</span>
-                </a>
-            </section>
-        @endif
-        <section class='profile-card profile-hero' aria-labelledby='designerName'>
-            <div class='profile-hero-cover' aria-hidden='true'></div>
-
-            <div class='profile-hero-content'>
-                <div class='profile-avatar-area'>
-                    <div class='profile-avatar'>
-                        <img
-                            src='{{ $avatarUrl ?: '' }}'
-                            alt='صورة المصمم'
-                            data-profile-avatar-image
-                            data-profile-alt-ar='صورة المصمم'
-                            data-profile-alt-en='Designer photo'
-                            @if(! $avatarUrl) hidden @endif
-                        >
-                        <span data-profile-avatar-initials @if($avatarUrl) hidden @endif>
-                            {{ mb_strtoupper(mb_substr($displayName, 0, 1)) }}
-                        </span>
-                    </div>
-
-                    <button
-                        type='button'
-                        class='profile-avatar-upload'
-                        data-dialog-open='designerEditDialog'
-                        data-dialog-focus='profilePhotoButton'
-                        aria-label='تغيير الصورة الشخصية'
-                        data-profile-aria-ar='تغيير الصورة الشخصية'
-                        data-profile-aria-en='Change profile photo'
-                    >
-                        <i class='bi bi-camera' aria-hidden='true'></i>
-                    </button>
-                </div>
-
-                <div class='profile-identity'>
-                    <div class='profile-name-line'>
-                        <h2 id='designerName'>{{ $displayName }}</h2>
-                        <span class='profile-badge {{ $approval['class'] }}'>
-                            <i class='bi {{ $approval['icon'] }}' aria-hidden='true'></i>
-                            <span data-copy-ar='{{ $approval['label_ar'] }}' data-copy-en='{{ $approval['label_en'] }}'>{{ $approval['label_ar'] }}</span>
-                        </span>
-                    </div>
-
-                    <p class='profile-role' data-copy-ar='مصمم جرافيك' data-copy-en='Graphic designer'>مصمم جرافيك</p>
-
-                    <div class='profile-contact-list'>
-                        <a href='mailto:{{ $user->email }}' class='profile-contact-item'>
-                            <i class='bi bi-envelope' aria-hidden='true'></i>
-                            <span dir='ltr'>{{ $user->email }}</span>
-                        </a>
-
-                        @if($user->phone)
-                            <a href='tel:{{ str_replace([' ', '-', '(', ')'], '', $user->phone) }}' class='profile-contact-item'>
-                                <i class='bi bi-telephone' aria-hidden='true'></i>
-                                <span dir='ltr'>{{ $user->phone }}</span>
-                            </a>
-                        @else
-                            <span class='profile-contact-item is-muted'>
-                                <i class='bi bi-telephone' aria-hidden='true'></i>
-                                <span data-copy-ar='لم يُضف رقم هاتف' data-copy-en='No phone number added'>لم يُضف رقم هاتف</span>
-                            </span>
-                        @endif
-
-                        <span class='profile-contact-item'>
-                            <i class='bi bi-calendar3' aria-hidden='true'></i>
-                            <span>
-                                <span data-copy-ar='عضو منذ' data-copy-en='Member since'>عضو منذ</span>
-                                {{ $user->created_at->format('Y-m') }}
-                            </span>
-                        </span>
-                    </div>
-                </div>
-
-                <div class='profile-hero-actions'>
-                    <a href='{{ route('designer.designs.create') }}' class='profile-button is-primary'>
-                        <i class='bi bi-cloud-arrow-up' aria-hidden='true'></i>
-                        <span data-copy-ar='رفع تصميم جديد' data-copy-en='Upload new design'>رفع تصميم جديد</span>
-                    </a>
-
-                    @if($portfolioUrl)
-                        <a href='{{ $portfolioUrl }}' class='profile-button is-outline' target='_blank' rel='noopener noreferrer'>
-                            <i class='bi bi-briefcase' aria-hidden='true'></i>
-                            <span data-copy-ar='عرض معرض الأعمال' data-copy-en='View portfolio'>عرض معرض الأعمال</span>
-                        </a>
-                    @endif
-
-                    <button type='button' class='profile-button is-outline' data-dialog-open='designerEditDialog'>
-                        <i class='bi bi-person-gear' aria-hidden='true'></i>
-                        <span data-copy-ar='تعديل الملف الشخصي' data-copy-en='Edit profile'>تعديل الملف الشخصي</span>
-                    </button>
-                </div>
-            </div>
-        </section>
-        <div class='profile-row profile-row-2'>
-            <section class='profile-card' aria-labelledby='designsStatusTitle'>
-                <div class='profile-card-heading'>
-                    <div class='profile-card-title'>
-                        <span class='profile-card-icon'><i class='bi bi-grid-1x2' aria-hidden='true'></i></span>
-                        <h2 id='designsStatusTitle' data-copy-ar='حالة تصاميمك' data-copy-en='Your design status'>حالة تصاميمك</h2>
-                    </div>
-
-                    <a href='{{ route('designer.designs.index') }}' class='profile-card-link'>
-                        <span data-copy-ar='عرض الكل' data-copy-en='View all'>عرض الكل</span>
-                        <i class='bi bi-arrow-left' data-back-icon aria-hidden='true'></i>
-                    </a>
-                </div>
-
-                <div class='profile-stat-grid'>
-                    <article class='profile-stat tone-grey'>
-                        <strong>0</strong>
-                        <span data-copy-ar='مسودة' data-copy-en='Draft'>مسودة</span>
-                    </article>
-                    <article class='profile-stat tone-green'>
-                        <strong>0</strong>
-                        <span data-copy-ar='منشور' data-copy-en='Published'>منشور</span>
-                    </article>
-                    <article class='profile-stat tone-orange'>
-                        <strong>0</strong>
-                        <span data-copy-ar='قيد المراجعة' data-copy-en='Under review'>قيد المراجعة</span>
-                    </article>
-                    <article class='profile-stat tone-red'>
-                        <strong>0</strong>
-                        <span data-copy-ar='مرفوض' data-copy-en='Rejected'>مرفوض</span>
-                    </article>
-                </div>
-            </section>
-
-            <section class='profile-card' aria-labelledby='performanceTitle'>
-                <div class='profile-card-heading'>
-                    <div class='profile-card-title'>
-                        <span class='profile-card-icon icon-blue'><i class='bi bi-graph-up-arrow' aria-hidden='true'></i></span>
-                        <h2 id='performanceTitle' data-copy-ar='ملخص الأداء' data-copy-en='Performance summary'>ملخص الأداء</h2>
-                    </div>
-                </div>
-
-                <div class='profile-stat-grid'>
-                    <article class='profile-stat has-icon'>
-                        <span class='profile-stat-icon'><i class='bi bi-images' aria-hidden='true'></i></span>
-                        <strong>0</strong>
-                        <span data-copy-ar='تصميم منشور' data-copy-en='Published designs'>تصميم منشور</span>
-                    </article>
-                    <article class='profile-stat has-icon'>
-                        <span class='profile-stat-icon'><i class='bi bi-bag-check' aria-hidden='true'></i></span>
-                        <strong>{{ number_format((int) ($profile->total_sales ?? 0)) }}</strong>
-                        <span data-copy-ar='عملية بيع' data-copy-en='Sales'>عملية بيع</span>
-                    </article>
-                    <article class='profile-stat has-icon'>
-                        <span class='profile-stat-icon'><i class='bi bi-star' aria-hidden='true'></i></span>
-                        <strong>0.0</strong>
-                        <span data-copy-ar='التقييم العام' data-copy-en='Overall rating'>التقييم العام</span>
-                    </article>
-                    <article class='profile-stat has-icon'>
-                        <span class='profile-stat-icon'><i class='bi bi-eye' aria-hidden='true'></i></span>
-                        <strong>0</strong>
-                        <span data-copy-ar='مشاهدة' data-copy-en='Views'>مشاهدة</span>
-                    </article>
-                </div>
-            </section>
-        </div>
-        <div class='profile-row profile-row-3'>
-            <section class='profile-card designer-portfolio' aria-labelledby='portfolioTitle'>
-                <div class='profile-card-heading'>
-                    <div class='profile-card-title'>
-                        <span class='profile-card-icon'><i class='bi bi-briefcase' aria-hidden='true'></i></span>
-                        <h2 id='portfolioTitle' data-copy-ar='معرض الأعمال' data-copy-en='Portfolio'>معرض الأعمال</h2>
-                    </div>
-
-                    @if($portfolioUrl)
-                        <button
-                            type='button'
-                            class='profile-card-link profile-card-button'
-                            data-dialog-open='designerEditDialog'
-                            data-dialog-focus='portfolioInput'
-                            data-copy-ar='تعديل'
-                            data-copy-en='Edit'
-                        >تعديل</button>
-                    @endif
-                </div>
-
-                @if($portfolioUrl)
-                    <a class='designer-portfolio-link' href='{{ $portfolioUrl }}' target='_blank' rel='noopener noreferrer' dir='ltr'>
-                        <span>{{ str($portfolioUrl)->replace(['https://', 'http://'], '')->limit(34) }}</span>
-                        <i class='bi bi-box-arrow-up-right' aria-hidden='true'></i>
-                    </a>
-
-                    <ul class='designer-portfolio-grid' aria-label='معاينة معرض الأعمال' data-profile-aria-ar='معاينة معرض الأعمال' data-profile-aria-en='Portfolio preview'>
-                        <li class='designer-portfolio-thumb thumb-one'><i class='bi bi-card-heading' aria-hidden='true'></i></li>
-                        <li class='designer-portfolio-thumb thumb-two'><i class='bi bi-bag' aria-hidden='true'></i></li>
-                        <li class='designer-portfolio-thumb thumb-three'><i class='bi bi-image' aria-hidden='true'></i></li>
-                    </ul>
-                @else
-                    <div class='profile-empty-state'>
-                        <span><i class='bi bi-link-45deg' aria-hidden='true'></i></span>
-                        <h3 data-copy-ar='لم تُضف معرض أعمال بعد' data-copy-en='No portfolio added yet'>لم تُضف معرض أعمال بعد</h3>
-                        <p data-copy-ar='أضف رابط معرضك ليتمكن العملاء من مشاهدة أعمالك.' data-copy-en='Add your portfolio link so customers can discover your work.'>أضف رابط معرضك ليتمكن العملاء من مشاهدة أعمالك.</p>
-                        <button
-                            type='button'
-                            class='profile-button is-primary is-small'
-                            data-dialog-open='designerEditDialog'
-                            data-dialog-focus='portfolioInput'
-                        >
-                            <span data-copy-ar='إضافة الرابط' data-copy-en='Add link'>إضافة الرابط</span>
-                        </button>
-                    </div>
-                @endif
-            </section>
-
-            <section class='profile-card designer-skills' aria-labelledby='skillsTitle'>
-                <div class='profile-card-heading'>
-                    <div class='profile-card-title'>
-                        <span class='profile-card-icon icon-orange'><i class='bi bi-stars' aria-hidden='true'></i></span>
-                        <h2 id='skillsTitle' data-copy-ar='مهاراتي' data-copy-en='My skills'>مهاراتي</h2>
-                    </div>
-
-                    <button
-                        type='button'
-                        class='profile-card-link profile-card-button'
-                        data-dialog-open='designerEditDialog'
-                        data-dialog-focus='skillsInput'
-                        data-copy-ar='تعديل'
-                        data-copy-en='Edit'
-                    >تعديل</button>
-                </div>
-
-                @if($profileSkills->isNotEmpty())
-                    <ul class='designer-skill-list'>
-                        @foreach($profileSkills as $skill)
-                            <li class='designer-skill'>{{ $skill }}</li>
-                        @endforeach
-                    </ul>
-                @else
-                    <div class='profile-empty-state is-compact'>
-                        <span><i class='bi bi-stars' aria-hidden='true'></i></span>
-                        <p data-copy-ar='أضف مهاراتك من نافذة تعديل الملف الشخصي.' data-copy-en='Add your skills from the Edit profile dialog.'>أضف مهاراتك من نافذة تعديل الملف الشخصي.</p>
-                    </div>
-                @endif
-            </section>
-
-            <section class='profile-card designer-about' aria-labelledby='aboutTitle'>
-                <div class='profile-card-heading'>
-                    <div class='profile-card-title'>
-                        <span class='profile-card-icon icon-green'><i class='bi bi-person-lines-fill' aria-hidden='true'></i></span>
-                        <h2 id='aboutTitle' data-copy-ar='نبذة عني' data-copy-en='About me'>نبذة عني</h2>
-                    </div>
-
-                    <button
-                        type='button'
-                        class='profile-card-link profile-card-button'
-                        data-dialog-open='designerEditDialog'
-                        data-dialog-focus='aboutInput'
-                        data-copy-ar='تعديل'
-                        data-copy-en='Edit'
-                    >تعديل</button>
-                </div>
-
-                @if($profile->bio)
-                    <p>{{ $profile->bio }}</p>
-                @else
-                    <p data-copy-ar='لم تُضف نبذة مهنية بعد. عرّف العملاء بخبرتك وأسلوبك.' data-copy-en='No professional bio added yet. Introduce customers to your experience and style.'>لم تُضف نبذة مهنية بعد. عرّف العملاء بخبرتك وأسلوبك.</p>
-                @endif
-            </section>
-        </div>
-        <div class='profile-row profile-row-2'>
-            <section class='profile-card designer-account' aria-labelledby='accountTitle'>
-                <div class='profile-card-heading'>
-                    <div class='profile-card-title'>
-                        <span class='profile-card-icon'><i class='bi bi-person-badge' aria-hidden='true'></i></span>
-                        <h2 id='accountTitle' data-copy-ar='معلومات الحساب' data-copy-en='Account information'>معلومات الحساب</h2>
-                    </div>
-                </div>
-
-                <dl class='profile-info-list'>
-                    <div class='profile-info-row'>
-                        <dt data-copy-ar='البريد الإلكتروني' data-copy-en='Email address'>البريد الإلكتروني</dt>
-                        <dd dir='ltr'>{{ $user->email }}</dd>
-                    </div>
-                    <div class='profile-info-row'>
-                        <dt data-copy-ar='رقم الهاتف' data-copy-en='Phone number'>رقم الهاتف</dt>
-                        <dd dir='ltr'>{{ $user->phone ?: '—' }}</dd>
-                    </div>
-                    <div class='profile-info-row'>
-                        <dt data-copy-ar='نوع الحساب' data-copy-en='Account type'>نوع الحساب</dt>
-                        <dd data-copy-ar='مصمم' data-copy-en='Designer'>مصمم</dd>
-                    </div>
-                    <div class='profile-info-row'>
-                        <dt data-copy-ar='تاريخ الانضمام' data-copy-en='Join date'>تاريخ الانضمام</dt>
-                        <dd>{{ $user->created_at->format('Y-m-d') }}</dd>
-                    </div>
-                </dl>
-
-                <p class='profile-card-note'>
-                    <i class='bi bi-shield-lock' aria-hidden='true'></i>
-                    <span data-copy-ar='كلمة المرور وإعدادات الأمان تُدار من صفحة الإعدادات.' data-copy-en='Password and security options are managed from Settings.'>كلمة المرور وإعدادات الأمان تُدار من صفحة الإعدادات.</span>
-                </p>
-
-                <a href='{{ route('designer.settings') }}' class='profile-button is-ghost is-small'>
-                    <i class='bi bi-gear' aria-hidden='true'></i>
-                    <span data-copy-ar='إدارة الإعدادات' data-copy-en='Manage settings'>إدارة الإعدادات</span>
-                </a>
-            </section>
-
-            <section class='profile-card designer-earnings-summary' aria-labelledby='earningsTitle'>
-                <div class='profile-card-heading'>
-                    <div class='profile-card-title'>
-                        <span class='profile-card-icon icon-green'><i class='bi bi-coin' aria-hidden='true'></i></span>
-                        <h2 id='earningsTitle' data-copy-ar='ملخص الأرباح' data-copy-en='Earnings summary'>ملخص الأرباح</h2>
-                    </div>
-
-                    <a href='{{ route('designer.earnings') }}' class='profile-card-link'>
-                        <span data-copy-ar='التفاصيل' data-copy-en='Details'>التفاصيل</span>
-                        <i class='bi bi-arrow-left' data-back-icon aria-hidden='true'></i>
-                    </a>
-                </div>
-
-                <div class='profile-earnings-total'>
-                    <span data-copy-ar='إجمالي الأرباح المسجلة' data-copy-en='Recorded total earnings'>إجمالي الأرباح المسجلة</span>
-                    <strong dir='ltr'>{{ number_format((float) ($profile->total_earnings ?? 0), 2) }} <small>₪</small></strong>
-                </div>
-
-                <p class='profile-card-note'>
-                    <i class='bi bi-info-circle' aria-hidden='true'></i>
-                    <span data-copy-ar='ستظهر تفاصيل الحركات المالية بعد ربط قاعدة بيانات الأرباح الجديدة.' data-copy-en='Transaction details will appear after the new earnings database is connected.'>ستظهر تفاصيل الحركات المالية بعد ربط قاعدة بيانات الأرباح الجديدة.</span>
-                </p>
-            </section>
-        </div>
-    </div>
-
-    <dialog class='profile-dialog' id='designerEditDialog' aria-labelledby='designerEditTitle'>
-        <form method='POST' action='{{ route('designer.profile.update') }}' id='designerEditForm' enctype='multipart/form-data'>
+        <form id="designerProfileForm" method="POST" action="{{ route('designer.profile.update') }}" novalidate>
             @csrf
             @method('PATCH')
-            <input type='hidden' name='locale' id='designerProfileLocale' value='{{ old('locale', 'ar') }}'>
+            <input type="hidden" name="locale" value="ar">
 
-            <header class='profile-dialog-header'>
+            <div class="designer-breadcrumb">
+                <a href="{{ route('designer.dashboard') }}">الرئيسية</a>
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                <span>الملف الشخصي</span>
+            </div>
+
+            <header class="designer-page-heading">
+                <span class="designer-heading-icon"><i class="bi bi-person" aria-hidden="true"></i></span>
                 <div>
-                    <h2 id='designerEditTitle' data-copy-ar='تعديل الملف الشخصي' data-copy-en='Edit profile'>تعديل الملف الشخصي</h2>
-                    <p data-copy-ar='حدّث معلوماتك الأساسية والمهنية ثم احفظ التغييرات.' data-copy-en='Update your basic and professional information, then save.'>حدّث معلوماتك الأساسية والمهنية ثم احفظ التغييرات.</p>
+                    <h1>الملف الشخصي للمصمم</h1>
+                    <p id="designerPageDescription" data-view-text="بياناتك الشخصية والمهنية كما تظهر في حسابك." data-edit-text="عدّل بياناتك الشخصية والمهنية، ثم احفظ التغييرات.">بياناتك الشخصية والمهنية كما تظهر في حسابك.</p>
                 </div>
-
-                <button type='button' class='profile-dialog-close' data-dialog-close aria-label='إغلاق' data-profile-aria-ar='إغلاق' data-profile-aria-en='Close'>
-                    <i class='bi bi-x-lg' aria-hidden='true'></i>
+                <button class="designer-primary-btn designer-heading-action" id="editDesignerProfile" type="button" aria-expanded="false">
+                    <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                    تعديل البيانات الشخصية
                 </button>
             </header>
 
-            <div class='profile-dialog-body'>
-                <div class='profile-photo-editor'>
-                    <div class='profile-photo-preview'>
-                        <img
-                            src='{{ $avatarUrl ?: '' }}'
-                            alt='معاينة الصورة الشخصية'
-                            data-profile-avatar-image
-                            data-profile-alt-ar='معاينة الصورة الشخصية'
-                            data-profile-alt-en='Profile photo preview'
-                            @if(! $avatarUrl) hidden @endif
-                        >
-                        <span data-profile-avatar-initials @if($avatarUrl) hidden @endif>
-                            {{ mb_strtoupper(mb_substr($displayName, 0, 1)) }}
-                        </span>
+            @unless ($profileComplete)
+                <section class="designer-completion-alert">
+                    <span><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span>
+                    <div>
+                        <h2>أكمل ملفك الشخصي</h2>
+                        <p>تأكد من إدخال الاسم الكامل والتخصص والمهارات ورابط معرض الأعمال قبل إرسال طلب اعتماد الحساب.</p>
                     </div>
+                </section>
+            @endunless
 
-                    <div class='profile-photo-copy'>
-                        <strong data-copy-ar='الصورة الشخصية' data-copy-en='Profile photo'>الصورة الشخصية</strong>
-                        <p data-copy-ar='PNG أو JPG أو WEBP، وبحجم أقصى 2 ميجابايت.' data-copy-en='PNG, JPG, or WEBP, up to 2 MB.'>PNG أو JPG أو WEBP، وبحجم أقصى 2 ميجابايت.</p>
-
-                        <button
-                            type='button'
-                            class='profile-button is-outline is-small profile-photo-button'
-                            id='profilePhotoButton'
-                            data-avatar-picker
-                        >
-                            <i class='bi bi-camera' aria-hidden='true'></i>
-                            <span data-copy-ar='اختيار صورة' data-copy-en='Choose photo'>اختيار صورة</span>
-                        </button>
-                        <input
-                            id='profileAvatarInput'
-                            class='profile-file-input'
-                            name='profile_image'
-                            type='file'
-                            accept='image/png,image/jpeg,image/webp'
-                            @error('profile_image') aria-invalid='true' aria-describedby='profileImageError' @enderror
-                        >
-
-                        @error('profile_image')
-                            <small class='profile-field-error' id='profileImageError'>{{ $message }}</small>
-                        @enderror
+            @if ($errors->any())
+                <div class="designer-form-errors" role="alert">
+                    <i class="bi bi-exclamation-octagon" aria-hidden="true"></i>
+                    <div>
+                        <strong>تعذر حفظ التغييرات، راجع الحقول التالية:</strong>
+                        <ul>
+                            @foreach ($errors->all() as $message)
+                                <li>{{ $message }}</li>
+                            @endforeach
+                        </ul>
                     </div>
                 </div>
+            @endif
 
-                <div class='profile-field-grid'>
-                    <div class='profile-field'>
-                        <label for='editFullName' data-copy-ar='الاسم الكامل' data-copy-en='Full name'>الاسم الكامل</label>
-                        <div @class(['profile-input-shell', 'has-error' => $errors->has('name')])>
-                            <i class='bi bi-person' aria-hidden='true'></i>
-                            <input
-                                id='editFullName'
-                                name='name'
-                                type='text'
-                                value='{{ old('name', $user->name) }}'
-                                autocomplete='name'
-                                required
-                                minlength='3'
-                                maxlength='255'
-                                @error('name') aria-invalid='true' aria-describedby='nameError' @enderror
-                            >
-                        </div>
-                        @error('name')<small class='profile-field-error' id='nameError'>{{ $message }}</small>@enderror
-                    </div>
+            <div class="designer-profile-view" id="designerProfileView" @if ($startEditing) hidden @endif>
+                <div class="designer-form-grid designer-two-column">
+                    <section class="designer-form-card">
+                        <header class="designer-card-title">
+                            <span><i class="bi bi-person-vcard" aria-hidden="true"></i></span>
+                            <h2>البيانات الشخصية</h2>
+                        </header>
+                        <dl class="designer-details-grid">
+                            <div><dt>الاسم الكامل</dt><dd>{{ $displayName }}</dd></div>
+                            <div><dt>المسمى المهني</dt><dd>{{ $profileExtra['job_title'] ?: $dash }}</dd></div>
+                            <div><dt>سنوات الخبرة</dt><dd>{{ $profileExtra['experience'] ?: $dash }}</dd></div>
+                            <div><dt>البريد الإلكتروني</dt><dd class="designer-detail-with-icon" dir="ltr">{{ $user->email }}</dd><i class="bi bi-envelope" aria-hidden="true"></i></div>
+                            <div><dt>رقم الهاتف</dt><dd class="designer-detail-with-icon" dir="ltr">{{ $user->phone ?: $dash }}</dd><i class="bi bi-telephone" aria-hidden="true"></i></div>
+                            <div><dt>موقع العمل</dt><dd>{{ $profileExtra['location'] ?: $dash }}</dd></div>
+                        </dl>
+                    </section>
 
-                    <div class='profile-field'>
-                        <label for='editEmail' data-copy-ar='البريد الإلكتروني' data-copy-en='Email address'>البريد الإلكتروني</label>
-                        <div @class(['profile-input-shell', 'has-error' => $errors->has('email')])>
-                            <i class='bi bi-envelope' aria-hidden='true'></i>
-                            <input
-                                id='editEmail'
-                                name='email'
-                                type='email'
-                                dir='ltr'
-                                value='{{ old('email', $user->email) }}'
-                                autocomplete='email'
-                                required
-                                maxlength='255'
-                                @error('email') aria-invalid='true' aria-describedby='emailError' @enderror
-                            >
-                        </div>
-                        @error('email')<small class='profile-field-error' id='emailError'>{{ $message }}</small>@enderror
-                    </div>
+                    <section class="designer-form-card">
+                        <header class="designer-card-title">
+                            <span><i class="bi bi-stars" aria-hidden="true"></i></span>
+                            <h2>المهارات والتخصص</h2>
+                        </header>
+                        <dl class="designer-details-grid designer-details-single">
+                            <div><dt>نبذة تعريفية</dt><dd>{{ $profileExtra['specialization'] ?: $dash }}</dd></div>
+                            <div>
+                                <dt>المهارات</dt>
+                                <dd class="designer-skill-list">
+                                    @forelse ($profileSkills as $skill)
+                                        <span class="designer-skill-chip">{{ $skill }}</span>
+                                    @empty
+                                        <span class="designer-skill-chip">{{ $dash }}</span>
+                                    @endforelse
+                                </dd>
+                            </div>
+                        </dl>
+                    </section>
+                </div>
 
-                    <div class='profile-field is-wide'>
-                        <label for='editPhone' data-copy-ar='رقم الهاتف' data-copy-en='Phone number'>رقم الهاتف</label>
-                        <div @class(['profile-input-shell', 'has-error' => $errors->has('phone')])>
-                            <i class='bi bi-telephone' aria-hidden='true'></i>
-                            <input
-                                id='editPhone'
-                                name='phone'
-                                type='tel'
-                                dir='ltr'
-                                value='{{ old('phone', $user->phone) }}'
-                                autocomplete='tel'
-                                maxlength='30'
-                                @error('phone') aria-invalid='true' aria-describedby='phoneError' @enderror
-                            >
+                <div class="designer-form-grid designer-two-column">
+                    <section class="designer-form-card">
+                        <header class="designer-card-title">
+                            <span><i class="bi bi-briefcase" aria-hidden="true"></i></span>
+                            <h2>معرض الأعمال</h2>
+                        </header>
+                        <div class="designer-portfolio-view">
+                            <div><span>رابط معرض الأعمال</span><strong dir="ltr">{{ $profile->portfolio_url ?: $dash }}</strong></div>
+                            @if ($portfolioUrl)
+                                <a class="designer-outline-btn" href="{{ $portfolioUrl }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right"></i> عرض المعرض</a>
+                            @endif
                         </div>
-                        @error('phone')<small class='profile-field-error' id='phoneError'>{{ $message }}</small>@enderror
-                    </div>
+                    </section>
 
-                    <div class='profile-field is-wide'>
-                        <label for='portfolioInput' data-copy-ar='رابط معرض الأعمال' data-copy-en='Portfolio link'>رابط معرض الأعمال</label>
-                        <div @class(['profile-input-shell', 'has-error' => $errors->has('portfolio_url')])>
-                            <i class='bi bi-link-45deg' aria-hidden='true'></i>
-                            <input
-                                id='portfolioInput'
-                                name='portfolio_url'
-                                type='url'
-                                dir='ltr'
-                                value='{{ old('portfolio_url', $profile->portfolio_url) }}'
-                                placeholder='https://behance.net/username'
-                                autocomplete='url'
-                                maxlength='255'
-                                @error('portfolio_url') aria-invalid='true' aria-describedby='portfolioError' @enderror
-                            >
+                    <section class="designer-form-card">
+                        <header class="designer-card-title">
+                            <span><i class="bi bi-shield-lock" aria-hidden="true"></i></span>
+                            <h2>كلمة المرور والأمان</h2>
+                        </header>
+                        <div class="designer-security-content">
+                            <p>يمكنك تغيير كلمة المرور وإدارة إعدادات أمان الحساب بعد تسجيل الدخول.</p>
+                            <a class="designer-outline-btn" href="{{ route('designer.settings') }}"><i class="bi bi-key"></i> تغيير كلمة المرور</a>
                         </div>
-                        @error('portfolio_url')<small class='profile-field-error' id='portfolioError'>{{ $message }}</small>@enderror
-                    </div>
-
-                    <div class='profile-field is-wide'>
-                        <label for='skillsInput' data-copy-ar='المهارات — افصل بينها بفاصلة' data-copy-en='Skills — separate them with commas'>المهارات — افصل بينها بفاصلة</label>
-                        <div @class(['profile-input-shell', 'has-error' => $errors->has('skills')])>
-                            <i class='bi bi-stars' aria-hidden='true'></i>
-                            <input
-                                id='skillsInput'
-                                name='skills'
-                                type='text'
-                                value='{{ old('skills', $profileSkills->implode('، ')) }}'
-                                maxlength='500'
-                                @error('skills') aria-invalid='true' aria-describedby='skillsError' @enderror
-                            >
-                        </div>
-                        @error('skills')<small class='profile-field-error' id='skillsError'>{{ $message }}</small>@enderror
-                    </div>
-
-                    <div class='profile-field is-wide'>
-                        <label for='aboutInput' data-copy-ar='نبذة عني' data-copy-en='About me'>نبذة عني</label>
-                        <div @class(['profile-input-shell', 'is-textarea', 'has-error' => $errors->has('bio')])>
-                            <i class='bi bi-card-text' aria-hidden='true'></i>
-                            <textarea
-                                id='aboutInput'
-                                name='bio'
-                                rows='4'
-                                maxlength='1000'
-                                @error('bio') aria-invalid='true' aria-describedby='bioError' @enderror
-                            >{{ old('bio', $profile->bio) }}</textarea>
-                        </div>
-                        @error('bio')<small class='profile-field-error' id='bioError'>{{ $message }}</small>@enderror
-                    </div>
+                    </section>
                 </div>
             </div>
 
-            <footer class='profile-dialog-footer'>
-                <button type='button' class='profile-button is-ghost' data-dialog-close data-copy-ar='إلغاء' data-copy-en='Cancel'>إلغاء</button>
-                <button type='submit' class='profile-button is-primary' id='designerProfileSave'>
-                    <i class='bi bi-check2' aria-hidden='true'></i>
-                    <span data-copy-ar='حفظ التغييرات' data-copy-en='Save changes'>حفظ التغييرات</span>
-                </button>
+            <div class="designer-profile-edit" id="designerProfileEdit" @unless ($startEditing) hidden @endunless>
+                <div class="designer-form-grid designer-two-column">
+                    <section class="designer-form-card">
+                        <header class="designer-card-title">
+                            <span><i class="bi bi-person-vcard" aria-hidden="true"></i></span>
+                            <h2>البيانات الشخصية</h2>
+                        </header>
+                        <div class="designer-fields">
+                            <label class="designer-full-field">الاسم الكامل <em>*</em><input id="profileFullName" name="name" type="text" required minlength="3" maxlength="255" value="{{ old('name', $displayName) }}" @error('name') aria-invalid="true" @enderror>@error('name')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
+                            <label>المسمى المهني<input id="profileRole" name="job_title" type="text" maxlength="120" value="{{ old('job_title', $profileExtra['job_title']) }}">@error('job_title')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
+                            <label>سنوات الخبرة<input id="profileExperience" name="experience" type="text" maxlength="60" value="{{ old('experience', $profileExtra['experience']) }}">@error('experience')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
+                            <label>البريد الإلكتروني <em>*</em><span class="designer-input-icon"><i class="bi bi-envelope"></i><input id="profileEmail" name="email" type="email" required maxlength="255" value="{{ old('email', $user->email) }}" dir="ltr" @error('email') aria-invalid="true" @enderror></span>@error('email')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
+                            <label>رقم الهاتف<span class="designer-input-icon"><i class="bi bi-telephone"></i><input id="profilePhone" name="phone" type="tel" maxlength="30" value="{{ old('phone', $user->phone) }}" dir="ltr"></span>@error('phone')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
+                            <label class="designer-full-field">موقع العمل<input id="profileLocation" name="location" type="text" maxlength="120" value="{{ old('location', $profileExtra['location']) }}">@error('location')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
+                        </div>
+                    </section>
+
+                    <section class="designer-form-card">
+                        <header class="designer-card-title">
+                            <span><i class="bi bi-stars" aria-hidden="true"></i></span>
+                            <h2>المهارات والتخصص</h2>
+                        </header>
+                        <div class="designer-fields designer-single-column">
+                            <label>نبذة تعريفية <em>*</em><input id="profileSpecialization" name="specialization" type="text" required maxlength="1000" value="{{ old('specialization', $profileExtra['specialization']) }}">@error('specialization')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
+                            <label>المهارات <em>*</em><textarea id="profileSkills" name="skills" rows="3" required maxlength="500">{{ $skillsText }}</textarea>@error('skills')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
+                            <small class="designer-field-note"><i class="bi bi-info-circle"></i> افصل بين المهارات بفاصلة.</small>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="designer-form-grid designer-two-column">
+                    <section class="designer-form-card">
+                        <header class="designer-card-title">
+                            <span><i class="bi bi-briefcase" aria-hidden="true"></i></span>
+                            <h2>معرض الأعمال</h2>
+                        </header>
+                        <div class="designer-fields designer-single-column">
+                            <label>رابط معرض الأعمال <em>*</em><span class="designer-input-icon"><i class="bi bi-link-45deg"></i><input id="profilePortfolio" name="portfolio_url" type="url" required maxlength="255" value="{{ $portfolio }}" dir="ltr"></span>@error('portfolio_url')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
+                            <div class="designer-inline-actions">
+                                @if ($portfolioUrl)
+                                    <a class="designer-outline-btn" href="{{ $portfolioUrl }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right"></i> عرض المعرض</a>
+                                @endif
+                                <button class="designer-danger-btn" id="portfolioClearButton" type="button"><i class="bi bi-trash3"></i> حذف الرابط</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="designer-form-card">
+                        <header class="designer-card-title">
+                            <span><i class="bi bi-shield-lock" aria-hidden="true"></i></span>
+                            <h2>كلمة المرور والأمان</h2>
+                        </header>
+                        <div class="designer-security-content">
+                            <p>يمكنك تغيير كلمة المرور وإدارة إعدادات أمان الحساب بعد تسجيل الدخول.</p>
+                            <a class="designer-outline-btn" href="{{ route('designer.settings') }}"><i class="bi bi-key"></i> تغيير كلمة المرور</a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <section class="designer-form-card designer-review-card">
+                <header class="designer-card-title">
+                    <span><i class="bi bi-shield-check" aria-hidden="true"></i></span>
+                    <h2>حالة اعتماد الحساب</h2>
+                </header>
+                <div class="designer-review-content">
+                    <div @class(['designer-review-notice', 'is-approved' => $status === 'approved', 'is-rejected' => $needsChanges])>
+                        <i class="bi {{ $status === 'approved' ? 'bi-patch-check-fill' : ($needsChanges ? 'bi-x-circle-fill' : ($awaitingReview ? 'bi-hourglass-split' : 'bi-info-circle-fill')) }}" aria-hidden="true"></i>
+                        <div>
+                            @if ($status === 'approved')
+                                <h3>حسابك معتمد</h3>
+                                <p>يمكنك رفع التصاميم ونشرها وطلب استلام أرباحك.</p>
+                            @elseif ($status === 'rejected')
+                                <h3>تم رفض الحساب بسبب خلل في البيانات</h3>
+                                <p>عدّل بياناتك ثم أرسل الطلب للمراجعة مرة أخرى.</p>
+                            @elseif ($status === 'changes_requested')
+                                <h3>حسابك بحاجة إلى تعديل البيانات</h3>
+                                <p>عدّل البيانات المطلوبة ثم أرسل الطلب للمراجعة مرة أخرى.</p>
+                            @elseif ($awaitingReview)
+                                <h3>طلب الاعتماد قيد المراجعة</h3>
+                                <p>سيصلك إشعار عند قبول أو رفض طلب اعتماد حسابك.</p>
+                            @elseif ($profileComplete)
+                                <h3>ملفك مكتمل، أرسله للمراجعة</h3>
+                                <p>أرسل طلب اعتماد الحساب لتراجع الإدارة بياناتك وتفعّل صلاحيات المصمم.</p>
+                            @else
+                                <h3>أكمل ملفك الشخصي</h3>
+                                <p>أضف التخصص والمهارات ورابط معرض الأعمال ثم أرسل الطلب للمراجعة.</p>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="designer-admin-notes">
+                        <h3><i class="bi bi-check2-square"></i> ملاحظات الإدارة</h3>
+                        <p>{{ $adminNote ?: 'لا توجد ملاحظات حاليًا. يرجى متابعة حالة الحساب لاحقًا.' }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="designer-form-actions" id="designerFormActions" @unless ($startEditing) hidden @endunless>
+                <button class="designer-secondary-btn" id="cancelDesignerEdit" type="button">إلغاء</button>
+                <div>
+                    <button class="designer-primary-btn" type="submit"><i class="bi bi-floppy"></i> حفظ التغييرات</button>
+                </div>
             </footer>
         </form>
-    </dialog>
 
-    <div
-        class='profile-toast @if(session('profile_status') === 'updated') is-visible @endif'
-        id='profileToast'
-        role='status'
-        aria-live='polite'
-        data-copy-ar='تم تحديث الملف الشخصي بنجاح.'
-        data-copy-en='Your profile was updated successfully.'
-    >تم تحديث الملف الشخصي بنجاح.</div>
+        @if ($profileComplete && in_array($status, ['draft', 'rejected', 'changes_requested'], true))
+            <form method="POST" action="{{ route('onboarding.submit') }}" class="designer-submit-review">
+                @csrf
+                <button class="designer-outline-primary" type="submit"><i class="bi bi-send"></i> إرسال للاعتماد</button>
+            </form>
+        @endif
+    </main>
 @endsection
 
 @push('scripts')
     <script>
-        window.designerProfileHasErrors = @json($errors->any());
+        window.designerProfileFlash = @json(session('profile_status'));
     </script>
-    <script src='{{ asset('front/designer/js/profile.js') }}?v={{ filemtime(public_path('front/designer/js/profile.js')) }}'></script>
+    <script src="{{ asset('front/designer/js/designerProfile.js') }}?v={{ filemtime(public_path('front/designer/js/designerProfile.js')) }}"></script>
 @endpush

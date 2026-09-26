@@ -1,0 +1,138 @@
+.earnings-page {
+  --designer-content-max:1060px;
+  --earnings-primary:#1677ff;
+  --earnings-primary-hover:#0a68eb;
+  --earnings-primary-soft:#eff6ff;
+  --earnings-text:#0b1f3a;
+  --earnings-body:#2c405c;
+  --earnings-muted:#5b7394;
+  --earnings-border:#dfe8f3;
+  --earnings-surface:#fff;
+  --earnings-surface-muted:#f7fafd;
+  --earnings-radius:12px;
+  --earnings-radius-lg:16px;
+  --earnings-shadow-sm:0 1px 2px rgb(11 31 58 / 6%);
+  --earnings-shadow:0 4px 14px rgb(11 31 58 / 8%);
+  overflow-x:hidden;
+}
+.earnings-page::selection { color: #fff; background: var(--profile-primary); }
+.earnings-page .profile-topbar { max-width:var(--designer-content-max); }
+.earnings-page .designer-printshop-topbar { max-width:none; }
+.earnings-page .profile-sidebar-link.active,
+.earnings-page .profile-sidebar-link[aria-current="page"] { box-shadow:none; }
+.earnings-page .profile-main { max-width:calc(var(--designer-content-max) + 44px); }
+.earnings-page .designer-breadcrumb { margin-bottom:4px; }
+.earnings-header { display:flex; align-items:center; gap:13px; padding-block:8px 4px; }
+.earnings-heading-group { min-width:0; display:flex; align-items:center; gap:13px; }
+.earnings-heading-copy { min-width:0; }
+.earnings-header h1 { margin:0; color:var(--earnings-text); font-size:24px; font-weight:800; line-height:1.25; }
+.earnings-header p { margin:5px 0 0; color:var(--earnings-muted); font-size:14px; font-weight:600; }
+.earnings-withdraw-cta { flex:0 0 auto; }
+.earnings-header .earnings-withdraw-cta { min-height:44px; margin-inline-start:auto; border:1px solid var(--earnings-primary); border-radius:var(--earnings-radius); background:var(--earnings-primary); box-shadow:0 6px 16px rgb(22 119 255 / 24%); transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease; }
+.earnings-header .earnings-withdraw-cta:hover { background:var(--earnings-primary-hover); border-color:var(--earnings-primary-hover); box-shadow:0 8px 18px rgb(22 119 255 / 28%); transform:translateY(-1px); }
+.earnings-header .earnings-withdraw-cta:active { background:#0f58be; border-color:#0f58be; box-shadow:0 3px 8px rgb(22 119 255 / 18%); transform:translateY(0); }
+.earnings-header .earnings-withdraw-cta:focus-visible { outline:2px solid #3287ff; outline-offset:3px; }
+.earnings-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.earnings-stat { min-height:132px; display:flex; align-items:center; gap:15px; padding:22px; background:var(--earnings-surface); border:1px solid var(--earnings-border); border-radius:var(--earnings-radius-lg); box-shadow:var(--earnings-shadow-sm); transition:transform 180ms ease,box-shadow 180ms ease,border-color 180ms ease; }
+.earnings-stat-content { width:100%; align-items:center; gap:15px; }
+.earnings-stat:hover { transform:translateY(-1px); border-color:#d0e2fb; box-shadow:0 2px 7px rgb(11 31 58 / 6%); }
+.earnings-stat:focus-visible { outline:2px solid var(--profile-primary); outline-offset:3px; }
+.earnings-stat-icon { width:54px; height:54px; flex:0 0 54px; display:grid; place-items:center; border-radius:50%; font-size:25px; }
+.earnings-stat h2 { margin-top:2px; color:var(--earnings-text); font-size:15px; font-weight:800; }
+.earnings-stat strong { display:block; margin-top:8px; font-size:27px; font-weight:800; font-variant-numeric:tabular-nums; text-align:start; }
+.earnings-stat.is-available { border-color:#bbf7d0; }
+.earnings-stat.is-available .earnings-stat-icon { color:#16a34a; background:#dcfce7; }
+.earnings-stat.is-available strong { color:#16a34a; }
+.earnings-stat.is-total { border-color:#bed9ff; }
+.earnings-stat.is-total .earnings-stat-icon { color:#1677ff; background:#eff6ff; }
+.earnings-stat.is-total strong { color:#1677ff; }
+.earnings-stat.is-pending { border-color:#fde7bb; }
+.earnings-stat.is-pending .earnings-stat-icon { color:#d97706; background:#fef3c7; }
+.earnings-stat.is-pending strong { color:#d97706; }
+.earnings-history { overflow:hidden; background:var(--earnings-surface); border:1px solid var(--earnings-border); border-radius:var(--earnings-radius-lg); box-shadow:var(--earnings-shadow-sm); }
+.earnings-history-head { min-height:76px; display:flex; align-items:center; justify-content:space-between; gap:18px; padding:18px 22px; border-bottom:1px solid var(--earnings-border); }
+.earnings-history-head h2 { display:flex; align-items:center; gap:10px; color:var(--earnings-text); font-size:18px; font-weight:800; }
+.earnings-history-head h2 i { color:var(--profile-primary); font-size:20px; }
+.earnings-filter-toggle { min-height:42px; display:inline-flex; align-items:center; gap:8px; padding:9px 15px; color:var(--earnings-primary); background:var(--earnings-surface); border:1px solid #bed9ff; border-radius:var(--earnings-radius); font:inherit; font-size:14px; font-weight:700; cursor:pointer; box-shadow:none; transition:color .18s ease,background-color .18s ease,border-color .18s ease,transform .18s ease; }
+.earnings-filter-toggle i { font-size:16px; }
+.earnings-filter-toggle:hover,.earnings-filter-toggle[aria-expanded="true"] { color:var(--earnings-primary-hover); background:var(--earnings-primary-soft); border-color:#91bfff; transform:translateY(-1px); }
+.earnings-filter-toggle:active { color:#0f58be; background:#dae9ff; transform:translateY(0); }
+.earnings-filter-toggle:focus-visible,.earnings-table-wrap:focus-visible { outline:2px solid #3287ff; outline-offset:2px; }
+.earnings-filter-dialog { width:min(760px,calc(100vw - 32px)); color:var(--earnings-text); background:var(--earnings-surface); border:1px solid var(--earnings-border); border-radius:var(--earnings-radius-lg); box-shadow:0 12px 28px rgb(11 31 58 / 12%); }
+.earnings-filter-dialog::backdrop { background:rgb(11 31 58 / 48%); backdrop-filter:blur(3px); }
+.earnings-filter-dialog .profile-dialog-header { align-items:center; padding:20px 24px; border-color:var(--earnings-border); }
+.earnings-filter-dialog-title { min-width:0; display:flex; align-items:center; gap:12px; }
+.earnings-filter-dialog-title > span { width:40px; height:40px; flex:0 0 40px; display:grid; place-items:center; color:var(--earnings-primary); background:var(--earnings-primary-soft); border-radius:var(--earnings-radius); font-size:18px; }
+.earnings-filter-dialog .profile-dialog-header h2 { color:var(--earnings-text); font-size:18px; }
+.earnings-filter-dialog .profile-dialog-header p { color:var(--earnings-muted); }
+.earnings-filter-dialog .profile-dialog-close { color:var(--earnings-muted); background:var(--earnings-surface-muted); border:1px solid var(--earnings-border); border-radius:var(--earnings-radius); transition:color .18s ease,background-color .18s ease,border-color .18s ease,transform .18s ease; }
+.earnings-filter-dialog .profile-dialog-close:hover { color:#dc2626; background:#fef2f2; border-color:#fecaca; box-shadow:none; transform:scale(1.07); }
+.earnings-filter-dialog .profile-dialog-body { padding:22px 24px; }
+.earnings-filter-dialog .profile-field > span:first-child { color:var(--earnings-text); font-weight:600; }
+.earnings-filter-dialog .profile-input-shell { background:var(--earnings-surface); border-color:var(--earnings-border); border-radius:8px; }
+.earnings-filter-dialog .profile-input-shell:hover { border-color:#91bfff; }
+.earnings-filter-dialog .profile-input-shell:focus-within { border-color:var(--earnings-primary); box-shadow:0 0 0 3px rgb(22 119 255 / 18%); }
+.earnings-filter-dialog .profile-dialog-footer { padding:16px 24px 20px; border-color:var(--earnings-border); }
+.earnings-filter-dialog .profile-button { min-height:42px; border-radius:var(--earnings-radius); font-weight:700; }
+.earnings-filter-dialog .profile-button.is-primary { background:var(--earnings-primary); border-color:var(--earnings-primary); box-shadow:0 6px 16px rgb(22 119 255 / 24%); }
+.earnings-filter-dialog .profile-button.is-primary:hover { background:var(--earnings-primary-hover); border-color:var(--earnings-primary-hover); }
+.earnings-filter-dialog .profile-button.is-ghost { color:var(--earnings-primary); background:transparent; border:1px solid #bed9ff; }
+.earnings-filter-dialog .profile-button.is-ghost:hover { color:var(--earnings-primary-hover); background:var(--earnings-primary-soft); border-color:#91bfff; }
+.earnings-filter-dialog[open] { animation:filterReveal .28s cubic-bezier(.16,1,.3,1); }
+.earnings-withdraw-dialog { width:min(620px,calc(100vw - 32px)); color:var(--earnings-text); background:var(--earnings-surface); border:1px solid var(--earnings-border); border-radius:var(--earnings-radius-lg); box-shadow:0 12px 28px rgb(11 31 58 / 12%); }
+.earnings-withdraw-dialog::backdrop { background:rgb(11 31 58 / 48%); backdrop-filter:blur(3px); }
+.earnings-withdraw-dialog .profile-dialog-header { align-items:center; padding:20px 24px; border-color:var(--earnings-border); }
+.earnings-withdraw-dialog-title { min-width:0; display:flex; align-items:center; gap:12px; }
+.earnings-withdraw-dialog-title > span { width:42px; height:42px; flex:0 0 42px; display:grid; place-items:center; color:#15803d; background:#dcfce7; border-radius:var(--earnings-radius); font-size:19px; }
+.earnings-withdraw-dialog .profile-dialog-header h2 { color:var(--earnings-text); font-size:18px; }
+.earnings-withdraw-dialog .profile-dialog-header p { display:flex; align-items:center; flex-wrap:wrap; gap:5px; margin-top:5px; color:var(--earnings-muted); }
+.earnings-withdraw-dialog .profile-dialog-header strong { padding:2px 8px; color:#15803d; background:#dcfce7; border-radius:999px; font-size:12px; }
+.earnings-withdraw-dialog .profile-dialog-close { color:var(--earnings-muted); background:var(--earnings-surface-muted); border:1px solid var(--earnings-border); border-radius:var(--earnings-radius); transition:color .18s ease,background-color .18s ease,border-color .18s ease,transform .18s ease; }
+.earnings-withdraw-dialog .profile-dialog-close:hover { color:#dc2626; background:#fef2f2; border-color:#fecaca; box-shadow:none; transform:scale(1.07); }
+.earnings-withdraw-dialog .profile-dialog-body { padding:22px 24px; }
+.earnings-withdraw-dialog .profile-field > span:first-child { color:var(--earnings-text); font-weight:600; }
+.earnings-withdraw-dialog .profile-input-shell { background:var(--earnings-surface); border-color:var(--earnings-border); border-radius:8px; }
+.earnings-withdraw-dialog .profile-input-shell:hover { border-color:#91bfff; }
+.earnings-withdraw-dialog .profile-input-shell:focus-within { border-color:var(--earnings-primary); box-shadow:0 0 0 3px rgb(22 119 255 / 18%); }
+.earnings-withdraw-dialog .profile-input-shell > i { color:var(--earnings-primary); }
+.earnings-withdraw-dialog .profile-field.has-error .profile-input-shell { border-color:#dc2626; box-shadow:0 0 0 3px rgb(220 38 38 / 16%); }
+.earnings-withdraw-dialog .profile-field-error { color:#dc2626; }
+.earnings-withdraw-dialog .profile-dialog-footer { padding:16px 24px 20px; border-color:var(--earnings-border); }
+.earnings-withdraw-dialog .profile-button { min-height:42px; border-radius:var(--earnings-radius); font-weight:700; }
+.earnings-withdraw-dialog .profile-button.is-primary { background:var(--earnings-primary); border-color:var(--earnings-primary); box-shadow:0 6px 16px rgb(22 119 255 / 24%); }
+.earnings-withdraw-dialog .profile-button.is-primary:hover { background:var(--earnings-primary-hover); border-color:var(--earnings-primary-hover); }
+.earnings-withdraw-dialog .profile-button.is-ghost { color:var(--earnings-primary); background:transparent; border:1px solid #bed9ff; }
+.earnings-withdraw-dialog .profile-button.is-ghost:hover { color:var(--earnings-primary-hover); background:var(--earnings-primary-soft); border-color:#91bfff; }
+.earnings-withdraw-dialog[open] { animation:filterReveal .28s cubic-bezier(.16,1,.3,1); }
+@keyframes filterReveal { from { opacity:0; transform:translateY(-10px) scale(.985); } }
+.earnings-filter-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px; }
+.earnings-filter-grid .is-wide { grid-column:span 2; }
+.earnings-filter-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:15px; }
+.earnings-table-wrap { width:100%; overflow-x:auto; scrollbar-color:var(--profile-border-strong) transparent; }
+.earnings-table { width:100%; min-width:850px; border-collapse:collapse; color:var(--earnings-body); font-size:13.5px; }
+.earnings-table th,.earnings-table td { padding:16px 18px; text-align:start; white-space:nowrap; }
+.earnings-table th { color:var(--earnings-muted); background:var(--earnings-surface-muted); font-size:12.5px; font-weight:800; }
+.earnings-table tbody tr { border-top:1px solid var(--earnings-border); }
+.earnings-table td[dir="ltr"] { font-variant-numeric:tabular-nums; }
+html[dir="rtl"] .earnings-stat strong,
+html[dir="rtl"] .earnings-table td[dir="ltr"] { text-align:right; }
+html[dir="ltr"] .earnings-stat strong,
+html[dir="ltr"] .earnings-table td[dir="ltr"] { text-align:left; }
+.status-pill { width:max-content; display:inline-flex; align-items:center; gap:7px; padding:6px 11px; border-radius:999px; font-size:12px; font-weight:800; }
+.status-pill i { width:7px; height:7px; border-radius:50%; background:currentColor; }
+.status-pill.is-pending { color:#a86406; background:var(--profile-warning-soft); }
+.status-pill.is-available,.status-pill.is-complete { color:#117b51; background:var(--profile-success-soft); }
+.status-pill.is-requested { color:#126ca9; background:var(--profile-info-soft); }
+.status-pill.is-transferring { color:#6815ed; background:var(--profile-purple-soft); }
+.status-pill.is-rejected { color:#be293e; background:var(--profile-danger-soft); }
+.earnings-empty { padding:40px 20px; color:var(--profile-secondary); text-align:center; font-size:14px; font-weight:700; }
+.earnings-page .profile-dialog-body strong { color:var(--profile-success); }
+html[data-bs-theme="dark"] .status-pill.is-pending { color:#f3ae4c; }
+html[data-bs-theme="dark"] .status-pill.is-available,html[data-bs-theme="dark"] .status-pill.is-complete { color:#54d7a2; }
+html[data-bs-theme="dark"] .status-pill.is-requested { color:#63b8ee; }
+html[data-bs-theme="dark"] .status-pill.is-transferring { color:#b88cff; }
+html[data-bs-theme="dark"] .status-pill.is-rejected { color:#ff8595; }
+@media (max-width:1091.98px) { .earnings-summary { grid-template-columns:repeat(2,minmax(0,1fr)); } .earnings-summary .earnings-stat:last-child { grid-column:1/-1; } }
+@media (max-width:767.98px) { .earnings-header { align-items:flex-start; flex-direction:column; } .earnings-withdraw-cta { width:100%; } .earnings-summary { grid-template-columns:1fr; } .earnings-summary .earnings-stat:last-child { grid-column:auto; } .earnings-stat { min-height:0; padding:18px; } .earnings-history-head { min-height:66px; padding:14px 16px; } .earnings-filter-grid { grid-template-columns:1fr; } .earnings-filter-grid .is-wide { grid-column:auto; } }
+@media (max-width:479.98px) { .earnings-stat strong { font-size:24px; } .earnings-filter-actions { flex-direction:column-reverse; } .earnings-filter-actions .profile-button { width:100%; } }
+@media (prefers-reduced-motion:reduce) { .earnings-filter-dialog[open],.earnings-withdraw-dialog[open] { animation:none; } .earnings-stat { transition:box-shadow 120ms ease; transform:none; } }

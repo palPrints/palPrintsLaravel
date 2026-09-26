@@ -1,0 +1,235 @@
+/* Laravel-specific additions on top of the designer front-end styles. */
+
+/* Sidebar logout is a real POST form. */
+.designer-profile-page .profile-sidebar-logout-form {
+  margin-top: auto;
+  flex: 0 0 auto;
+}
+
+.designer-profile-page .profile-sidebar-logout-form .profile-sidebar-logout {
+  width: 100%;
+  margin-top: 0;
+  cursor: pointer;
+}
+
+/* Header dropdown: logout button and empty state. */
+.designer-profile-page .designer-header-dropdown form { margin: 0; }
+
+.designer-profile-page .designer-header-dropdown button.designer-dropdown-danger {
+  width: 100%;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 11px;
+  font: inherit;
+  text-align: start;
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: color .18s ease, background .18s ease;
+}
+
+.designer-profile-page .designer-header-dropdown button.designer-dropdown-danger:hover,
+.designer-profile-page .designer-header-dropdown button.designer-dropdown-danger:focus-visible {
+  background: #fef2f2;
+}
+
+.designer-profile-page .designer-header-dropdown button.designer-dropdown-danger i {
+  width: 20px;
+  font-size: 18px;
+  text-align: center;
+}
+
+.designer-profile-page .designer-dropdown-empty {
+  display: block;
+  padding: 12px 11px;
+  color: var(--profile-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Search in the top bar is a GET form. */
+.designer-profile-page form.designer-printshop-search { margin: 0; }
+
+/* Flash messages inside the main area. */
+.designer-flash {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: none;
+  margin: 0 0 18px;
+  padding: 12px 16px;
+  color: var(--profile-warning);
+  background: var(--profile-warning-soft);
+  border: 1px solid rgb(224 138 18 / 28%);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.designer-flash.is-success {
+  color: var(--profile-success);
+  background: var(--profile-success-soft);
+  border-color: rgb(22 163 74 / 28%);
+}
+
+.designer-flash i { font-size: 18px; }
+.designer-flash span { flex: 1; }
+
+.designer-flash a {
+  color: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+/* Content pages that reuse the older dashboard components inside the new shell. */
+.designer-content-main {
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding: 26px 30px 55px;
+}
+
+@media (max-width: 600px) {
+  .designer-content-main { padding: 20px 15px 40px; }
+}
+
+/* Profile page: validation and approval states. */
+.designer-form-errors {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.designer-form-errors i { margin-top: 2px; font-size: 18px; }
+.designer-form-errors ul { margin: 6px 0 0; padding-inline-start: 18px; font-weight: 600; }
+
+.designer-field-error {
+  display: block;
+  margin-top: 5px;
+  color: #b42318;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.designer-fields input[aria-invalid="true"],
+.designer-fields textarea[aria-invalid="true"] { border-color: #f04438; }
+
+.designer-review-notice.is-approved { background: #ecfdf3; border-color: #abefc6; }
+.designer-review-notice.is-approved > i { color: #16a34a; }
+.designer-review-notice.is-rejected { background: #fef3f2; border-color: #fecdca; }
+.designer-review-notice.is-rejected > i { color: #dc2626; }
+
+.designer-submit-review {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+html[data-bs-theme="dark"] .designer-form-errors { color: #fda29b; background: rgb(240 68 56 / 12%); border-color: rgb(240 68 56 / 30%); }
+html[data-bs-theme="dark"] .designer-field-error { color: #fda29b; }
+html[data-bs-theme="dark"] .designer-review-notice.is-approved { background: rgb(22 163 74 / 12%); border-color: rgb(22 163 74 / 30%); }
+html[data-bs-theme="dark"] .designer-review-notice.is-rejected { background: rgb(240 68 56 / 12%); border-color: rgb(240 68 56 / 30%); }
+
+.designer-flash-copy { display: grid; gap: 1px; flex: 1; }
+.designer-flash-copy strong { color: var(--profile-text); font-size: 14px; }
+.designer-flash-copy small { color: var(--profile-secondary); font-size: 12px; font-weight: 600; }
+
+/* Notifications page */
+.notification-list { display: grid; gap: 10px; }
+.notification-list form { margin: 0; }
+
+.notification-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  color: var(--profile-text);
+  font: inherit;
+  text-align: start;
+  background: var(--profile-surface);
+  border: 1px solid var(--profile-border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.notification-item:hover { border-color: #1677ff; box-shadow: 0 6px 16px rgb(22 119 255 / 10%); transform: translateY(-1px); }
+.notification-item.is-unread { background: #eff6ff; border-color: #bfdbfe; }
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: grid;
+  place-items: center;
+  color: #1677ff;
+  background: #eff6ff;
+  border-radius: 12px;
+  font-size: 18px;
+}
+
+.notification-copy { min-width: 0; flex: 1; display: grid; gap: 2px; }
+.notification-copy strong { font-size: 14px; font-weight: 800; }
+.notification-copy small { color: var(--profile-secondary); font-size: 12.5px; font-weight: 600; }
+.notification-time { color: var(--profile-muted); font-size: 12px; white-space: nowrap; }
+
+.notification-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 48px 16px;
+  color: var(--profile-secondary);
+  background: var(--profile-surface);
+  border: 1px dashed var(--profile-border);
+  border-radius: 14px;
+}
+
+.notification-empty i { font-size: 34px; }
+
+.designer-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.designer-pagination-status { color: var(--profile-secondary); font-size: 13px; font-weight: 700; }
+.designer-outline-btn.is-disabled { opacity: .5; pointer-events: none; }
+
+html[data-bs-theme="dark"] .notification-item.is-unread { background: rgb(22 119 255 / 12%); border-color: rgb(22 119 255 / 35%); }
+html[data-bs-theme="dark"] .notification-icon { background: rgb(22 119 255 / 16%); }
+
+/* Design creation flow (product picker, editor, review) uses the full width. */
+.designer-content-main.source-create-main,
+.designer-content-main.source-editor-main,
+.designer-content-main.source-review-main { max-width: 1480px; }
+
+.designer-content-main.source-create-main > *,
+.designer-content-main.source-editor-main > *,
+.designer-content-main.source-review-main > * { width: 100%; }
+
+/* Stacked dashboard-style pages (dashboard, my designs). */
+.designer-content-main.dashboard-stack {
+  max-width: 1180px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.designer-review-notice.is-approved h3 { color: #15803d; }
+.designer-review-notice.is-rejected h3 { color: #b42318; }

@@ -33,11 +33,11 @@
     <section class="printshop-stats" aria-label="ملخص أداء المطبعة">
         <article class="printshop-stat-card">
             <span class="printshop-stat-card__icon is-green" aria-hidden="true">
-                <i class="bi bi-currency-dollar"></i>
+                <i class="bi bi-cash-coin"></i>
             </span>
             <div class="printshop-stat-card__content">
                 <h2>الأرباح المستحقة</h2>
-                <strong dir="ltr" data-dashboard-counter="1240" data-counter-currency="true">$1,240.00</strong>
+                <strong dir="ltr" data-dashboard-counter="1240" data-counter-currency="true">1,240.00 ₪</strong>
                 <p><span class="printshop-trend"><i class="bi bi-arrow-up" aria-hidden="true"></i> 12%</span> مقارنة بالأسبوع الماضي</p>
             </div>
         </article>
@@ -104,7 +104,7 @@
             <article class="printshop-alert-item">
                 <span class="printshop-alert-item__icon is-success" aria-hidden="true"><i class="bi bi-cash-coin"></i></span>
                 <div class="printshop-alert-item__content">
-                    <h3>رصيدك القابل للسحب وصل $1,240.00</h3>
+                    <h3>رصيدك القابل للسحب وصل 1,240.00 ₪</h3>
                     <p>يمكنك الآن طلب سحب الأرباح.</p>
                 </div>
                 <a class="printshop-secondary-button" href="#">اطلب سحب</a>

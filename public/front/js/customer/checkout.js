@@ -75,6 +75,11 @@
     syncSidebar();
   }
 
+  const profileToggle=document.getElementById("profileMenuToggle"),profileDropdown=document.getElementById("profileDropdown"),notificationsToggle=document.getElementById("notificationsToggle"),notificationsPanel=document.getElementById("notificationsPanel");
+  function closeHeaderMenus(){profileDropdown.hidden=true;notificationsPanel.hidden=true;profileToggle.setAttribute("aria-expanded","false");notificationsToggle.setAttribute("aria-expanded","false")}
+  profileToggle.addEventListener("click",e=>{e.stopPropagation();const open=profileDropdown.hidden;closeHeaderMenus();profileDropdown.hidden=!open;profileToggle.setAttribute("aria-expanded",String(open))});
+  notificationsToggle.addEventListener("click",e=>{e.stopPropagation();const open=notificationsPanel.hidden;closeHeaderMenus();notificationsPanel.hidden=!open;notificationsToggle.setAttribute("aria-expanded",String(open))});
+  document.addEventListener("click",e=>{if(!e.target.closest(".profile-menu,.notifications-menu"))closeHeaderMenus()});
   document.querySelector(".profile-dropdown__logout")?.addEventListener("click",()=>{if(window.confirm("هل تريد تسجيل الخروج من حسابك؟"))window.location.href="login.html"});
   document.querySelector(".notifications-clear")?.addEventListener("click",()=>{document.querySelector(".notifications-list").innerHTML="";document.querySelector(".notifications-empty").hidden=false;const badge=document.querySelector(".notifications-badge");if(badge)badge.hidden=true;message("تم مسح الإشعارات")});
 })();
