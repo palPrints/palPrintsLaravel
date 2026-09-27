@@ -43,6 +43,7 @@
 .settings-option:first-child { padding-top:2px; }
 .settings-option strong { display:block; color:var(--settings-text); font-size:12.5px; }
 .settings-option small { display:block; margin-top:2px; color:var(--settings-muted); font-size:10.5px; }
+.designer-support-reply { display:flex; align-items:flex-start; gap:6px; margin:8px 0 0; padding:8px 10px; color:var(--settings-text); background:var(--settings-hover, rgba(0,0,0,.03)); border-radius:8px; font-size:11px; }
 .settings-danger-zone { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:15px 2px; background:transparent; border:0; border-bottom:1px solid var(--settings-border); border-radius:0; }
 .settings-danger-zone + .settings-danger-zone { margin-top:0; }
 .settings-danger-zone strong { color:var(--settings-text); font-size:14px; }

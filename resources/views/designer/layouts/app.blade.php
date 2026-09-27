@@ -37,9 +37,9 @@
         $designerAsset = fn (string $path): string => asset('front/designer/'.$path).'?v='.filemtime(public_path('front/designer/'.$path));
     @endphp
 
-    <link rel="preload" href="{{ asset('front/designer/assets/fonts/Cairo-Variable.ttf') }}" as="font" type="font/ttf" crossorigin>
-    <link rel="preload" href="{{ asset('front/designer/assets/icons/fonts/bootstrap-icons.woff2') }}" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="{{ asset('front/designer/assets/icons/bootstrap-icons.min.css') }}">
+    <link rel="preload" href="{{ asset('front/shared/fonts/Cairo-Variable.ttf') }}" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="{{ asset('front/shared/icons/fonts/bootstrap-icons.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{{ asset('front/shared/icons/bootstrap-icons.min.css') }}">
     <link rel="stylesheet" href="{{ $designerAsset('css/profile-core.css') }}">
     <link rel="stylesheet" href="{{ $designerAsset('css/designerProfile.css') }}">
     @stack('styles')

@@ -37,6 +37,11 @@
 
         <form id="registerForm" method="POST" action="{{ route('register') }}" novalidate>
           @csrf
+          @if (! $registrationOpen)
+            <p class="terms-error" role="alert">التسجيل مغلق مؤقتًا من إدارة المنصة، حاول لاحقًا.</p>
+          @elseif ($err('account_type'))
+            <p class="terms-error" role="alert">{{ $err('account_type') }}</p>
+          @endif
           <div class="form-step is-active">
             <fieldset class="role-selector" aria-label="نوع الحساب">
               <div class="role-grid">

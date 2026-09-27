@@ -68,8 +68,9 @@
                         @endforeach
                     </tbody>
                 </table>
-                <p class="earnings-empty" id="earningsEmpty" @if ($transactions->isNotEmpty()) hidden @endif data-i18n="noMatchingTransactions">
-                    {{ $transactions->isEmpty() ? 'لا توجد معاملات حتى الآن.' : 'لا توجد معاملات تطابق عوامل التصفية.' }}
+                <p class="earnings-empty" id="earningsEmpty" @if ($transactions->isNotEmpty()) hidden @endif>
+                    <i class="bi bi-inbox" aria-hidden="true"></i>
+                    <span data-i18n="noMatchingTransactions">{{ $transactions->isEmpty() ? 'لا توجد معاملات حتى الآن.' : 'لا توجد معاملات تطابق عوامل التصفية.' }}</span>
                 </p>
             </div>
         </section>

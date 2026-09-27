@@ -536,7 +536,10 @@
 
   const hoverImages = {
     shirt: "تحديث1.png",
-    hoodie: "تحديث2.png"
+    hoodie: "تحديث2.png",
+    paper: "تحديث3.png",
+    stickers: "تحديث4.png",
+    cups: "تحديث5.png"
   };
 
   const heroCopy = document.querySelector(".hero-copy");
@@ -618,7 +621,7 @@
     const productImagesBase = window.palPrintsCustomerAssets?.products || "/front/assets/images/customer/products";
     const originalSrc = productImages[product] ? `${productImagesBase}/${productImages[product]}` : image.src;
     const hoverSrc = hoverImages[product]
-      ? `assets/images/products/${hoverImages[product]}`
+      ? `${productImagesBase}/${encodeURIComponent(hoverImages[product])}`
       : null;
     if (originalSrc) image.src = originalSrc;
 

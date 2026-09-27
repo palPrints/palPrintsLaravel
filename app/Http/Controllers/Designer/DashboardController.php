@@ -29,6 +29,10 @@ class DashboardController extends Controller
             $ratingsCount = (int) ($designs->clone()->sum('total_reviews') ?? 0);
         }
 
+        $statusCounts = (clone $designs)->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
         $stats = [
             'total_designs' => (clone $designs)->count(),
             'designs_this_month' => (clone $designs)->whereBetween('created_at', [$monthStart, $monthEnd])->count(),
@@ -38,9 +42,16 @@ class DashboardController extends Controller
                 ->where('type', 'design_profit')
                 ->whereBetween('created_at', [$monthStart, $monthEnd])
                 ->sum('amount') ?? 0),
+            'available_balance' => (float) ($user->wallet?->available_balance ?? 0),
             'average_rating' => $averageRating,
             'ratings_count' => $ratingsCount,
+            'published_count' => (int) ($statusCounts['published'] ?? 0),
+            'review_count' => (int) ($statusCounts['review'] ?? 0),
+            'draft_count' => (int) ($statusCounts['draft'] ?? 0),
+            'rejected_count' => (int) ($statusCounts['rejected'] ?? 0),
         ];
+
+        $recentDesigns = (clone $designs)->with('product')->latest()->limit(6)->get();
 
         $recentActivities = $user->userNotifications()->latest()->limit(5)->get();
         $unreadNotificationsCount = $user->userNotifications()->where('is_read', false)->count();
@@ -68,6 +79,7 @@ class DashboardController extends Controller
 
         return view('designer.dashboard', compact(
             'recentActivities',
+            'recentDesigns',
             'stats',
             'unreadNotificationsCount',
             'accountNotice',
