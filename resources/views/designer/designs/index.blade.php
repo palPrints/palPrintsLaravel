@@ -162,6 +162,15 @@
               </div>
             </div>
           </section>
+          <section class="designs-state" id="designsTrueEmpty" @if ($designs->isNotEmpty()) hidden @endif>
+            <i class="bi bi-images" aria-hidden="true"></i>
+            <h2>ما في تصاميم بعد</h2>
+            <p>ابدأ برفع أول تصميم إلك وشاركه مع عملاء PalPrints.</p>
+            <a href="{{ route('designer.designs.create') }}" class="card-btn trend state-action">
+              <i class="bi bi-plus-lg" aria-hidden="true"></i><span>تصميم جديد</span>
+            </a>
+          </section>
+
           <section class="designs-state" id="designsEmpty" hidden>
             <i class="bi bi-search" aria-hidden="true"></i>
             <h2 data-i18n="noMatchesTitle">لا توجد تصاميم مطابقة لبحثك</h2>

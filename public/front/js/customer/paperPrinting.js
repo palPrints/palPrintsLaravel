@@ -565,7 +565,7 @@ document.addEventListener("DOMContentLoaded", function () {
     else completeAndGo(state.currentStep + 1);
   }
 
-  el.choose.addEventListener("click", function () { if (document.body.dataset.authenticated === "true") el.input.click(); else showToast(t("signInRequired"), "error"); });
+  el.choose.addEventListener("click", function () { if (document.body.dataset.authenticated === "true") el.input.click(); else { showToast(t("signInRequired"), "error"); window.setTimeout(function () { window.location.href = "/login"; }, 1200); } });
   el.addMore.addEventListener("click", function () { el.input.click(); });
   el.input.addEventListener("change", function () { addFiles(el.input.files); });
   ["dragenter", "dragover"].forEach(function (type) { el.zone.addEventListener(type, function (event) { event.preventDefault(); el.zone.classList.add("is-dragging"); }); });
@@ -699,8 +699,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   try {
     const existingCart = JSON.parse(window.localStorage.getItem("palprints-paper-cart") || "[]");
-    $("#cartBadge").textContent = existingCart.length;
-  } catch (error) { $("#cartBadge").textContent = "0"; }
+    const badge = $("#cartBadge"); if (badge) badge.textContent = existingCart.length;
+  } catch (error) { const badge = $("#cartBadge"); if (badge) badge.textContent = "0"; }
 
   /* حالة معاينة اختيارية للاختبارات البصرية فقط، ولا تعمل في المسار العادي. */
   const demoStage = new URLSearchParams(window.location.search).get("demo");

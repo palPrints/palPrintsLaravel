@@ -1,5 +1,16 @@
 <?php
 
+use App\Http\Controllers\Admin\ApprovalRequestController as AdminApprovalRequestController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\DesignController as AdminDesignController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\SettingController as AdminSettingController;
+use App\Http\Controllers\Admin\ShippingController as AdminShippingController;
+use App\Http\Controllers\Admin\SupportController as AdminSupportController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Customer\CatalogController as CustomerCatalogController;
 use App\Http\Controllers\DashboardRedirectController;
 use App\Http\Controllers\Designer\DashboardController as DesignerDashboardController;
@@ -8,6 +19,7 @@ use App\Http\Controllers\Designer\EarningsController;
 use App\Http\Controllers\Designer\NotificationController as DesignerNotificationController;
 use App\Http\Controllers\Designer\ProfileController as DesignerProfileController;
 use App\Http\Controllers\Designer\SettingsController as DesignerSettingsController;
+use App\Http\Controllers\Designer\SupportController as DesignerSupportController;
 use App\Http\Controllers\PrintProvider\EarningsController as PrintProviderEarningsController;
 use App\Http\Controllers\PrintProvider\ProfileController as PrintProviderProfileController;
 use App\Http\Controllers\ProfileController;
@@ -47,8 +59,36 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/onboarding/submit', [OnboardingController::class, 'submit'])
         ->name('onboarding.submit');
 
-    Route::get('/admin/dashboard', [RoleDashboardController::class, 'show'])
-        ->defaults('dashboard_role', 'admin')->middleware('role:admin')->name('admin.dashboard');
+    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
+        Route::get('/designs', [AdminDesignController::class, 'index'])->name('designs');
+        Route::post('/designs/{design}/review', [AdminDesignController::class, 'review'])->name('designs.review');
+
+        Route::get('/products', [AdminProductController::class, 'index'])->name('products');
+        Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
+        Route::patch('/products/{product}', [AdminProductController::class, 'update'])->name('products.update');
+        Route::patch('/products/{product}/toggle', [AdminProductController::class, 'toggle'])->name('products.toggle');
+        Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
+
+        Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders');
+        Route::patch('/orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
+
+        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments');
+        Route::post('/payments/withdrawals/{withdrawal}/review', [AdminPaymentController::class, 'review'])->name('payments.withdrawals.review');
+
+        Route::get('/shipping', [AdminShippingController::class, 'index'])->name('shipping');
+        Route::get('/reports', [AdminReportController::class, 'index'])->name('reports');
+        Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings');
+        Route::post('/settings/general', [AdminSettingController::class, 'updateGeneral'])->name('settings.general');
+        Route::post('/settings/notifications', [AdminSettingController::class, 'updateNotifications'])->name('settings.notifications');
+        Route::post('/settings/fees', [AdminSettingController::class, 'updateFees'])->name('settings.fees');
+        Route::post('/settings/payments/{method}', [AdminSettingController::class, 'updatePaymentMethod'])->name('settings.payments');
+        Route::get('/support', [AdminSupportController::class, 'index'])->name('support');
+        Route::post('/support/{ticket}/reply', [AdminSupportController::class, 'reply'])->name('support.reply');
+        Route::post('/support/{ticket}/status', [AdminSupportController::class, 'updateStatus'])->name('support.status');
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users');
+        Route::post('/approval-requests/{approvalRequest}/review', [AdminApprovalRequestController::class, 'update'])->name('approval-requests.review');
+    });
     Route::middleware('role:customer')->prefix('customer')->name('customer.')->group(function () {
         Route::get('/store', [CustomerCatalogController::class, 'store'])->name('store');
         Route::get('/hoodies', [CustomerCatalogController::class, 'hoodies'])->name('hoodies');
@@ -96,7 +136,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         });
         Route::get('/settings', [DesignerSettingsController::class, 'show'])->name('settings');
         Route::patch('/settings/account', [DesignerSettingsController::class, 'updateAccount'])->name('settings.account');
-        Route::view('/support', 'designer.support')->name('support');
+        Route::get('/support', [DesignerSupportController::class, 'show'])->name('support');
+        Route::post('/support', [DesignerSupportController::class, 'store'])->name('support.store');
         Route::get('/notifications', [DesignerNotificationController::class, 'index'])->name('notifications');
         Route::post('/notifications/read-all', [DesignerNotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::post('/notifications/{notification}/read', [DesignerNotificationController::class, 'read'])->name('notifications.read');

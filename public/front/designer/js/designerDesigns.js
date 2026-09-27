@@ -448,8 +448,10 @@
 
   function render() {
     const list = filteredDesigns();
+    const hasAnyDesigns = designs.length > 0;
 
-    elements.empty.hidden = list.length > 0;
+    if (elements.trueEmpty) elements.trueEmpty.hidden = hasAnyDesigns;
+    elements.empty.hidden = !hasAnyDesigns || list.length > 0;
     elements.groups.hidden = list.length === 0;
 
     if (!list.length) {
@@ -846,6 +848,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     elements.groups = document.getElementById("designGroups");
     elements.empty = document.getElementById("designsEmpty");
+    elements.trueEmpty = document.getElementById("designsTrueEmpty");
     elements.clearSearch = document.getElementById(
       "clearSearchButton"
     );

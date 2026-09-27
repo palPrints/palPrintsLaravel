@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('front/designer/assets/icons/bootstrap-icons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('front/shared/icons/bootstrap-icons.min.css') }}">
     @stack('styles')
     <link rel="stylesheet" href="{{ asset('front/css/printProvider/shell.css') }}?v={{ filemtime(public_path('front/css/printProvider/shell.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/css/printProvider/dashboard.css') }}?v={{ filemtime(public_path('front/css/printProvider/dashboard.css')) }}">

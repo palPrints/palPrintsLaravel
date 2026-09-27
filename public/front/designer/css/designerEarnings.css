@@ -126,6 +126,7 @@ html[dir="ltr"] .earnings-table td[dir="ltr"] { text-align:left; }
 .status-pill.is-transferring { color:#6815ed; background:var(--profile-purple-soft); }
 .status-pill.is-rejected { color:#be293e; background:var(--profile-danger-soft); }
 .earnings-empty { padding:40px 20px; color:var(--profile-secondary); text-align:center; font-size:14px; font-weight:700; }
+.earnings-empty i { display:block; margin-bottom:10px; color:var(--profile-secondary); font-size:28px; }
 .earnings-page .profile-dialog-body strong { color:var(--profile-success); }
 html[data-bs-theme="dark"] .status-pill.is-pending { color:#f3ae4c; }
 html[data-bs-theme="dark"] .status-pill.is-available,html[data-bs-theme="dark"] .status-pill.is-complete { color:#54d7a2; }

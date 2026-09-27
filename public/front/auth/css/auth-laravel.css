@@ -1,7 +1,7 @@
 /* Laravel-specific additions for the auth pages. */
 @font-face {
   font-family: "Cairo";
-  src: url("../../designer/assets/fonts/Cairo-Variable.ttf") format("truetype");
+  src: url("../../shared/fonts/Cairo-Variable.ttf") format("truetype");
   font-weight: 200 1000;
   font-display: swap;
 }

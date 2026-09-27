@@ -198,7 +198,7 @@ class CatalogProductData
         return asset('front/designer/source/create/'.$meta['thumbnail']);
     }
 
-    private static function categoryName(string $slug, string $fallback): string
+    public static function categoryName(string $slug, string $fallback): string
     {
         return match ($slug) {
             'apparel' => 'ملابس',

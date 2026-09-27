@@ -73,4 +73,53 @@ class WithdrawalService
             return $withdrawal;
         });
     }
+
+    /** Admin approval: the pending amount leaves the wallet for good. */
+    public function approve(WithdrawalRequest $withdrawal): WithdrawalRequest
+    {
+        return $this->review($withdrawal, true, null);
+    }
+
+    /** Admin rejection: the pending amount goes back to the available balance. */
+    public function reject(WithdrawalRequest $withdrawal, ?string $reason = null): WithdrawalRequest
+    {
+        return $this->review($withdrawal, false, $reason);
+    }
+
+    private function review(WithdrawalRequest $withdrawal, bool $approved, ?string $reason): WithdrawalRequest
+    {
+        return DB::transaction(function () use ($withdrawal, $approved, $reason) {
+            $withdrawal = WithdrawalRequest::whereKey($withdrawal->id)->lockForUpdate()->firstOrFail();
+
+            if ($withdrawal->status !== 'pending') {
+                throw ValidationException::withMessages([
+                    'withdrawal' => 'تمت مراجعة هذا الطلب مسبقًا.',
+                ]);
+            }
+
+            $wallet = $withdrawal->wallet()->lockForUpdate()->firstOrFail();
+            $cents = (int) round(((float) $withdrawal->amount) * 100);
+            $pendingCents = max((int) round(((float) $wallet->pending_balance) * 100) - $cents, 0);
+
+            $walletChanges = ['pending_balance' => $pendingCents / 100, 'last_updated' => now()];
+
+            if ($approved) {
+                $walletChanges['total_withdrawn'] = ((int) round(((float) $wallet->total_withdrawn) * 100) + $cents) / 100;
+            } else {
+                $walletChanges['available_balance'] = ((int) round(((float) $wallet->available_balance) * 100) + $cents) / 100;
+            }
+
+            $wallet->update($walletChanges);
+
+            $withdrawal->update($approved
+                ? ['status' => 'approved', 'approved_at' => now(), 'completed_at' => now()]
+                : ['status' => 'rejected', 'rejection_reason' => $reason]);
+
+            WalletTransaction::where('wallet_id', $wallet->id)
+                ->where('reference_id', $withdrawal->reference_id)
+                ->update(['status' => $approved ? 'complete' : 'rejected']);
+
+            return $withdrawal;
+        });
+    }
 }
