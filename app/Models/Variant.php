@@ -9,9 +9,36 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Variant extends Model
 {
     public $timestamps = false;
+
     protected $fillable = ['product_id', 'sku', 'is_active'];
-    protected function casts(): array { return ['is_active' => 'boolean']; }
-    public function product(): BelongsTo { return $this->belongsTo(Product::class); }
-    public function values(): HasMany { return $this->hasMany(VariantValue::class); }
-    public function providerOfferingVariants(): HasMany { return $this->hasMany(ProviderOfferingVariant::class); }
+
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean'];
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function values(): HasMany
+    {
+        return $this->hasMany(VariantValue::class);
+    }
+
+    public function branchOfferingVariants(): HasMany
+    {
+        return $this->hasMany(BranchOfferingVariant::class);
+    }
+
+    public function cartItems(): HasMany
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 }

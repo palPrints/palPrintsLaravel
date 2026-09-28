@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             RoleAndPermissionSeeder::class,
             CatalogDemoSeeder::class,
             AdminUserSeeder::class,
+            FullDemoScenarioSeeder::class,
         ]);
     }
 }

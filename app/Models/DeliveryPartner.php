@@ -44,16 +44,14 @@ class DeliveryPartner extends Model
         'is_active' => 'boolean',
     ];
 
-    // ========== العلاقات ==========
-
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function orders()
+    public function shipments()
     {
-        return $this->hasMany(Order::class, 'delivery_partner_id', 'user_id');
+        return $this->hasMany(Shipment::class);
     }
 
     public function approver()
