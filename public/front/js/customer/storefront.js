@@ -408,65 +408,76 @@
     renderCartDropdown();
   }
 
-  // قائمة الحساب الجانبية — بالديسكتوب/التابلت بتدفع المحتوى وتظهر جنبه
-  // (بدون تعتيم فوق الصفحة)، وبالموبايل الشاشة صغيرة فبتظهر فوق المحتوى
-  // بخلفية معتمة لأنه ما في مساحة تدفع فيها المحتوى بدون ما يتكسر.
+  // القائمة الجانبية — نفس شكل وسلوك سايدبار الأدمن/المصمم بالضبط:
+  // بالديسكتوب ثابتة وظاهرة دايمًا وبتدفع المحتوى، وزر القائمة بيطويها
+  // لأيقونات فقط (مو بيخفيها) مع حفظ التفضيل بالمتصفح؛ بالموبايل تضل
+  // منبثقة فوق المحتوى بخلفية معتمة زي ما كانت (بدون إغلاق تلقائي عند
+  // الضغط على رابط بالقائمة أو الخلفية أو Escape — طلب المستخدم بالتحديد).
   if (sidebarToggle && storeSidebar && sidebarBackdrop) {
     const wideScreen = window.matchMedia("(min-width: 992px)");
     const sidebarToggleIcon = sidebarToggle.querySelector("i");
-    const SIDEBAR_STORAGE_KEY = "palprints-sidebar-open";
+    const COLLAPSE_STORAGE_KEY = "palprints-customer-sidebar-collapsed";
     storeSidebar.hidden = false;
-    storeSidebar.setAttribute("aria-hidden", "true");
 
-    // القائمة تضل مفتوحة عبر تصفح صفحات الموقع (حالة محفوظة بالمتصفح) ولا
-    // تنسكر إلا بالضغط على زر الفتح/الإغلاق نفسه — طلب المستخدم بالتحديد،
-    // فما في إغلاق تلقائي عند الضغط على رابط بالقائمة أو الخلفية أو Escape.
-    const applyOpen = (shouldFocus) => {
-      storeSidebar.classList.add("is-open");
-      sidebarToggle.setAttribute("aria-expanded", "true");
-      sidebarToggle.setAttribute("aria-label", "إغلاق القائمة الجانبية");
-      storeSidebar.setAttribute("aria-hidden", "false");
-      sidebarToggleIcon?.classList.replace("bi-list", "bi-x-lg");
-
+    const syncToggleUI = () => {
       if (wideScreen.matches) {
-        document.body.classList.add("sidebar-push-open");
-        sidebarBackdrop.hidden = true;
-        document.body.style.overflow = "";
+        const collapsed = document.body.classList.contains("sidebar-collapsed");
+        sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+        sidebarToggle.setAttribute("aria-label", collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية");
+        sidebarToggleIcon?.classList.toggle("bi-list", collapsed);
+        sidebarToggleIcon?.classList.toggle("bi-x-lg", !collapsed);
+        storeSidebar.removeAttribute("aria-hidden");
       } else {
-        document.body.classList.remove("sidebar-push-open");
-        sidebarBackdrop.hidden = false;
-        document.body.style.overflow = "hidden";
+        const open = storeSidebar.classList.contains("is-open");
+        sidebarToggle.setAttribute("aria-expanded", String(open));
+        sidebarToggle.setAttribute("aria-label", open ? "إغلاق القائمة الجانبية" : "فتح القائمة الجانبية");
+        sidebarToggleIcon?.classList.toggle("bi-list", !open);
+        sidebarToggleIcon?.classList.toggle("bi-x-lg", open);
+        storeSidebar.setAttribute("aria-hidden", open ? "false" : "true");
       }
+    };
+
+    const setDesktopCollapsed = (collapsed, persist) => {
+      document.body.classList.toggle("sidebar-collapsed", collapsed);
+      if (persist) {
+        try { localStorage.setItem(COLLAPSE_STORAGE_KEY, collapsed ? "1" : "0"); }
+        catch (_) { /* Session-only fallback. */ }
+      }
+      syncToggleUI();
+    };
+
+    const openMobileSidebar = (shouldFocus) => {
+      storeSidebar.classList.add("is-open");
+      sidebarBackdrop.hidden = false;
+      document.body.style.overflow = "hidden";
+      syncToggleUI();
       if (shouldFocus) storeSidebar.querySelector(".store-sidebar__item")?.focus();
     };
 
-    const openSidebar = () => {
-      applyOpen(true);
-      try { localStorage.setItem(SIDEBAR_STORAGE_KEY, "1"); } catch (_) { /* Session-only fallback. */ }
-    };
-
-    const closeSidebar = () => {
+    const closeMobileSidebar = () => {
       storeSidebar.classList.remove("is-open");
-      sidebarToggle.setAttribute("aria-expanded", "false");
-      sidebarToggle.setAttribute("aria-label", "فتح القائمة الجانبية");
-      storeSidebar.setAttribute("aria-hidden", "true");
-      sidebarToggleIcon?.classList.replace("bi-x-lg", "bi-list");
-      document.body.classList.remove("sidebar-push-open");
       sidebarBackdrop.hidden = true;
       document.body.style.overflow = "";
-      try { localStorage.setItem(SIDEBAR_STORAGE_KEY, "0"); } catch (_) { /* Session-only fallback. */ }
+      syncToggleUI();
     };
 
-    wideScreen.addEventListener("change", () => {
-      if (storeSidebar.classList.contains("is-open")) applyOpen(false);
+    sidebarToggle.addEventListener("click", () => {
+      if (wideScreen.matches) {
+        setDesktopCollapsed(!document.body.classList.contains("sidebar-collapsed"), true);
+      } else if (storeSidebar.classList.contains("is-open")) {
+        closeMobileSidebar();
+      } else {
+        openMobileSidebar(true);
+      }
     });
 
-    sidebarToggle.addEventListener("click", () => {
-      if (storeSidebar.classList.contains("is-open")) {
-        closeSidebar();
+    wideScreen.addEventListener("change", (event) => {
+      if (event.matches) {
+        closeMobileSidebar();
       } else {
-        openSidebar();
+        document.body.classList.remove("sidebar-collapsed");
       }
+      syncToggleUI();
     });
 
     if (sidebarLogout) {
@@ -476,9 +487,10 @@
       });
     }
 
-    let wasOpen = false;
-    try { wasOpen = localStorage.getItem(SIDEBAR_STORAGE_KEY) === "1"; } catch (_) { /* Defaults to closed. */ }
-    if (wasOpen) applyOpen(false);
+    let storedCollapsed = false;
+    try { storedCollapsed = localStorage.getItem(COLLAPSE_STORAGE_KEY) === "1"; } catch (_) { /* Defaults to expanded. */ }
+    if (wideScreen.matches && storedCollapsed) document.body.classList.add("sidebar-collapsed");
+    syncToggleUI();
   }
 
   /* Pages that reuse only the store shell stop here; the catalog below requires

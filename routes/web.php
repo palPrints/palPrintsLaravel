@@ -12,6 +12,9 @@ use App\Http\Controllers\Admin\ShippingController as AdminShippingController;
 use App\Http\Controllers\Admin\SupportController as AdminSupportController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Customer\CatalogController as CustomerCatalogController;
+use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
+use App\Http\Controllers\Customer\SettingsController as CustomerSettingsController;
+use App\Http\Controllers\Customer\SupportController as CustomerSupportController;
 use App\Http\Controllers\DashboardRedirectController;
 use App\Http\Controllers\Designer\DashboardController as DesignerDashboardController;
 use App\Http\Controllers\Designer\DesignController;
@@ -101,8 +104,11 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::view('/basket/empty', 'customer.basket-empty')->name('basket.empty');
         Route::view('/checkout', 'customer.checkout')->name('checkout');
         Route::view('/orders', 'customer.orders')->name('orders');
-        Route::view('/profile', 'customer.profile')->name('profile');
+        Route::get('/profile', [CustomerProfileController::class, 'edit'])->name('profile');
+        Route::patch('/profile', [CustomerProfileController::class, 'update'])->name('profile.update');
         Route::view('/favorites', 'customer.favorites')->name('favorites');
+        Route::get('/settings', [CustomerSettingsController::class, 'edit'])->name('settings');
+        Route::get('/support', [CustomerSupportController::class, 'edit'])->name('support');
     });
     Route::get('/designer/dashboard', DesignerDashboardController::class)
         ->middleware('role:designer')->name('designer.dashboard');

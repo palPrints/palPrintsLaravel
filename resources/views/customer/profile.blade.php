@@ -2,9 +2,9 @@
     Ported from palPrintFront/custProfile.html. The original page had its own
     standalone sidebar/topbar/footer shell; here it's fitted into the site's
     shared storefront header/sidebar (customer.layouts.app) instead, same as
-    the orders page. The profile fields (name/email/phone/city/address) are
-    still hardcoded demo data — same "demo data" situation the other pages
-    have before this is wired to a real customer/profile table.
+    the orders page. Name/email/phone/avatar are wired to the users table via
+    Customer\ProfileController. City/address/notes stay as demo placeholders
+    — the users table has no columns for them yet.
 --}}
 @extends('customer.layouts.app')
 
@@ -25,23 +25,70 @@
 
         <div class="alert-info page-alert">أكملي رقم هاتفك وعنوان التوصيل لتسريع تجهيز طلباتك القادمة.</div>
 
+        @php
+            $nameParts = preg_split('/\s+/', trim($customer->name)) ?: [];
+            $initials = mb_substr($nameParts[0] ?? '', 0, 1) . mb_substr($nameParts[1] ?? '', 0, 1);
+            $avatarUrl = $customer->avatar_path ? asset('storage/' . $customer->avatar_path) : null;
+            $hasEditErrors = $errors->hasAny(['fullName', 'email', 'phone', 'avatar']);
+        @endphp
+
         <section class="profile-summary app-card">
             <div class="identity">
                 <div class="avatar-wrap">
-                    <div class="avatar" id="avatar"><span>ع م</span><img id="avatarImage" alt="صورة الملف الشخصي"></div>
+                    <div class="avatar{{ $avatarUrl ? ' has-image' : '' }}" id="avatar">
+                        <span>{{ $initials !== '' ? $initials : 'ع م' }}</span>
+                        <img id="avatarImage" alt="صورة الملف الشخصي" @if($avatarUrl) src="{{ $avatarUrl }}" @endif>
+                    </div>
                     <label for="avatarInput" class="avatar-camera" aria-label="اختيار صورة شخصية"><i class="bi bi-camera"></i></label>
-                    <input type="file" id="avatarInput" accept="image/*" hidden>
+                    <input type="file" id="avatarInput" name="avatar" accept="image/*" form="profileForm" hidden>
                 </div>
                 <div class="identity-text">
-                    <h2 id="displayName">علا المصري</h2>
+                    <h2 id="displayName">{{ $customer->name }}</h2>
                     <p>عميل PalPrints</p>
                     <span>أهلاً بك في ملفك الشخصي.</span>
-                    <span class="badge-success"><i class="bi bi-patch-check-fill"></i> البريد الإلكتروني موثّق</span>
+                    @if($customer->email_verified_at)
+                        <span class="badge-success"><i class="bi bi-patch-check-fill"></i> البريد الإلكتروني موثّق</span>
+                    @else
+                        <span class="badge-warning"><i class="bi bi-exclamation-circle-fill"></i> البريد الإلكتروني غير موثّق</span>
+                    @endif
                 </div>
             </div>
         </section>
 
-        <form class="profile-form app-card" id="profileForm">
+        <div class="profile-view app-card" id="profileView" @if($hasEditErrors) hidden @endif>
+            <section class="form-section" aria-labelledby="personalTitle">
+                <div class="section-title">
+                    <span class="section-icon"><i class="bi bi-person"></i></span>
+                    <div><h2 id="personalTitle">البيانات الشخصية</h2><p>معلومات التواصل الخاصة بك.</p></div>
+                    <button type="button" class="btn-brand-outline btn-sm profile-view__edit" id="profileEditButton"><i class="bi bi-pencil" aria-hidden="true"></i> تعديل البيانات</button>
+                </div>
+
+                <div class="field-grid">
+                    <div class="field"><span class="pp-label">الاسم الكامل</span><p class="pp-value" id="viewFullName">{{ $customer->name }}</p></div>
+                    <div class="field"><span class="pp-label">البريد الإلكتروني</span><p class="pp-value" id="viewEmail" dir="ltr">{{ $customer->email }}</p></div>
+                    <div class="field"><span class="pp-label">رقم الهاتف</span><p class="pp-value {{ $customer->phone ? '' : 'pp-value--muted' }}" id="viewPhone">{{ $customer->phone ?: 'لم يتم إدخال رقم الهاتف بعد' }}</p></div>
+                    <div class="field"><span class="pp-label">المدينة</span><p class="pp-value" id="viewCity">غزة</p></div>
+                </div>
+            </section>
+
+            <div class="form-divider"></div>
+
+            <section class="form-section" aria-labelledby="addressTitle">
+                <div class="section-title">
+                    <span class="section-icon"><i class="bi bi-geo-alt"></i></span>
+                    <div><h2 id="addressTitle">عنوان التوصيل</h2><p>لتصلك طلباتك بسهولة.</p></div>
+                </div>
+
+                <div class="field-grid one-column">
+                    <div class="field"><span class="pp-label">العنوان بالتفصيل</span><p class="pp-value pp-value--muted" id="viewAddress">لم يتم إدخال العنوان بعد</p></div>
+                    <div class="field"><span class="pp-label">ملاحظات إضافية</span><p class="pp-value pp-value--muted" id="viewNotes">لا توجد ملاحظات</p></div>
+                </div>
+            </section>
+        </div>
+
+        <form class="profile-form app-card" id="profileForm" method="POST" action="{{ route('customer.profile.update') }}" enctype="multipart/form-data" @unless($hasEditErrors) hidden @endunless>
+            @csrf
+            @method('PATCH')
             <section class="form-section" aria-labelledby="personalTitle">
                 <div class="section-title">
                     <span class="section-icon"><i class="bi bi-person"></i></span>
@@ -49,11 +96,24 @@
                 </div>
 
                 <div class="field-grid">
-                    <div class="field"><label class="pp-label" for="fullName">الاسم الكامل</label><input id="fullName" class="pp-input" name="fullName" type="text" value="علا المصري" required></div>
-                    <div class="field"><label class="pp-label" for="email">البريد الإلكتروني</label><input id="email" class="pp-input" name="email" type="email" value="ola@example.com" dir="ltr" required></div>
-                    <div class="field"><label class="pp-label" for="phone">رقم الهاتف</label><input id="phone" class="pp-input" name="phone" type="tel" placeholder="أدخل رقم الهاتف"></div>
+                    <div class="field">
+                        <label class="pp-label" for="fullName">الاسم الكامل</label>
+                        <input id="fullName" class="pp-input" name="fullName" type="text" value="{{ old('fullName', $customer->name) }}" required>
+                        @error('fullName') <span class="pp-error">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="field">
+                        <label class="pp-label" for="email">البريد الإلكتروني</label>
+                        <input id="email" class="pp-input" name="email" type="email" value="{{ old('email', $customer->email) }}" dir="ltr" required>
+                        @error('email') <span class="pp-error">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="field">
+                        <label class="pp-label" for="phone">رقم الهاتف</label>
+                        <input id="phone" class="pp-input" name="phone" type="tel" value="{{ old('phone', $customer->phone) }}" placeholder="أدخل رقم الهاتف">
+                        @error('phone') <span class="pp-error">{{ $message }}</span> @enderror
+                    </div>
                     <div class="field"><label class="pp-label" for="city">المدينة</label><input id="city" class="pp-input" name="city" type="text" value="غزة"></div>
                 </div>
+                @error('avatar') <span class="pp-error">{{ $message }}</span> @enderror
             </section>
 
             <div class="form-divider"></div>
@@ -72,12 +132,12 @@
 
             <div class="form-actions">
                 <button type="submit" class="btn-brand">حفظ التغييرات</button>
-                <button type="reset" class="btn-brand-outline">تراجع</button>
+                <button type="button" class="btn-brand-outline" id="profileCancelButton">تراجع</button>
             </div>
         </form>
     </section>
 
-    <div class="toast" id="toast" role="status" aria-live="polite" hidden><i class="bi bi-check-circle-fill"></i><span>تم حفظ التغييرات بنجاح</span></div>
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden data-flash="{{ session('status') === 'profile-updated' ? '1' : '' }}"><i class="bi bi-check-circle-fill"></i><span>تم حفظ التغييرات بنجاح</span></div>
 @endsection
 
 @push('scripts')

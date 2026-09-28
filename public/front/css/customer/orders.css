@@ -1,6 +1,6 @@
-@import url("./custProfile.css");
+@import url("./profile.css");
 
-html, body { overflow-x: hidden; }
+body { overflow-x: hidden; }
 body.sidebar-collapsed .sidebar { transform: translateX(calc(100% + 12px)); }
 
 .store-main, .store-main *, .store-main *::before, .store-main *::after { box-sizing: border-box; }

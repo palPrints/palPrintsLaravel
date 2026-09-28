@@ -18,6 +18,17 @@
    01. الرموز
    ========================================================= */
 
+/* box-sizing:border-box موحّد لكل صفحات المتجر (زي الأدمن بالضبط) —
+   بدونه كانت بعض الصفحات (يلي بتحمّل CSS إضافي خاص فيها بيعمل نفس
+   الـ reset) بترث border-box، وباقي الصفحات بترجع لسلوك المتصفح
+   الافتراضي content-box، فكانت القائمة الجانبية (وعناصر تانية) بتطلع
+   بارتفاعات مختلفة من صفحة لصفحة رغم نفس الـ CSS بالضبط */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body.storefront-page {
   margin: 0;
   min-height: 100%;
@@ -54,8 +65,9 @@ body.storefront-page {
   /* ارتفاع الهيدير المسطّح — القائمة الجانبية تبدأ من تحته مباشرة */
   --store-header-height: 60px;
 
-  /* القائمة الجانبية: قائمة منسدلة (Drawer) ملتصقة بحافة الشاشة بعرض ثابت */
-  --store-sidebar-width: min(256px, 86vw);
+  /* القائمة الجانبية: ثابتة على الديسكتوب (زي الأدمن والمصمم)، وDrawer منبثق بالموبايل فقط */
+  --store-sidebar-width: min(230px, 86vw);
+  --store-sidebar-collapsed-width: 76px;
 
   margin: 0;
   background: var(--pal-page-bg);
@@ -87,17 +99,6 @@ body.storefront-page::before {
     radial-gradient(circle at 82% 84%, rgb(18 191 208 / 4%), transparent 44%),
     radial-gradient(circle at 4% 92%, rgb(22 143 223 / 4%), transparent 40%),
     linear-gradient(140deg, #fff 0%, #fbfdff 50%, #fdffff 100%);
-}
-
-body.storefront-page::after {
-  content: "";
-  position: fixed;
-  inset-inline: 0;
-  top: 0;
-  z-index: 3000;
-  height: 3px;
-  pointer-events: none;
-  background: linear-gradient(100deg, var(--pal-cyan) 0%, var(--pal-blue) 55%, var(--pal-indigo) 100%);
 }
 
 html[data-bs-theme="dark"] body.storefront-page {
@@ -184,6 +185,19 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   opacity: 1;
 }
 
+/* بالديسكتوب القائمة ظاهرة دايمًا (موسّعة أو مطوية لأيقونات) فالخط الفاصل
+   لازم يبين دايمًا وينزاح مع عرض القائمة الحالي */
+@media (min-width: 992px) {
+  .store-header::after {
+    opacity: 1;
+    transition: inset-inline-start 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  body.storefront-page.sidebar-collapsed .store-header::after {
+    inset-inline-start: var(--store-sidebar-collapsed-width);
+  }
+}
+
 /* أثناء التمرير: نفس الارتفاع، بس بظل خفيف يفصلها عن المحتوى تحتها */
 .store-header.is-scrolled {
   box-shadow: 0 6px 18px rgb(15 23 42 / 8%);
@@ -235,19 +249,50 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   font-size: 20px;
 }
 
+.store-brand__logo-full,
+.store-brand__logo-compact {
+  display: grid;
+  place-items: center;
+}
+
+.store-brand__logo-compact {
+  display: none;
+  position: relative;
+  width: 22px;
+  height: 44px;
+  overflow: hidden;
+}
+
+.store-brand__logo-compact img {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 119px;
+  max-width: none;
+  transform: translateY(-50%);
+}
+
+@media (min-width: 992px) {
+  body.storefront-page.sidebar-collapsed .store-brand__logo-full {
+    display: none;
+  }
+
+  body.storefront-page.sidebar-collapsed .store-brand__logo-compact {
+    display: grid;
+  }
+}
+
 .store-brand__logo {
   height: 56px;
   width: auto;
   display: block;
 }
 
-/* روابط التصفح الرئيسية في الهيدير — جنب زر القائمة الجانبية، بمسافة
-   واضحة عنه حتى ما يبين ملتصق فيه */
+/* رابط "المتجر" بآخر الهيدير جنب أيقونات الحساب/الإشعارات/السلة */
 .store-nav {
   display: flex;
   align-items: center;
   height: 100%;
-  margin-inline-start: 70px;
 }
 
 .store-nav__item {
@@ -418,34 +463,58 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   background: #fff;
   border-inline-end: 1px solid var(--store-border);
   border-block-start: 1px solid var(--store-border);
-  box-shadow: -18px 0 34px -20px rgb(11 31 58 / 22%);
-  transform: translateX(100%);
-  visibility: hidden;
-  transition: transform 280ms ease, visibility 280ms ease;
+  transition: width 250ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms ease, visibility 280ms ease;
 }
 
-.store-sidebar.is-open {
-  transform: translateX(0);
-  visibility: visible;
-  border-inline-end-color: var(--store-divider-accent);
-}
-
+/* بالديسكتوب: القائمة ثابتة وظاهرة دايمًا (زي الأدمن والمصمم بالضبط) —
+   بتدفع المحتوى جنبها، وحالة "الطي" بس بتضيّق عرضها لأيقونات بدل ما تختفي */
 @media (min-width: 992px) {
-  /* بدون ظل جانبي لما تكون جنب المحتوى بدل ما تعلو فوقه */
-  .store-sidebar.is-open {
+  .store-sidebar {
+    transform: none;
+    visibility: visible;
     box-shadow: none;
+    border-inline-end-color: var(--store-divider-accent);
   }
 
-  /* الهيدير يضل بعرضه الكامل دايمًا — ما بيتأثر بفتح/إغلاق القائمة إطلاقًا،
-     فقط المحتوى (والفوتر) هما يللي بيتحركوا جنب القائمة. فراغ إضافي (24px)
-     بعد عرض القائمة حتى ما يضل المحتوى ملتصق فيها مباشرة — الفوتر وحده
-     ملتصق بدون فراغ لأنه المستخدم طلب هيك بالتحديد */
-  body.storefront-page.sidebar-push-open .store-main {
+  /* فراغ إضافي (24px) بعد عرض القائمة حتى ما يضل المحتوى ملتصق فيها مباشرة —
+     الفوتر وحده ملتصق بدون فراغ لأنه المستخدم طلب هيك بالتحديد */
+  body.storefront-page .store-main {
     margin-inline-start: calc(var(--store-sidebar-width) + 24px);
+    transition: margin-inline-start 250ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  body.storefront-page.sidebar-push-open .site-footer {
+  body.storefront-page .site-footer {
     margin-inline-start: var(--store-sidebar-width);
+    transition: margin-inline-start 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  body.storefront-page.sidebar-collapsed .store-sidebar {
+    width: var(--store-sidebar-collapsed-width);
+  }
+
+  body.storefront-page.sidebar-collapsed .store-main {
+    margin-inline-start: calc(var(--store-sidebar-collapsed-width) + 24px);
+  }
+
+  body.storefront-page.sidebar-collapsed .site-footer {
+    margin-inline-start: var(--store-sidebar-collapsed-width);
+  }
+}
+
+/* بالموبايل/التابلت: القائمة تضل منبثقة فوق المحتوى (off-canvas) بخلفية
+   معتمة — زي سلوك الأدمن والمصمم بنفس المقاسات بالضبط */
+@media (max-width: 991px) {
+  .store-sidebar {
+    box-shadow: -18px 0 34px -20px rgb(11 31 58 / 22%);
+    transform: translateX(100%);
+    visibility: hidden;
+  }
+
+  .store-sidebar.is-open {
+    transform: translateX(0);
+    visibility: visible;
+    box-shadow: none;
+    border-inline-end-color: var(--store-divider-accent);
   }
 }
 
@@ -467,6 +536,23 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   border-color: #e7e9f1;
   border-radius: 12px;
   font-size: 20px;
+}
+
+/* يبعد زر القائمة والعدسة عن الشعار (وبالتالي عن حافة القائمة الجانبية
+   والخط الفاصل تبعها) أكتر — بالديسكتوب بس، حتى ما يكسر ترتيب الهيدير
+   بالموبايل (القائمة هناك أصلًا منبثقة فوق المحتوى مش جنبه) */
+@media (min-width: 992px) {
+  .store-header__start .sidebar-toggle {
+    margin-inline-start: 72px;
+  }
+
+  /* والقائمة مسكرة (مطوية) الشعار بيصغر لحرف الـ P بس، فمسافة الـ 72px
+     الكبيرة ما عادت لازمة — الأيقونتين بتقربوا من بعض أكتر، بس لازم
+     تضل مسافة كافية حتى ما يتقاطعوا مع الخط الفاصل (عرض القائمة المطوية
+     أضيق بكتير من الموسّعة) */
+  body.storefront-page.sidebar-collapsed .store-header__start .sidebar-toggle {
+    margin-inline-start: 44px;
+  }
 }
 
 .storefront-page .icon-button.sidebar-toggle,
@@ -515,33 +601,34 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   flex-direction: column;
   justify-content: flex-start;
   gap: 8px;
-  padding: 12px 12px 4px;
+  padding: 32px 12px 4px;
   overflow-x: hidden;
   overflow-y: auto;
 }
 
 .store-sidebar__item {
+  position: relative;
   flex: 0 0 auto;
-  min-height: 38px;
+  min-height: 50px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 6px 12px;
+  gap: 14px;
+  padding: 10px 16px;
   line-height: 1.2;
   color: var(--store-body);
   border: 1px solid transparent;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   text-decoration: none;
   transition: color 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
 }
 
 .store-sidebar__item > i {
-  width: 24px;
-  flex: 0 0 24px;
+  width: 26px;
+  flex: 0 0 26px;
   color: var(--store-primary);
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1;
   text-align: center;
   transition: color 220ms ease;
@@ -597,33 +684,86 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 }
 
 .store-sidebar__logout {
+  position: relative;
   width: calc(100% - 24px);
   box-sizing: border-box;
   flex: 0 0 auto;
-  min-height: 44px;
+  min-height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   margin: 10px 12px 14px;
-  padding: 10px 16px;
+  padding: 12px 18px;
   line-height: 1.2;
   color: var(--store-danger);
   background: transparent;
   border: 1px solid transparent;
   border-radius: 12px;
   font: inherit;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   text-align: center;
   cursor: pointer;
   transition: background 220ms ease, border-color 220ms ease;
 }
 
+/* حالة الطي (زي الأدمن بالضبط): أيقونات فقط مع tooltip بالـ hover */
+@media (min-width: 992px) {
+  body.storefront-page.sidebar-collapsed .store-sidebar__item > span,
+  body.storefront-page.sidebar-collapsed .store-sidebar__logout > span {
+    display: none;
+  }
+
+  body.storefront-page.sidebar-collapsed .store-sidebar__nav {
+    align-items: center;
+    padding-inline: 11px;
+  }
+
+  body.storefront-page.sidebar-collapsed .store-sidebar__item,
+  body.storefront-page.sidebar-collapsed .store-sidebar__logout {
+    width: 58px;
+    justify-content: center;
+    gap: 0;
+    padding-inline: 0;
+  }
+
+  body.storefront-page.sidebar-collapsed .store-sidebar__divider {
+    margin-inline: 14px;
+  }
+
+  body.storefront-page.sidebar-collapsed .store-sidebar [data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    z-index: 70;
+    inset-inline-start: calc(100% + 12px);
+    top: 50%;
+    width: max-content;
+    max-width: 180px;
+    padding: 7px 10px;
+    color: #fff;
+    background: var(--store-navy);
+    border-radius: 7px;
+    box-shadow: var(--store-shadow);
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(6px, -50%);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+
+  body.storefront-page.sidebar-collapsed .store-sidebar [data-tooltip]:hover::after,
+  body.storefront-page.sidebar-collapsed .store-sidebar [data-tooltip]:focus-visible::after {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+}
+
 .store-sidebar__logout > i {
-  width: 24px;
-  flex: 0 0 24px;
-  font-size: 18px;
+  width: 26px;
+  flex: 0 0 26px;
+  font-size: 20px;
   line-height: 1;
   text-align: center;
 }
@@ -642,19 +782,19 @@ html[data-bs-theme="dark"] body.storefront-page::before {
    لصندوق بحث كامل لما الماوس يجي فوقها أو لما تاخد فوكس أو لما فيها نص
    مكتوب فعلاً — بدل ما تاخد مساحة ثابتة بالهيدير طول الوقت */
 .store-search {
-  height: 46px;
-  min-height: 46px;
-  flex: 0 0 46px;
-  width: 46px;
-  max-width: 46px;
+  height: 42px;
+  min-height: 42px;
+  flex: 0 0 42px;
+  width: 42px;
+  max-width: 42px;
   min-width: 0;
   display: flex;
   align-items: center;
   padding: 0;
   color: var(--store-body);
   background: transparent;
-  border: 1.5px solid var(--store-primary);
-  border-radius: 999px;
+  border: 1.5px solid transparent;
+  border-radius: 13px;
   cursor: pointer;
   overflow: hidden;
   transition: flex-basis 220ms ease, max-width 220ms ease, border-radius 220ms ease,
@@ -666,15 +806,14 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 .store-search:has(input:not(:placeholder-shown)) {
   flex-basis: 240px;
   max-width: 240px;
-  border-radius: 13px;
   background: #fff;
   border-color: var(--store-primary);
   box-shadow: 0 0 0 3px rgb(22 119 255 / 18%);
 }
 
 .store-search__icon {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   display: inline-grid;
   place-items: center;
   flex: none;
@@ -2206,4 +2345,12 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   height: 75%;
   margin-top: -20px;
   transform: scale(1.08) !important;
+}
+
+/* Manual opt-in from the settings page's "تقليل الحركات" toggle (localStorage-backed, per-browser, applied site-wide via the shared layout's bootstrap script). */
+body.pp-reduce-motion, body.pp-reduce-motion * , body.pp-reduce-motion *::before, body.pp-reduce-motion *::after {
+  animation-duration: .001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .001ms !important;
+  scroll-behavior: auto !important;
 }

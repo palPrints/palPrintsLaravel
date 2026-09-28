@@ -37,17 +37,6 @@ body.hoodies-page::before {
 }
 
 /* شريط الهوية المتدرّج أعلى الصفحة */
-body.hoodies-page::after {
-  content: "";
-  position: fixed;
-  inset-inline: 0;
-  top: 0;
-  z-index: 3000;
-  height: 3px;
-  pointer-events: none;
-  background: linear-gradient(100deg, var(--pal-cyan) 0%, var(--pal-blue) 55%, var(--pal-indigo) 100%);
-}
-
 /* الوضع الليلي وفق نفس النظام */
 html[data-bs-theme="dark"] body.hoodies-page {
   --pal-page-bg: #080d1c;

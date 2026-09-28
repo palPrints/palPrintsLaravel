@@ -8,13 +8,33 @@
     <div class="store-header__inner">
         <div class="store-header__start">
             <a href="{{ route('customer.store') }}" class="store-brand store-header__brand" aria-label="PalPrints">
-                <img src="{{ asset('front/assets/images/customer/palprints-wordmark-transparent.png') }}" alt="PalPrints" class="store-brand__logo">
+                <span class="store-brand__logo-full">
+                    <img src="{{ asset('front/assets/images/customer/palprints-wordmark-transparent.png') }}" alt="PalPrints" class="store-brand__logo">
+                </span>
+                <span class="store-brand__logo-compact" aria-hidden="true">
+                    <img src="{{ asset('front/assets/images/customer/palprints-wordmark-transparent.png') }}" alt="">
+                </span>
             </a>
 
             <button type="button" class="icon-button sidebar-toggle" id="sidebarToggle" aria-label="فتح القائمة الجانبية" aria-expanded="false" aria-controls="storeSidebar">
                 <i class="bi bi-list" aria-hidden="true"></i>
             </button>
 
+            <form class="store-search" id="productSearchForm" role="search">
+                <span class="store-search__icon" aria-hidden="true">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="search" id="productSearch" placeholder="ابحث عن منتج..." aria-label="ابحث عن منتج" autocomplete="off" aria-controls="productGrid">
+            </form>
+        </div>
+
+        {{--
+            منطقة النهاية: رابط "المتجر" (مع القائمة المنسدلة) + الأيقونات مع
+            بعض. ترتيب الأيقونات من الأقل استخدامًا للأكثر أهمية: الملف
+            الشخصي، الإشعارات، وأخيرًا السلة — أهم إجراء تجاري بالهيدير —
+            بأقصى طرف، مفصولة بخط رفيع عن أيقونات الحساب حتى تبرز كأولوية.
+        --}}
+        <div class="store-header__end">
             <nav class="store-nav" aria-label="التصفح الرئيسي">
                 <div class="store-nav__item" id="storeNavShop">
                     <a href="{{ route('customer.store') }}#products" class="store-nav__link" id="storeNavShopTrigger" aria-haspopup="true" aria-expanded="false" aria-controls="storeNavShopMenu">
@@ -40,21 +60,6 @@
                     </div>
                 </div>
             </nav>
-        </div>
-
-        {{--
-            منطقة النهاية: البحث + الأيقونات مع بعض. ترتيب الأيقونات من الأقل
-            استخدامًا للأكثر أهمية: الملف الشخصي، الإشعارات، وأخيرًا السلة —
-            أهم إجراء تجاري بالهيدير — بأقصى طرف، مفصولة بخط رفيع عن أيقونات
-            الحساب حتى تبرز كأولوية.
-        --}}
-        <div class="store-header__end">
-            <form class="store-search" id="productSearchForm" role="search">
-                <span class="store-search__icon" aria-hidden="true">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="search" id="productSearch" placeholder="ابحث عن منتج..." aria-label="ابحث عن منتج" autocomplete="off" aria-controls="productGrid">
-            </form>
 
             <div class="store-header__actions" aria-label="إجراءات الحساب">
                 <div class="profile-menu">

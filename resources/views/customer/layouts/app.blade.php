@@ -16,6 +16,12 @@
     @stack('styles')
 </head>
 <body class="@yield('body-class', 'storefront-page')" data-authenticated="{{ auth()->check() ? 'true' : 'false' }}">
+    <script>
+        // Toggled from the settings page's "تقليل الحركات" switch; applied here so it takes effect on every page.
+        if (localStorage.getItem('palprints-reduce-motion') === '1') {
+            document.body.classList.add('pp-reduce-motion');
+        }
+    </script>
     @include('customer.partials.header')
     @include('customer.partials.sidebar')
 

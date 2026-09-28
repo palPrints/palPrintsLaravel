@@ -61,14 +61,4 @@
 
   readFavorites();
   render();
-
-  const body = document.body, menuButton = document.getElementById("menuButton"), menuIcon = menuButton.querySelector("i"), overlay = document.getElementById("sidebarOverlay"), mobile = window.matchMedia("(max-width: 820px)");
-  const closeSidebar = () => { body.classList.remove("sidebar-open"); menuButton.setAttribute("aria-expanded", "false"); menuIcon.className = "bi bi-list"; };
-  const syncSidebar = () => { closeSidebar(); body.classList.toggle("sidebar-collapsed", !mobile.matches); };
-  menuButton.addEventListener("click", () => { if (mobile.matches) { const open = !body.classList.contains("sidebar-open"); body.classList.toggle("sidebar-open", open); menuButton.setAttribute("aria-expanded", String(open)); menuIcon.className = open ? "bi bi-x-lg" : "bi bi-list"; } else { const collapsed = !body.classList.contains("sidebar-collapsed"); body.classList.toggle("sidebar-collapsed", collapsed); menuIcon.className = collapsed ? "bi bi-list" : "bi bi-x-lg"; } });
-  overlay.addEventListener("click", closeSidebar); mobile.addEventListener("change", syncSidebar); syncSidebar();
-
-  const notificationButton = document.getElementById("notificationButton"), notificationDropdown = document.getElementById("notificationDropdown");
-  notificationButton.addEventListener("click", (event) => { event.stopPropagation(); const open = !notificationDropdown.classList.contains("open"); notificationDropdown.hidden = !open; requestAnimationFrame(() => notificationDropdown.classList.toggle("open", open)); notificationButton.setAttribute("aria-expanded", String(open)); });
-  document.addEventListener("click", () => { notificationDropdown.classList.remove("open"); notificationDropdown.hidden = true; notificationButton.setAttribute("aria-expanded", "false"); });
 })();
