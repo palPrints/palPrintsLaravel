@@ -36,6 +36,18 @@ body.hoodies-page::before {
     linear-gradient(140deg, #fff 0%, #fbfdff 50%, #fdffff 100%);
 }
 
+/* شريط الهوية المتدرّج أعلى الصفحة */
+body.hoodies-page::after {
+  content: "";
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 3000;
+  height: 3px;
+  pointer-events: none;
+  background: linear-gradient(100deg, var(--pal-cyan) 0%, var(--pal-blue) 55%, var(--pal-indigo) 100%);
+}
+
 /* الوضع الليلي وفق نفس النظام */
 html[data-bs-theme="dark"] body.hoodies-page {
   --pal-page-bg: #080d1c;
@@ -129,13 +141,11 @@ html[data-bs-theme="dark"] body.hoodies-page::before {
 .hoodie-filters button[aria-pressed="true"] { background: var(--store-primary); border-color: var(--store-primary); color: #fff; box-shadow: 0 6px 16px rgb(22 119 255 / 20%); }
 .hoodies-page .products-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .hoodies-page .product-card { cursor: default; background: #fff; border-color: var(--store-border); box-shadow: var(--store-shadow); }
-.hoodies-page .product-card:hover { border-color: var(--store-primary-border); box-shadow: 0 12px 28px rgb(15 23 42 / 12%); }
-.hoodies-page .product-card:focus-within { outline: none; }
 .hoodies-page .product-card__media { position: relative; display: grid; place-items: center; padding: 10px 16px; box-sizing: border-box; background: var(--store-surface-muted); }
 .hoodies-page .product-card__media > img { display: block; width: auto; height: 100%; max-width: 88%; object-fit: contain; object-position: center; }
 .hoodies-page .product-card:hover .product-card__media > img,
 .hoodies-page .product-card:focus-within .product-card__media > img,
-.hoodies-page .product-card.is-image-hovered .product-card__media > img { transform: scale(1.07) !important; }
+.hoodies-page .product-card.is-image-hovered .product-card__media > img { transform: none !important; }
 .hoodies-page .product-card__body { align-items: stretch; text-align: start; padding: 14px; }
 .hoodies-page .product-card__body h3 { font-size: 1.04rem; cursor: default; }
 .hoodies-page .product-card__body p { margin: 2px 0 10px; font-size: .86rem; }
@@ -148,7 +158,7 @@ html[data-bs-theme="dark"] body.hoodies-page::before {
 .hoodies-page .product-card:hover .hoodie-badge-accent { color: #fff; background: #e85f00; box-shadow: 0 7px 18px rgb(255 107 0 / 32%); transform: translateY(-2px) scale(1.03); }
 .hoodie-credit { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .hoodie-credit > span { color: var(--store-muted); font-size: .85rem; }
-.hoodie-credit strong { color: var(--store-primary); font-size: .95rem; }
+.hoodie-credit strong { color: var(--store-primary); font-size: 1.1rem; }
 .hoodie-designer { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; color: var(--store-muted); }
 .hoodie-designer i { display: grid; place-items: center; background: var(--store-primary-soft); color: var(--store-primary); border-radius: 50%; width: 25px; height: 25px; }
 .hoodie-preview { display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; border: 1px solid var(--store-primary); border-radius: 10px; background: var(--store-primary); color: #fff; box-shadow: 0 4px 12px rgb(22 119 255 / 16%); font: 600 .9rem Cairo, sans-serif; cursor: pointer; }
@@ -163,8 +173,8 @@ html[data-bs-theme="dark"] body.hoodies-page::before {
 .hoodie-tone--blue { filter: sepia(.5) saturate(2) hue-rotate(165deg) brightness(.95); }
 .hoodie-tone--purple { filter: sepia(1) saturate(3) hue-rotate(220deg) brightness(.5); }
 .hoodie-tone--green { filter: sepia(1) saturate(2) hue-rotate(95deg) brightness(.45); }
-.catalog-pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 44px 0 12px; }
-.catalog-pagination button { width: 32px; height: 32px; border: 1px solid var(--store-border); border-radius: 8px; background: #fff; color: var(--store-navy); font: 700 .85rem Cairo, sans-serif; }
+.catalog-pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 24px 0 12px; }
+.catalog-pagination button { width: 40px; height: 40px; border: 1px solid var(--store-border); border-radius: 9px; background: #fff; color: var(--store-navy); font: 700 1rem Cairo, sans-serif; }
 .catalog-pagination button[aria-current] { background: var(--store-primary); color: #fff; }
 .catalog-pagination button:disabled { opacity: .4; }
 .catalog-pagination[hidden] { display: none; }

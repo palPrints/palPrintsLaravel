@@ -124,10 +124,15 @@
     };
   }
   const normalize = text => text.toLowerCase().replace(/[\u064B-\u065F\u0670]/g, "").replace(/[أإآ]/g, "ا").trim();
-  const media = product => `<div class="product-card__media"><img class="hoodie-tone--${product.tone}" src="${hoodieImageUrl}" alt="${product.title} — ${product.description}" loading="lazy"><span class="hoodie-print ${["black", "purple", "green"].includes(product.tone) ? "hoodie-print--light" : ""} ${product.id === "salam" ? "hoodie-print--arabic" : ""}" aria-hidden="true"><i class="bi bi-${product.icon}"></i>${product.print}</span>${product.badge ? `<span class="hoodie-badge-accent"><i class="bi bi-stars" aria-hidden="true"></i>${product.badge}</span>` : ""}</div>`;
+  const media = product => {
+    const tone = product.tone || "cream";
+    const icon = product.icon || "stars";
+    const print = product.print || product.description || product.title;
+    return `<div class="product-card__media"><img class="hoodie-tone--${tone}" src="${product.image || hoodieImageUrl}" alt="${product.title} — ${product.description}" loading="lazy"><span class="hoodie-print ${["black", "purple", "green"].includes(tone) ? "hoodie-print--light" : ""} ${product.id === "salam" ? "hoodie-print--arabic" : ""}" aria-hidden="true"><i class="bi bi-${icon}"></i>${print}</span>${product.badge ? `<span class="hoodie-badge-accent"><i class="bi bi-stars" aria-hidden="true"></i>${product.badge}</span>` : ""}</div>`;
+  };
   function render() {
     const visible = products.filter(product => (selected === "all" || product.category === selected) && normalize(`${product.title} ${product.description} ${product.designer}`).includes(normalize(search.value)));
-    grid.innerHTML = visible.map(product => `<article class="product-card" data-id="${product.id}">${media(product).replace('</div>', `<button class="hoodie-favorite" type="button" aria-label="مفضلة: ${product.description}" aria-pressed="${favorites.has(product.id)}"><i class="bi bi-heart${favorites.has(product.id) ? "-fill" : ""}" aria-hidden="true"></i></button></div>`)}<div class="product-card__body"><h3>${product.title}</h3><p>${product.description}</p><div class="hoodie-credit"><span>يبدأ من <strong dir="ltr">$20</strong></span><span class="hoodie-designer" dir="ltr"><i class="bi bi-person" aria-hidden="true"></i>by ${product.designer}</span></div><button type="button" class="hoodie-preview" data-preview="${product.id}"><i class="bi bi-eye" aria-hidden="true"></i>معاينة المنتج</button></div></article>`).join("");
+    grid.innerHTML = visible.map(product => `<article class="product-card" data-id="${product.id}">${media(product).replace('</div>', `<button class="hoodie-favorite" type="button" aria-label="مفضلة: ${product.description}" aria-pressed="${favorites.has(product.id)}"><i class="bi bi-heart${favorites.has(product.id) ? "-fill" : ""}" aria-hidden="true"></i></button></div>`)}<div class="product-card__body"><h3>${product.title}</h3><p>${product.description}</p><div class="hoodie-credit"><span>يبدأ من <strong dir="ltr">${product.price} ₪</strong></span><span class="hoodie-designer" dir="ltr"><i class="bi bi-person" aria-hidden="true"></i>by ${product.designer}</span></div><button type="button" class="hoodie-preview" data-preview="${product.id}"><i class="bi bi-eye" aria-hidden="true"></i>معاينة المنتج</button></div></article>`).join("");
     document.getElementById("productsEmpty").hidden = visible.length > 0;
     document.getElementById("catalogCount").textContent = `عرض ${visible.length} من ${products.length} تصاميم`;
     document.querySelector(".catalog-pagination").hidden = visible.length === 0;
@@ -140,6 +145,15 @@
   }));
   search.addEventListener("input", render);
   document.getElementById("productSearchForm").addEventListener("submit", event => { event.preventDefault(); render(); });
+  function openPreview(id) {
+    const product = products.find(item => item.id === id);
+    if (!product) return;
+
+    try {
+      sessionStorage.setItem("palprintsCustomerPreview", JSON.stringify(customerPreviewPayload(product)));
+    } catch (_) { /* The preview page supplies a safe fallback if storage is unavailable. */ }
+    window.location.href = previewPageUrl;
+  }
   grid.addEventListener("click", event => {
     const favorite = event.target.closest(".hoodie-favorite");
     if (favorite) {
@@ -161,6 +175,14 @@
       try { sessionStorage.setItem("palprintsCustomerPreview", JSON.stringify(buildPreviewPayload(product))); } catch (_) { /* Preview falls back to its own demo data. */ }
       window.location.href = previewPageUrl;
     }
+
+    const card = event.target.closest(".product-card");
+    if (card && !event.target.closest("button")) openPreview(card.dataset.id);
+  });
+  grid.addEventListener("keydown", event => {
+    if (!event.target.matches(".product-card") || !["Enter", " "].includes(event.key)) return;
+    event.preventDefault();
+    openPreview(event.target.dataset.id);
   });
   render();
 

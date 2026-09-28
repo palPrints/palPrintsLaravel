@@ -1,43 +1,69 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-theme="light">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="استعادة كلمة مرور حساب PALPRINTS."><meta name="theme-color" content="#f5f8ff"><meta name="color-scheme" content="light dark">
-  <title>نسيت كلمة المرور | PALPRINTS</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="{{ asset('front/css/auth/forgot-password.css') }}">
-  <script src="{{ asset('front/js/auth/auth-flow.js') }}" defer></script>
-  <script src="{{ asset('front/js/auth/page-i18n.js') }}" defer></script>
+  @include('auth.partials.head', [
+      'title' => 'نسيت كلمة المرور',
+      'description' => 'استعادة كلمة مرور حساب PalPrints',
+      'css' => 'forgot-password',
+  ])
 </head>
-<body class="auth-flow-page forgot-password-page" data-auth-flow="forgot-password-page">
-  <a class="skip-link" href="#main-content" data-i18n="skipToContent">انتقل إلى المحتوى الرئيسي</a>
-  <div class="auth-topbar">
-    <div class="auth-topbar__container">
-      <a class="brand" href="{{ route('home') }}" aria-label="PALPRINTS"><img class="brand-logo brand-logo-light" src="{{ asset('front/assets/images/palprints-logo.png') }}" alt="شعار PALPRINTS" width="140" height="55"><img class="brand-logo brand-logo-dark" src="{{ asset('front/assets/images/palprints-logo.png') }}" alt="" aria-hidden="true" width="140" height="55"></a>
-      <nav class="auth-topbar__actions" aria-label="خيارات الحساب والواجهة" data-i18n-aria-label="headerNavLabel">
-        <button class="header-control language-toggle" id="languageToggle" type="button" aria-label="تغيير اللغة إلى الإنجليزية" data-i18n-aria-label="languageToggleLabel"><i class="bi bi-globe2 icon external-ui-icon icon-language" aria-hidden="true"></i><span id="languageToggleText">EN</span></button>
-        <button class="header-control theme-toggle" id="themeToggle" type="button" aria-label="تفعيل الوضع الليلي" aria-pressed="false"><i class="bi bi-moon-stars" id="themeToggleIcon" aria-hidden="true"></i><span class="visually-hidden" data-i18n="themeToggleText">تبديل المظهر</span></button>
-      </nav>
-    </div>
-  </div>
-  <div class="forgot-decoration" aria-hidden="true"><span class="forgot-orbit orbit-a"></span><span class="forgot-orbit orbit-b"></span><span class="forgot-blob blob-a"></span><span class="forgot-blob blob-b"></span><span class="forgot-dots dots-a"></span><span class="forgot-dots dots-b"></span></div>
-  <main class="forgot-main" id="main-content" tabindex="-1">
-    <section class="forgot-card auth-flow-card" aria-labelledby="forgot-title">
-      <span class="forgot-step">1 من 3</span>
-      <div class="forgot-symbol" aria-hidden="true"><i class="bi bi-envelope-fill"></i><span><i class="bi bi-lock-fill"></i></span></div>
-      <header class="auth-flow-heading"><p class="eyebrow" data-i18n="eyebrow">استعادة الحساب</p><h1 id="forgot-title" data-i18n="pageHeading">نسيت كلمة المرور؟</h1><p class="register-subtitle" data-i18n="pageSubtitle">لا تقلق، أدخل بريدك الإلكتروني وسنرسل إليك رمز تحقق لإعادة تعيين كلمة المرور.</p></header>
-      <form class="forgot-form" id="forgotPasswordForm" method="POST" action="{{ route('password.email') }}" data-native-laravel>
-        @csrf
-        <div class="field-group"><label class="forgot-label" for="recoveryEmail"><span data-i18n="email">البريد الإلكتروني</span><b aria-hidden="true">*</b></label><div class="forgot-input-wrap"><i class="bi bi-envelope" aria-hidden="true"></i><input id="recoveryEmail" name="email" type="email" value="{{ old('email') }}" placeholder="example@email.com" autocomplete="email" required aria-describedby="recoveryEmailError"></div><p class="field-error" id="recoveryEmailError" aria-live="polite">@error('email'){{ $message }}@enderror</p></div>
-        <div class="form-status @if(session('status')) is-success @endif" id="flowStatus" role="status" aria-live="polite" @if(session('status')) style="display:block" @endif>{{ session('status') }}</div>
-        <button class="forgot-submit submit-button" type="submit"><i class="bi bi-send" aria-hidden="true"></i><span data-i18n="sendCode">إرسال رمز التحقق</span><span class="button-loader" aria-hidden="true"></span></button>
-      </form>
-      <div class="forgot-divider"><span data-i18n="or">أو</span></div>
-      <a class="forgot-back auth-back-link" href="{{ route('login') }}"><span data-i18n="backToLogin">العودة إلى تسجيل الدخول</span><i class="bi bi-chevron-left" aria-hidden="true"></i></a>
+<body>
+  @php
+    $sent = session('status') !== null;
+    $sentEmail = session('reset_email') ?: old('email');
+  @endphp
+
+  <main class="recovery-layout">
+    <section class="recovery-panel" aria-labelledby="recoveryTitle">
+      <a href="{{ route('home') }}" class="recovery-wordmark" aria-label="العودة إلى الصفحة الرئيسية">
+        <img src="{{ asset('front/auth/images/palprints-wordmark-approved.png') }}" alt="PalPrints">
+      </a>
+
+      <div class="recovery-card">
+        <div class="recovery-icon" aria-hidden="true"><i class="bi bi-key"></i></div>
+        <header class="recovery-heading">
+          <span class="eyebrow">استعادة الحساب</span>
+          <h1 id="recoveryTitle">نسيت كلمة <span>المرور؟</span></h1>
+          <p>أدخل البريد الإلكتروني المرتبط بحسابك وسنرسل لك رابط إعادة تعيين كلمة المرور.</p>
+        </header>
+
+        <form id="recoveryForm" method="POST" action="{{ route('password.email') }}" novalidate @if ($sent) hidden @endif>
+          @csrf
+          <div @class(['form-field', 'is-invalid' => $errors->has('email')])>
+            <label for="recoveryEmail">البريد الإلكتروني</label>
+            <div class="input-control">
+              <i class="bi bi-envelope" aria-hidden="true"></i>
+              <input id="recoveryEmail" name="email" type="email" value="{{ old('email') }}" autocomplete="email" inputmode="email" placeholder="name@example.com" aria-describedby="emailError" required @error('email') aria-invalid="true" @enderror>
+            </div>
+            <span class="field-error" id="emailError" aria-live="polite">@error('email'){{ $message }}@enderror</span>
+          </div>
+
+          <button class="submit-button" type="submit">
+            <span>إرسال رابط إعادة التعيين</span>
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+          </button>
+          <p class="security-note"><i class="bi bi-shield-check" aria-hidden="true"></i> الرابط صالح لفترة محدودة حفاظًا على أمان حسابك.</p>
+        </form>
+
+        <div class="success-state" id="successState" role="status" aria-live="polite" @unless ($sent) hidden @endunless>
+          <span class="success-icon"><i class="bi bi-envelope-check"></i></span>
+          <h2>تحقق من بريدك الإلكتروني</h2>
+          <p>{{ session('status') ?: 'أرسلنا رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.' }}</p>
+          @if ($sentEmail)
+            <p><strong>{{ $sentEmail }}</strong></p>
+            <form method="POST" action="{{ route('password.email') }}">
+              @csrf
+              <input type="hidden" name="email" value="{{ $sentEmail }}">
+              <button type="submit" id="resendButton">إعادة إرسال الرابط</button>
+            </form>
+          @endif
+        </div>
+
+        <a class="back-link" href="{{ route('login') }}"><i class="bi bi-arrow-right" aria-hidden="true"></i> العودة إلى تسجيل الدخول</a>
+      </div>
     </section>
   </main>
-  <footer class="forgot-footer"><p>© <span id="currentYear">2026</span> PALPRINTS</p><nav aria-label="روابط قانونية"><a href="{{ route('home') }}">المساعدة</a><span></span><a href="{{ route('terms') }}">الشروط والأحكام</a><span></span><a href="{{ route('privacy') }}">سياسة الخصوصية</a></nav></footer>
+
+  <script src="{{ asset('front/auth/js/forgot-password.js') }}?v={{ filemtime(public_path('front/auth/js/forgot-password.js')) }}"></script>
 </body>
 </html>

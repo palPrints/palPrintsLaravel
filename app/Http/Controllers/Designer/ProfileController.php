@@ -5,16 +5,20 @@ namespace App\Http\Controllers\Designer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Designer\UpdateProfileRequest;
 use App\Models\AuditLog;
+use App\Models\Design;
 use App\Models\DesignerProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Throwable;
 
 class ProfileController extends Controller
 {
+    private const EXTRA_FIELDS = ['job_title', 'experience', 'location', 'specialization'];
+
     public function show(Request $request): View
     {
         $user = $request->user()->loadMissing('designerProfile');
@@ -24,6 +28,19 @@ class ProfileController extends Controller
             'skills' => [],
         ]);
 
+        $designs = Design::query()->where('designer_id', $user->id);
+        $designStats = [
+            'draft' => (clone $designs)->where('status', 'draft')->count(),
+            'published' => (clone $designs)->where('status', 'published')->count(),
+            'review' => (clone $designs)->whereIn('status', ['review', 'submitted'])->count(),
+            'rejected' => (clone $designs)->where('status', 'rejected')->count(),
+        ];
+
+        $accountType = match ($user->primaryRole()) {
+            'designer' => ['ar' => 'مصمم', 'en' => 'Designer'],
+            default => ['ar' => 'حساب مستخدم', 'en' => 'User account'],
+        };
+
         return view('designer.profile', [
             'user' => $user,
             'profile' => $profile,
@@ -32,6 +49,14 @@ class ProfileController extends Controller
             'approval' => $this->approvalPresentation($profile->approval_status ?? 'draft'),
             'portfolioUrl' => $this->safeHttpUrl($profile->portfolio_url),
             'avatarUrl' => $this->avatarUrl($profile->profile_image),
+            'profileExtra' => [
+                'job_title' => $profile->getAttribute('job_title'),
+                'experience' => $profile->getAttribute('experience'),
+                'location' => $profile->getAttribute('location'),
+                'specialization' => $profile->getAttribute('specialization') ?: $profile->bio,
+            ],
+            'designStats' => $designStats,
+            'accountType' => $accountType,
         ]);
     }
 
@@ -70,12 +95,23 @@ class ProfileController extends Controller
 
                 $user->save();
 
+                // Without a dedicated "specialization" column the text lives in bio.
+                $about = $validated['specialization'] ?? $validated['bio'];
+
                 $profile->fill([
                     'full_name' => $validated['name'],
-                    'bio' => $validated['bio'],
+                    'bio' => $about,
                     'skills' => $skills,
                     'portfolio_url' => $validated['portfolio_url'],
+                    'profile_completed_at' => filled($about) && count($skills) > 0 ? now() : null,
                 ]);
+
+                // Optional profile fields are stored only once their columns exist in designer_profiles.
+                foreach (self::EXTRA_FIELDS as $column) {
+                    if (Schema::hasColumn('designer_profiles', $column)) {
+                        $profile->forceFill([$column => $validated[$column] ?? null]);
+                    }
+                }
 
                 if ($newImagePath !== null) {
                     $profile->profile_image = $newImagePath;
@@ -128,12 +164,12 @@ class ProfileController extends Controller
                 'label_ar' => 'مصمم معتمد',
                 'label_en' => 'Verified designer',
             ],
-            'rejected' => [
+            'rejected', 'changes_requested' => [
                 'status' => $status,
                 'class' => 'is-rejected',
                 'icon' => 'bi-x-circle-fill',
-                'label_ar' => 'يحتاج إلى تعديل',
-                'label_en' => 'Needs changes',
+                'label_ar' => $status === 'rejected' ? 'مرفوض بسبب خلل في البيانات' : 'يحتاج إلى تعديل البيانات',
+                'label_en' => $status === 'rejected' ? 'Rejected due to data issues' : 'Data changes requested',
             ],
             'submitted', 'under_review' => [
                 'status' => $status,

@@ -1,32 +1,32 @@
-<section class='designer-intro' aria-labelledby='designerSectionTitle'>
-    <div class='designer-intro-copy'>
-        <span class='designer-intro-eyebrow'>
-            <i class='bi {{ $sectionIcon }}' aria-hidden='true'></i>
-            <span>مساحة المصمم</span>
-        </span>
+<main class="designer-content-main" id="designerMain">
+    @include('designer.partials.flash')
 
-        <h1 class='designer-intro-text' id='designerSectionTitle'>
-            <span class='designer-intro-title-main'>{{ $sectionTitle }}</span>
-        </h1>
-
-        <p class='designer-intro-subtitle'>{{ $sectionDescription }}</p>
+    <div class="designer-breadcrumb">
+        <a href="{{ route('designer.dashboard') }}">الرئيسية</a>
+        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+        <span>{{ $sectionTitle }}</span>
     </div>
 
-    <a href='{{ route('designer.dashboard') }}' class='designer-intro-action'>
-        <i class='bi bi-grid' aria-hidden='true'></i>
-        <span>العودة إلى لوحة التحكم</span>
-    </a>
-</section>
+    <header class="designer-page-heading">
+        <span class="designer-heading-icon"><i class="bi {{ $sectionIcon }}" aria-hidden="true"></i></span>
+        <div>
+            <h1>{{ $sectionTitle }}</h1>
+            <p>{{ $sectionDescription }}</p>
+        </div>
+    </header>
 
-<section class='activity-section'>
-    <div class='activity-header'>
-        <h2 class='activity-title'>
-            <i class='bi bi-tools' aria-hidden='true'></i>
-            <span>الصفحة قيد التجهيز</span>
-        </h2>
-    </div>
+    <section class="designer-form-card">
+        <header class="designer-card-title">
+            <span><i class="bi {{ $cardIcon ?? 'bi-tools' }}" aria-hidden="true"></i></span>
+            <h2>{{ $cardTitle ?? 'الصفحة قيد التجهيز' }}</h2>
+        </header>
 
-    <p class='section-subtitle'>
-        تم تجهيز ملف الصفحة ومسارها والتخطيط المشترك، ويمكن إكمال محتواها لاحقًا بدون تكرار الـ sidebar أو الـ topbar.
-    </p>
-</section>
+        <div class="designer-security-content">
+            <p>{{ $cardText ?? 'سيتم تفعيل هذه الصفحة قريبًا.' }}</p>
+
+            @isset($cardActionUrl)
+                <a class="designer-outline-btn" href="{{ $cardActionUrl }}"><i class="bi {{ $cardActionIcon ?? 'bi-arrow-left' }}"></i> {{ $cardActionLabel }}</a>
+            @endisset
+        </div>
+    </section>
+</main>

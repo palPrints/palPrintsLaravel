@@ -4,14 +4,14 @@
   const assets = window.palPrintsCustomerAssets || {};
   const mugsBase = assets.mugsImagesBase || "assets/images/mugs";
 
-  const products = [
+  const products = Array.isArray(assets.publishedDesigns) ? assets.publishedDesigns : [
     {
       id: "morning-calm",
       title: "كوب صباح هادئ",
       description: "تصميم بسيط لبداية يوم مليئة بالهدوء",
       designer: "Lina A.",
       price: 12,
-      image: `${mugsBase}/coffee-salam.png`
+      image: "assets/images/mugs/coffee-salam.png"
     },
     {
       id: "coffee-first",
@@ -19,7 +19,7 @@
       description: "رفيق أنيق لعشاق القهوة في كل صباح",
       designer: "Omar K.",
       price: 12,
-      image: `${mugsBase}/red-coffee.png`,
+      image: "assets/images/mugs/red-coffee.png",
       badge: "الأكثر مبيعًا"
     },
     {
@@ -28,7 +28,7 @@
       description: "لمسة دافئة تناسب البيت ومساحة العمل",
       designer: "Sara N.",
       price: 12,
-      image: `${mugsBase}/cat-good-day.png`
+      image: "assets/images/mugs/cat-good-day.png"
     },
     {
       id: "daily-inspiration",
@@ -36,7 +36,7 @@
       description: "تفصيل صغير يذكّرك بأنك تستطيع",
       designer: "Ahmad Z.",
       price: 12,
-      image: `${mugsBase}/be-happy.png`
+      image: "assets/images/mugs/be-happy.png"
     },
     {
       id: "creative-story",
@@ -44,7 +44,7 @@
       description: "تصميم عصري لكل فكرة تستحق أن تُروى",
       designer: "Haneen S.",
       price: 12,
-      image: `${mugsBase}/palestine.png`
+      image: "assets/images/mugs/palestine.png"
     },
     {
       id: "classic-black",
@@ -52,7 +52,7 @@
       description: "اختيار كلاسيكي بطابع جريء ومميز",
       designer: "Yousef M.",
       price: 12,
-      image: `${mugsBase}/black-explore.png`
+      image: "assets/images/mugs/black-explore.png"
     },
     {
       id: "special-memory",
@@ -60,7 +60,7 @@
       description: "هدية شخصية تحفظ أجمل التفاصيل",
       designer: "Rana H.",
       price: 12,
-      image: `${mugsBase}/you-are-special.png`
+      image: "assets/images/mugs/you-are-special.png"
     },
     {
       id: "good-vibes",
@@ -68,7 +68,7 @@
       description: "ألوان مبهجة ورسالة تلائم كل يوم",
       designer: "Khaled N.",
       price: 12,
-      image: `${mugsBase}/good-vibes.png`
+      image: "assets/images/mugs/good-vibes.png"
     }
   ];
 
@@ -208,7 +208,7 @@
           <h3>${product.title}</h3>
           <p>${product.description}</p>
           <div class="mug-credit">
-            <span>يبدأ من <strong dir="ltr">$${product.price}</strong></span>
+            <span>يبدأ من <strong dir="ltr">${product.price} ₪</strong></span>
             <span class="mug-designer" dir="ltr"><i class="bi bi-person" aria-hidden="true"></i>by ${product.designer}</span>
           </div>
           <button type="button" class="mug-preview pal-pressable" data-preview="${product.id}">

@@ -49,8 +49,9 @@ const catalog = window.palPrintsDesignerCatalog || {
     }
 };
 
-const productId = selection?.productId || "product-001";
-const product = catalog[productId] || catalog["product-001"];
+const requestedProductId = selection?.productId || "product-001";
+const productId = catalog[requestedProductId] ? requestedProductId : Object.keys(catalog)[0];
+const product = catalog[productId];
 const storedDesignerState = JSON.parse(sessionStorage.getItem("palprintsDesignerState") || "null");
 const restoredState = storedDesignerState?.productId === productId ? storedDesignerState : null;
 const requestedAreaId = restoredState?.areaId || selection?.printAreaIds?.[0] || "front";

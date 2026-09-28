@@ -2,12 +2,17 @@
 
 @section('title', 'تصاميمي')
 
+@section('body-class', 'dashboard-page designer-designs-page')
+
 @push('styles')
-    <link rel='stylesheet' href='{{ asset('front/designer/source/designs/css/pages/designerDesigns.css') }}'>
+    <link rel='stylesheet' href='{{ asset('front/designer/css/dashboard.css') }}?v={{ filemtime(public_path('front/designer/css/dashboard.css')) }}'>
+    <link rel='stylesheet' href='{{ asset('front/designer/css/designerDesigns.css') }}?v={{ filemtime(public_path('front/designer/css/designerDesigns.css')) }}'>
 @endpush
 
 @section('content')
-    <div class='designs-main' id='designsMain'>
+    <main class='designer-content-main dashboard-stack designs-main' id='designerMain'>
+        @include('designer.partials.flash')
+
           <section
             class="section-header designs-heading"
             aria-labelledby="designsTitle"
@@ -157,6 +162,15 @@
               </div>
             </div>
           </section>
+          <section class="designs-state" id="designsTrueEmpty" @if ($designs->isNotEmpty()) hidden @endif>
+            <i class="bi bi-images" aria-hidden="true"></i>
+            <h2>ما في تصاميم بعد</h2>
+            <p>ابدأ برفع أول تصميم إلك وشاركه مع عملاء PalPrints.</p>
+            <a href="{{ route('designer.designs.create') }}" class="card-btn trend state-action">
+              <i class="bi bi-plus-lg" aria-hidden="true"></i><span>تصميم جديد</span>
+            </a>
+          </section>
+
           <section class="designs-state" id="designsEmpty" hidden>
             <i class="bi bi-search" aria-hidden="true"></i>
             <h2 data-i18n="noMatchesTitle">لا توجد تصاميم مطابقة لبحثك</h2>
@@ -172,17 +186,44 @@
               ><span data-i18n="clearSearch">مسح البحث</span>
             </button>
           </section>
+
+
           <div id="designGroups" aria-live="polite"></div>
 
-    </div>
+    </main>
 @endsection
 
+
+
+
 @push('scripts')
+    @php
+        $serializedDesigns = $designs->map(function ($design) {
+            $updatedAt = $design->updated_at ?? $design->created_at;
+
+            return [
+                'id' => $design->id,
+                'title' => $design->title,
+                'image' => $design->image ?: (filled($design->product?->image)
+                    ? (preg_match('#^(https?:)?//#', $design->product->image) ? $design->product->image : asset($design->product->image))
+                    : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=520&fit=crop&q=85'),
+                'productType' => $design->product?->name ?? '',
+                'status' => $design->status,
+                'updatedAt' => $updatedAt ? $updatedAt->toIso8601String() : null,
+                'previewUrl' => route('designer.designs.review', ['id' => $design->id]),
+                'editorUrl' => route('designer.designs.editor', ['designId' => $design->id]),
+            ];
+        })->values()->all();
+    @endphp
+
     <script>
         window.palPrintsDesignerRoutes = {
             editor: @json(route('designer.designs.editor')),
             review: @json(route('designer.designs.review'))
         };
+
+        window.palPrintsDesignerDesigns = {!! json_encode($serializedDesigns, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!};
+        window.palPrintsDesignerFallbackImage = @json(asset('front/designer/assets/images/file.png'));
     </script>
-    <script src='{{ asset('front/designer/source/designs/js/pages/designerDesigns.js') }}'></script>
+    <script src='{{ asset('front/designer/js/designerDesigns.js') }}?v={{ filemtime(public_path('front/designer/js/designerDesigns.js')) }}'></script>
 @endpush

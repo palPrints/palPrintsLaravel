@@ -7,6 +7,7 @@
 @section('main-id', 'paperMain')
 
 @push('styles')
+    <link rel="stylesheet" href="{{ asset('front/designer/css/profile-core.css') }}?v={{ filemtime(public_path('front/designer/css/profile-core.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/css/customer/paperPrinting.css') }}?v={{ filemtime(public_path('front/css/customer/paperPrinting.css')) }}">
 @endpush
 
@@ -191,5 +192,6 @@
 @endsection
 
 @push('scripts')
+    <script src="{{ asset('front/designer/js/profile-core.js') }}?v={{ filemtime(public_path('front/designer/js/profile-core.js')) }}"></script>
     <script src="{{ asset('front/js/customer/paperPrinting.js') }}?v={{ filemtime(public_path('front/js/customer/paperPrinting.js')) }}"></script>
 @endpush

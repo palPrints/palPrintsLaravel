@@ -4,7 +4,7 @@
   const assets = window.palPrintsCustomerAssets || {};
   const tshirtsBase = assets.tshirtsImagesBase || "assets/images/tshirts";
 
-  const products = [
+  const products = Array.isArray(assets.publishedDesigns) ? assets.publishedDesigns : [
     { id: "flower-good-day", category: "kids", title: "تيشيرت أطفال", description: "يوم سعيد", designer: "Lina A.", price: 20, image: `${tshirtsBase}/kids-flower-good-day.png` },
     { id: "panda-music", category: "kids", title: "تيشيرت أطفال", description: "موسيقى دائماً", designer: "Omar K.", price: 20, image: `${tshirtsBase}/kids-panda-music.png` },
     { id: "little-explorer", category: "kids", title: "تيشيرت أطفال", description: "للمستكشف الصغير", designer: "Sara N.", price: 20, image: `${tshirtsBase}/kids-little-explorer.png` },
@@ -146,7 +146,7 @@
           <h3>${product.title}</h3>
           <p>${product.description}</p>
           <div class="tshirt-credit">
-            <span>يبدأ من <strong dir="ltr">$${product.price}</strong></span>
+            <span>يبدأ من <strong dir="ltr">${product.price} ₪</strong></span>
             <span class="tshirt-designer" dir="ltr"><i class="bi bi-person" aria-hidden="true"></i>by ${product.designer}</span>
           </div>
           <button type="button" class="tshirt-preview pal-pressable" data-preview="${product.id}">

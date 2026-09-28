@@ -1,7 +1,7 @@
 @extends('designer.layouts.app')
 
 @section('title', 'محرر التصميم')
-@section('main-class', 'source-editor-main')
+@section('body-class', 'designer-create-flow')
 
 @push('styles')
     <base href='{{ asset('front/designer/source/create') }}/'>
@@ -16,6 +16,7 @@
 @endpush
 
 @section('content')
+<main class='designer-content-main source-editor-main' id='designerMain'>
     <div class='designer-shell'>
         <header class="designer-header">
             <a class="brand-mark" href="{{ route('designer.designs.create') }}" aria-label="العودة إلى اختيار المنتج">
@@ -231,6 +232,7 @@
 
     </div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</main>
 @endsection
 
 @push('scripts')

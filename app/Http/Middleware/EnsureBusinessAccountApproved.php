@@ -13,9 +13,15 @@ class EnsureBusinessAccountApproved
         $user = $request->user();
 
         if ($user?->supportsOnboarding() && ! $user->hasApprovedBusinessAccount()) {
+            $message = match ($user->approvalStatus()) {
+                'draft' => 'أكمل ملفك الشخصي أولًا، ثم أرسل الحساب للتوثيق حتى تتمكن من استخدام هذه الصفحة.',
+                'rejected' => 'عدّل بيانات ملفك الشخصي وأرسلها للمراجعة مرة أخرى حتى تتمكن من استخدام هذه الصفحة.',
+                default => 'حسابك قيد مراجعة الإدارة. ستتمكن من استخدام هذه الصفحة بعد اعتماد الحساب.',
+            };
+
             return redirect()
                 ->route($user->dashboardRouteName())
-                ->with('warning', 'هذه الميزة تصبح متاحة بعد اعتماد حسابك من الإدارة.');
+                ->with('warning', $message);
         }
 
         return $next($request);

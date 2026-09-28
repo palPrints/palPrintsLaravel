@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\AuditLog;
 use App\Services\AccountProvisioningService;
+use App\Support\PlatformSettings;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -14,13 +15,21 @@ class RegisteredUserController extends Controller
 {
     public function create(): View
     {
-        return view('auth.register');
+        return view('auth.register', [
+            'registrationOpen' => PlatformSettings::get('general', 'allow_registration', true),
+        ]);
     }
 
     public function store(
         RegisterRequest $request,
         AccountProvisioningService $accounts
     ): RedirectResponse {
+        if (! PlatformSettings::get('general', 'allow_registration', true)) {
+            return redirect()
+                ->route('register')
+                ->withErrors(['account_type' => 'التسجيل مغلق مؤقتًا من إدارة المنصة، حاول لاحقًا.']);
+        }
+
         $validated = $request->validated();
 
         $user = $accounts->create([

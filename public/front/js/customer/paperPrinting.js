@@ -1,6 +1,13 @@
 "use strict";
 
 document.addEventListener("DOMContentLoaded", function () {
+  const Core = window.PalProfile;
+
+  if (!Core) {
+    console.error("profile-core.js must load before paperPrinting.js");
+    return;
+  }
+
   const dictionary = {
     ar: {
       documentTitle: "طباعة الورق | PalPrints", skipToContent: "تخطي إلى المحتوى", sidebarLabel: "القائمة الجانبية للعميل", customerNavLabel: "روابط حساب العميل", goHome: "الانتقال إلى الصفحة الرئيسية", openSidebar: "فتح القائمة الجانبية", closeSidebar: "إغلاق القائمة الجانبية", changeTheme: "تغيير المظهر", changeLanguage: "تغيير اللغة", shoppingCart: "سلة المشتريات", breadcrumbLabel: "مسار التنقل", close: "إغلاق",
@@ -35,6 +42,11 @@ document.addEventListener("DOMContentLoaded", function () {
       A4: "A4", A5: "A5", A3: "A3", standard: "Standard 80 gsm", thick: "Premium 120 gsm", coated: "Coated 150 gsm", bw: "Black & white", color: "Full color", single: "Single-sided", double: "Double-sided", layout1: "One page", layout2: "Two pages", layout4: "4 pages"
     }
   };
+
+  Core.init({
+    dictionary: dictionary,
+    sidebar: { desktopInitial: "open", persist: false }
+  });
 
   /* The current storefront design system is intentionally light-only. */
   document.documentElement.setAttribute("data-bs-theme", "light");
@@ -75,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let toastTimer = null;
 
   function t(key, vars) {
-    let value = dictionary.ar[key] || key;
+    let value = Core.translate(key) || key;
     Object.keys(vars || {}).forEach(function (name) {
       value = value.replace("{" + name + "}", vars[name]);
     });
@@ -94,7 +106,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function formatMoney(amount) {
-    return new Intl.NumberFormat("ar-SA", { style: "currency", currency: "SAR", minimumFractionDigits: 2 }).format(amount || 0);
+    const locale = Core.getLanguage() === "ar" ? "ar-SA" : "en-SA";
+    return new Intl.NumberFormat(locale, { style: "currency", currency: "ILS", minimumFractionDigits: 2 }).format(amount || 0);
   }
 
   function showToast(message, type, action) {
@@ -540,8 +553,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const cart = JSON.parse(window.localStorage.getItem("palprints-paper-cart") || "[]");
       cart.push(order);
       window.localStorage.setItem("palprints-paper-cart", JSON.stringify(cart));
-      const badge = $("#cartCount");
-      if (badge) { badge.textContent = cart.length; badge.hidden = cart.length === 0; }
+      $("#cartBadge").textContent = cart.length;
     } catch (error) { /* UI remains usable if storage is unavailable */ }
     showToast(t("orderAdded"));
     el.added = true;
@@ -553,7 +565,7 @@ document.addEventListener("DOMContentLoaded", function () {
     else completeAndGo(state.currentStep + 1);
   }
 
-  el.choose.addEventListener("click", function () { if (document.body.dataset.authenticated === "true") el.input.click(); else showToast(t("signInRequired"), "error"); });
+  el.choose.addEventListener("click", function () { if (document.body.dataset.authenticated === "true") el.input.click(); else { showToast(t("signInRequired"), "error"); window.setTimeout(function () { window.location.href = "/login"; }, 1200); } });
   el.addMore.addEventListener("click", function () { el.input.click(); });
   el.input.addEventListener("change", function () { addFiles(el.input.files); });
   ["dragenter", "dragover"].forEach(function (type) { el.zone.addEventListener(type, function (event) { event.preventDefault(); el.zone.classList.add("is-dragging"); }); });
@@ -683,11 +695,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (typeof el.mobileSummary.showModal === "function") el.mobileSummary.showModal();
   });
 
+  Core.onLanguageChange(function () { document.title = t("documentTitle"); renderAll(); });
+
   try {
     const existingCart = JSON.parse(window.localStorage.getItem("palprints-paper-cart") || "[]");
-    const badge = $("#cartCount");
-    if (badge) { badge.textContent = existingCart.length; badge.hidden = existingCart.length === 0; }
-  } catch (error) { /* cart badge stays at its default count */ }
+    const badge = $("#cartBadge"); if (badge) badge.textContent = existingCart.length;
+  } catch (error) { const badge = $("#cartBadge"); if (badge) badge.textContent = "0"; }
 
   /* حالة معاينة اختيارية للاختبارات البصرية فقط، ولا تعمل في المسار العادي. */
   const demoStage = new URLSearchParams(window.location.search).get("demo");

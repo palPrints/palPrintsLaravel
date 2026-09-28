@@ -69,7 +69,7 @@
         function update(now) {
           const progress = Math.min((now - start) / duration, 1);
           const eased = 1 - Math.pow(1 - progress, 3);
-          counter.textContent = (currency ? "$" : "") + formatter.format(target * eased);
+          counter.textContent = formatter.format(target * eased) + (currency ? " ₪" : "");
 
           if (progress < 1) window.requestAnimationFrame(update);
         }
@@ -222,14 +222,8 @@
     }
 
     if (logoutButton) {
-      logoutButton.addEventListener("click", function (event) {
-        if (!window.confirm("هل تريد تسجيل الخروج من حساب المطبعة؟")) return;
-
-        const logoutForm = logoutButton.closest("form");
-        if (logoutForm) {
-          event.preventDefault();
-          logoutForm.requestSubmit();
-        } else {
+      logoutButton.addEventListener("click", function () {
+        if (window.confirm("هل تريد تسجيل الخروج من حساب المطبعة؟")) {
           window.location.href = logoutButton.getAttribute("data-href") || "login.html";
         }
       });

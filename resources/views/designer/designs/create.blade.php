@@ -1,7 +1,7 @@
 @extends('designer.layouts.app')
 
 @section('title', 'اختر المنتج')
-@section('main-class', 'source-create-main')
+@section('body-class', 'designer-create-flow')
 
 @push('styles')
     <base href='{{ asset('front/designer/source/create') }}/'>
@@ -9,6 +9,7 @@
 @endpush
 
 @section('content')
+<main class='designer-content-main source-create-main' id='designerMain'>
     <div class='source-product-picker page'>
         <section class="product-page" aria-labelledby="page-title">
             <header class="page-header">
@@ -23,19 +24,18 @@
                 <section class="products-section" aria-labelledby="products-heading">
                     <h2 id="products-heading" class="sr-only">المنتجات</h2>
 
-                    <nav class="categories" id="categoriesContainer" aria-label="تصنيفات المنتجات">
-                        <!-- Categories are generated dynamically using JavaScript. -->
-                    </nav>
+                    <nav class="categories" id="categoriesContainer" aria-label="تصنيفات المنتجات"></nav>
 
-                    <div class="products-grid" id="productsGrid" aria-live="polite">
-                        <!-- Products are generated dynamically. -->
-                    </div>
+                    <div class="products-grid" id="productsGrid" aria-live="polite"></div>
                 </section>
 
                 <aside class="configuration-panel" aria-labelledby="selected-product-title" hidden>
                     <div class="selected-product-header">
-                        <h2 id="selected-product-title">اختر منتجاً</h2>
-                        <p id="selected-product-description">اختر منتجاً من القائمة لعرض تفاصيله.</p>
+                        <h2 id="selected-product-title">اختر منتجا</h2>
+
+                        <p id="selected-product-description">
+                            اختر منتجا من القائمة لعرض تفاصيله.
+                        </p>
                     </div>
 
                     <div class="product-preview" id="productPreview" aria-live="polite">
@@ -43,30 +43,29 @@
 
                         <div class="preview-placeholder" id="previewPlaceholder">
                             <span aria-hidden="true"><i class="bi bi-box-seam"></i></span>
-                            <span>اختر منتجاً لعرض المعاينة</span>
+                            <span>اختر منتجا لعرض المعاينة</span>
                         </div>
                     </div>
 
                     <div id="productOptions" class="product-options" hidden>
                         <fieldset class="option-group">
                             <legend>اختر اللون</legend>
-                            <div id="colorsContainer" class="colors-container" role="radiogroup" aria-label="ألوان المنتج">
-                                <!-- Dynamic -->
-                            </div>
+
+                            <div id="colorsContainer" class="colors-container" role="radiogroup"
+                                aria-label="ألوان المنتج"></div>
                         </fieldset>
 
                         <fieldset class="option-group">
                             <legend>اختر المقاس</legend>
-                            <div id="sizesContainer" class="sizes-container" role="radiogroup" aria-label="مقاسات المنتج">
-                                <!-- Dynamic -->
-                            </div>
+
+                            <div id="sizesContainer" class="sizes-container" role="radiogroup"
+                                aria-label="مقاسات المنتج"></div>
                         </fieldset>
 
                         <fieldset class="option-group">
                             <legend>مناطق الطباعة المدعومة</legend>
-                            <div id="printAreasContainer" class="print-areas-container">
-                                <!-- Dynamic -->
-                            </div>
+
+                            <div id="printAreasContainer" class="print-areas-container"></div>
                         </fieldset>
                     </div>
 
@@ -82,6 +81,7 @@
 
         <div class="sr-only" id="liveRegion" role="status" aria-live="polite" aria-atomic="true"></div>
     </div>
+</main>
 @endsection
 
 @push('scripts')

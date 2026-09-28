@@ -1832,20 +1832,19 @@ html {
   animation: pal-nav-enter 820ms 160ms cubic-bezier(.22, 1, .36, 1) both;
 }
 
-.hero__title {
-  animation: pal-hero-enter 850ms 100ms cubic-bezier(.22, 1, .36, 1) both;
-}
+/* Match the storefront: copy together, then the visual after 420ms. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero__content {
+    animation:
+      pal-hero-fade 520ms ease backwards,
+      pal-hero-enter 680ms cubic-bezier(.16, 1, .3, 1) backwards;
+  }
 
-.hero__description {
-  animation: pal-hero-enter 850ms 230ms cubic-bezier(.22, 1, .36, 1) both;
-}
-
-.hero__actions {
-  animation: pal-hero-enter 850ms 360ms cubic-bezier(.22, 1, .36, 1) both;
-}
-
-.hero__visual {
-  animation: pal-hero-visual-enter 1050ms 220ms cubic-bezier(.22, 1, .36, 1) both;
+  .hero__visual {
+    animation:
+      pal-hero-fade 520ms 420ms ease backwards,
+      pal-hero-visual-enter 680ms 420ms cubic-bezier(.16, 1, .3, 1) backwards;
+  }
 }
 
 .stats__card {
@@ -1863,25 +1862,26 @@ html {
   }
 }
 
+@keyframes pal-hero-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes pal-hero-enter {
   from {
-    opacity: 0;
-    transform: translate3d(0, 44px, 0);
+    transform: translateY(18px);
   }
   to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transform: none;
   }
 }
 
 @keyframes pal-hero-visual-enter {
   from {
-    opacity: 0;
-    transform: translate3d(0, 28px, 0) scale(.96);
+    transform: translateY(22px) scale(.98);
   }
   to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: none;
   }
 }
 

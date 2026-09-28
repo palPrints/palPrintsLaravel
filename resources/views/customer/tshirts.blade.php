@@ -36,7 +36,7 @@
         </div>
 
         <div class="catalog-heading">
-            <h1><img src="{{ asset('front/assets/images/customer/t-shirt.png') }}" alt=""> تيشيرتات</h1>
+            <h1><img src="{{ asset('front/assets/images/t-shirt.png') }}" alt=""> تيشيرتات</h1>
             <p>اكتشف مجموعة مميزة من التيشيرتات بتصاميم فريدة تناسب كل الأذواق والمناسبات.</p>
         </div>
 
@@ -65,6 +65,7 @@
         window.palPrintsCustomerAssets = window.palPrintsCustomerAssets || {};
         window.palPrintsCustomerAssets.tshirtsImagesBase = @json(asset('front/assets/images/customer/tshirts'));
         window.palPrintsCustomerAssets.tshirtFallbackImage = @json(asset('front/assets/images/customer/tshirt.webp'));
+        window.palPrintsCustomerAssets.publishedDesigns = @json($publishedDesigns);
     </script>
     <script src="{{ asset('front/js/customer/tshirts.js') }}?v={{ filemtime(public_path('front/js/customer/tshirts.js')) }}"></script>
 @endpush

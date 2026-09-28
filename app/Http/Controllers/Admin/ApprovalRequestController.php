@@ -7,6 +7,7 @@ use App\Models\ApprovalRequest;
 use App\Models\AuditLog;
 use App\Models\Notification;
 use App\Models\Wallet;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,7 @@ use Illuminate\Validation\ValidationException;
 
 class ApprovalRequestController extends Controller
 {
-    public function update(Request $request, ApprovalRequest $approvalRequest): RedirectResponse
+    public function update(Request $request, ApprovalRequest $approvalRequest): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
             'action' => ['required', Rule::in(['under_review', 'approved', 'changes_requested', 'rejected'])],
@@ -96,6 +97,14 @@ class ApprovalRequestController extends Controller
                 ],
             ]);
         });
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'message' => 'تم تحديث حالة الطلب بنجاح.',
+                'status' => $approvalRequest->fresh()->status,
+            ]);
+        }
 
         return back()->with('success', 'تم تحديث حالة الطلب بنجاح.');
     }

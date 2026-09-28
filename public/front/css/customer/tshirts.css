@@ -23,6 +23,17 @@ body.tshirts-page::before {
     linear-gradient(140deg, #fff 0%, #fbfdff 50%, #fdffff 100%);
 }
 
+body.tshirts-page::after {
+  content: "";
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 3000;
+  height: 3px;
+  pointer-events: none;
+  background: linear-gradient(100deg, var(--pal-cyan) 0%, var(--pal-blue) 55%, var(--pal-indigo) 100%);
+}
+
 html[data-bs-theme="dark"] body.tshirts-page {
   --pal-page-bg: #080d1c;
   --pal-surface: #11182b;
@@ -62,8 +73,6 @@ html[data-bs-theme="dark"] body.tshirts-page::before {
 
 .tshirts-page .products-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .tshirts-page .product-card { cursor: default; background: #fff; border-color: var(--store-border); box-shadow: var(--store-shadow); }
-.tshirts-page .product-card:hover { border-color: var(--store-primary-border); box-shadow: 0 12px 28px rgb(15 23 42 / 12%); }
-.tshirts-page .product-card:focus-within { outline: none; }
 .tshirts-page .product-card__media { position: relative; display: grid; place-items: center; box-sizing: border-box; padding: 10px 16px; background: var(--store-surface-muted); }
 .tshirts-page .product-card__media > img { display: block; width: auto; height: 100%; max-width: 88%; object-fit: contain; object-position: center; }
 .tshirts-page .product-card:hover .product-card__media > img,

@@ -163,7 +163,7 @@
       notificationsToggle.setAttribute("aria-label", unreadCount ? `الإشعارات، ${unreadCount} جديدة` : "الإشعارات");
     };
 
-    const showToast = (message) => {
+    const showToast = (message, icon = "bell") => {
       document.querySelector(".store-notification-toast")?.remove();
       window.clearTimeout(toastTimer);
 
@@ -171,7 +171,8 @@
       toast.className = "store-notification-toast";
       toast.setAttribute("role", "status");
       toast.setAttribute("aria-live", "polite");
-      toast.innerHTML = '<i class="bi bi-heart-fill" aria-hidden="true"></i><span></span>';
+      toast.innerHTML = '<i aria-hidden="true"></i><span></span>';
+      toast.querySelector("i").className = `bi bi-${icon}`;
       toast.querySelector("span").textContent = message;
       document.body.append(toast);
       requestAnimationFrame(() => toast.classList.add("is-visible"));
@@ -196,7 +197,7 @@
         saveNotifications();
         renderNotifications();
         ringNotificationBell();
-        showToast(message);
+        showToast(message, icon);
       }
     };
 
@@ -351,7 +352,7 @@
         title.textContent = item.title;
         desc.textContent = item.description || "";
         price.className = "cart-dropdown__item-price";
-        price.textContent = `$${item.price}`;
+        price.textContent = `${item.price} ₪`;
 
         media.append(image);
         body.append(title, desc);
@@ -480,8 +481,12 @@
     if (wasOpen) applyOpen(false);
   }
 
+  /* Pages that reuse only the store shell stop here; the catalog below requires
+     the storefront search and product grid. */
+  if (!form || !input || !grid || !emptyState) return;
+
   // Category pages reuse the store shell and provide their own catalog behavior.
-  if (document.body.classList.contains("hoodies-page")) return;
+  if (document.body.matches(".hoodies-page, .stickers-page")) return;
 
   // Pages without a store product grid (e.g. the basket) only need the
   // header/sidebar wiring above — nothing below here applies to them.
@@ -602,7 +607,8 @@
     const price = document.createElement("span");
     price.className = "product-card__price";
     price.dir = "ltr";
-    price.textContent = `$${productPrices[card.dataset.product].toFixed(2)}`;
+    const cardPrice = Number(card.dataset.price || productPrices[card.dataset.product] || 0);
+    price.textContent = `${cardPrice.toFixed(2)} ₪`;
     body.append(price);
   });
 
@@ -613,11 +619,11 @@
 
     const product = card.dataset.product;
     const productImagesBase = window.palPrintsCustomerAssets?.products || "/front/assets/images/customer/products";
-    const originalSrc = `${productImagesBase}/${productImages[product]}`;
+    const originalSrc = productImages[product] ? `${productImagesBase}/${productImages[product]}` : image.src;
     const hoverSrc = hoverImages[product]
-      ? `${productImagesBase}/${hoverImages[product]}`
+      ? `${productImagesBase}/${encodeURIComponent(hoverImages[product])}`
       : null;
-    image.src = originalSrc;
+    if (originalSrc) image.src = originalSrc;
 
     if (hoverSrc) {
       const hoverImage = new Image();

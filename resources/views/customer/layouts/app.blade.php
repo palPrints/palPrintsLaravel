@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('front/css/customer/storefront.css') }}?v={{ filemtime(public_path('front/css/customer/storefront.css')) }}">
-    <link rel="stylesheet" href="{{ asset('front/css/customer/interactions.css') }}?v={{ filemtime(public_path('front/css/customer/interactions.css')) }}">
+    <link rel="stylesheet" href="{{ asset('front/shared/interactions.css') }}?v={{ filemtime(public_path('front/shared/interactions.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/css/shared/site-footer.css') }}?v={{ filemtime(public_path('front/css/shared/site-footer.css')) }}">
     @stack('styles')
 </head>
@@ -63,7 +63,7 @@
         };
     </script>
     <script src="{{ asset('front/js/customer/storefront.js') }}?v={{ filemtime(public_path('front/js/customer/storefront.js')) }}"></script>
-    <script src="{{ asset('front/js/customer/interactions.js') }}?v={{ filemtime(public_path('front/js/customer/interactions.js')) }}"></script>
+    <script src="{{ asset('front/shared/interactions.js') }}?v={{ filemtime(public_path('front/shared/interactions.js')) }}"></script>
     @stack('scripts')
 </body>
 </html>
