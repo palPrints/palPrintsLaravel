@@ -41,7 +41,7 @@ class PrintProvider extends Model
         'is_active' => 'boolean',
     ];
 
-    // ========== العلاقات ==========
+    // ========== ط§ظ„ط¹ظ„ط§ظ‚ط§طھ ==========
 
     public function user()
     {
@@ -52,4 +52,9 @@ class PrintProvider extends Model
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
+    public function branches()
+    {
+        return $this->hasMany(PrintProviderBranch::class);
+    }
 }
+

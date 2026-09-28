@@ -4,17 +4,18 @@ namespace Database\Seeders;
 
 use App\Models\Attribute;
 use App\Models\AttributeValue;
+use App\Models\BranchOfferingVariant;
+use App\Models\BranchPricingRule;
+use App\Models\BranchPrintArea;
+use App\Models\BranchPrintCapability;
+use App\Models\BranchProductOffering;
 use App\Models\Category;
-use App\Models\PricingRule;
-use App\Models\PrintArea;
-use App\Models\PrintCapability;
 use App\Models\PrintingMethod;
+use App\Models\PrintProvider;
+use App\Models\PrintProviderBranch;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\ProductAttributeValue;
-use App\Models\Provider;
-use App\Models\ProviderOffering;
-use App\Models\ProviderOfferingVariant;
 use App\Models\Variant;
 use App\Models\VariantValue;
 use Illuminate\Database\Seeder;
@@ -27,11 +28,9 @@ class CatalogDemoSeeder extends Seeder
         $categories = $this->seedCategories();
         $attributes = $this->seedAttributes();
         $products = $this->seedProducts($categories);
-        $variants = $this->seedProductAttributesAndVariants($products, $attributes);
-        $methods = $this->seedPrintingMethods();
-        $providers = $this->seedProviders();
-
-        $this->seedProviderCatalog($providers, $products, $variants, $methods);
+        $this->seedProductAttributesAndVariants($products, $attributes);
+        $this->seedBranchCatalog($products);
+        $this->seedBranchPrintConfiguration();
     }
 
     /**
@@ -236,86 +235,308 @@ class CatalogDemoSeeder extends Seeder
     }
 
     /**
+     * @param  array<string, Product>  $products
+     */
+    private function seedBranchCatalog(array $products): void
+    {
+        $printProvider = PrintProvider::query()->first();
+
+        if (! $printProvider) {
+            return;
+        }
+
+        $branches = [
+            'gaza' => PrintProviderBranch::updateOrCreate(
+                ['print_provider_id' => $printProvider->id, 'name' => 'Gaza Branch'],
+                ['city' => 'Gaza', 'region' => 'Gaza Strip', 'address' => 'Gaza', 'phone' => $printProvider->phone, 'working_hours' => null, 'is_active' => true],
+            ),
+            'west_bank' => PrintProviderBranch::updateOrCreate(
+                ['print_provider_id' => $printProvider->id, 'name' => 'West Bank Branch'],
+                ['city' => 'Ramallah', 'region' => 'West Bank', 'address' => 'Ramallah', 'phone' => $printProvider->phone, 'working_hours' => null, 'is_active' => true],
+            ),
+        ];
+
+        $offerings = [
+            'gaza' => [
+                'TSHIRT-CLASSIC' => [15, 120],
+                'HOODIE-PREMIUM' => [35, 60],
+                'MUG-CERAMIC' => [12, 80],
+                'STICKER-CUSTOM' => [8, 250],
+                'PAPER-PRINT' => [10, 300],
+                'CAP-CLASSIC' => [20, 90],
+                'TOTE-CANVAS' => [50, 100],
+                'PHONE-CASE' => [25, 110],
+                'POSTER-PRINT' => [20, 100],
+                'WEDDING-CARDS' => [30, 120],
+            ],
+            'west_bank' => [
+                'TSHIRT-CLASSIC' => [16, 100],
+                'HOODIE-PREMIUM' => [36, 55],
+                'MUG-CERAMIC' => [13, 75],
+                'STICKER-CUSTOM' => [9, 220],
+                'PAPER-PRINT' => [11, 280],
+                'CAP-CLASSIC' => [21, 80],
+                'TOTE-CANVAS' => [52, 90],
+                'SCARF-CUSTOM' => [18, 70],
+                'NOTEBOOK-CUSTOM' => [15, 140],
+                'POSTER-PRINT' => [21, 90],
+            ],
+        ];
+
+        foreach ($offerings as $branchKey => $branchOfferings) {
+            foreach ($branchOfferings as $productCode => [$basePrice, $dailyCapacity]) {
+                if (! isset($products[$productCode])) {
+                    continue;
+                }
+
+                BranchProductOffering::updateOrCreate(
+                    ['print_provider_branch_id' => $branches[$branchKey]->id, 'product_id' => $products[$productCode]->id],
+                    [
+                        'base_price' => $basePrice,
+                        'currency' => 'ILS',
+                        'production_time_min' => 1,
+                        'production_time_max' => 3,
+                        'daily_capacity' => $dailyCapacity,
+                        'is_active' => true,
+                    ],
+                );
+            }
+        }
+    }
+
+    private function seedBranchPrintConfiguration(): void
+    {
+        $methods = $this->seedPrintingMethods();
+
+        BranchProductOffering::query()
+            ->with(['product.variants', 'printProviderBranch'])
+            ->get()
+            ->each(function (BranchProductOffering $offering) use ($methods): void {
+                $this->seedBranchOfferingVariants($offering);
+                $this->seedPrintAreasAndCapabilities($offering, $methods);
+                $this->seedPricingRules($offering);
+            });
+    }
+
+    /**
      * @return array<string, PrintingMethod>
      */
     private function seedPrintingMethods(): array
     {
+        $data = [
+            'dtf' => 'DTF Printing',
+            'dtg' => 'DTG Printing',
+            'sublimation' => 'Sublimation',
+            'embroidery' => 'Embroidery',
+            'digital-paper' => 'Digital Paper Printing',
+            'vinyl-cut' => 'Vinyl Cut',
+        ];
+
         $methods = [];
 
-        foreach (['dtg' => 'Direct to Garment', 'sublimation' => 'Sublimation', 'screen-print' => 'Screen Print', 'embroidery' => 'Embroidery'] as $code => $name) {
-            $methods[$code] = PrintingMethod::updateOrCreate(['code' => $code], ['name' => $name, 'is_active' => true]);
+        foreach ($data as $code => $name) {
+            $methods[$code] = PrintingMethod::updateOrCreate(
+                ['code' => $code],
+                ['name' => $name, 'is_active' => true],
+            );
         }
 
         return $methods;
     }
 
-    /**
-     * @return array<string, Provider>
-     */
-    private function seedProviders(): array
+    private function seedBranchOfferingVariants(BranchProductOffering $offering): void
     {
-        return [
-            'default' => Provider::updateOrCreate(
-                ['email' => 'catalog.provider@palprint.test'],
-                ['name' => 'PalPrints Catalog Provider', 'phone' => '+970599000000', 'license_number' => 'CAT-DEMO-001', 'status' => 'active'],
-            ),
-        ];
+        $offering->product->variants->each(function (Variant $variant) use ($offering): void {
+            BranchOfferingVariant::updateOrCreate(
+                ['branch_product_offering_id' => $offering->id, 'variant_id' => $variant->id],
+                [
+                    'branch_sku' => $offering->printProviderBranch->id.'-'.$variant->sku,
+                    'is_available' => $variant->is_active && $offering->is_active,
+                ],
+            );
+        });
     }
 
     /**
-     * @param  array<string, Provider>  $providers
-     * @param  array<string, Product>  $products
-     * @param  array<string, array<int, Variant>>  $variants
      * @param  array<string, PrintingMethod>  $methods
      */
-    private function seedProviderCatalog(array $providers, array $products, array $variants, array $methods): void
+    private function seedPrintAreasAndCapabilities(BranchProductOffering $offering, array $methods): void
     {
-        $prices = [
-            'TSHIRT-CLASSIC' => [15, [['front', 'Front', 300, 400, 'dtg'], ['back', 'Back', 320, 420, 'screen-print']]],
-            'HOODIE-PREMIUM' => [35, [['front', 'Front', 280, 340, 'dtg'], ['back', 'Back', 320, 380, 'screen-print']]],
-            'MUG-CERAMIC' => [12, [['wrap', 'Full Wrap', 200, 80, 'sublimation']]],
-            'STICKER-CUSTOM' => [8, [['front', 'Front', 100, 100, 'screen-print']]],
-            'PAPER-PRINT' => [10, [['front', 'Front', 210, 297, 'screen-print']]],
-            'CAP-CLASSIC' => [20, [['front', 'Front', 120, 60, 'embroidery']]],
-            'TOTE-CANVAS' => [50, [['front', 'Front', 260, 300, 'screen-print']]],
-            'SCARF-CUSTOM' => [18, [['front', 'Front', 280, 120, 'sublimation']]],
-            'PHONE-CASE' => [25, [['back', 'Back', 75, 150, 'sublimation']]],
-            'NOTEBOOK-CUSTOM' => [15, [['cover', 'Cover', 148, 210, 'screen-print']]],
-            'POSTER-PRINT' => [20, [['front', 'Front', 297, 420, 'screen-print']]],
-            'WEDDING-CARDS' => [30, [['front', 'Front', 150, 210, 'screen-print']]],
-        ];
-
-        foreach ($prices as $productCode => [$basePrice, $areas]) {
-            $offering = ProviderOffering::updateOrCreate(
-                ['provider_id' => $providers['default']->id, 'product_id' => $products[$productCode]->id],
-                ['base_price' => $basePrice, 'currency' => 'ILS', 'production_time_min' => 1, 'production_time_max' => 3, 'daily_capacity' => 100, 'is_active' => true],
+        foreach ($this->printAreaDefinitions($offering->product->code) as $areaCode => $areaData) {
+            $area = BranchPrintArea::updateOrCreate(
+                ['branch_product_offering_id' => $offering->id, 'code' => $areaCode],
+                [
+                    'name' => $areaData['name'],
+                    'max_width_mm' => $areaData['width'],
+                    'max_height_mm' => $areaData['height'],
+                    'is_active' => true,
+                ],
             );
 
-            $offeringVariants = collect($variants[$productCode])
-                ->map(fn (Variant $variant) => ProviderOfferingVariant::updateOrCreate(
-                    ['provider_offering_id' => $offering->id, 'variant_id' => $variant->id],
-                    ['provider_sku' => 'CAT-'.$variant->sku, 'is_available' => true],
-                ));
+            foreach ($areaData['methods'] as $methodCode) {
+                if (! isset($methods[$methodCode])) {
+                    continue;
+                }
 
-            foreach ($areas as [$code, $name, $width, $height, $method]) {
-                $area = PrintArea::updateOrCreate(
-                    ['provider_offering_id' => $offering->id, 'code' => $code],
-                    ['name' => $name, 'max_width_mm' => $width, 'max_height_mm' => $height, 'is_active' => true],
+                $appliesToAllVariants = ! ($offering->product->code === 'TSHIRT-CLASSIC' && $methodCode === 'dtg');
+                $capability = BranchPrintCapability::updateOrCreate(
+                    ['branch_print_area_id' => $area->id, 'printing_method_id' => $methods[$methodCode]->id],
+                    [
+                        'applies_to_all_variants' => $appliesToAllVariants,
+                        'max_width_mm' => $areaData['width'],
+                        'max_height_mm' => $areaData['height'],
+                        'is_active' => true,
+                    ],
                 );
 
-                $capability = PrintCapability::updateOrCreate(
-                    ['print_area_id' => $area->id, 'printing_method_id' => $methods[$method]->id],
-                    ['applies_to_all_variants' => true, 'max_width_mm' => $width, 'max_height_mm' => $height, 'is_active' => true],
-                );
-
-                $offeringVariants->each(fn (ProviderOfferingVariant $variant) => $capability->variants()->firstOrCreate([
-                    'provider_offering_variant_id' => $variant->id,
-                ]));
-
-                $this->pricingRule($offering, $capability, 1, 9, 8, 20);
-                $this->pricingRule($offering, $capability, 10, null, 6, 10);
+                if (! $appliesToAllVariants) {
+                    $this->seedCapabilityVariantsForWhiteSkus($capability, $offering);
+                }
             }
         }
+    }
+
+    /**
+     * @return array<string, array{name: string, width: int, height: int, methods: array<int, string>}>
+     */
+    private function printAreaDefinitions(string $productCode): array
+    {
+        return match ($productCode) {
+            'TSHIRT-CLASSIC' => [
+                'front' => ['name' => 'Front Chest', 'width' => 280, 'height' => 350, 'methods' => ['dtf', 'dtg']],
+                'back' => ['name' => 'Back Print', 'width' => 300, 'height' => 380, 'methods' => ['dtf']],
+            ],
+            'HOODIE-PREMIUM' => [
+                'front' => ['name' => 'Front Chest', 'width' => 260, 'height' => 300, 'methods' => ['dtf', 'embroidery']],
+                'back' => ['name' => 'Back Print', 'width' => 300, 'height' => 360, 'methods' => ['dtf']],
+            ],
+            'MUG-CERAMIC' => [
+                'wrap' => ['name' => 'Full Wrap', 'width' => 210, 'height' => 90, 'methods' => ['sublimation']],
+            ],
+            'STICKER-CUSTOM' => [
+                'front' => ['name' => 'Sticker Face', 'width' => 150, 'height' => 150, 'methods' => ['vinyl-cut', 'digital-paper']],
+            ],
+            'PAPER-PRINT' => [
+                'front' => ['name' => 'Front Page', 'width' => 210, 'height' => 297, 'methods' => ['digital-paper']],
+            ],
+            'CAP-CLASSIC' => [
+                'front' => ['name' => 'Front Panel', 'width' => 120, 'height' => 60, 'methods' => ['embroidery', 'dtf']],
+            ],
+            'TOTE-CANVAS' => [
+                'front' => ['name' => 'Bag Front', 'width' => 280, 'height' => 320, 'methods' => ['dtf', 'embroidery']],
+            ],
+            'PHONE-CASE' => [
+                'back' => ['name' => 'Back Panel', 'width' => 70, 'height' => 150, 'methods' => ['sublimation']],
+            ],
+            'SCARF-CUSTOM' => [
+                'front' => ['name' => 'Scarf Panel', 'width' => 300, 'height' => 120, 'methods' => ['sublimation']],
+            ],
+            'NOTEBOOK-CUSTOM' => [
+                'cover' => ['name' => 'Cover', 'width' => 148, 'height' => 210, 'methods' => ['digital-paper']],
+            ],
+            'POSTER-PRINT' => [
+                'front' => ['name' => 'Poster Face', 'width' => 297, 'height' => 420, 'methods' => ['digital-paper']],
+            ],
+            'WEDDING-CARDS' => [
+                'front' => ['name' => 'Card Face', 'width' => 150, 'height' => 210, 'methods' => ['digital-paper']],
+            ],
+            default => [
+                'front' => ['name' => 'Front', 'width' => 200, 'height' => 200, 'methods' => ['dtf']],
+            ],
+        };
+    }
+
+    private function seedCapabilityVariantsForWhiteSkus(BranchPrintCapability $capability, BranchProductOffering $offering): void
+    {
+        BranchOfferingVariant::query()
+            ->where('branch_product_offering_id', $offering->id)
+            ->whereHas('variant', fn ($query) => $query->where('sku', 'like', '%-WHITE-%'))
+            ->get()
+            ->each(function (BranchOfferingVariant $branchVariant) use ($capability): void {
+                $capability->branchPrintCapabilityVariants()->updateOrCreate(
+                    ['branch_offering_variant_id' => $branchVariant->id],
+                    [],
+                );
+            });
+    }
+
+    private function seedPricingRules(BranchProductOffering $offering): void
+    {
+        BranchPricingRule::updateOrCreate(
+            [
+                'branch_product_offering_id' => $offering->id,
+                'branch_offering_variant_id' => null,
+                'branch_print_capability_id' => null,
+                'pricing_type' => 'base',
+                'min_quantity' => 1,
+                'max_quantity' => null,
+            ],
+            [
+                'value_type' => 'fixed',
+                'amount' => $offering->base_price,
+                'priority' => 10,
+                'is_active' => true,
+                'valid_from' => null,
+                'valid_until' => null,
+            ],
+        );
+
+        $offering->branchPrintAreas()
+            ->with('branchPrintCapabilities.printingMethod')
+            ->get()
+            ->flatMap(fn (BranchPrintArea $area) => $area->branchPrintCapabilities)
+            ->each(function (BranchPrintCapability $capability) use ($offering): void {
+                BranchPricingRule::updateOrCreate(
+                    [
+                        'branch_product_offering_id' => $offering->id,
+                        'branch_offering_variant_id' => null,
+                        'branch_print_capability_id' => $capability->id,
+                        'pricing_type' => 'print_method_addon',
+                        'min_quantity' => 1,
+                        'max_quantity' => null,
+                    ],
+                    [
+                        'value_type' => 'fixed',
+                        'amount' => $this->methodAddonAmount($capability->printingMethod->code),
+                        'priority' => 20,
+                        'is_active' => true,
+                        'valid_from' => null,
+                        'valid_until' => null,
+                    ],
+                );
+            });
+
+        BranchPricingRule::updateOrCreate(
+            [
+                'branch_product_offering_id' => $offering->id,
+                'branch_offering_variant_id' => null,
+                'branch_print_capability_id' => null,
+                'pricing_type' => 'quantity_discount',
+                'min_quantity' => 10,
+                'max_quantity' => null,
+            ],
+            [
+                'value_type' => 'percent',
+                'amount' => 8,
+                'priority' => 30,
+                'is_active' => true,
+                'valid_from' => null,
+                'valid_until' => null,
+            ],
+        );
+    }
+
+    private function methodAddonAmount(string $methodCode): int
+    {
+        return match ($methodCode) {
+            'embroidery' => 12,
+            'sublimation' => 6,
+            'dtg' => 8,
+            'dtf' => 5,
+            'vinyl-cut' => 4,
+            'digital-paper' => 2,
+            default => 0,
+        };
     }
 
     /**
@@ -345,13 +566,5 @@ class CatalogDemoSeeder extends Seeder
         );
 
         VariantValue::firstOrCreate(['variant_id' => $variant->id, 'product_attribute_value_id' => $productAttributeValue->id]);
-    }
-
-    private function pricingRule(ProviderOffering $offering, PrintCapability $capability, int $minQuantity, ?int $maxQuantity, int $amount, int $priority): void
-    {
-        PricingRule::updateOrCreate(
-            ['provider_offering_id' => $offering->id, 'print_capability_id' => $capability->id, 'min_quantity' => $minQuantity],
-            ['max_quantity' => $maxQuantity, 'pricing_type' => 'print', 'value_type' => 'fixed', 'amount' => $amount, 'priority' => $priority, 'is_active' => true],
-        );
     }
 }

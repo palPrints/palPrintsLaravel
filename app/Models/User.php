@@ -51,6 +51,11 @@ class User extends Authenticatable
         return $this->hasOne(PrintProvider::class);
     }
 
+    public function deliveryPartner(): HasOne
+    {
+        return $this->hasOne(DeliveryPartner::class);
+    }
+
     public function auditLogs()
     {
         return $this->hasMany(AuditLog::class);
@@ -81,6 +86,46 @@ class User extends Authenticatable
         return $this->hasMany(WithdrawalRequest::class);
     }
 
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(Address::class);
+    }
+
+    public function carts(): HasMany
+    {
+        return $this->hasMany(Cart::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function reviewedPlatformReviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'reviewed_by');
+    }
+
+    public function changedOrderStatuses(): HasMany
+    {
+        return $this->hasMany(OrderStatusHistory::class, 'changed_by');
+    }
+
+    public function designedOrderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class, 'designer_id');
+    }
+
     public function socialAccounts(): HasMany
     {
         return $this->hasMany(SocialAccount::class);
@@ -93,7 +138,7 @@ class User extends Authenticatable
 
     public function supportsOnboarding(): bool
     {
-        return in_array($this->primaryRole(), ['designer', 'print_provider'], true);
+        return in_array($this->primaryRole(), ['designer', 'print_provider', 'delivery_partner'], true);
     }
 
     public function roleProfile(): ?Model
@@ -101,6 +146,7 @@ class User extends Authenticatable
         return match ($this->primaryRole()) {
             'designer' => $this->designerProfile,
             'print_provider' => $this->printProvider,
+            'delivery_partner' => $this->deliveryPartner,
             default => null,
         };
     }
