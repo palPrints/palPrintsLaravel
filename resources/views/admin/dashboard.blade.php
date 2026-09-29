@@ -178,7 +178,7 @@
                             <td><a href="#" dir="ltr">#{{ $order->order_number }}</a></td>
                             <td>{{ $order->customer }}</td>
                             <td>{{ $order->product ?: '—' }}</td>
-                            <td><b dir="ltr">{{ number_format((float) $order->final_amount, 2) }} ₪</b></td>
+                            <td><b dir="ltr">{{ number_format((float) $order->total_amount, 2) }} ₪</b></td>
                             <td><span class="admin-order-status {{ $status['class'] }}">{{ $status['label'] }}</span></td>
                             <td><time datetime="{{ $order->created_at->toDateString() }}">{{ $order->created_at->locale('ar')->translatedFormat('j F Y') }}</time></td>
                         </tr>
