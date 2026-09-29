@@ -177,7 +177,7 @@
                 </tbody>
             </table>
             @if ($recentDesigns->isEmpty())
-                <div class="dashboard-empty-state"><i class="bi bi-images" aria-hidden="true"></i><strong>ما في تصاميم بعد</strong><span>ابدأ برفع أول تصميم إلك.</span></div>
+                <div class="dashboard-empty-state"><i class="bi bi-images" aria-hidden="true"></i><strong> لا يوجد تصاميم بعد</strong><span>ابدأ برفع أول تصميم إلك.</span></div>
             @endif
         </div>
     </section>

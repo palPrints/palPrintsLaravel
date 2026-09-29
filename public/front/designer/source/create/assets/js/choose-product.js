@@ -157,7 +157,8 @@ function selectProduct(productId) {
     state.selectedProduct = product;
     state.selectedColor = product.colors.find(color => color.id === product.defaultColor) || product.colors[0] || null;
     state.selectedSize = product.sizes[0] || null;
-    state.selectedPrintAreas = product.printAreas.filter(area => area.id === "front").map(area => area.id);
+    const defaultArea = product.printAreas.find(area => area.id === "front") || product.printAreas[0];
+    state.selectedPrintAreas = defaultArea ? [defaultArea.id] : [];
 
     announce(`تم اختيار ${product.name}`);
     startDesign();
@@ -373,6 +374,7 @@ function startDesign() {
     if (!validation.valid) {
         elements.selectionMessage.textContent = validation.message;
         announce(validation.message);
+        window.alert(validation.message);
         return;
     }
 
