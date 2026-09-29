@@ -161,12 +161,8 @@ class CatalogController extends Controller
                 'order' => 4,
             ],
             'MUG-CERAMIC' => [
-<<<<<<< HEAD
                 'store_name' => 'أكواب',
                 'store_category' => 'drinkware',
-=======
-                'store_name' => 'اكواب',
->>>>>>> ca8f928597dad33bd636ebb498774abdc5dd4d2b
                 'product_key' => 'cups',
                 'route' => route('customer.mugs'),
                 'order' => 5,
@@ -208,12 +204,8 @@ class CatalogController extends Controller
                 'order' => 11,
             ],
             'WEDDING-CARDS' => [
-<<<<<<< HEAD
                 'store_name' => 'كروت أفراح',
                 'store_category' => 'office',
-=======
-                'store_name' => 'كروت افراح',
->>>>>>> ca8f928597dad33bd636ebb498774abdc5dd4d2b
                 'product_key' => 'wedding-cards',
                 'route' => null,
                 'order' => 12,

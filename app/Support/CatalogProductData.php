@@ -3,11 +3,7 @@
 namespace App\Support;
 
 use App\Models\AttributeValue;
-<<<<<<< HEAD
 use App\Models\BranchProductOffering;
-=======
-use App\Models\BranchPrintArea;
->>>>>>> ca8f928597dad33bd636ebb498774abdc5dd4d2b
 use App\Models\Product;
 use Illuminate\Support\Collection;
 
@@ -243,7 +239,6 @@ class CatalogProductData
      */
     private static function printAreas(Product $product, array $meta, string $thumbnail): array
     {
-<<<<<<< HEAD
         $activeOfferings = $product->branchProductOfferings->filter(
             fn (BranchProductOffering $offering) => $offering->is_active
         );
@@ -304,20 +299,6 @@ class CatalogProductData
                 ['code' => 'front', 'name' => 'Front', 'width' => 250, 'height' => 250],
             ],
         };
-=======
-        $areas = $product->branchProductOfferings
-            ->flatMap->branchPrintAreas
-            ->unique('code')
-            ->values();
-
-        return $areas->map(fn (BranchPrintArea $area) => [
-            'id' => $area->code,
-            'name' => $area->name,
-            'icon' => $meta['area_icons'][$area->code] ?? 'bi bi-bounding-box',
-            'image' => $meta['area_images'][$area->code] ?? $thumbnail,
-            'dimensions' => (int) $area->max_width_mm.' x '.(int) $area->max_height_mm.' مم',
-        ])->all();
->>>>>>> ca8f928597dad33bd636ebb498774abdc5dd4d2b
     }
 
     private static function productImage(Product $product, array $meta): string
