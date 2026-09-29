@@ -1,11 +1,12 @@
 {{--
-    Ported from palPrintFront/support.html. Same situation as settings.blade.php:
-    the reference used a separate "profile-app" shell and its own design system
-    (profile-core.css, support.css), unrelated to the --pp-* tokens the rest of
-    this site is built on. Rebuilt with the existing app-card/field-grid/btn-brand
-    components, fitted into the shared storefront layout, and trimmed to the
-    "customer" role branch of the original (it served designer/printer/customer
-    from one file via a role query param).
+    Ported from palPrintFront/support.html to match its exact support.css
+    styling (the channel strip with vertical dividers, icon-in-shell inputs)
+    — reproduced with this site's own --pp-* tokens instead of literally
+    importing the reference's separate design system (profile-core.css carries
+    a standalone "profile-app" shell and a lot of designer/print-provider-only
+    CSS this page doesn't need). Trimmed to the "customer" role branch of the
+    original (it served designer/printer/customer from one file via a role
+    query param).
 
     There's no support-ticket table yet, so the ticket form and "طلباتك الأخيرة"
     list are demo-only (client-side toast + reset on submit), same treatment as
@@ -23,10 +24,16 @@
 
 @section('content')
     <section class="profile-content" aria-labelledby="pageTitle">
-        <div class="page-heading">
-            <h1 id="pageTitle">مركز الدعم الفني</h1>
-            <p>نساعدك في حل المشكلات ومتابعة طلبات الدعم من مكان واحد.</p>
+        <div class="pp-breadcrumb">
+            <a href="{{ route('customer.store') }}">الرئيسية</a>
+            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            <span>الدعم الفني</span>
         </div>
+        <header class="pp-page-heading">
+            <span class="pp-heading-icon"><i class="bi bi-headphones" aria-hidden="true"></i></span>
+            <div><h1 id="pageTitle">مركز الدعم الفني</h1><p>نساعدك في حل المشكلات ومتابعة طلبات الدعم من مكان واحد.</p></div>
+            <span class="pp-role-badge"><i class="bi bi-person-badge"></i><span>حساب عميل</span></span>
+        </header>
 
         <section class="support-channels" aria-label="قنوات الدعم">
             <button type="button" class="support-channel" id="startChatButton">
@@ -53,29 +60,29 @@
                     <div><h2>فتح تذكرة دعم</h2><p>أرسل تفاصيل المشكلة وسنتابعها معك.</p></div>
                 </div>
                 <form id="supportTicketForm">
-                    <div class="field-grid">
-                        <div class="field">
-                            <label class="pp-label" for="ticketCategory">نوع المشكلة</label>
-                            <select id="ticketCategory" class="pp-input" name="category" required>
+                    <div class="pp-field-grid">
+                        <label class="pp-field">
+                            <span>نوع المشكلة</span>
+                            <span class="pp-input-shell"><i class="bi bi-list-check"></i><select id="ticketCategory" name="category" required>
                                 <option value="">اختر نوع المشكلة</option>
                                 <option>طلب أو توصيل</option>
                                 <option>الدفع والاسترداد</option>
                                 <option>الحساب والعنوان</option>
                                 <option>مشكلة تقنية</option>
-                            </select>
-                        </div>
-                        <div class="field">
-                            <label class="pp-label" for="ticketReference">رقم الطلب أو المرجع</label>
-                            <input id="ticketReference" class="pp-input" name="reference" type="text" placeholder="اختياري" dir="ltr">
-                        </div>
-                        <div class="field" style="grid-column: 1 / -1;">
-                            <label class="pp-label" for="ticketSubject">عنوان المشكلة</label>
-                            <input id="ticketSubject" class="pp-input" name="subject" type="text" minlength="5" required>
-                        </div>
-                        <div class="field" style="grid-column: 1 / -1;">
-                            <label class="pp-label" for="ticketMessage">تفاصيل المشكلة</label>
-                            <textarea id="ticketMessage" class="pp-textarea" name="message" rows="4" minlength="15" required></textarea>
-                        </div>
+                            </select></span>
+                        </label>
+                        <label class="pp-field">
+                            <span>رقم الطلب أو المرجع</span>
+                            <span class="pp-input-shell"><i class="bi bi-hash"></i><input id="ticketReference" name="reference" type="text" placeholder="اختياري" dir="ltr"></span>
+                        </label>
+                        <label class="pp-field is-wide">
+                            <span>عنوان المشكلة</span>
+                            <span class="pp-input-shell"><i class="bi bi-type"></i><input id="ticketSubject" name="subject" type="text" minlength="5" required></span>
+                        </label>
+                        <label class="pp-field is-wide">
+                            <span>تفاصيل المشكلة</span>
+                            <span class="pp-input-shell is-textarea"><i class="bi bi-card-text"></i><textarea id="ticketMessage" name="message" rows="4" minlength="15" required></textarea></span>
+                        </label>
                         <label class="support-upload">
                             <i class="bi bi-paperclip"></i>
                             <span><strong>إرفاق ملف</strong><small>PNG أو JPG أو PDF — حتى 5MB</small></span>
@@ -83,9 +90,9 @@
                             <b id="attachmentName">اختيار ملف</b>
                         </label>
                     </div>
-                    <div class="form-actions" style="justify-content: flex-start;">
-                        <button type="submit" class="btn-brand"><i class="bi bi-send"></i> إرسال الطلب</button>
+                    <div class="support-form-actions">
                         <button type="reset" class="btn-brand-outline">مسح</button>
+                        <button type="submit" class="btn-brand"><i class="bi bi-send"></i> إرسال الطلب</button>
                     </div>
                 </form>
             </section>

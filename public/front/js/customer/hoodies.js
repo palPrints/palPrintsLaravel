@@ -1,26 +1,12 @@
 (function () {
   "use strict";
-  // hasBackPrint marks which designs actually have back artwork ready — the
-  // preview's "الخلف" print-area option only shows up for those. None of
-  // these 8 demo designs have real back artwork yet, so none are marked —
-  // set it to true per design once its actual back print exists.
-  const products = [
-    { id: "explore", category: "oversized", title: "هودي أوفر سايز", description: "اكتشف أكثر", designer: "Lina A.", tone: "cream", icon: "tree-fill", print: "EXPLORE<br>MORE" },
-    { id: "salam", category: "adults", title: "هودي رجال / نساء", description: "سلام دائم", designer: "Omar K.", tone: "black", icon: "flower2", print: "سلام", badge: "الأكثر مبيعاً" },
-    { id: "kind", category: "kids", title: "هودي أطفال", description: "قلب صغير كبير", designer: "Sara N.", tone: "pink", icon: "emoji-smile", print: "BE KIND<br>LITTLE ONE" },
-    { id: "dream", category: "oversized", title: "هودي أوفر سايز", description: "احلم أكبر", designer: "Ahmad Z.", tone: "purple", icon: "rocket-takeoff", print: "DREAM<br>BIGGER" },
-    { id: "day", category: "kids", title: "هودي أطفال", description: "يوم أجمل", designer: "Haneen S.", tone: "blue", icon: "moon-stars-fill", print: "IT’S A<br>GOOD DAY" },
-    { id: "good", category: "adults", title: "هودي رجال / نساء", description: "الأشياء الجيدة", designer: "Yousef M.", tone: "green", icon: "leaf", print: "GOOD THINGS<br>TAKE TIME" },
-    { id: "smile", category: "kids", title: "هودي أطفال", description: "ابتسم دائماً", designer: "Rana H.", tone: "cream", icon: "emoji-laughing", print: "KEEP<br>SMILING" },
-    { id: "create", category: "adults", title: "هودي رجال / نساء", description: "اصنع قصتك", designer: "Khaled N.", tone: "black", icon: "stars", print: "CREATE<br>YOUR STORY" }
-  ];
   const assets = window.palPrintsCustomerAssets || {};
+  // The designs are the published hoodie designs from the database.
+  const products = Array.isArray(assets.publishedDesigns) ? assets.publishedDesigns : [];
   const previewPageUrl = assets.productPreviewUrl || "product-preview.html";
   const hoodieImageUrl = assets.hoodieImage || "assets/images/hoodie.png";
-  const hoodieBackImageUrl = assets.hoodiePreviewBackImage || "assets/images/hoodie-back-clean.png";
-  const HOODIE_TONES = ["cream", "black", "pink", "purple", "blue", "green"];
-  const HOODIE_TONE_NAMES = { cream: "كريمي", black: "أسود", pink: "وردي", purple: "بنفسجي", blue: "أزرق", green: "أخضر" };
-  const HOODIE_TONE_VALUES = { cream: "#eee6d6", black: "#151719", pink: "#d9a6a9", purple: "#76758d", blue: "#7f9eb7", green: "#45605b" };
+  // Only the tint for a database color code; colors without one show untinted.
+  const HOODIE_TONE_CLASSES = { black: "hoodie-tone--black", navy: "hoodie-tone--blue", white: "hoodie-tone--cream" };
   const grid = document.getElementById("productGrid");
   const search = document.getElementById("productSearch");
   const filters = [...document.querySelectorAll("[data-filter]")];
@@ -87,49 +73,20 @@
     if (Array.isArray(saved)) favorites = new Set(saved.filter(id => products.some(product => product.id === id)));
   } catch (_) { /* Favorites remain available for this session. */ }
   function buildPreviewPayload(product) {
-    return {
-      version: 2,
-      product: {
-        id: product.id,
-        name: product.title,
-        sellingPrice: 20,
-        currency: "ILS",
-        colors: HOODIE_TONES.map(tone => ({ id: tone, name: HOODIE_TONE_NAMES[tone], value: HOODIE_TONE_VALUES[tone], image: hoodieImageUrl, toneClass: `hoodie-tone--${tone}` })),
-        sizes: ["S", "M", "L", "XL", "XXL"].map(name => ({ id: name.toLowerCase(), name })),
-        printAreas: [
-          { id: "front", name: "الأمام", image: hoodieImageUrl, fee: 0, placement: { top: 25, left: 29, width: 42, height: 42 } },
-          ...(product.hasBackPrint ? [{ id: "back", name: "الخلف", image: hoodieBackImageUrl, fee: 5, placement: { top: 26, left: 30, width: 40, height: 42 } }] : [])
-        ]
-      },
-      design: {
-        id: product.id,
-        name: product.description,
-        designerName: product.designer,
-        preview: {
-          images: [],
-          texts: [{ content: product.print.replace(/<br\s*\/?>/gi, "\n"), fontFamily: "Cairo", color: "#ffffff", autoContrast: true, x: 50, y: 50, width: 82, size: 26, rotation: 0, layerOrder: 2 }],
-          icons: [{ name: product.icon, color: "#ffffff", autoContrast: true, x: 50, y: 25, size: 26, rotation: 0, layerOrder: 1 }]
-        }
-      },
-      selection: {
-        colorId: product.tone,
-        sizeId: "m",
-        quantity: 1,
-        printAreaIds: ["front"],
-        defaultItem: { colorId: product.tone, sizeId: "m", printAreaIds: ["front"] },
-        items: [{ colorId: product.tone, sizeId: "m", printAreaIds: ["front"] }],
-        activeItemIndex: 0
-      },
-      customerWarnings: []
-    };
+    const ownImage = product.image !== hoodieImageUrl;
+    return window.PalPrintPreview.build({
+      code: "HOODIE-PREMIUM",
+      product,
+      options: assets.productOptions,
+      designName: product.description,
+      defaultSizeId: "m",
+      fallbackSizes: [{ id: "m", name: "M" }],
+      toneClass: colorId => (ownImage ? "" : (HOODIE_TONE_CLASSES[colorId] || "")),
+      printAreas: [{ id: "front", name: "الأمام", image: product.image, fee: 0, placement: { top: 25, left: 29, width: 42, height: 42 } }]
+    });
   }
   const normalize = text => text.toLowerCase().replace(/[\u064B-\u065F\u0670]/g, "").replace(/[أإآ]/g, "ا").trim();
-  const media = product => {
-    const tone = product.tone || "cream";
-    const icon = product.icon || "stars";
-    const print = product.print || product.description || product.title;
-    return `<div class="product-card__media"><img class="hoodie-tone--${tone}" src="${product.image || hoodieImageUrl}" alt="${product.title} — ${product.description}" loading="lazy"><span class="hoodie-print ${["black", "purple", "green"].includes(tone) ? "hoodie-print--light" : ""} ${product.id === "salam" ? "hoodie-print--arabic" : ""}" aria-hidden="true"><i class="bi bi-${icon}"></i>${print}</span>${product.badge ? `<span class="hoodie-badge-accent"><i class="bi bi-stars" aria-hidden="true"></i>${product.badge}</span>` : ""}</div>`;
-  };
+  const media = product => `<div class="product-card__media"><img src="${product.image || hoodieImageUrl}" alt="${product.title} — ${product.description}" loading="lazy"></div>`;
   function render() {
     const visible = products.filter(product => (selected === "all" || product.category === selected) && normalize(`${product.title} ${product.description} ${product.designer}`).includes(normalize(search.value)));
     grid.innerHTML = visible.map(product => `<article class="product-card" data-id="${product.id}">${media(product).replace('</div>', `<button class="hoodie-favorite" type="button" aria-label="مفضلة: ${product.description}" aria-pressed="${favorites.has(product.id)}"><i class="bi bi-heart${favorites.has(product.id) ? "-fill" : ""}" aria-hidden="true"></i></button></div>`)}<div class="product-card__body"><h3>${product.title}</h3><p>${product.description}</p><div class="hoodie-credit"><span>يبدأ من <strong dir="ltr">${product.price} ₪</strong></span><span class="hoodie-designer" dir="ltr"><i class="bi bi-person" aria-hidden="true"></i>by ${product.designer}</span></div><button type="button" class="hoodie-preview" data-preview="${product.id}"><i class="bi bi-eye" aria-hidden="true"></i>معاينة المنتج</button></div></article>`).join("");
@@ -150,7 +107,7 @@
     if (!product) return;
 
     try {
-      sessionStorage.setItem("palprintsCustomerPreview", JSON.stringify(customerPreviewPayload(product)));
+      sessionStorage.setItem("palprintsCustomerPreview", JSON.stringify(buildPreviewPayload(product)));
     } catch (_) { /* The preview page supplies a safe fallback if storage is unavailable. */ }
     window.location.href = previewPageUrl;
   }

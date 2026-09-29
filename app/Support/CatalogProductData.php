@@ -3,12 +3,22 @@
 namespace App\Support;
 
 use App\Models\AttributeValue;
-use App\Models\PrintArea;
+use App\Models\BranchPrintArea;
 use App\Models\Product;
 use Illuminate\Support\Collection;
 
 class CatalogProductData
 {
+    private const SWATCHES = [
+        'white' => '#ffffff', 'black' => '#111111', 'navy' => '#173b87', 'natural' => '#e5d7bd',
+        'gray' => '#737373', 'red' => '#b91c1c', 'green' => '#15803d', 'clear' => '#dbeafe',
+    ];
+
+    private const COLOR_NAMES = [
+        'white' => 'أبيض', 'black' => 'أسود', 'navy' => 'كحلي', 'natural' => 'طبيعي',
+        'gray' => 'رمادي', 'red' => 'أحمر', 'green' => 'أخضر', 'clear' => 'شفاف',
+    ];
+
     /**
      * @return array{categories: array<int, array<string, string>>, products: array<int, array<string, mixed>>}
      */
@@ -19,7 +29,7 @@ class CatalogProductData
                 'category',
                 'attributes.attribute',
                 'attributes.values.attributeValue',
-                'providerOfferings.printAreas',
+                'branchProductOfferings.branchPrintAreas',
             ])
             ->where('is_active', true)
             ->orderBy('id')
@@ -53,6 +63,70 @@ class CatalogProductData
     }
 
     /**
+     * Color/size choices for the customer catalog pages, straight from the
+     * product's attribute values. The catalog holds two families of values
+     * for the same thing ("tshirt-white" vs "white", JSON-encoded names vs
+     * plain ones), so codes are normalized and duplicates dropped — the
+     * first value seen wins, which keeps the Arabic names.
+     *
+     * @return array{colors: array<int, array<string, string>>, sizes: array<int, array<string, string>>}
+     */
+    public static function catalogOptions(Product $product): array
+    {
+        $attributes = self::attributeValues($product);
+
+        return [
+            'colors' => self::uniqueOptions($attributes['color'] ?? collect(), true),
+            'sizes' => self::uniqueOptions($attributes['size'] ?? collect()),
+        ];
+    }
+
+    public static function normalizeCode(string $code): string
+    {
+        $code = mb_strtolower(trim($code));
+        $code = preg_replace('/^(tshirt-classic|hoodie-premium|mug-ceramic|tshirt|hoodie|mug)-/u', '', $code);
+
+        return in_array($code, ['قياسي', 'standard', 'one size', 'one-size'], true) ? 'one-size' : $code;
+    }
+
+    /**
+     * @return array{name: string, hex: ?string}
+     */
+    public static function decodeValue(AttributeValue $value): array
+    {
+        $decoded = json_decode((string) $value->value, true);
+
+        return is_array($decoded)
+            ? ['name' => (string) ($decoded['name'] ?? $value->code), 'hex' => $decoded['hex'] ?? null]
+            : ['name' => (string) $value->value, 'hex' => null];
+    }
+
+    /**
+     * @param  Collection<int, AttributeValue>  $values
+     * @return array<int, array<string, string>>
+     */
+    private static function uniqueOptions(Collection $values, bool $isColor = false): array
+    {
+        return $values
+            ->map(function (AttributeValue $value) use ($isColor) {
+                $decoded = self::decodeValue($value);
+                $id = self::normalizeCode($value->code);
+                // Plain (non-JSON) color values are English ("White"); show the Arabic name.
+                $arabic = $decoded['hex'] === null && $isColor ? (self::COLOR_NAMES[$id] ?? null) : null;
+
+                return ['id' => $id, 'name' => $arabic ?? $decoded['name'], 'value' => $decoded['hex'] ?? self::swatch($id)];
+            })
+            ->unique('id')
+            ->values()
+            ->all();
+    }
+
+    private static function swatch(string $code): string
+    {
+        return self::SWATCHES[$code] ?? '#888888';
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private static function product(Product $product): array
@@ -63,7 +137,7 @@ class CatalogProductData
         $colors = self::colors($attributes['color'] ?? collect(), $thumbnail);
         $sizes = self::sizes($attributes['size'] ?? collect());
         $areas = self::printAreas($product, $meta, $thumbnail);
-        $price = $product->providerOfferings->where('is_active', true)->min('base_price') ?? 0;
+        $price = $product->branchProductOfferings->where('is_active', true)->min('base_price') ?? 0;
 
         return [
             'id' => (string) $product->id,
@@ -119,6 +193,7 @@ class CatalogProductData
             }
 
             $result[$code] = $productAttribute->values
+                ->where('is_active', true)
                 ->pluck('attributeValue')
                 ->filter()
                 ->values();
@@ -133,21 +208,10 @@ class CatalogProductData
      */
     private static function colors(Collection $values, string $thumbnail): array
     {
-        $swatches = [
-            'white' => '#ffffff',
-            'black' => '#111111',
-            'navy' => '#173b87',
-            'natural' => '#e5d7bd',
-            'gray' => '#737373',
-            'red' => '#b91c1c',
-            'green' => '#15803d',
-            'clear' => '#dbeafe',
-        ];
-
         return $values->map(fn (AttributeValue $value) => [
             'id' => $value->code,
             'name' => $value->value,
-            'value' => $swatches[$value->code] ?? '#888888',
+            'value' => self::swatch($value->code),
             'image' => $thumbnail,
         ])->values()->all() ?: [[
             'id' => 'standard',
@@ -175,12 +239,12 @@ class CatalogProductData
      */
     private static function printAreas(Product $product, array $meta, string $thumbnail): array
     {
-        $areas = $product->providerOfferings
-            ->flatMap->printAreas
+        $areas = $product->branchProductOfferings
+            ->flatMap->branchPrintAreas
             ->unique('code')
             ->values();
 
-        return $areas->map(fn (PrintArea $area) => [
+        return $areas->map(fn (BranchPrintArea $area) => [
             'id' => $area->code,
             'name' => $area->name,
             'icon' => $meta['area_icons'][$area->code] ?? 'bi bi-bounding-box',

@@ -165,6 +165,7 @@
 @push('scripts')
     <script>
         window.palPrintsCustomerAssets = window.palPrintsCustomerAssets || {};
+        window.palPrintsCustomerAssets.cartCatalogUrl = @json(route('customer.cart.store-catalog'));
         window.palPrintsCustomerAssets.hoodiePreviewImage = @json(asset('front/assets/images/customer/hoodie.png'));
         window.palPrintsCustomerAssets.hoodiePreviewBackImage = @json(asset('front/assets/images/customer/hoodie-back-clean.png'));
     </script>

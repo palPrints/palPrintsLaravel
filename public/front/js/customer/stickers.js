@@ -2,11 +2,8 @@
   "use strict";
 
   const PAGE_SIZE = 8;
-  const MAX_FILE_SIZE = 10 * 1024 * 1024;
   const CART_STORAGE_KEY = "stickerCart";
   const FAVORITES_STORAGE_KEY = "palprints-sticker-favorites";
-  const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/svg+xml"]);
-  const ALLOWED_EXTENSIONS = new Set(["png", "jpg", "jpeg", "webp", "svg"]);
 
   const categoryMeta = {
     quotes: { label: "خطوط وعبارات", title: "تصاميم خطوط وعبارات جاهزة" },
@@ -610,18 +607,9 @@
     });
   }
 
-  function fileExtension(fileName) {
-    const segments = String(fileName || "").toLowerCase().split(".");
-    return segments.length > 1 ? segments.pop() : "";
-  }
-
+  // Shared with the upload-your-design dialog (imageRules.js, loaded by the same partial).
   function validateFile(file) {
-    if (!file) return "لم يتم اختيار ملف.";
-    if (!ALLOWED_TYPES.has(file.type) && !ALLOWED_EXTENSIONS.has(fileExtension(file.name))) {
-      return "صيغة الملف غير مدعومة. اختر PNG أو JPG أو JPEG أو WEBP أو SVG.";
-    }
-    if (file.size > MAX_FILE_SIZE) return "حجم الملف أكبر من 10MB. اختر ملفًا أصغر.";
-    return "";
+    return window.PalPrintImageRules.validate(file);
   }
 
   function setUploadStatus(message, type) {

@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
       yourOrder: "طلبك", orderSummary: "ملخص الطباعة", currentStep: "المرحلة الحالية", files: "الملفات", printing: "الطباعة", binding: "التغليف", quantity: "الكمية", priceBreakdown: "تفصيل السعر", shippingNotIncluded: "لا يشمل التوصيل", needHelp: "تحتاج مساعدة؟ تواصل مع الدعم الفني", filePreview: "معاينة الملف", previewUnavailable: "المعاينة المرئية غير متاحة لهذا النوع",
       customize: "تخصيص", customized: "إعدادات مختلفة", removeOverride: "إزالة التخصيص", saveOverride: "حفظ التخصيص", cancel: "إلغاء", edit: "تعديل", pages: "صفحة", ready: "جاهز", processing: "جارٍ تحليل الملف", converting: "جارٍ تحويل الملف", failed: "يحتاج إلى إجراء", retry: "إعادة المحاولة", delete: "حذف", preview: "معاينة", moveUp: "تحريك لأعلى", moveDown: "تحريك لأسفل",
       spiral: "سلك حلزوني", clearCover: "غلاف شفاف", glue: "تجليد حراري", sideStaple: "تدبيس جانبي", cornerStaple: "تدبيس زاوية", none: "بدون تغليف", noBindingFree: "بدون تغليف مجاني", lamination: "تغليف حراري شفاف", free: "مجانًا", glueMin: "يتطلب 20 صفحة على الأقل", spiralMax: "غير متاح لأكثر من 350 صفحة", stapleMax: "عدد الصفحات أكبر من الحد", laminationA3: "غير متاح مع مقاس A3",
-      filesRequired: "أضف ملفًا جاهزًا واحدًا على الأقل.", resolveFiles: "عالج الملفات التي تحتاج إلى إجراء قبل المتابعة.", printRequired: "اختر جميع خصائص الطباعة المطلوبة.", groupingRequired: "اختر دمج الملفات أو فصلها.", bindingRequired: "حدد نوع التغليف المطلوب.", signInRequired: "يجب تسجيل الدخول قبل رفع الملفات.", unsupportedFile: "صيغة الملف غير مدعومة.", fileTooLarge: "حجم الملف يتجاوز 50MB.", tooManyFiles: "يمكن رفع 10 ملفات كحد أقصى.", tooManyPages: "سيؤدي هذا الملف إلى تجاوز حد 500 صفحة.", duplicateFile: "هذا الملف مضاف بالفعل.", deleteConfirm: "سيؤثر حذف هذا الملف على الطلب والسعر. هل تريد المتابعة؟", fileRemoved: "تم حذف الملف.", undo: "استعادة", fileRestored: "تمت استعادة الملف.", settingsConfirmed: "تم حفظ خصائص الطباعة.", bindingConfirmed: "تم حفظ التجميع والتغليف.", orderAdded: "تمت إضافة طلب الطباعة إلى السلة.", applyAllConfirm: "سيتم حذف تخصيصات الملفات الفردية. هل تريد المتابعة؟", overridesCleared: "تم تطبيق الإعداد العام على جميع الملفات.", addedNeedsReview: "تمت إضافة الملف. راجع الخصائص قبل المتابعة.", overrideFirst: "أكمل الإعداد العام أولًا.", overrideSaved: "تم حفظ خصائص الملف.", priceCalculating: "يُحسب بعد إكمال الخصائص", printCost: "تكلفة الطباعة", bindingCost: "تكلفة التغليف", orderOutput: "مخرج الطلب", oneBooklet: "ملزمة واحدة", separatePrints: "مطبوعات منفصلة", mixedSettings: "خصائص مختلفة", notSelected: "لم تحدد بعد", oneFile: "ملف واحد", fileCount: "{count} ملفات", pageCount: "{count} صفحة", overridesCount: "{count} ملف بإعداد مختلف", stageReady: "جاهزة",
+      filesRequired: "أضف ملفًا جاهزًا واحدًا على الأقل.", resolveFiles: "عالج الملفات التي تحتاج إلى إجراء قبل المتابعة.", printRequired: "اختر جميع خصائص الطباعة المطلوبة.", groupingRequired: "اختر دمج الملفات أو فصلها.", bindingRequired: "حدد نوع التغليف المطلوب.", signInRequired: "يجب تسجيل الدخول قبل رفع الملفات.", unsupportedFile: "صيغة الملف غير مدعومة.", fileTooLarge: "حجم الملف يتجاوز 50MB.", tooManyFiles: "يمكن رفع 10 ملفات كحد أقصى.", tooManyPages: "سيؤدي هذا الملف إلى تجاوز حد 500 صفحة.", duplicateFile: "هذا الملف مضاف بالفعل.", deleteConfirm: "سيؤثر حذف هذا الملف على الطلب والسعر. هل تريد المتابعة؟", fileRemoved: "تم حذف الملف.", undo: "استعادة", fileRestored: "تمت استعادة الملف.", settingsConfirmed: "تم حفظ خصائص الطباعة.", bindingConfirmed: "تم حفظ التجميع والتغليف.", orderAdded: "تمت إضافة طلب الطباعة إلى السلة.", addingToCart: "جارٍ إضافة الطلب...", addToCartFailed: "تعذّرت إضافة الطلب إلى السلة، حاول مجددًا.", applyAllConfirm: "سيتم حذف تخصيصات الملفات الفردية. هل تريد المتابعة؟", overridesCleared: "تم تطبيق الإعداد العام على جميع الملفات.", addedNeedsReview: "تمت إضافة الملف. راجع الخصائص قبل المتابعة.", overrideFirst: "أكمل الإعداد العام أولًا.", overrideSaved: "تم حفظ خصائص الملف.", priceCalculating: "يُحسب بعد إكمال الخصائص", printCost: "تكلفة الطباعة", bindingCost: "تكلفة التغليف", orderOutput: "مخرج الطلب", oneBooklet: "ملزمة واحدة", separatePrints: "مطبوعات منفصلة", mixedSettings: "خصائص مختلفة", notSelected: "لم تحدد بعد", oneFile: "ملف واحد", fileCount: "{count} ملفات", pageCount: "{count} صفحة", overridesCount: "{count} ملف بإعداد مختلف", stageReady: "جاهزة",
       A4: "A4", A5: "A5", A3: "A3", standard: "عادي 80 جم", thick: "فاخر 120 جم", coated: "مصقول 150 جم", bw: "أبيض وأسود", color: "ملون", single: "وجه واحد", double: "وجهين", layout1: "صفحة واحدة", layout2: "صفحتان", layout4: "4 صفحات"
     },
     en: {
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
       yourOrder: "Your order", orderSummary: "Print summary", currentStep: "Current step", files: "Files", printing: "Printing", binding: "Binding", quantity: "Quantity", priceBreakdown: "Price breakdown", shippingNotIncluded: "Shipping not included", needHelp: "Need help? Contact support", filePreview: "File preview", previewUnavailable: "Visual preview is unavailable for this file type",
       customize: "Customize", customized: "Different settings", removeOverride: "Remove override", saveOverride: "Save override", cancel: "Cancel", edit: "Edit", pages: "pages", ready: "Ready", processing: "Analyzing file", converting: "Converting file", failed: "Action required", retry: "Retry", delete: "Delete", preview: "Preview", moveUp: "Move up", moveDown: "Move down",
       spiral: "Spiral binding", clearCover: "Clear cover", glue: "Glue binding", sideStaple: "Side stapling", cornerStaple: "Corner stapling", none: "No binding", noBindingFree: "No binding — Free", lamination: "Thermal lamination", free: "Free", glueMin: "Requires at least 20 pages", spiralMax: "Unavailable above 350 pages", stapleMax: "Page count exceeds the limit", laminationA3: "Unavailable with A3",
-      filesRequired: "Add at least one ready file.", resolveFiles: "Resolve files that need attention before continuing.", printRequired: "Choose every required print option.", groupingRequired: "Choose combine or separate files.", bindingRequired: "Choose the required binding.", signInRequired: "Sign in before uploading files.", unsupportedFile: "Unsupported file format.", fileTooLarge: "File size exceeds 50MB.", tooManyFiles: "You can upload up to 10 files.", tooManyPages: "This file would exceed the 500-page limit.", duplicateFile: "This file is already added.", deleteConfirm: "Deleting this file will affect your order and price. Continue?", fileRemoved: "File removed.", undo: "Undo", fileRestored: "File restored.", settingsConfirmed: "Print options saved.", bindingConfirmed: "Grouping and binding saved.", orderAdded: "Print order added to cart.", applyAllConfirm: "This removes all individual file overrides. Continue?", overridesCleared: "General settings applied to every file.", addedNeedsReview: "File added. Review the options before continuing.", overrideFirst: "Complete general settings first.", overrideSaved: "File settings saved.", priceCalculating: "Calculated after completing options", printCost: "Printing cost", bindingCost: "Binding cost", orderOutput: "Order output", oneBooklet: "One booklet", separatePrints: "Separate prints", mixedSettings: "Mixed settings", notSelected: "Not selected yet", oneFile: "1 file", fileCount: "{count} files", pageCount: "{count} pages", overridesCount: "{count} files with different settings", stageReady: "Ready",
+      filesRequired: "Add at least one ready file.", resolveFiles: "Resolve files that need attention before continuing.", printRequired: "Choose every required print option.", groupingRequired: "Choose combine or separate files.", bindingRequired: "Choose the required binding.", signInRequired: "Sign in before uploading files.", unsupportedFile: "Unsupported file format.", fileTooLarge: "File size exceeds 50MB.", tooManyFiles: "You can upload up to 10 files.", tooManyPages: "This file would exceed the 500-page limit.", duplicateFile: "This file is already added.", deleteConfirm: "Deleting this file will affect your order and price. Continue?", fileRemoved: "File removed.", undo: "Undo", fileRestored: "File restored.", settingsConfirmed: "Print options saved.", bindingConfirmed: "Grouping and binding saved.", orderAdded: "Print order added to cart.", addingToCart: "Adding to cart...", addToCartFailed: "Could not add the order to your cart, please try again.", applyAllConfirm: "This removes all individual file overrides. Continue?", overridesCleared: "General settings applied to every file.", addedNeedsReview: "File added. Review the options before continuing.", overrideFirst: "Complete general settings first.", overrideSaved: "File settings saved.", priceCalculating: "Calculated after completing options", printCost: "Printing cost", bindingCost: "Binding cost", orderOutput: "Order output", oneBooklet: "One booklet", separatePrints: "Separate prints", mixedSettings: "Mixed settings", notSelected: "Not selected yet", oneFile: "1 file", fileCount: "{count} files", pageCount: "{count} pages", overridesCount: "{count} files with different settings", stageReady: "Ready",
       A4: "A4", A5: "A5", A3: "A3", standard: "Standard 80 gsm", thick: "Premium 120 gsm", coated: "Coated 150 gsm", bw: "Black & white", color: "Full color", single: "Single-sided", double: "Double-sided", layout1: "One page", layout2: "Two pages", layout4: "4 pages"
     }
   };
@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   const optionValues = {
-    size: ["A5", "A4", "A3"], paper: ["standard", "thick", "coated"], color: ["bw", "color"], sides: ["single", "double"], layout: ["1", "2", "4"]
+    size: ["A5", "A4"], paper: ["standard", "thick", "coated"], color: ["bw", "color"], sides: ["single", "double"], layout: ["1", "2", "4"]
   };
   const optionTitles = { size: "paperSize", paper: "paperType", color: "printColor", sides: "printSides", layout: "pageLayout" };
 
@@ -548,16 +548,44 @@ document.addEventListener("DOMContentLoaded", function () {
   function addToCart() {
     if (!validateStep(3)) { goToStep(3); return; }
     const price = calculatePrice();
-    const order = { id: "paper-" + Date.now(), createdAt: new Date().toISOString(), files: readyFiles().map(function (file) { return { name: file.name, size: file.size, pages: file.pages, settings: effectiveSettings(file), quantity: quantityFor(file) }; }), grouping: state.grouping, fileOrder: state.fileOrder.slice(), combinedBinding: state.combinedBinding, separateBindings: Object.assign({}, state.separateBindings), separateQuantities: Object.assign({}, state.separateQuantities), quantity: state.quantity, total: price ? price.total : 0 };
-    try {
-      const cart = JSON.parse(window.localStorage.getItem("palprints-paper-cart") || "[]");
-      cart.push(order);
-      window.localStorage.setItem("palprints-paper-cart", JSON.stringify(cart));
-      $("#cartBadge").textContent = cart.length;
-    } catch (error) { /* UI remains usable if storage is unavailable */ }
-    showToast(t("orderAdded"));
-    el.added = true;
-    $("#addToCartButton span").textContent = t("orderAdded");
+    const files = readyFiles();
+    if (!files.length) { showToast(t("filesRequired"), "error"); goToStep(1); return; }
+
+    const button = document.getElementById("addToCartButton");
+    const buttonLabel = button ? $("span", button) : null;
+    const originalLabel = buttonLabel ? buttonLabel.textContent : "";
+    if (button) button.disabled = true;
+    if (buttonLabel) buttonLabel.textContent = t("addingToCart");
+
+    const formData = new FormData();
+    formData.append("size", state.globalSettings.size || "A4");
+    formData.append("total_price", price ? price.total : 0);
+    formData.append("settings[grouping]", state.grouping || "");
+    formData.append("settings[binding]", state.grouping === "combined"
+      ? bindingLabel(state.combinedBinding)
+      : Object.values(state.separateBindings).map(bindingLabel).join("، "));
+    formData.append("settings[quantity]", state.quantity);
+    files.forEach(function (file) { formData.append("files[]", file.file, file.name); });
+
+    fetch(window.palPrintsCustomerAssets.cartPaperUrl, {
+      method: "POST",
+      headers: {
+        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      body: formData,
+      credentials: "same-origin"
+    }).then(function (response) {
+      if (response.ok) {
+        window.location.href = window.palPrintsCustomerAssets.basketUrl;
+        return;
+      }
+      throw new Error("add-to-cart-failed");
+    }).catch(function () {
+      showToast(t("addToCartFailed"), "error");
+      if (button) button.disabled = false;
+      if (buttonLabel) buttonLabel.textContent = originalLabel;
+    });
   }
 
   function currentAction() {

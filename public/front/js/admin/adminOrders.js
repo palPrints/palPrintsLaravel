@@ -106,7 +106,7 @@
 
       statusSelect.value = status;
       printerSelect.value = row.dataset.printerId || "";
-      printerSelect.disabled = locked;
+      printerSelect.disabled = true; // display only: printers are assigned per branch, not from here
       hint.textContent = locked
         ? "لا يمكن إعادة توجيه الطلبات المكتملة أو الملغاة إلى مطبعة أخرى."
         : "يمكنك تحديث الحالة أو إعادة توجيه الطلب إلى مطبعة أخرى.";
@@ -126,7 +126,7 @@
       if (!activeRow) return;
 
       const row = activeRow;
-      const body = { status: statusSelect.value, print_provider_id: printerSelect.value || null };
+      const body = { status: statusSelect.value };
 
       saveButton.disabled = true;
       window.fetch(row.dataset.updateUrl, {

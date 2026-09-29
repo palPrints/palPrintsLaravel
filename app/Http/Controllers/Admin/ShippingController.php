@@ -9,8 +9,9 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 /**
- * The orders tables are not part of the current schema yet, so the query is
- * guarded and the page falls back to its empty state until the tables return.
+ * Shipments come from the shipments table (tracking number, carrier and
+ * estimated delivery live there); the page falls back to its empty state when
+ * the tables are missing or there are no shipments yet.
  */
 class ShippingController extends Controller
 {
@@ -28,7 +29,7 @@ class ShippingController extends Controller
 
     public function index(): View
     {
-        $available = Schema::hasTable('orders') && Schema::hasTable('addresses');
+        $available = Schema::hasTable('shipments') && Schema::hasTable('orders') && Schema::hasTable('addresses') && Schema::hasTable('delivery_partners');
 
         $shipments = $available ? $this->shipments() : collect();
 
@@ -48,36 +49,37 @@ class ShippingController extends Controller
     private function shipments()
     {
         $firstItemTitle = '(select d.title from order_items oi '
-            .'join design_products dp on dp.id = oi.design_product_id '
-            .'join designs d on d.id = dp.design_id '
+            .'join designs d on d.id = oi.design_id '
             .'where oi.order_id = orders.id order by oi.id limit 1)';
 
-        return DB::table('orders')
+        return DB::table('shipments')
+            ->join('orders', 'orders.id', '=', 'shipments.order_id')
             ->join('users', 'users.id', '=', 'orders.user_id')
             ->leftJoin('addresses', 'addresses.id', '=', 'orders.shipping_address_id')
-            ->leftJoin('users as delivery_partners', 'delivery_partners.id', '=', 'orders.delivery_partner_id')
-            ->whereNotNull('orders.tracking_number')
+            ->leftJoin('delivery_partners', 'delivery_partners.id', '=', 'shipments.delivery_partner_id')
             ->select([
-                'orders.id', 'orders.order_number', 'orders.status', 'orders.tracking_number',
-                'orders.estimated_delivery_date', 'users.name as customer', 'addresses.city',
-                'delivery_partners.name as carrier',
+                'shipments.id', 'shipments.shipment_number', 'shipments.tracking_number',
+                'shipments.estimated_delivery_at', 'orders.order_number', 'orders.status',
+                'orders.shipping_address_snapshot', 'users.name as customer', 'addresses.city',
+                'delivery_partners.company_name as carrier',
             ])
             ->selectRaw($firstItemTitle.' as product')
-            ->orderByDesc('orders.id')
+            ->orderByDesc('shipments.id')
             ->limit(200)
             ->get()
-            ->map(function ($order) {
-                [$state, $label, $class] = self::STATES[$order->status] ?? ['pending', $order->status, 'is-pending'];
-                $date = $order->estimated_delivery_date ? Carbon::parse($order->estimated_delivery_date) : null;
+            ->map(function ($shipment) {
+                [$state, $label, $class] = self::STATES[$shipment->status] ?? ['pending', $shipment->status, 'is-pending'];
+                $date = $shipment->estimated_delivery_at ? Carbon::parse($shipment->estimated_delivery_at) : null;
+                $snapshot = json_decode((string) $shipment->shipping_address_snapshot, true);
 
                 return [
-                    'number' => 'SHP-'.str_pad((string) $order->id, 3, '0', STR_PAD_LEFT),
-                    'orderNumber' => $order->order_number,
-                    'customer' => $order->customer,
-                    'city' => $order->city ?: '—',
-                    'product' => $order->product ?: '—',
-                    'carrier' => $order->carrier ?: '—',
-                    'trackingNumber' => $order->tracking_number,
+                    'number' => $shipment->shipment_number ?: 'SHP-'.str_pad((string) $shipment->id, 3, '0', STR_PAD_LEFT),
+                    'orderNumber' => $shipment->order_number,
+                    'customer' => $shipment->customer,
+                    'city' => $shipment->city ?: ($snapshot['city'] ?? '—'),
+                    'product' => $shipment->product ?: '—',
+                    'carrier' => $shipment->carrier ?: '—',
+                    'trackingNumber' => $shipment->tracking_number ?: '—',
                     'estimatedDelivery' => $date?->locale('ar')->translatedFormat('j F Y') ?? '—',
                     'state' => $state,
                     'label' => $label,

@@ -141,8 +141,8 @@
                         <option value="cancelled">ملغي</option>
                     </select>
                 </label>
-                <label>المطبعة المنفذة
-                    <select id="dialogPrinterSelect">
+                <label>المطبعة المنفذة (للعرض فقط)
+                    <select id="dialogPrinterSelect" disabled>
                         <option value="">غير محددة</option>
                         @foreach ($printers as $printer)
                             <option value="{{ $printer->id }}">{{ $printer->company_name }}</option>

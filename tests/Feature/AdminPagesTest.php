@@ -190,26 +190,11 @@ test('product code must be unique and an image is required for new products', fu
 });
 
 test('the orders page shows real orders and admin can update their status', function () {
-    Schema::create('orders', function ($table) {
-        $table->id();
-        $table->unsignedBigInteger('user_id');
-        $table->string('order_number');
-        $table->decimal('final_amount', 14, 2)->default(0);
-        $table->string('status')->default('pending');
-        $table->string('payment_status')->default('unpaid');
-        $table->string('payment_method')->nullable();
-        $table->unsignedBigInteger('print_provider_id')->nullable();
-        $table->timestamp('delivered_at')->nullable();
-        $table->timestamp('cancelled_at')->nullable();
-        $table->text('notes')->nullable();
-        $table->timestamps();
-    });
-
     $customer = User::factory()->create(['name' => 'عميلة تجريبية']);
     $id = DB::table('orders')->insertGetId([
         'user_id' => $customer->id,
         'order_number' => 'ORD-7001',
-        'final_amount' => 85,
+        'total_amount' => 85,
         'status' => 'pending',
         'created_at' => now(),
         'updated_at' => now(),
