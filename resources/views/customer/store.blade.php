@@ -30,7 +30,7 @@
             </div>
 
             <div class="products-grid" id="productGrid">
-                @foreach ($products as $product)
+                @forelse ($products as $product)
                     <article class="product-card"
                         data-category="{{ $product['category'] }}"
                         data-product="{{ $product['product_key'] }}"
@@ -49,7 +49,9 @@
                             <p>{{ $product['blurb'] }}</p>
                         </div>
                     </article>
-                @endforeach
+                @empty
+                    <p class="products-empty" role="status">لا توجد منتجات متاحة حالياً.</p>
+                @endforelse
             </div>
 
             <p class="products-empty" id="productsEmpty" role="status" aria-live="polite" hidden>لا توجد منتجات مطابقة لبحثك.</p>

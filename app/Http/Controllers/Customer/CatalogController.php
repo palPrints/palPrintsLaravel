@@ -11,13 +11,13 @@ class CatalogController extends Controller
 {
     private const BLURBS = [
         'TSHIRT-CLASSIC' => 'تصاميم مخصصة بطباعة واضحة ومظهر يومي أنيق.',
-        'HOODIE-PREMIUM' => 'خيار مريح بطباعة مميزة يناسب الاستخدام اليومي.',
+        'HOODIE-PREMIUM' => 'خيار مريح بطباعة ممتازة يناسب الاستخدام اليومي.',
         'CAP-CLASSIC' => 'قبعات بطابع بسيط مع إمكانية تخصيص التصميم.',
-        'TOTE-CANVAS' => 'حقائب عملية بتصاميم مطبوعة تناسب الهدايا والاستخدام.',
+        'TOTE-CANVAS' => 'حقائب عملية بتصاميم مطبوعة تناسب الهدايا والاستخدام اليومي.',
         'SCARF-CUSTOM' => 'وشاحات بطباعة خاصة ولمسة ناعمة تناسب المناسبات.',
         'PHONE-CASE' => 'حماية أنيقة للموبايل مع تصاميم قابلة للتخصيص.',
         'MUG-CERAMIC' => 'أكواب مطبوعة بجودة عالية تناسب البيت والعمل.',
-        'PAPER-PRINT' => 'طباعة ورق متنوعة للتغليف والعرض بطباعة مرتبة وأنيقة.',
+        'PAPER-PRINT' => 'طباعة ورق متنوعة للتغليف والعرض بجودة واضحة.',
         'NOTEBOOK-CUSTOM' => 'دفاتر بتصميم خاص تناسب الدراسة والعمل والهدايا.',
         'POSTER-PRINT' => 'بوسترات مطبوعة بجودة واضحة لعرض الأفكار والديكور.',
         'STICKER-CUSTOM' => 'ستيكرات مخصصة بأشكال متعددة ولمسات جذابة.',
@@ -27,7 +27,7 @@ class CatalogController extends Controller
     public function store(): View
     {
         $products = Product::query()
-            ->with(['category', 'providerOfferings'])
+            ->with(['category', 'branchProductOfferings'])
             ->orderBy('id')
             ->get()
             ->map(fn (Product $product) => $this->storeProduct($product))
@@ -84,7 +84,7 @@ class CatalogController extends Controller
     private function storeProduct(Product $product): array
     {
         $meta = $this->productMeta($product);
-        $price = $product->providerOfferings->where('is_active', true)->min('base_price');
+        $price = $product->branchProductOfferings->where('is_active', true)->min('base_price');
         $isAvailable = $product->is_active && isset($meta['route']);
 
         return [
@@ -99,11 +99,11 @@ class CatalogController extends Controller
             'route' => $isAvailable ? $meta['route'] : null,
             'available' => $isAvailable,
             'status_label' => match (true) {
-                ! $product->is_active => 'موقوف حاليًا',
-                ! $isAvailable => 'غير متاح حاليًا',
+                ! $product->is_active => 'موقوف حالياً',
+                ! $isAvailable => 'غير متاح حالياً',
                 default => null,
             },
-            'blurb' => $product->description ?: (self::BLURBS[strtoupper($product->code)] ?? 'تصاميم مخصصة بطباعة واضحة وجودة عالية.'),
+            'blurb' => $product->description ?: (self::BLURBS[strtoupper($product->code)] ?? 'تصميم مخصص بطباعة واضحة وجودة عالية.'),
             'price' => $price ? (float) $price : null,
             'order' => $meta['order'] ?? $product->id,
         ];
@@ -162,7 +162,7 @@ class CatalogController extends Controller
                 'order' => 4,
             ],
             'MUG-CERAMIC' => [
-                'store_name' => 'اكواب',
+                'store_name' => 'أكواب',
                 'store_category' => 'drinkware',
                 'product_key' => 'cups',
                 'route' => route('customer.mugs'),
@@ -211,7 +211,7 @@ class CatalogController extends Controller
                 'order' => 11,
             ],
             'WEDDING-CARDS' => [
-                'store_name' => 'كروت افراح',
+                'store_name' => 'كروت أفراح',
                 'store_category' => 'office',
                 'product_key' => 'wedding-cards',
                 'route' => null,
