@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Design;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
@@ -24,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         Event::listen(function (SocialiteWasCalled $event): void {
             $event->extendSocialite('apple', \SocialiteProviders\Apple\Provider::class);
         });
