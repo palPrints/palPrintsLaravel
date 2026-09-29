@@ -37,17 +37,6 @@ body.hoodies-page::before {
 }
 
 /* شريط الهوية المتدرّج أعلى الصفحة */
-body.hoodies-page::after {
-  content: "";
-  position: fixed;
-  inset-inline: 0;
-  top: 0;
-  z-index: 3000;
-  height: 3px;
-  pointer-events: none;
-  background: linear-gradient(100deg, var(--pal-cyan) 0%, var(--pal-blue) 55%, var(--pal-indigo) 100%);
-}
-
 /* الوضع الليلي وفق نفس النظام */
 html[data-bs-theme="dark"] body.hoodies-page {
   --pal-page-bg: #080d1c;
@@ -77,10 +66,6 @@ html[data-bs-theme="dark"] body.hoodies-page::before {
 .catalog-breadcrumb a:focus-visible,
 .catalog-breadcrumb [aria-current="page"]:hover { color: var(--store-primary); background: var(--store-primary-soft); transform: translateY(-2px); }
 .catalog-breadcrumb [aria-current="page"] { color: var(--store-navy); font-weight: 700; cursor: default; }
-.catalog-back { display: inline-flex; align-items: center; gap: 10px; padding: 6px 16px; border: 1px solid var(--store-primary); border-radius: 12px; color: var(--store-primary); background: transparent; text-decoration: none; font-size: .88rem; white-space: nowrap; transition: color .18s ease, background-color .18s ease, box-shadow .18s ease, transform .18s ease; }
-.catalog-back i { transition: transform .18s ease; }
-.catalog-back:hover { color: #fff; background: var(--store-primary); box-shadow: 0 6px 16px rgb(22 119 255 / 24%); transform: translateY(-2px); }
-.catalog-back:hover i { transform: translateX(-3px); }
 .catalog-heading { text-align: center; padding: 8px 0 22px; }
 .catalog-heading h1 { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 0; color: var(--store-navy); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; }
 .catalog-heading h1 img { width: 46px; height: 46px; padding: 8px; background: transparent; }
@@ -108,8 +93,7 @@ html[data-bs-theme="dark"] body.hoodies-page::before {
     transform: none;
   }
 
-  .hoodies-motion-ready .product-card.is-revealed:hover,
-  .hoodies-motion-ready .product-card.is-revealed:focus-within {
+  .hoodies-motion-ready .product-card.is-revealed:hover {
     transform: translateY(-6px);
   }
 
@@ -188,4 +172,4 @@ html[data-bs-theme="dark"] body.hoodies-page::before {
 @media (max-width: 991px) { .hoodies-page .products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .catalog-topline { flex-wrap: wrap; } .catalog-heading p { font-size: .88rem; } .hoodie-filters { gap: 6px; } .hoodie-filters button { font-size: .8rem; gap: 5px; } .hoodie-filters i { font-size: 1.15rem; } }
 @media (max-width: 480px) { .hoodies-page .products-grid { grid-template-columns: 1fr; } .hoodie-print { font-size: 15px; } .hoodie-print i { font-size: 38px; } .hoodie-print--arabic { font-size: 30px; } }
-@media (prefers-reduced-motion: reduce) { .hoodies-page .product-card, .hoodies-page .product-card__media img, .hoodie-badge-accent, .catalog-back, .catalog-back i { transition: none; } .hoodies-page .product-card:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .hoodies-page .product-card, .hoodies-page .product-card__media img, .hoodie-badge-accent { transition: none; } .hoodies-page .product-card:hover { transform: none; } }

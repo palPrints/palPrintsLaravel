@@ -14,10 +14,6 @@
                     <span class="hero-copy__line hero-copy__line--dark">منصتك لطباعة أفكارك على منتجات حقيقية</span><br>
                     <span class="hero-copy__line hero-copy__line--accent">اختر المنتج ثم تصفح التصاميم المعتمدة عليه</span>
                 </p>
-                <div class="hero-cta">
-                    <a href="#products" class="hero-cta__btn hero-cta__btn--primary">تصفح المنتجات</a>
-                    <a href="{{ route('designer.designs.create') }}" class="hero-cta__btn hero-cta__btn--outline">ارفع تصميمك الخاص</a>
-                </div>
             </div>
         </div>
     </section>
@@ -54,7 +50,7 @@
                 @endforelse
             </div>
 
-            <p class="products-empty" id="productsEmpty" role="status" aria-live="polite" hidden>لا توجد منتجات مطابقة لبحثك.</p>
+            <p class="products-empty" id="productsEmpty" role="status" aria-live="polite" hidden><i class="bi bi-inbox" aria-hidden="true"></i>لا توجد منتجات مطابقة لبحثك.</p>
         </div>
     </section>
 @endsection

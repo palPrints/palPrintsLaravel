@@ -79,7 +79,7 @@ class DashboardController extends Controller
         return (float) DB::table('orders')
             ->where('status', '!=', 'cancelled')
             ->whereBetween('created_at', [$from, $to])
-            ->sum('final_amount');
+            ->sum('total_amount');
     }
 
     /** @return array{value: int, direction: string}|null */
@@ -97,13 +97,12 @@ class DashboardController extends Controller
     private function latestOrders()
     {
         $firstItemTitle = '(select d.title from order_items oi '
-            .'join design_products dp on dp.id = oi.design_product_id '
-            .'join designs d on d.id = dp.design_id '
+            .'join designs d on d.id = oi.design_id '
             .'where oi.order_id = orders.id order by oi.id limit 1)';
 
         return DB::table('orders')
             ->join('users', 'users.id', '=', 'orders.user_id')
-            ->select('orders.id', 'orders.order_number', 'orders.final_amount', 'orders.status', 'orders.created_at', 'users.name as customer')
+            ->select('orders.id', 'orders.order_number', 'orders.total_amount', 'orders.status', 'orders.created_at', 'users.name as customer')
             ->selectRaw($firstItemTitle.' as product')
             ->latest('orders.created_at')
             ->limit(6)

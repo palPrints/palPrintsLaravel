@@ -1,4 +1,4 @@
-@import url("custProfile.css?v=2");
+@import url("profile.css");
 
 main {
   min-height: calc(100vh - 64px);

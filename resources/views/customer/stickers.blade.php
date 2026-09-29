@@ -29,14 +29,12 @@
                 <span>/</span>
                 <span aria-current="page">ستيكرات</span>
             </nav>
-            <a class="catalog-back" href="{{ route('customer.store') }}#products">
-                العودة إلى المنتجات <i class="bi bi-arrow-left" aria-hidden="true"></i>
-            </a>
         </div>
 
         <section class="catalog-heading stickers-heading" aria-labelledby="stickersTitle">
             <h1 id="stickersTitle"><img src="{{ asset('front/assets/images/customer/icons8-sticker-48.png') }}" alt=""> ستيكرات</h1>
             <p>مجموعة متنوعة من الملصقات لتزيين مقتنياتك والتعبير عن هويتك.</p>
+            @include('customer.partials.upload-design')
         </section>
 
         <nav class="stickers-categories" aria-label="تصنيفات الملصقات">
@@ -70,7 +68,7 @@
                     <figure class="brand-example" data-search="براند ماكونو دفتر أسود"><img src="{{ asset('front/assets/images/customer/stickers/brand/brand-example-3.jpg') }}" alt="دفتر أسود يحمل ملصق براند" loading="lazy"><figcaption>هوية براند مخصصة</figcaption></figure>
                     <figure class="brand-example" data-search="براند تغليف صندوق"><img src="{{ asset('front/assets/images/customer/stickers/brand/brand-example-4.jpg') }}" alt="صندوق تغليف يحمل ملصق براند" loading="lazy"><figcaption>ملصق براند للتغليف</figcaption></figure>
                 </div>
-                <p class="products-empty brand-empty" id="brandEmpty" role="status" hidden>لا توجد أمثلة براند مطابقة لبحثك.</p>
+                <p class="products-empty brand-empty" id="brandEmpty" role="status" hidden><i class="bi bi-inbox" aria-hidden="true"></i>لا توجد أمثلة براند مطابقة لبحثك.</p>
             </section>
 
             <section class="stickers-customizer" aria-labelledby="customizerTitle">
@@ -104,7 +102,7 @@
                 <div class="sticker-order-notes" aria-label="معلومات الطلب"><p><i class="bi bi-info-circle" aria-hidden="true"></i><span>الحد الأدنى للطلب: <strong>30 ستيكر</strong>.</span></p><p><i class="bi bi-info-circle" aria-hidden="true"></i><span>كل <strong>30 ستيكر</strong> بـ <strong>10 شيكل</strong>.</span></p></div>
             </div>
             <div class="products-grid sticker-design-grid" id="productGrid" aria-live="polite"></div>
-            <p class="products-empty" id="productsEmpty" role="status" hidden>لا توجد تصاميم مطابقة لبحثك. جرّب كلمة أخرى أو اختر تصنيفًا مختلفًا.</p>
+            <p class="products-empty" id="productsEmpty" role="status" hidden><i class="bi bi-inbox" aria-hidden="true"></i>لا توجد تصاميم مطابقة لبحثك. جرّب كلمة أخرى أو اختر تصنيفًا مختلفًا.</p>
             <nav class="catalog-pagination stickers-pagination" id="stickersPagination" aria-label="صفحات تصاميم الستيكرات"></nav>
             <p class="catalog-count" id="catalogCount" role="status" aria-live="polite"></p>
         </section>

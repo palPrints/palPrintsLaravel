@@ -8,13 +8,33 @@
     <div class="store-header__inner">
         <div class="store-header__start">
             <a href="{{ route('customer.store') }}" class="store-brand store-header__brand" aria-label="PalPrints">
-                <img src="{{ asset('front/assets/images/customer/palprints-wordmark-transparent.png') }}" alt="PalPrints" class="store-brand__logo">
+                <span class="store-brand__logo-full">
+                    <img src="{{ asset('front/assets/images/customer/palprints-wordmark-transparent.png') }}" alt="PalPrints" class="store-brand__logo">
+                </span>
+                <span class="store-brand__logo-compact" aria-hidden="true">
+                    <img src="{{ asset('front/assets/images/customer/palprints-wordmark-transparent.png') }}" alt="">
+                </span>
             </a>
 
             <button type="button" class="icon-button sidebar-toggle" id="sidebarToggle" aria-label="فتح القائمة الجانبية" aria-expanded="false" aria-controls="storeSidebar">
                 <i class="bi bi-list" aria-hidden="true"></i>
             </button>
 
+            <form class="store-search" id="productSearchForm" role="search">
+                <span class="store-search__icon" aria-hidden="true">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="search" id="productSearch" placeholder="ابحث عن منتج..." aria-label="ابحث عن منتج" autocomplete="off" aria-controls="productGrid">
+            </form>
+        </div>
+
+        {{--
+            منطقة النهاية: رابط "المتجر" (مع القائمة المنسدلة) + الأيقونات مع
+            بعض. ترتيب الأيقونات من الأقل استخدامًا للأكثر أهمية: الملف
+            الشخصي، الإشعارات، وأخيرًا السلة — أهم إجراء تجاري بالهيدير —
+            بأقصى طرف، مفصولة بخط رفيع عن أيقونات الحساب حتى تبرز كأولوية.
+        --}}
+        <div class="store-header__end">
             <nav class="store-nav" aria-label="التصفح الرئيسي">
                 <div class="store-nav__item" id="storeNavShop">
                     <a href="{{ route('customer.store') }}#products" class="store-nav__link" id="storeNavShopTrigger" aria-haspopup="true" aria-expanded="false" aria-controls="storeNavShopMenu">
@@ -40,21 +60,6 @@
                     </div>
                 </div>
             </nav>
-        </div>
-
-        {{--
-            منطقة النهاية: البحث + الأيقونات مع بعض. ترتيب الأيقونات من الأقل
-            استخدامًا للأكثر أهمية: الملف الشخصي، الإشعارات، وأخيرًا السلة —
-            أهم إجراء تجاري بالهيدير — بأقصى طرف، مفصولة بخط رفيع عن أيقونات
-            الحساب حتى تبرز كأولوية.
-        --}}
-        <div class="store-header__end">
-            <form class="store-search" id="productSearchForm" role="search">
-                <span class="store-search__icon" aria-hidden="true">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="search" id="productSearch" placeholder="ابحث عن منتج..." aria-label="ابحث عن منتج" autocomplete="off" aria-controls="productGrid">
-            </form>
 
             <div class="store-header__actions" aria-label="إجراءات الحساب">
                 <div class="profile-menu">
@@ -67,32 +72,72 @@
                         <button type="button" class="profile-dropdown__item profile-dropdown__logout"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>تسجيل الخروج</span></button>
                     </div>
                 </div>
+                @php
+                    $notificationIcons = [
+                        'design_published' => 'bi-patch-check',
+                        'design_review' => 'bi-hourglass-split',
+                        'design_rejected' => 'bi-x-octagon',
+                        'withdrawal_review' => 'bi-cash-coin',
+                        'approval.submitted' => 'bi-send-check',
+                        'support.reply' => 'bi-headset',
+                    ];
+                @endphp
                 <div class="notifications-menu">
                     <button type="button" class="icon-button notifications-button" id="notificationsToggle" aria-label="الإشعارات" aria-expanded="false" aria-controls="notificationsPanel">
                         <i class="bi bi-bell" aria-hidden="true"></i>
-                        <span class="icon-badge notifications-badge" aria-hidden="true" hidden>0</span>
+                        <span class="icon-badge notifications-badge" aria-hidden="true" @if($customerUnreadCount === 0) hidden @endif>{{ $customerUnreadCount > 99 ? '99+' : $customerUnreadCount }}</span>
                     </button>
                     <div class="notifications-panel" id="notificationsPanel" hidden>
                         <div class="notifications-panel__header">
                             <strong>الإشعارات</strong>
-                            <button type="button" class="notifications-clear">مسح الكل</button>
                         </div>
-                        <div class="notifications-list"></div>
-                        <p class="notifications-empty">لا توجد إشعارات جديدة</p>
+                        <div class="notifications-list">
+                            @forelse($customerLatestNotifications as $notification)
+                                <form method="POST" action="{{ route('customer.notifications.read', $notification) }}">
+                                    @csrf
+                                    <button type="submit" class="notification-item{{ $notification->is_read ? '' : ' is-unread' }}">
+                                        <span class="notification-item__icon"><i class="bi {{ $notificationIcons[$notification->type] ?? 'bi-bell' }}" aria-hidden="true"></i></span>
+                                        <span class="notification-item__body">
+                                            <strong>{{ $notification->title }}</strong>
+                                            <small>{{ $notification->message }}</small>
+                                            <time datetime="{{ $notification->created_at?->toIso8601String() }}">{{ $notification->created_at?->locale('ar')->diffForHumans() }}</time>
+                                        </span>
+                                    </button>
+                                </form>
+                            @empty
+                                <p class="notifications-empty"><i class="bi bi-bell-slash" aria-hidden="true"></i>لا توجد إشعارات جديدة</p>
+                            @endforelse
+                        </div>
+                        @if($customerLatestNotifications->isNotEmpty())
+                            <div class="notifications-panel__footer">
+                                <a href="{{ route('customer.notifications') }}">رؤية جميع الإشعارات</a>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <span class="store-header__actions-divider" aria-hidden="true"></span>
                 <div class="cart-menu">
-                    <button type="button" class="icon-button" id="cartButton" aria-label="سلة التسوق" aria-expanded="false" aria-controls="cartDropdown">
+                    <button type="button" class="icon-button" id="cartButton" aria-label="{{ $customerCartCount ? 'سلة التسوق، '.$customerCartCount.' منتجات' : 'سلة التسوق، فارغة' }}" aria-expanded="false" aria-controls="cartDropdown">
                         <i class="bi bi-cart3" aria-hidden="true"></i>
-                        <span class="icon-badge" id="cartCount" aria-hidden="true">2</span>
+                        <span class="icon-badge" id="cartCount" aria-hidden="true" @if($customerCartCount === 0) hidden @endif>{{ $customerCartCount }}</span>
                     </button>
                     <div class="cart-dropdown" id="cartDropdown" hidden>
                         <div class="cart-dropdown__header">
                             <strong>سلة التسوق</strong>
                         </div>
-                        <div class="cart-dropdown__list" id="cartDropdownList"></div>
-                        <p class="cart-dropdown__empty" id="cartDropdownEmpty" hidden>سلتك فارغة حاليًا</p>
+                        <div class="cart-dropdown__list" id="cartDropdownList" @if($customerCartItems->isEmpty()) hidden @endif>
+                            @foreach($customerCartItems->take(2) as $cartItem)
+                                <div class="cart-dropdown__item">
+                                    <div class="cart-dropdown__item-media"><img src="{{ asset($cartItem->product?->image ?: 'front/assets/images/customer/products/1.png') }}" alt="{{ $cartItem->product?->name }}"></div>
+                                    <div class="cart-dropdown__item-body">
+                                        <h4>{{ $cartItem->product?->name ?? 'منتج' }}</h4>
+                                        <p>الكمية: {{ $cartItem->quantity }}</p>
+                                    </div>
+                                    <span class="cart-dropdown__item-price">{{ number_format((float) $cartItem->unit_price, 0) }} ₪</span>
+                                </div>
+                            @endforeach
+                        </div>
+                        <p class="cart-dropdown__empty" id="cartDropdownEmpty" @if($customerCartItems->isNotEmpty()) hidden @endif><i class="bi bi-cart-x" aria-hidden="true"></i>سلتك فارغة حاليًا</p>
                         <div class="cart-dropdown__footer">
                             <a href="{{ route('customer.basket') }}" class="cart-dropdown__view">عرض السلة</a>
                         </div>

@@ -1,0 +1,85 @@
+@import url("profile.css");
+
+/* Reuses .notification-item / .notification-item__icon / .notification-item__body
+   from storefront.css (the header dropdown) for a consistent look between the
+   preview panel and this full list — just sized up a bit for a full page. */
+
+.notifications-page-list { overflow: hidden; }
+.notifications-page-list form + form { border-top: 1px solid var(--pp-border); }
+
+.notifications-page-list .notification-item {
+  padding: var(--sp-4) var(--sp-5);
+  gap: var(--sp-3);
+  font: inherit;
+}
+
+.notifications-page-list .notification-item:hover,
+.notifications-page-list .notification-item:focus-visible {
+  background: var(--pp-primary-soft);
+}
+
+.notifications-page-list .notification-item.is-unread {
+  background: rgba(var(--pp-blue-rgb), .05);
+}
+
+.notifications-page-list .notification-item__icon {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  font-size: 1.15rem;
+  color: var(--pp-primary);
+  background: var(--pp-primary-soft);
+  border-radius: var(--pp-radius);
+}
+
+.notifications-page-list .notification-item.is-unread .notification-item__icon {
+  color: var(--pp-danger);
+  background: #fef2f2;
+}
+
+.notifications-page-list .notification-item__body strong { color: var(--pp-text-strong); font-size: .9rem; }
+.notifications-page-list .notification-item__body small { color: var(--pp-text-muted); font-size: .8125rem; line-height: 1.7; }
+.notifications-page-list .notification-item__body time { color: var(--pp-text-muted); font-size: .72rem; }
+
+.notifications-page-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-6) var(--sp-4);
+  text-align: center;
+}
+.notifications-page-empty__icon {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  margin-bottom: var(--sp-2);
+  color: var(--pp-primary);
+  background: var(--pp-primary-soft);
+  border-radius: 50%;
+  font-size: 1.75rem;
+}
+.notifications-page-empty h2 { margin: 0; color: var(--pp-text-strong); font-size: 1.125rem; }
+.notifications-page-empty p { margin: 0; color: var(--pp-text-muted); font-size: .875rem; }
+
+.pp-page-heading form { margin-inline-start: auto; }
+
+.notifications-pagination { display: flex; align-items: center; justify-content: center; gap: var(--sp-2); margin-top: var(--sp-4); }
+.notifications-pagination__status { color: var(--pp-text-muted); font-size: .8rem; font-weight: 700; padding-inline: var(--sp-2); }
+.notifications-pagination a,
+.notifications-pagination button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  color: var(--pp-text-body);
+  background: var(--pp-surface);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius-sm);
+  cursor: pointer;
+  font-weight: 700;
+  text-decoration: none;
+}
+.notifications-pagination a:hover { color: var(--pp-primary-hover); background: var(--pp-primary-soft); border-color: var(--pp-primary-border); }
+.notifications-pagination button:disabled { opacity: .45; cursor: not-allowed; }

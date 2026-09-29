@@ -3,12 +3,26 @@
 namespace App\Support;
 
 use App\Models\AttributeValue;
+<<<<<<< HEAD
 use App\Models\BranchProductOffering;
+=======
+use App\Models\BranchPrintArea;
+>>>>>>> ca8f928597dad33bd636ebb498774abdc5dd4d2b
 use App\Models\Product;
 use Illuminate\Support\Collection;
 
 class CatalogProductData
 {
+    private const SWATCHES = [
+        'white' => '#ffffff', 'black' => '#111111', 'navy' => '#173b87', 'natural' => '#e5d7bd',
+        'gray' => '#737373', 'red' => '#b91c1c', 'green' => '#15803d', 'clear' => '#dbeafe',
+    ];
+
+    private const COLOR_NAMES = [
+        'white' => 'أبيض', 'black' => 'أسود', 'navy' => 'كحلي', 'natural' => 'طبيعي',
+        'gray' => 'رمادي', 'red' => 'أحمر', 'green' => 'أخضر', 'clear' => 'شفاف',
+    ];
+
     /**
      * @return array{categories: array<int, array<string, string>>, products: array<int, array<string, mixed>>}
      */
@@ -50,6 +64,70 @@ class CatalogProductData
             ->keyBy('id')
             ->map(fn (array $product) => self::editorProduct($product))
             ->all();
+    }
+
+    /**
+     * Color/size choices for the customer catalog pages, straight from the
+     * product's attribute values. The catalog holds two families of values
+     * for the same thing ("tshirt-white" vs "white", JSON-encoded names vs
+     * plain ones), so codes are normalized and duplicates dropped — the
+     * first value seen wins, which keeps the Arabic names.
+     *
+     * @return array{colors: array<int, array<string, string>>, sizes: array<int, array<string, string>>}
+     */
+    public static function catalogOptions(Product $product): array
+    {
+        $attributes = self::attributeValues($product);
+
+        return [
+            'colors' => self::uniqueOptions($attributes['color'] ?? collect(), true),
+            'sizes' => self::uniqueOptions($attributes['size'] ?? collect()),
+        ];
+    }
+
+    public static function normalizeCode(string $code): string
+    {
+        $code = mb_strtolower(trim($code));
+        $code = preg_replace('/^(tshirt-classic|hoodie-premium|mug-ceramic|tshirt|hoodie|mug)-/u', '', $code);
+
+        return in_array($code, ['قياسي', 'standard', 'one size', 'one-size'], true) ? 'one-size' : $code;
+    }
+
+    /**
+     * @return array{name: string, hex: ?string}
+     */
+    public static function decodeValue(AttributeValue $value): array
+    {
+        $decoded = json_decode((string) $value->value, true);
+
+        return is_array($decoded)
+            ? ['name' => (string) ($decoded['name'] ?? $value->code), 'hex' => $decoded['hex'] ?? null]
+            : ['name' => (string) $value->value, 'hex' => null];
+    }
+
+    /**
+     * @param  Collection<int, AttributeValue>  $values
+     * @return array<int, array<string, string>>
+     */
+    private static function uniqueOptions(Collection $values, bool $isColor = false): array
+    {
+        return $values
+            ->map(function (AttributeValue $value) use ($isColor) {
+                $decoded = self::decodeValue($value);
+                $id = self::normalizeCode($value->code);
+                // Plain (non-JSON) color values are English ("White"); show the Arabic name.
+                $arabic = $decoded['hex'] === null && $isColor ? (self::COLOR_NAMES[$id] ?? null) : null;
+
+                return ['id' => $id, 'name' => $arabic ?? $decoded['name'], 'value' => $decoded['hex'] ?? self::swatch($id)];
+            })
+            ->unique('id')
+            ->values()
+            ->all();
+    }
+
+    private static function swatch(string $code): string
+    {
+        return self::SWATCHES[$code] ?? '#888888';
     }
 
     /**
@@ -119,6 +197,7 @@ class CatalogProductData
             }
 
             $result[$code] = $productAttribute->values
+                ->where('is_active', true)
                 ->pluck('attributeValue')
                 ->filter()
                 ->values();
@@ -133,21 +212,10 @@ class CatalogProductData
      */
     private static function colors(Collection $values, string $thumbnail): array
     {
-        $swatches = [
-            'white' => '#ffffff',
-            'black' => '#111111',
-            'navy' => '#173b87',
-            'natural' => '#e5d7bd',
-            'gray' => '#737373',
-            'red' => '#b91c1c',
-            'green' => '#15803d',
-            'clear' => '#dbeafe',
-        ];
-
         return $values->map(fn (AttributeValue $value) => [
             'id' => $value->code,
             'name' => $value->value,
-            'value' => $swatches[$value->code] ?? '#888888',
+            'value' => self::swatch($value->code),
             'image' => $thumbnail,
         ])->values()->all() ?: [[
             'id' => 'standard',
@@ -175,6 +243,7 @@ class CatalogProductData
      */
     private static function printAreas(Product $product, array $meta, string $thumbnail): array
     {
+<<<<<<< HEAD
         $activeOfferings = $product->branchProductOfferings->filter(
             fn (BranchProductOffering $offering) => $offering->is_active
         );
@@ -235,6 +304,20 @@ class CatalogProductData
                 ['code' => 'front', 'name' => 'Front', 'width' => 250, 'height' => 250],
             ],
         };
+=======
+        $areas = $product->branchProductOfferings
+            ->flatMap->branchPrintAreas
+            ->unique('code')
+            ->values();
+
+        return $areas->map(fn (BranchPrintArea $area) => [
+            'id' => $area->code,
+            'name' => $area->name,
+            'icon' => $meta['area_icons'][$area->code] ?? 'bi bi-bounding-box',
+            'image' => $meta['area_images'][$area->code] ?? $thumbnail,
+            'dimensions' => (int) $area->max_width_mm.' x '.(int) $area->max_height_mm.' مم',
+        ])->all();
+>>>>>>> ca8f928597dad33bd636ebb498774abdc5dd4d2b
     }
 
     private static function productImage(Product $product, array $meta): string

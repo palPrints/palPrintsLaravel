@@ -16,6 +16,18 @@
     @stack('styles')
 </head>
 <body class="@yield('body-class', 'storefront-page')" data-authenticated="{{ auth()->check() ? 'true' : 'false' }}">
+    <script>
+        // Toggled from the settings page's "تقليل الحركات" switch; applied here so it takes effect on every page.
+        if (localStorage.getItem('palprints-reduce-motion') === '1') {
+            document.body.classList.add('pp-reduce-motion');
+        }
+        // Toggled from the settings page's "الوضع الليلي" switch. Scoped to settings-page only
+        // (not a global data-bs-theme flip) so it can't collide with the separate, page-specific
+        // dark-mode CSS already baked into storefront/catalog pages.
+        if (document.body.classList.contains('settings-page') && localStorage.getItem('palprints-pp-dark') === '1') {
+            document.body.classList.add('pp-dark-mode');
+        }
+    </script>
     @include('customer.partials.header')
     @include('customer.partials.sidebar')
 
@@ -31,35 +43,7 @@
             basketUrl: @json(route('customer.basket')),
             emptyBasketUrl: @json(route('customer.basket.empty')),
             productPreviewUrl: @json(route('customer.productPreview')),
-            basketSeed: [
-                {
-                    id: 'tshirt-explore-more',
-                    title: 'تيشيرت كلاسيك',
-                    description: 'تصميم Explore More',
-                    image: @json(asset('front/assets/images/customer/orderBasket/explore-more-tshirt.png')),
-                    price: 20,
-                    quantity: 2,
-                    meta: ['المقاس: L', 'اللون: أسود', 'الطباعة: أمامي']
-                },
-                {
-                    id: 'hoodie-good-vibes',
-                    title: 'هودي',
-                    description: 'تصميم Good Vibes',
-                    image: @json(asset('front/assets/images/customer/orderBasket/good-vibes-hoodie.png')),
-                    price: 28,
-                    quantity: 1,
-                    meta: ['المقاس: M', 'اللون: رمادي']
-                },
-                {
-                    id: 'cap-mountain',
-                    title: 'طاقية',
-                    description: 'تصميم Mountain',
-                    image: @json(asset('front/assets/images/customer/orderBasket/mountain-cap.png')),
-                    price: 15,
-                    quantity: 3,
-                    meta: ['المقاس: مقاس واحد', 'اللون: أخضر']
-                }
-            ],
+            cartPaperUrl: @json(route('customer.cart.store-paper')),
         };
     </script>
     <script src="{{ asset('front/js/customer/storefront.js') }}?v={{ filemtime(public_path('front/js/customer/storefront.js')) }}"></script>

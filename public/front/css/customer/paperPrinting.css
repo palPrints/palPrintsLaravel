@@ -252,6 +252,13 @@ body.paper-printing-page::after {
   color: var(--profile-border-strong);
 }
 
+/* profile-core.css (shared/designer reference styles, also loaded on this
+   page) adds its own unscoped "li + li::before" separator — cancel it here
+   so it doesn't stack with the ::after separator above and render "//". */
+.paper-printing-page .profile-breadcrumb li + li::before {
+  content: none;
+}
+
 .paper-printing-page .profile-breadcrumb a,
 .paper-printing-page .profile-breadcrumb [aria-current="page"] {
   display: inline-flex;
