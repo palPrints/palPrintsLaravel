@@ -29,16 +29,13 @@
                 <span>/</span>
                 <span aria-current="page">هودي</span>
             </nav>
-            <a class="catalog-back" href="{{ route('customer.store') }}#products">
-                العودة إلى المنتجات <i class="bi bi-arrow-left" aria-hidden="true"></i>
-            </a>
         </div>
 
         <div class="catalog-heading">
             <h1><img src="{{ asset('front/assets/images/customer/hoddieIcon.svg') }}" alt=""> هودي</h1>
             <p>اكتشف مجموعة مميزة من الهودي بتصاميم فريدة تناسب كل الأذواق والمناسبات.</p>
+            @include('customer.partials.upload-design')
         </div>
-
         <div class="hoodie-filters" role="group" aria-label="تصنيف الهودي">
             <button type="button" data-filter="kids" aria-pressed="false"><i class="bi bi-emoji-smile" aria-hidden="true"></i>أطفال</button>
             <button type="button" data-filter="adults" aria-pressed="false"><i class="bi bi-people" aria-hidden="true"></i>رجال / نساء</button>
@@ -46,7 +43,7 @@
         </div>
 
         <div class="products-grid" id="productGrid"></div>
-        <p class="products-empty" id="productsEmpty" role="status" hidden>لا توجد منتجات مطابقة لبحثك. جرّب كلمة أخرى أو ألغِ التصنيف المحدد.</p>
+        <p class="products-empty" id="productsEmpty" role="status" hidden><i class="bi bi-inbox" aria-hidden="true"></i>لا توجد منتجات مطابقة لبحثك. جرّب كلمة أخرى أو ألغِ التصنيف المحدد.</p>
 
         <nav class="catalog-pagination" aria-label="صفحات المنتجات">
             <button disabled aria-label="الصفحة السابقة"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
@@ -64,6 +61,8 @@
         window.palPrintsCustomerAssets = window.palPrintsCustomerAssets || {};
         window.palPrintsCustomerAssets.hoodieImage = @json(asset('front/assets/images/customer/hoodie.png'));
         window.palPrintsCustomerAssets.publishedDesigns = @json($publishedDesigns);
+        window.palPrintsCustomerAssets.productOptions = @json($productOptions);
     </script>
+    <script src="{{ asset('front/js/customer/previewPayload.js') }}?v={{ filemtime(public_path('front/js/customer/previewPayload.js')) }}"></script>
     <script src="{{ asset('front/js/customer/hoodies.js') }}?v={{ filemtime(public_path('front/js/customer/hoodies.js')) }}"></script>
 @endpush

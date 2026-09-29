@@ -60,32 +60,6 @@
   cursor: default;
 }
 
-.catalog-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 16px;
-  color: var(--store-primary);
-  background: transparent;
-  border: 1px solid var(--store-primary);
-  border-radius: 12px;
-  font-size: .88rem;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color 180ms ease, background-color 180ms ease,
-    box-shadow 180ms ease, transform 180ms ease;
-}
-
-.catalog-back i { transition: transform 180ms ease; }
-
-.catalog-back:hover {
-  color: #fff;
-  background: var(--store-primary);
-  box-shadow: 0 6px 16px rgb(22 119 255 / 24%);
-  transform: translateY(-2px);
-}
-
-.catalog-back:hover i { transform: translateX(-3px); }
 
 .stickers-heading { padding: 8px 0 22px; text-align: center; }
 
@@ -919,7 +893,7 @@
 .sticker-toast i { color: #86efac; font-size: 1.1rem; }
 .sticker-toast.is-visible { opacity: 1; transform: none; }
 
-.stickers-page :is(.sticker-tab, .catalog-back, .stickers-upload, .sticker-choice,
+.stickers-page :is(.sticker-tab, .stickers-upload, .sticker-choice,
   .sticker-shape, .sticker-stepper button, .sticker-stepper input,
   .stickers-add-to-cart, .sticker-design-button, .stickers-pagination button):focus-visible {
   outline: 3px solid rgb(22 119 255 / 34%);
@@ -950,8 +924,7 @@
     transform: none;
   }
 
-  .stickers-motion-ready .sticker-design-card.is-revealed:hover,
-  .stickers-motion-ready .sticker-design-card.is-revealed:focus-within {
+  .stickers-motion-ready .sticker-design-card.is-revealed:hover {
     transform: translateY(-10px) scale(1.03);
   }
 

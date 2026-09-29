@@ -39,6 +39,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const downloadData = document.getElementById("downloadDataButton");
   downloadData?.addEventListener("click", () => showToast("تم إرسال طلب تجهيز نسخة بياناتك."));
 
+  const darkModeToggle = document.getElementById("darkModeToggle");
+  if (darkModeToggle) {
+    const stored = localStorage.getItem("palprints-pp-dark") === "1";
+    darkModeToggle.checked = stored;
+    document.body.classList.toggle("pp-dark-mode", stored);
+    darkModeToggle.addEventListener("change", () => {
+      document.body.classList.toggle("pp-dark-mode", darkModeToggle.checked);
+      localStorage.setItem("palprints-pp-dark", darkModeToggle.checked ? "1" : "0");
+    });
+  }
+
   const reduceMotionToggle = document.getElementById("reduceMotionToggle");
   if (reduceMotionToggle) {
     const stored = localStorage.getItem("palprints-reduce-motion") === "1";

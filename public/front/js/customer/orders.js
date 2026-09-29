@@ -7,34 +7,35 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedCancelButton = null;
 
   function closeModal() {
+    if (!cancelModal) return;
     cancelModal.hidden = true;
     body.style.overflow = "";
     selectedCancelButton?.focus();
   }
 
-  document.querySelectorAll(".cancel-order").forEach((button) => {
-    button.addEventListener("click", () => {
-      selectedCancelButton = button;
-      modalOrderNumber.textContent = `#${button.dataset.order}`;
-      cancelModal.hidden = false;
-      body.style.overflow = "hidden";
-      document.getElementById("keepOrder").focus();
+  if (cancelModal) {
+    document.querySelectorAll(".cancel-order").forEach((button) => {
+      button.addEventListener("click", () => {
+        selectedCancelButton = button;
+        modalOrderNumber.textContent = `#${button.dataset.order}`;
+        cancelModal.hidden = false;
+        body.style.overflow = "hidden";
+        document.getElementById("keepOrder").focus();
+      });
     });
-  });
 
-  cancelModal.querySelector(".modal-close").addEventListener("click", closeModal);
-  document.getElementById("keepOrder").addEventListener("click", closeModal);
-  cancelModal.addEventListener("click", (event) => { if (event.target === cancelModal) closeModal(); });
-  document.getElementById("confirmCancel").addEventListener("click", () => {
-    if (!selectedCancelButton) return;
-    const row = selectedCancelButton.closest("tr");
-    row.querySelector(".status").className = "status status-cancelled";
-    row.querySelector(".status").innerHTML = '<i class="bi bi-x-circle"></i>ملغي';
-    selectedCancelButton.disabled = true;
-    selectedCancelButton.innerHTML = '<i class="bi bi-check2"></i>تم الإلغاء';
-    row.classList.add("is-cancelled-row");
-    closeModal();
-  });
+    cancelModal.querySelector(".modal-close").addEventListener("click", closeModal);
+    document.getElementById("keepOrder").addEventListener("click", closeModal);
+    cancelModal.addEventListener("click", (event) => { if (event.target === cancelModal) closeModal(); });
+    document.getElementById("confirmCancel").addEventListener("click", () => {
+      if (!selectedCancelButton) return;
+      const form = document.getElementById(selectedCancelButton.dataset.form);
+      if (!form) return;
+      selectedCancelButton.disabled = true;
+      selectedCancelButton.innerHTML = '<i class="bi bi-hourglass-split"></i>جارٍ الإلغاء...';
+      form.submit();
+    });
+  }
 
   const detailsModal = document.getElementById("orderDetailsModal");
   const detailsItems = document.getElementById("detailsItems");
@@ -83,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
-    if (!cancelModal.hidden) closeModal();
+    if (cancelModal && !cancelModal.hidden) closeModal();
     if (detailsModal && !detailsModal.hidden) closeDetailsModal();
   });
 });

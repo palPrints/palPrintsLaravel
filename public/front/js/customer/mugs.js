@@ -101,34 +101,14 @@
     .trim();
 
   function buildPreviewPayload(product) {
-    return {
-      version: 2,
-      product: {
-        id: product.id,
-        name: product.title,
-        sellingPrice: product.price,
-        currency: "ILS",
-        colors: [{ id: "default", name: "الأساسي", value: "#dfe8f3", image: product.image, toneClass: "" }],
-        sizes: [{ id: "standard", name: "الحجم القياسي" }],
-        printAreas: [{ id: "front", name: "الكوب", image: product.image, fee: 0, placement: { top: 20, left: 20, width: 60, height: 60 } }]
-      },
-      design: {
-        id: product.id,
-        name: product.title,
-        designerName: product.designer,
-        preview: { images: [], texts: [], icons: [] }
-      },
-      selection: {
-        colorId: "default",
-        sizeId: "standard",
-        quantity: 1,
-        printAreaIds: ["front"],
-        defaultItem: { colorId: "default", sizeId: "standard", printAreaIds: ["front"] },
-        items: [{ colorId: "default", sizeId: "standard", printAreaIds: ["front"] }],
-        activeItemIndex: 0
-      },
-      customerWarnings: []
-    };
+    return window.PalPrintPreview.build({
+      code: "MUG-CERAMIC",
+      product,
+      options: assets.productOptions,
+      designName: product.title,
+      fallbackSizes: [{ id: "standard", name: "الحجم القياسي" }],
+      printAreas: [{ id: "front", name: "الكوب", image: product.image, fee: 0, placement: { top: 20, left: 20, width: 60, height: 60 } }]
+    });
   }
 
   function reveal(element) {

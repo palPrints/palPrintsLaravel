@@ -10,6 +10,14 @@
 @media(max-width:600px){.site-header{height:66px}.brand img{width:135px}.header-actions{gap:3px}.icon-btn{width:40px;height:40px;font-size:23px}.basket-main{padding:14px 12px 30px}.page-heading h1{font-size:1.45rem}.basket-items{padding:0 12px}.basket-item{grid-template-columns:1fr auto;gap:12px;padding:14px 0}.product-info{align-items:flex-start}.product-media{width:92px;height:92px}.tags{gap:4px}.tags span{padding:3px 6px;font-size:.68rem}.item-price{grid-column:1}.quantity{grid-column:2;grid-row:2}.remove-item{position:absolute;margin:2px}.basket-item{position:relative}.basket-actions{grid-template-columns:1fr;padding:12px}.product-grid{grid-template-columns:1fr}.trend-card{grid-template-columns:130px 1fr}.trend-media{width:120px}.drawer-head{height:105px}.drawer-nav a{padding-block:9px}.drawer-foot>i{font-size:42px}.drawer-foot p{margin:4px}.socials{margin:12px 0}.header-actions .icon-btn:last-child{display:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.001ms!important}}
 
+.page-alert{margin-bottom:14px}
+.alert-success{background:#f0fdf4;border:1px solid #bbf7d0;border-inline-start:3px solid #16a34a;border-radius:10px;color:var(--pp-navy-700);padding:.9rem 1rem}
+.basket-empty-state{display:flex;flex-direction:column;align-items:center;gap:10px;padding:56px 20px;text-align:center}
+.basket-empty-state__icon{display:grid;width:64px;height:64px;place-items:center;margin-bottom:6px;color:var(--pp-blue-600);background:var(--pp-blue-50);border-radius:50%;font-size:1.75rem}
+.basket-empty-state h2{margin:0;color:var(--pp-navy-900);font-size:1.125rem}
+.basket-empty-state p{margin:0 0 8px;color:var(--pp-navy-500);font-size:.9rem}
+.basket-empty-state .primary-action{display:inline-flex;align-items:center;gap:10px;padding:0 22px;height:46px;border-radius:9px}
+
 /* Basket visual alignment with the Hoodies page. */
 .order-basket-page .page-heading h1{
   color:var(--store-navy,#0b1f3a);

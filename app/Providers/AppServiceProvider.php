@@ -53,5 +53,26 @@ class AppServiceProvider extends ServiceProvider
                     : collect(),
             ]);
         });
+
+        View::composer('customer.partials.header', function ($view): void {
+            $user = Auth::user();
+
+            $cartItems = $user
+                ? \App\Models\CartItem::query()
+                    ->whereHas('cart', fn ($q) => $q->where('user_id', $user->id)->where('status', 'active'))
+                    ->with('product')
+                    ->latest()
+                    ->get()
+                : collect();
+
+            $view->with([
+                'customerUnreadCount' => $user?->userNotifications()->where('is_read', false)->count() ?? 0,
+                'customerLatestNotifications' => $user
+                    ? $user->userNotifications()->latest()->limit(5)->get()
+                    : collect(),
+                'customerCartItems' => $cartItems,
+                'customerCartCount' => $cartItems->sum('quantity'),
+            ]);
+        });
     }
 }

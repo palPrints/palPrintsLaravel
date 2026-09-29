@@ -1,11 +1,11 @@
 {{--
-    Ported from palPrintFront/settings.html. The reference page used its own
-    "profile-app" shell and a whole separate design system (profile-core.css,
-    designerProfile.css, settings.css — none of it built on the --pp-* tokens
-    the rest of this site uses). Rebuilt here with the site's existing
-    app-card / field-grid / btn-brand components instead of importing that
-    second design system, fitted into the shared storefront layout like the
-    other customer pages.
+    Ported from palPrintFront/settings.html to match its exact settings.css/
+    profile-core.css styling (the segmented underline tab strip, icon-in-shell
+    inputs, compact spacing) — reproduced with this site's own --pp-* tokens
+    (same hex values as the reference's --settings-* vars) instead of
+    literally importing the reference's separate design system, since that
+    system also carries the standalone "profile-app" shell and a lot of
+    designer/print-provider-only CSS this page doesn't need.
 
     The reference's "role status" tab is customer-specific content there too
     (an address/delivery completion checklist, not an approval flow — that's
@@ -34,16 +34,22 @@
 
 @section('content')
     <section class="profile-content" aria-labelledby="pageTitle">
-        <div class="page-heading">
-            <h1 id="pageTitle">الإعدادات</h1>
-            <p>إدارة معلومات الحساب والأمان والإشعارات والتفضيلات.</p>
+        <div class="pp-breadcrumb">
+            <a href="{{ route('customer.store') }}">الرئيسية</a>
+            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            <span>الإعدادات</span>
         </div>
+        <header class="pp-page-heading">
+            <span class="pp-heading-icon"><i class="bi bi-gear" aria-hidden="true"></i></span>
+            <div><h1 id="pageTitle">إعدادات الحساب</h1><p>إدارة معلومات الحساب والأمان والإشعارات والتفضيلات.</p></div>
+            <span class="pp-role-badge"><i class="bi bi-person-badge"></i><span>حساب عميل</span></span>
+        </header>
 
         @if(session('status') === 'password-updated')
             <div class="alert-success page-alert">تم تحديث كلمة المرور بنجاح.</div>
         @endif
 
-        <div class="app-card" style="padding: var(--sp-4) var(--sp-5) var(--sp-5);">
+        <div class="settings-layout">
             <nav class="settings-tabs" aria-label="أقسام الإعدادات">
                 @foreach([
                     'account' => ['bi-person', 'الحساب'],
@@ -53,9 +59,11 @@
                     'preferences' => ['bi-sliders', 'التفضيلات'],
                     'privacy' => ['bi-exclamation-triangle', 'الخصوصية'],
                 ] as $tabKey => [$icon, $label])
-                    <button type="button" class="settings-tab{{ $tabKey === 'privacy' ? ' is-danger' : '' }}{{ $initialTab === $tabKey ? ' active' : '' }}" data-settings-tab="{{ $tabKey }}" aria-selected="{{ $initialTab === $tabKey ? 'true' : 'false' }}"><i class="bi {{ $icon }}"></i><span>{{ $label }}</span></button>
+                    <button type="button" class="settings-tab{{ $tabKey === 'privacy' ? ' is-danger' : '' }}{{ $initialTab === $tabKey ? ' active' : '' }}" data-settings-tab="{{ $tabKey }}" data-no-press aria-selected="{{ $initialTab === $tabKey ? 'true' : 'false' }}"><i class="bi {{ $icon }}"></i><span>{{ $label }}</span></button>
                 @endforeach
             </nav>
+
+            <div class="app-card settings-content" style="padding: var(--sp-4) var(--sp-5) var(--sp-5);">
 
             {{-- الحساب --}}
             <section class="settings-panel{{ $initialTab === 'account' ? ' active' : '' }}" data-settings-panel="account" @if($initialTab !== 'account') hidden @endif>
@@ -63,12 +71,12 @@
                     <span class="section-icon"><i class="bi bi-person-vcard"></i></span>
                     <div><h2>معلومات الحساب</h2><p>البيانات الأساسية المستخدمة في حسابك.</p></div>
                 </div>
-                <div class="field-grid">
-                    <div class="field"><span class="pp-label">الاسم الكامل</span><p class="pp-value">{{ $customer->name }}</p></div>
-                    <div class="field"><span class="pp-label">البريد الإلكتروني</span><p class="pp-value" dir="ltr">{{ $customer->email }}</p></div>
-                    <div class="field"><span class="pp-label">رقم الهاتف</span><p class="pp-value {{ $customer->phone ? '' : 'pp-value--muted' }}">{{ $customer->phone ?: 'لم يتم إدخال رقم الهاتف بعد' }}</p></div>
+                <div class="pp-field-grid">
+                    <label class="pp-field"><span>الاسم الكامل</span><span class="pp-input-shell"><i class="bi bi-person"></i><input type="text" value="{{ $customer->name }}" dir="rtl" readonly></span></label>
+                    <label class="pp-field"><span>البريد الإلكتروني</span><span class="pp-input-shell"><i class="bi bi-envelope"></i><input type="text" value="{{ $customer->email }}" dir="ltr" readonly></span></label>
+                    <label class="pp-field"><span>رقم الهاتف</span><span class="pp-input-shell"><i class="bi bi-telephone"></i><input type="text" value="{{ $customer->phone ?: 'لم يتم إدخاله بعد' }}" dir="ltr" readonly></span></label>
                 </div>
-                <div class="form-actions" style="justify-content: flex-start;">
+                <div class="settings-form-actions">
                     <a href="{{ route('customer.profile') }}" class="btn-brand-outline"><i class="bi bi-pencil"></i> تعديل من الملف الشخصي</a>
                 </div>
             </section>
@@ -82,23 +90,23 @@
                 <form method="POST" action="{{ route('password.update') }}">
                     @csrf
                     @method('PUT')
-                    <div class="field-grid one-column">
-                        <div class="field">
-                            <label class="pp-label" for="current_password">كلمة المرور الحالية</label>
-                            <input id="current_password" class="pp-input" type="password" name="current_password" autocomplete="current-password" required>
-                            @error('current_password', 'updatePassword') <span class="pp-error">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="field">
-                            <label class="pp-label" for="password">كلمة المرور الجديدة</label>
-                            <input id="password" class="pp-input" type="password" name="password" autocomplete="new-password" required>
-                            @error('password', 'updatePassword') <span class="pp-error">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="field">
-                            <label class="pp-label" for="password_confirmation">تأكيد كلمة المرور</label>
-                            <input id="password_confirmation" class="pp-input" type="password" name="password_confirmation" autocomplete="new-password" required>
-                        </div>
+                    <div class="pp-field-grid is-single">
+                        <label class="pp-field">
+                            <span>كلمة المرور الحالية</span>
+                            <span class="pp-input-shell"><i class="bi bi-lock"></i><input id="current_password" type="password" name="current_password" autocomplete="current-password" required></span>
+                            @error('current_password', 'updatePassword') <small class="pp-field-error">{{ $message }}</small> @enderror
+                        </label>
+                        <label class="pp-field">
+                            <span>كلمة المرور الجديدة</span>
+                            <span class="pp-input-shell"><i class="bi bi-key"></i><input id="password" type="password" name="password" autocomplete="new-password" required></span>
+                            @error('password', 'updatePassword') <small class="pp-field-error">{{ $message }}</small> @else <small>8 أحرف على الأقل.</small> @enderror
+                        </label>
+                        <label class="pp-field">
+                            <span>تأكيد كلمة المرور</span>
+                            <span class="pp-input-shell"><i class="bi bi-key-fill"></i><input id="password_confirmation" type="password" name="password_confirmation" autocomplete="new-password" required></span>
+                        </label>
                     </div>
-                    <div class="form-actions" style="justify-content: flex-start;">
+                    <div class="settings-form-actions">
                         <button type="submit" class="btn-brand"><i class="bi bi-shield-check"></i> تحديث كلمة المرور</button>
                     </div>
                 </form>
@@ -118,7 +126,7 @@
                     <div><strong>عروض وخصومات</strong><small>عروض PalPrints ومنتجاتها الجديدة.</small></div>
                     <label class="pp-switch"><input type="checkbox"><span class="pp-switch-track"></span></label>
                 </div>
-                <div class="form-actions" style="justify-content: flex-start;">
+                <div class="settings-form-actions">
                     <button type="button" class="btn-brand" id="saveNotificationSettings"><i class="bi bi-check2"></i> حفظ التفضيلات</button>
                 </div>
             </section>
@@ -145,7 +153,7 @@
                     <span class="settings-requirement-status is-warning">يحتاج استكمال</span>
                 </div>
                 <div class="settings-role-note"><i class="bi bi-info-circle"></i><span>وفق متطلبات النظام، يجب اختيار عنوان توصيل صالح قبل الانتقال إلى خطوة الدفع.</span></div>
-                <div class="form-actions" style="justify-content: flex-start;">
+                <div class="settings-form-actions" style="justify-content: flex-start;">
                     <a href="{{ route('customer.profile') }}" class="btn-brand-outline"><i class="bi bi-pencil"></i> استكمال البيانات من الملف الشخصي</a>
                 </div>
             </section>
@@ -155,6 +163,10 @@
                 <div class="section-title">
                     <span class="section-icon"><i class="bi bi-sliders"></i></span>
                     <div><h2>تفضيلات العرض</h2><p>خصص طريقة ظهور المنصة على جهازك.</p></div>
+                </div>
+                <div class="settings-option">
+                    <div><strong>الوضع الليلي</strong><small>مظهر داكن لصفحات الحساب (الحساب، الأمان، الطلبات...).</small></div>
+                    <label class="pp-switch"><input type="checkbox" id="darkModeToggle"><span class="pp-switch-track"></span></label>
                 </div>
                 <div class="settings-option">
                     <div><strong>تقليل الحركات</strong><small>تقليل مؤثرات الانتقال والحركة أثناء التصفح.</small></div>
@@ -177,6 +189,7 @@
                     <button type="button" class="btn-brand-outline" id="deleteAccountButton" style="color: var(--pp-danger); border-color: #fca5a5;"><i class="bi bi-trash3"></i> حذف الحساب</button>
                 </div>
             </section>
+            </div>
         </div>
     </section>
 
@@ -188,11 +201,11 @@
                 <div><h2>تأكيد حذف الحساب</h2><p>هذا الإجراء نهائي ولا يمكن التراجع عنه.</p></div>
                 <button type="button" class="pp-dialog-close" data-delete-close aria-label="إغلاق"><i class="bi bi-x-lg"></i></button>
             </div>
-            <div class="field">
-                <label class="pp-label" for="delete_password">أدخلي كلمة المرور للتأكيد</label>
-                <input id="delete_password" class="pp-input" type="password" name="password" autocomplete="current-password" required>
-                @error('password', 'userDeletion') <span class="pp-error">{{ $message }}</span> @enderror
-            </div>
+            <label class="pp-field">
+                <span>أدخلي كلمة المرور للتأكيد</span>
+                <span class="pp-input-shell"><i class="bi bi-lock"></i><input id="delete_password" type="password" name="password" autocomplete="current-password" required></span>
+                @error('password', 'userDeletion') <small class="pp-field-error">{{ $message }}</small> @enderror
+            </label>
             <div class="pp-dialog-footer">
                 <button type="button" class="btn-brand-outline" data-delete-close>إلغاء</button>
                 <button type="submit" class="btn-brand" style="background: var(--pp-danger); box-shadow: none;">حذف الحساب نهائيًا</button>

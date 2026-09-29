@@ -2,7 +2,6 @@
   "use strict";
 
   const SESSION_KEY = "palprintsCustomerPreview";
-  const CART_KEY = "palprints-product-cart";
   const ALLOWED_TONES = new Set([
     "hoodie-tone--cream",
     "hoodie-tone--black",
@@ -69,8 +68,7 @@
     mobileAddToCart: document.getElementById("mobileAddToCart"),
     toast: document.getElementById("previewToast"),
     toastIcon: document.querySelector("#previewToast .preview-toast-icon i"),
-    toastMessage: document.getElementById("previewToastMessage"),
-    cartBadge: document.getElementById("cartBadge")
+    toastMessage: document.getElementById("previewToastMessage")
   };
 
   if (!elements.productCanvas) return;
@@ -154,7 +152,8 @@
         name: safeString(color && color.name, fallbackColor.name, 40),
         value: /^#[0-9a-f]{6}$/i.test(color && color.value) ? color.value : fallbackColor.value,
         image: safeImageSource(color && color.image, fallbackColor.image),
-        toneClass: ALLOWED_TONES.has(color && color.toneClass) ? color.toneClass : fallbackColor.toneClass
+        // "" means "no tint" (t-shirts/mugs show the design image as-is).
+        toneClass: color && (color.toneClass === "" || ALLOWED_TONES.has(color.toneClass)) ? color.toneClass : fallbackColor.toneClass
       };
     }).filter(function (color, index, list) {
       return list.findIndex(function (item) { return item.id === color.id; }) === index;
@@ -236,6 +235,7 @@
 
     const product = {
       id: safeString(rawProduct.id, fallback.product.id, 80),
+      code: safeString(rawProduct.code, "", 40),
       name: safeString(rawProduct.name, fallback.product.name, 100),
       sellingPrice: safeNumber(rawProduct.sellingPrice, 20, 0, 999999),
       currency: "ILS",
@@ -718,23 +718,6 @@
     }, 3200);
   }
 
-  function updateCartBadge(cart) {
-    const count = cart.reduce(function (total, item) {
-      return total + safeNumber(item && item.quantity, 0, 0, 9999);
-    }, 0);
-    setText(elements.cartBadge, String(count));
-    elements.cartBadge.hidden = count === 0;
-  }
-
-  function readCart() {
-    try {
-      const parsed = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      return [];
-    }
-  }
-
   function setAddButtonSuccess() {
     clearTimeout(state.buttonTimer);
     [elements.addToCartButton, elements.mobileAddToCart].forEach(function (button) {
@@ -770,95 +753,64 @@
       return;
     }
 
-    const cart = readCart();
+    const endpoint = (window.palPrintsCustomerAssets || {}).cartCatalogUrl;
+    const csrf = document.querySelector('meta[name="csrf-token"]');
+    if (!payload.product.code || !endpoint) {
+      showToast("تعذر تحديد المنتج. عد إلى صفحة المنتجات واختر المنتج من جديد.", "error");
+      return;
+    }
+
+    // Same choices (color + size + print areas) collapse into one line with a quantity.
     const groups = new Map();
     state.items.forEach(function (piece) {
       const selectedIds = selectedAreas(piece).map(function (area) { return area.id; });
       const key = JSON.stringify([piece.colorId, piece.sizeId, selectedIds]);
-      if (!groups.has(key)) groups.set(key, { piece: piece, selectedIds: selectedIds, quantity: 0 });
+      if (!groups.has(key)) groups.set(key, { piece: piece, quantity: 0 });
       groups.get(key).quantity += 1;
     });
 
-    let addedCount = 0;
-    let groupIndex = 0;
-    groups.forEach(function (group) {
-      const result = itemPricing(group.piece);
-      const matching = cart.find(function (item) {
-        const itemAreaIds = Array.isArray(item && item.printAreaIds) ? item.printAreaIds : [];
-        return item && item.kind === "custom-product" &&
-          item.productId === payload.product.id &&
-          item.designId === payload.design.id &&
-          item.colorId === group.piece.colorId &&
-          item.sizeId === group.piece.sizeId &&
-          itemAreaIds.length === group.selectedIds.length &&
-          itemAreaIds.every(function (id, index) { return id === group.selectedIds[index]; });
-      });
+    const body = {
+      product_code: payload.product.code,
+      design_id: payload.design.id,
+      groups: Array.from(groups.values()).map(function (group) {
+        const color = currentColor(group.piece);
+        const size = payload.product.sizes.find(function (item) { return item.id === group.piece.sizeId; });
+        return {
+          color_id: group.piece.colorId,
+          color_name: color ? color.name : group.piece.colorId,
+          size_id: group.piece.sizeId,
+          size_name: size ? size.name : group.piece.sizeId,
+          quantity: group.quantity,
+          print_areas: selectedAreas(group.piece).map(function (area) { return area.name; })
+        };
+      })
+    };
 
-      if (matching) {
-        const previousQuantity = safeNumber(matching.quantity, 0, 0, 99);
-        const acceptedQuantity = Math.min(group.quantity, 99 - previousQuantity);
-        matching.quantity = previousQuantity + acceptedQuantity;
-        matching.pricing = matching.pricing && typeof matching.pricing === "object" ? matching.pricing : {};
-        matching.pricing.sellingPrice = payload.product.sellingPrice;
-        matching.pricing.areaFees = result.areaFees;
-        matching.pricing.unitPrice = result.unitPrice;
-        matching.pricing.total = result.unitPrice * matching.quantity;
-        matching.pricing.currency = payload.product.currency;
-        matching.updatedAt = new Date().toISOString();
-        addedCount += acceptedQuantity;
-        return;
-      }
+    [elements.addToCartButton, elements.mobileAddToCart].forEach(function (button) { button.disabled = true; });
 
-      const color = currentColor(group.piece);
-      const size = payload.product.sizes.find(function (item) { return item.id === group.piece.sizeId; });
-      const area = selectedAreas(group.piece)[0];
-      cart.push({
-        id: "custom-product-" + Date.now() + "-" + groupIndex,
-        kind: "custom-product",
-        productId: payload.product.id,
-        productName: payload.product.name,
-        designId: payload.design.id,
-        designName: payload.design.name,
-        designerName: payload.design.designerName,
-        colorId: group.piece.colorId,
-        colorName: color.name,
-        sizeId: group.piece.sizeId,
-        sizeName: size.name,
-        quantity: group.quantity,
-        printAreaIds: group.selectedIds,
-        printAreas: result.areaFees,
-        pricing: {
-          sellingPrice: payload.product.sellingPrice,
-          areaFees: result.areaFees,
-          unitPrice: result.unitPrice,
-          total: result.unitPrice * group.quantity,
-          currency: payload.product.currency
-        },
-        previewSnapshot: {
-          areaId: area.id,
-          image: area.image || color.image,
-          toneClass: color.toneClass,
-          designPreview: payload.design.preview
-        },
-        createdAt: new Date().toISOString()
+    fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-CSRF-TOKEN": csrf ? csrf.content : ""
+      },
+      body: JSON.stringify(body)
+    }).then(function (response) {
+      return response.json().catch(function () { return {}; }).then(function (data) {
+        if (!response.ok) {
+          const firstError = data.errors ? Object.values(data.errors)[0][0] : data.message;
+          throw new Error(firstError || "تعذرت إضافة المنتج إلى السلة. حاول مرة أخرى.");
+        }
+        return data;
       });
-      addedCount += group.quantity;
-      groupIndex += 1;
+    }).then(function (data) {
+      setAddButtonSuccess();
+      window.setTimeout(function () { window.location.href = data.redirect; }, 600);
+    }).catch(function (error) {
+      renderValidation();
+      showToast(error.message, "error");
     });
-
-    try {
-      localStorage.setItem(CART_KEY, JSON.stringify(cart));
-      updateCartBadge(cart);
-      if (addedCount > 0) setAddButtonSuccess();
-      const cartMessage = addedCount === 0
-        ? "تعذر إضافة القطع لأن هذه الخيارات بلغت الحد الأقصى 99."
-        : addedCount < state.items.length
-          ? "تمت إضافة " + addedCount + " قطعة فقط لأن بعض الخيارات بلغت الحد الأقصى 99."
-          : "تمت إضافة القطع إلى السلة بنجاح.";
-      showToast(cartMessage, addedCount > 0 ? "success" : "error");
-    } catch (error) {
-      showToast("تعذر حفظ السلة على هذا المتصفح. حاول مرة أخرى.", "error");
-    }
   }
 
   function renderFullscreen() {
@@ -1005,7 +957,6 @@
   elements.addToCartButton.addEventListener("click", addToCart);
   elements.mobileAddToCart.addEventListener("click", addToCart);
 
-  updateCartBadge(readCart());
   renderAll();
 
   function revealInitialPreview() {
