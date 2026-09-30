@@ -116,18 +116,19 @@
                 </div>
             </header>
             <div class="chart-legend" aria-hidden="true"><span><i class="is-sales"></i> المبيعات</span><span><i class="is-profit"></i> الأرباح</span></div>
+            <script type="application/json" id="designerChartData">@json($chartData)</script>
             <div class="designer-performance-chart" role="img" aria-label="رسم بياني يوضح نمو المبيعات والأرباح خلال ستة أشهر">
-                <div class="chart-y-axis" aria-hidden="true"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>
+                <div class="chart-y-axis" id="chartYAxis" aria-hidden="true"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>
                 <div class="chart-canvas">
                     <span class="chart-grid-line" style="--line: 0"></span><span class="chart-grid-line" style="--line: 1"></span><span class="chart-grid-line" style="--line: 2"></span><span class="chart-grid-line" style="--line: 3"></span><span class="chart-grid-line" style="--line: 4"></span>
                     <svg viewBox="0 0 720 220" preserveAspectRatio="none" aria-hidden="true">
                         <defs><linearGradient id="salesArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1677ff" stop-opacity=".22"/><stop offset="1" stop-color="#1677ff" stop-opacity="0"/></linearGradient></defs>
-                        <path class="chart-area" d="M10 185 C80 176,110 158,150 164 S240 130,290 138 S380 99,430 112 S520 70,575 82 S660 38,710 46 L710 218 L10 218 Z"></path>
-                        <path class="chart-line is-sales" d="M10 185 C80 176,110 158,150 164 S240 130,290 138 S380 99,430 112 S520 70,575 82 S660 38,710 46"></path>
-                        <path class="chart-line is-profit" d="M10 203 C80 196,110 185,150 190 S240 165,290 171 S380 139,430 148 S520 112,575 122 S660 86,710 94"></path>
+                        <path class="chart-area" d=""></path>
+                        <path class="chart-line is-sales" d=""></path>
+                        <path class="chart-line is-profit" d=""></path>
                         <circle class="chart-sales-marker" id="salesChartMarker" cx="10" cy="185" r="6"></circle>
                     </svg>
-                    <div class="chart-months" aria-hidden="true"><span>أبريل</span><span>مايو</span><span>يونيو</span><span>يوليو</span><span>أغسطس</span><span>سبتمبر</span></div>
+                    <div class="chart-months" id="chartMonths" aria-hidden="true"></div>
                 </div>
             </div>
         </section>
@@ -155,22 +156,21 @@
         </header>
         <div class="designer-table-wrap" tabindex="0" aria-label="جدول تصاميم المصمم، قابل للتمرير أفقيًا">
             <table class="designer-data-table">
-                <thead><tr><th>التصميم</th><th>رقم التصميم</th><th>المنتج</th><th>تاريخ الإنشاء</th><th>الحالة</th><th><span class="visually-hidden">الإجراءات</span></th></tr></thead>
+                <thead><tr><th>التصميم</th><th>رقم التصميم</th><th>المنتج</th><th>تاريخ الإنشاء</th><th>الحالة</th></tr></thead>
                 <tbody>
                     @forelse ($recentDesigns as $design)
                         @php $meta = $statusMeta[$design->status] ?? $statusMeta['draft']; @endphp
                         <tr>
                             <td>
-                                <div class="design-cell">
+                                <a class="design-cell" href="{{ route('designer.designs.review', ['id' => $design->id]) }}" aria-label="معاينة تصميم {{ $design->title }}">
                                     <img src="{{ $design->image ?: (filled($design->product?->image) ? (preg_match('#^(https?:)?//#', $design->product->image) ? $design->product->image : asset($design->product->image)) : asset('front/designer/assets/images/file.png')) }}" alt="معاينة تصميم {{ $design->title }}">
                                     <span><strong>{{ $design->title }}</strong><small>{{ $design->product?->name }}</small></span>
-                                </div>
+                                </a>
                             </td>
                             <td dir="ltr">#DSG-{{ $design->id }}</td>
                             <td>{{ $design->product?->name ?? '—' }}</td>
                             <td><time>{{ $design->created_at?->locale('ar')->translatedFormat('d F Y') }}</time></td>
                             <td><span class="dashboard-status {{ $meta['class'] }}"><i></i> {{ $meta['label'] }}</span></td>
-                            <td><a class="table-action" href="{{ route('designer.designs.review', ['id' => $design->id]) }}" aria-label="إدارة تصميم {{ $design->title }}"><i class="bi bi-three-dots" aria-hidden="true"></i></a></td>
                         </tr>
                     @empty
                     @endforelse

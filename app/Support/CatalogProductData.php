@@ -19,6 +19,9 @@ class CatalogProductData
         'gray' => 'رمادي', 'red' => 'أحمر', 'green' => 'أخضر', 'clear' => 'شفاف',
     ];
 
+    /** Printing-service products: customers upload their own files, so designers cannot design them. */
+    public const NOT_DESIGNABLE = ['PAPER-PRINT', 'STICKER-CUSTOM'];
+
     /**
      * @return array{categories: array<int, array<string, string>>, products: array<int, array<string, mixed>>}
      */
@@ -32,6 +35,7 @@ class CatalogProductData
                 'branchProductOfferings.branchPrintAreas',
             ])
             ->where('is_active', true)
+            ->whereNotIn('code', self::NOT_DESIGNABLE)
             ->orderBy('id')
             ->get()
             ->sortBy(fn (Product $product) => self::productOrder($product->code))

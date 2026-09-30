@@ -50,6 +50,9 @@
   function validatePassword() {
     const value = passwordInput.value;
     if (!value) return setFieldState(fields.password, fields.password.messages.missing);
+    if (value.length < 6) {
+      return setFieldState(fields.password, fields.password.messages.short);
+    }
     return setFieldState(fields.password, "");
   }
 
