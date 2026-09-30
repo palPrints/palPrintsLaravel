@@ -41,5 +41,6 @@
       </div>
     </section>
   </main>
+@include('partials.page-loader')
 </body>
 </html>

@@ -35,5 +35,6 @@
 
     <script src="{{ asset('front/js/printProvider/dashboard.js') }}"></script>
     @stack('scripts')
+@include('partials.page-loader')
 </body>
 </html>

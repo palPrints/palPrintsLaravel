@@ -70,5 +70,6 @@
     @stack('scripts')
     <script src="{{ $designerAsset('js/designer-shell.js') }}"></script>
     <script src="{{ asset('front/shared/interactions.js').'?v='.filemtime(public_path('front/shared/interactions.js')) }}"></script>
+@include('partials.page-loader')
 </body>
 </html>

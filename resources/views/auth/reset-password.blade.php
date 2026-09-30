@@ -64,5 +64,6 @@
   </main>
 
   <script src="{{ asset('front/auth/js/reset-password.js') }}?v={{ filemtime(public_path('front/auth/js/reset-password.js')) }}"></script>
+@include('partials.page-loader')
 </body>
 </html>
