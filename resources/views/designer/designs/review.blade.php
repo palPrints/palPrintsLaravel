@@ -117,14 +117,14 @@
                         <h3 id="priceTitle">السعر</h3><span>حدّد هامش ربحك</span>
                     </div>
                     <div class="price-row base-price"><span>تكلفة المنتج (الأساسية)</span><strong><bdi
-                                id="basePrice">0.00</bdi> <small>ر.س</small></strong></div>
+                                id="basePrice">0.00</bdi> <small>₪</small></strong></div>
                     <label class="price-row selling-price" for="sellingPrice">
                         <span>سعر البيع <b aria-hidden="true">*</b></span>
                         <span class="money-input"><input id="sellingPrice" type="number" min="0" step="1"
-                                inputmode="decimal"><small>ر.س</small></span>
+                                inputmode="decimal"><small>₪</small></span>
                     </label>
                     <div class="price-row profit-row"><span><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>
-                            ربحك</span><strong><bdi id="profitValue">0.00</bdi> <small>ر.س</small></strong></div>
+                            ربحك</span><strong><bdi id="profitValue">0.00</bdi> <small>₪</small></strong></div>
                     <p class="field-error" id="priceError" role="alert"></p>
                 </section>
 

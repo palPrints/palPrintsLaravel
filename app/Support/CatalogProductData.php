@@ -82,6 +82,15 @@ class CatalogProductData
         return [
             'colors' => self::uniqueOptions($attributes['color'] ?? collect(), true),
             'sizes' => self::uniqueOptions($attributes['size'] ?? collect()),
+            // Print areas the active print shops offer for this product (code + Arabic name).
+            'printAreas' => $product->branchProductOfferings
+                ->filter(fn (BranchProductOffering $offering) => $offering->is_active)
+                ->flatMap(fn (BranchProductOffering $offering) => $offering->branchPrintAreas)
+                ->where('is_active', true)
+                ->unique('code')
+                ->map(fn ($area) => ['id' => $area->code, 'name' => $area->name])
+                ->values()
+                ->all(),
         ];
     }
 
@@ -146,6 +155,7 @@ class CatalogProductData
         return [
             'id' => (string) $product->id,
             'databaseId' => $product->id,
+            'code' => $product->code,
             'categoryId' => $product->category?->slug ?? 'catalog',
             'name' => $product->name,
             'description' => $product->description,

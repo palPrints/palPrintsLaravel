@@ -15,6 +15,8 @@ class PrintProvider extends Model
         'address',
         'phone',
         'whatsapp_number',
+        'contact_email',
+        'services',
         'working_hours',
         'license_document',
         'verification_document',
@@ -34,6 +36,7 @@ class PrintProvider extends Model
 
     protected $casts = [
         'working_hours' => 'array',
+        'services' => 'array',
         'profile_completed_at' => 'datetime',
         'submitted_at' => 'datetime',
         'reviewed_at' => 'datetime',

@@ -354,28 +354,6 @@
       '<i class="bi ' + action.icon + '" aria-hidden="true"></i>',
       "<span>" + escapeHtml(action.label) + "</span>",
       "</button>",
-      '<div class="design-more-control">',
-      '<button type="button" class="utility-btn design-more-button"',
-      ' data-more-toggle aria-controls="' + menuId + '"',
-      ' aria-expanded="false" aria-label="' +
-        escapeHtml(translate("moreActions")) + '">',
-      '<i class="bi bi-three-dots" aria-hidden="true"></i>',
-      "</button>",
-      '<div class="design-more-menu" id="' + menuId + '" hidden>',
-      '<button type="button" class="design-menu-option"',
-      ' data-design-action="preview"><i class="bi bi-eye"',
-      ' aria-hidden="true"></i><span>' +
-        escapeHtml(translate("previewDesign")) + "</span></button>",
-      '<button type="button" class="design-menu-option"',
-      ' data-design-action="edit"><i class="bi bi-pencil"',
-      ' aria-hidden="true"></i><span>' +
-        escapeHtml(translate("editDesign")) + "</span></button>",
-      '<button type="button" class="design-menu-option"',
-      ' data-design-action="copy"><i class="bi bi-link-45deg"',
-      ' aria-hidden="true"></i><span>' +
-        escapeHtml(translate("copyPreviewLink")) + "</span></button>",
-      "</div>",
-      "</div>",
       "</div>",
       "</div>",
       "</article>"
@@ -711,15 +689,19 @@
   function setupEvents() {
     setupTabs();
 
-    elements.search.addEventListener("input", function () {
-      query = elements.search.value.trim();
-      render();
-    });
+    if (elements.search) {
+      elements.search.addEventListener("input", function () {
+        query = elements.search.value.trim();
+        render();
+      });
+    }
 
     elements.clearSearch.addEventListener("click", function () {
       query = "";
-      elements.search.value = "";
-      elements.search.focus();
+      if (elements.search) {
+        elements.search.value = "";
+        elements.search.focus();
+      }
       render();
     });
 
@@ -863,9 +845,9 @@
     /* The top-bar search sends ?q= to this page. */
     const initialQuery = new URLSearchParams(window.location.search).get("q");
 
-    if (initialQuery && elements.search) {
+    if (initialQuery) {
       query = initialQuery.trim();
-      elements.search.value = query;
+      if (elements.search) elements.search.value = query;
     }
 
     updateCounts();

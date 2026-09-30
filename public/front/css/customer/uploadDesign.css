@@ -137,3 +137,12 @@
   .upload-design-button,
   .upload-design-drop { transition: none; }
 }
+
+/* On the store hero the button sits under the text instead of floating to the side. */
+.hero-copy .upload-design-cta {
+  position: static;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  transform: none;
+}

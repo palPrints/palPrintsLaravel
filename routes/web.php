@@ -63,6 +63,12 @@ Route::view('/privacy', 'legal.placeholder', [
 Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', DashboardRedirectController::class)->name('dashboard');
 
+    // Design studio page, ported as-is from the frontend repo.
+    Route::get('/design-studio', fn () => view('studio.design-studio', [
+        'dbCatalog' => \App\Support\CatalogProductData::forDesigner()['products'],
+        'chooseProductUrl' => auth()->user()?->hasRole('designer') ? route('designer.designs.create') : route('customer.chooseProduct'),
+    ]))->middleware('role:customer|designer')->name('design-studio');
+
     Route::post('/onboarding/submit', [OnboardingController::class, 'submit'])
         ->name('onboarding.submit');
 
@@ -98,12 +104,13 @@ Route::middleware(['auth', 'active'])->group(function () {
     });
     Route::middleware('role:customer')->prefix('customer')->name('customer.')->group(function () {
         Route::get('/store', [CustomerCatalogController::class, 'store'])->name('store');
+        Route::get('/choose-product', [CustomerCatalogController::class, 'chooseProduct'])->name('chooseProduct');
+        Route::view('/product-preview', 'customer.productPreview')->name('productPreview');
         Route::get('/hoodies', [CustomerCatalogController::class, 'hoodies'])->name('hoodies');
         Route::get('/mugs', [CustomerCatalogController::class, 'mugs'])->name('mugs');
         Route::get('/tshirts', [CustomerCatalogController::class, 'tshirts'])->name('tshirts');
         Route::view('/stickers', 'customer.stickers')->name('stickers');
         Route::view('/paper-printing', 'customer.paperPrinting')->name('paperPrinting');
-        Route::view('/product-preview', 'customer.productPreview')->name('productPreview');
         Route::get('/basket', [CustomerCartController::class, 'index'])->name('basket');
         Route::post('/cart/catalog', [CustomerCartController::class, 'storeCatalog'])->name('cart.store-catalog');
         Route::post('/cart/paper',[CustomerCartController::class, 'storePaper'])->name('cart.store-paper');

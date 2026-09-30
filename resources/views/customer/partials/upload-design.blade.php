@@ -40,6 +40,10 @@
 </dialog>
 
 @push('scripts')
+    <script>
+        window.palPrintsCustomerAssets = window.palPrintsCustomerAssets || {};
+        window.palPrintsCustomerAssets.chooseProductUrl = @json(route('customer.chooseProduct'));
+    </script>
     <script src="{{ asset('front/js/customer/imageRules.js') }}?v={{ filemtime(public_path('front/js/customer/imageRules.js')) }}"></script>
     <script src="{{ asset('front/js/customer/uploadDesign.js') }}?v={{ filemtime(public_path('front/js/customer/uploadDesign.js')) }}"></script>
 @endpush

@@ -14,6 +14,7 @@
                     <span class="hero-copy__line hero-copy__line--dark">منصتك لطباعة أفكارك على منتجات حقيقية</span><br>
                     <span class="hero-copy__line hero-copy__line--accent">اختر المنتج ثم تصفح التصاميم المعتمدة عليه</span>
                 </p>
+                @include('customer.partials.upload-design')
             </div>
         </div>
     </section>

@@ -25,6 +25,12 @@ class CatalogController extends Controller
         'WEDDING-CARDS' => 'كروت أفراح بتصاميم فخمة تناسب المناسبات الخاصة.',
     ];
 
+    /** Product picker for the customer's own uploaded design (same catalog the designer picks from). */
+    public function chooseProduct(): View
+    {
+        return view('customer.chooseProduct', ['designerCatalog' => CatalogProductData::forDesigner()]);
+    }
+
     public function store(): View
     {
         $products = Product::query()
@@ -56,7 +62,7 @@ class CatalogController extends Controller
     private function productDesigns(string $productCode, string $view, string $fallbackImage): View
     {
         $product = Product::query()
-            ->with(['attributes.attribute', 'attributes.values.attributeValue'])
+            ->with(['attributes.attribute', 'attributes.values.attributeValue', 'branchProductOfferings.branchPrintAreas'])
             ->where('code', $productCode)
             ->where('is_active', true)
             ->first();

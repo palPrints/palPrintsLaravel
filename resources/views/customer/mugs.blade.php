@@ -36,7 +36,6 @@
         <div class="catalog-heading">
             <h1><img src="{{ asset('front/assets/images/customer/cup.webp') }}" alt=""> أكواب</h1>
             <p>اكتشف مجموعة مميزة من الأكواب المطبوعة بتصاميم تحوّل لحظاتك اليومية إلى تفاصيل أكثر دفئًا وإبداعًا.</p>
-            @include('customer.partials.upload-design')
         </div>
         <div class="products-grid" id="productGrid" aria-live="polite"></div>
         <p class="products-empty" id="productsEmpty" role="status" hidden><i class="bi bi-inbox" aria-hidden="true"></i>لا توجد تصاميم مطابقة لبحثك. جرّب كلمة أخرى.</p>
