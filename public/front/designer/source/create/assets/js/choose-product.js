@@ -42,6 +42,8 @@ function initializePage() {
 }
 
 function renderCategories() {
+    if (!elements.categories) return;
+
     elements.categories.innerHTML = "";
 
     state.categories.forEach(category => {
@@ -402,6 +404,6 @@ function announce(message) {
 }
 
 elements.startDesignButton.addEventListener("click", startDesign);
-elements.backButton.addEventListener("click", goBack);
+elements.backButton?.addEventListener("click", goBack);
 
 initializePage();

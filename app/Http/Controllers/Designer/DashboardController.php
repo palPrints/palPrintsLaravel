@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Designer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Design;
+use App\Models\OrderItem;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
@@ -51,6 +53,8 @@ class DashboardController extends Controller
             'rejected_count' => (int) ($statusCounts['rejected'] ?? 0),
         ];
 
+        $chartData = $this->performanceChart($user->id);
+
         $recentDesigns = (clone $designs)->with('product')->latest()->limit(6)->get();
 
         $recentActivities = $user->userNotifications()->latest()->limit(5)->get();
@@ -83,6 +87,66 @@ class DashboardController extends Controller
             'stats',
             'unreadNotificationsCount',
             'accountNotice',
+            'chartData',
         ));
+    }
+
+    /**
+     * Sales and designer profit per bucket for the dashboard chart.
+     * Cancelled orders are ignored.
+     *
+     * @return array<string, array{label: string, labels: list<string>, sales: list<float>, profit: list<float>}>
+     */
+    private function performanceChart(int $designerId): array
+    {
+        $now = now();
+        $items = OrderItem::query()
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('order_items.designer_id', $designerId)
+            ->where('orders.status', '!=', 'cancelled')
+            ->where('order_items.created_at', '>=', $now->copy()->subMonths(11)->startOfMonth())
+            ->get(['order_items.created_at', 'order_items.total_price', 'order_items.designer_profit']);
+
+        $build = function (array $buckets, callable $key) use ($items): array {
+            $sales = array_fill_keys(array_keys($buckets), 0.0);
+            $profit = $sales;
+
+            foreach ($items as $item) {
+                $bucket = $key(Carbon::parse($item->created_at));
+
+                if (array_key_exists($bucket, $sales)) {
+                    $sales[$bucket] += (float) $item->total_price;
+                    $profit[$bucket] += (float) $item->designer_profit;
+                }
+            }
+
+            return [
+                'labels' => array_values($buckets),
+                'sales' => array_map(fn ($value) => round($value, 2), array_values($sales)),
+                'profit' => array_map(fn ($value) => round($value, 2), array_values($profit)),
+            ];
+        };
+
+        $days = [];
+        foreach (range(6, 0) as $ago) {
+            $day = $now->copy()->subDays($ago);
+            $days[$day->toDateString()] = $day->locale('ar')->translatedFormat('l');
+        }
+
+        $months = function (int $count) use ($now): array {
+            $buckets = [];
+            foreach (range($count - 1, 0) as $ago) {
+                $month = $now->copy()->startOfMonth()->subMonths($ago);
+                $buckets[$month->format('Y-m')] = $month->locale('ar')->translatedFormat('F');
+            }
+
+            return $buckets;
+        };
+
+        return [
+            'week' => $build($days, fn (Carbon $date) => $date->toDateString()) + ['label' => 'ملخص الأداء خلال آخر 7 أيام'],
+            'month' => $build($months(6), fn (Carbon $date) => $date->format('Y-m')) + ['label' => 'ملخص الأداء خلال آخر 6 أشهر'],
+            'year' => $build($months(12), fn (Carbon $date) => $date->format('Y-m')) + ['label' => 'ملخص الأداء خلال آخر 12 شهرًا'],
+        ];
     }
 }
