@@ -185,4 +185,32 @@ class User extends Authenticatable
             default => 'dashboard',
         };
     }
+
+    /**
+     * URL to send the user to after login: the page they originally asked for,
+     * unless it belongs to another role (which would 403), else their dashboard.
+     */
+    public function postLoginUrl(\Illuminate\Http\Request $request): string
+    {
+        $default = route($this->dashboardRouteName(), absolute: false);
+        $intended = $request->session()->pull('url.intended');
+
+        if (! $intended) {
+            return $default;
+        }
+
+        $section = explode('/', trim((string) parse_url($intended, PHP_URL_PATH), '/'))[0];
+        $sectionRoles = [
+            'admin' => 'admin',
+            'customer' => 'customer',
+            'designer' => 'designer',
+            'print-provider' => 'print_provider',
+        ];
+
+        if (isset($sectionRoles[$section]) && ! $this->hasRole($sectionRoles[$section])) {
+            return $default;
+        }
+
+        return $intended;
+    }
 }

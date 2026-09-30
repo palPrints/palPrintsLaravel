@@ -184,7 +184,7 @@ class SocialAuthController extends Controller
                 ],
             ]);
 
-            return redirect()->intended(route($user->dashboardRouteName(), absolute: false));
+            return redirect()->to($user->postLoginUrl($request));
         } catch (SocialAuthenticationException $exception) {
             $request->session()->forget('social_auth');
 
