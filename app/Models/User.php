@@ -131,6 +131,11 @@ class User extends Authenticatable
         return $this->hasMany(SocialAccount::class);
     }
 
+    public function printFiles(): HasMany
+    {
+        return $this->hasMany(PrintFile::class);
+    }
+
     public function primaryRole(): ?string
     {
         return $this->getRoleNames()->first();

@@ -560,11 +560,18 @@ document.addEventListener("DOMContentLoaded", function () {
     const formData = new FormData();
     formData.append("size", state.globalSettings.size || "A4");
     formData.append("total_price", price ? price.total : 0);
+    formData.append("settings[paper_size]", state.globalSettings.size || "A4");
+    formData.append("settings[paper_type]", state.globalSettings.paper || "standard");
+    formData.append("settings[color_mode]", state.globalSettings.color || "bw");
+    formData.append("settings[sides]", state.globalSettings.sides || "single");
+    formData.append("settings[layout]", state.globalSettings.layout || "1");
     formData.append("settings[grouping]", state.grouping || "");
     formData.append("settings[binding]", state.grouping === "combined"
       ? bindingLabel(state.combinedBinding)
       : Object.values(state.separateBindings).map(bindingLabel).join("، "));
     formData.append("settings[quantity]", state.quantity);
+    formData.append("settings[file_count]", files.length);
+    formData.append("settings[page_count]", totalPages());
     files.forEach(function (file) { formData.append("files[]", file.file, file.name); });
 
     fetch(window.palPrintsCustomerAssets.cartPaperUrl, {
