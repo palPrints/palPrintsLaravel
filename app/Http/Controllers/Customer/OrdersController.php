@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Support\OrderNotifier;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -53,6 +54,7 @@ class OrdersController extends Controller
         }
 
         $order->update(['status' => 'cancelled']);
+        OrderNotifier::statusChanged($order->user_id, $order->order_number, 'cancelled');
 
         return back()->with('status', 'order-cancelled');
     }

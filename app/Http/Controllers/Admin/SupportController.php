@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
+use App\Models\User;
 use App\Support\SupportTicketStore;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -67,12 +68,18 @@ class SupportController extends Controller
             return;
         }
 
+        $recipient = User::find($ticket['user_id']);
+        $route = match (true) {
+            $recipient?->hasRole('customer') => 'customer.support',
+            default => 'designer.support',
+        };
+
         Notification::create([
             'user_id' => $ticket['user_id'],
             'type' => 'support.reply',
             'title' => $title,
             'message' => $message,
-            'link' => route('designer.support'),
+            'link' => route($route),
         ]);
     }
 
