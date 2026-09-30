@@ -27,5 +27,6 @@
         <p>{{ $message }}</p>
         <a href="{{ route('register') }}">العودة إلى التسجيل</a>
     </main>
+@include('partials.page-loader')
 </body>
 </html>

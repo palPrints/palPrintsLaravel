@@ -99,16 +99,6 @@
               </button>
             </div>
             <div class="design-tools">
-              <label class="design-search"
-                ><i class="bi bi-search" aria-hidden="true"></i
-                ><span class="sr-only" data-i18n="searchLabel"
-                  >البحث في التصاميم</span
-                ><input
-                  id="designSearch"
-                  type="search"
-                  placeholder="ابحث في تصاميمك..."
-                  data-i18n-placeholder="searchDesigns"
-              /></label>
               <div class="filter-control">
                 <button
                   type="button"

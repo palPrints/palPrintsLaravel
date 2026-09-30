@@ -35,5 +35,6 @@
 
     <script src="{{ $adminAsset('js/admin/admin-shell.js') }}"></script>
     @stack('scripts')
+@include('partials.page-loader')
 </body>
 </html>

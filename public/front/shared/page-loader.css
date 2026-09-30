@@ -1,0 +1,109 @@
+/* Full-screen loading overlay shown between pages. Inner rules are the frontend's loading.css unchanged;
+   only the wrapper (.page-loader) replaces the standalone page's body.loading-page rule. */
+.page-loader {
+  --font-ar: "Cairo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --pp-navy-900: #0b1f3a;
+  --pp-surface: #ffffff;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  position: fixed;
+  inset: 0;
+  z-index: 2147483600;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow: hidden;
+  box-sizing: border-box;
+  color: var(--pp-navy-900);
+  background: var(--pp-surface);
+  font-family: var(--font-ar);
+  -webkit-font-smoothing: antialiased;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+
+.page-loader.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.15s ease;
+}
+
+.page-loader *,
+.page-loader *::before,
+.page-loader *::after {
+  box-sizing: border-box;
+}
+
+.loading-content {
+  inline-size: min(100%, 28rem);
+  text-align: center;
+}
+
+.loading-products {
+  position: relative;
+  inline-size: clamp(168px, 46vw, 200px);
+  block-size: 190px;
+  margin: 0 auto 16px;
+}
+
+.loading-product {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+  stroke: currentColor;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  animation: loading-product-swap 4.8s var(--ease-out) infinite;
+}
+
+.loading-product--shirt { opacity: 1; }
+.loading-product--bag { animation-delay: -1.6s; }
+.loading-product--mug { animation-delay: -3.2s; }
+
+.loading-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.28;
+  text-wrap: balance;
+}
+
+@keyframes loading-product-swap {
+  0%, 27% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  34%, 94% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 30rem) {
+  .loading-products {
+    inline-size: 168px;
+    block-size: 160px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-product { animation: none; }
+
+  .loading-product { display: none; }
+
+  .loading-product--shirt {
+    display: block;
+    opacity: 1;
+    transform: none;
+  }
+}

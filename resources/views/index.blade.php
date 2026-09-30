@@ -20,7 +20,6 @@
       <nav class="home-admin-header__nav" aria-label="التنقل الرئيسي">
         <a class="is-active" href="{{ route('home') }}">الرئيسية</a>
         <a href="#what-to-print">المنتجات</a>
-        <a href="#featured-designs">اطبع لمناسبتك</a>
         <a href="#how-it-works">كيف نعمل</a>
         <a href="#about-palprints">عن المنصة</a>
       </nav>
@@ -31,26 +30,73 @@
     </header>
 
     <main>
-      <section class="home-hero" aria-label="ورشة طباعة الملابس">
-        <div class="home-hero__slides">
-          <img
-            class="home-hero__image home-hero__image--first"
-            src="{{ asset('front/home/images/home-hero-printshop.jpg') }}"
-            alt="فريق يعمل داخل ورشة لطباعة الملابس حسب الطلب"
-          />
-          <img
-            class="home-hero__image home-hero__image--second"
-            src="{{ asset('front/home/images/home-hero-design-studio.png') }}"
-            alt="مصممة تعمل على تصاميم ملابس في استوديو إبداعي"
-          />
-        </div>
+      <section class="home-hero" aria-labelledby="home-hero-title">
+        <img
+          class="home-hero__photo"
+          src="{{ asset('front/home/images/home-hero-clean-background.png') }}"
+          width="1672"
+          height="941"
+          alt="ورشة طباعة حديثة"
+        />
+        <p class="home-hero__wordmark" aria-hidden="true">PalPrints</p>
+        <img
+          class="home-hero__subject"
+          src="{{ asset('front/home/images/home-hero-man-ipad-cutout.png') }}"
+          width="1671"
+          height="941"
+          alt="مصمم يعمل بالقلم على جهاز لوحي"
+        />
         <div class="home-hero__content">
-          <h1>حوّل أفكارك الإبداعية إلى <span>منتجات</span> تعبّر عنك.</h1>
-          <p>اكتشف، خصّص، واجعل كل تصميم أقرب إليك.</p>
+          <h1 id="home-hero-title">من الإبداع إلى منتج جاهز بين يديك</h1>
+          <p>مساحة متكاملة لاكتشاف المنتجات والتصاميم، عرض الإبداعات، وتقديم خدمات الطباعة ضمن تجربة واحدة.</p>
           <a class="home-hero__cta" href="{{ $toRole('customer', 'customer.store') }}">
             <span>استكشف PALPRINTS</span>
-            <span aria-hidden="true">←</span>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12H4m6-6-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
           </a>
+        </div>
+      </section>
+
+      <section class="site-stats" aria-labelledby="site-stats-title">
+        <div class="site-stats__inner">
+          <header class="site-stats__header">
+            <h2 id="site-stats-title">إحصائيات PalPrints</h2>
+            <p>مجتمع متكامل يجمع الإبداع والطباعة في مكان واحد</p>
+          </header>
+
+          <ul class="site-stats__list">
+            <li class="site-stat">
+              <div class="site-stat__head">
+<span class="site-stat__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2" /><path d="M5.5 19.5v-1a4 4 0 0 1 4-4h5a4 4 0 0 1 4 4v1" /><circle cx="4.6" cy="9.4" r="2" /><circle cx="19.4" cy="9.4" r="2" /><path d="M1.5 17v-.6a3 3 0 0 1 3-3M22.5 17v-.6a3 3 0 0 0-3-3" /></svg>
+              </span>
+              <p class="site-stat__number" data-count="500" data-suffix="+">500+</p>
+</div>
+              <h3>مستخدم</h3>
+              <p class="site-stat__text">مستخدمون يجمعهم الإبداع والطباعة في منصة واحدة.</p>
+            </li>
+
+            <li class="site-stat">
+              <div class="site-stat__head">
+<span class="site-stat__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11V7.8a1.6 1.6 0 0 0-.8-1.4l-6.9-4a1.6 1.6 0 0 0-1.6 0l-6.9 4a1.6 1.6 0 0 0-.8 1.4v8a1.6 1.6 0 0 0 .8 1.4l6.9 4a1.6 1.6 0 0 0 1.6 0l1.4-.8" /><path d="M3.6 6.9 12 11.7l8.4-4.8M12 21.6v-9.9" /><circle cx="18" cy="18" r="4" /><path d="m16.2 18 1.3 1.3 2.3-2.4" /></svg>
+              </span>
+              <p class="site-stat__number" data-count="350" data-suffix="+">350+</p>
+</div>
+              <h3>طلب مكتمل</h3>
+              <p class="site-stat__text">طلبات خُصّصت وطُبعت ووصلت إلى أصحابها.</p>
+            </li>
+
+            <li class="site-stat">
+              <div class="site-stat__head">
+<span class="site-stat__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.5 7.2 14.6 8.6 8.4h6.8l1.4 6.2z" /><path d="M12 21.5v-8.2" /><circle cx="12" cy="12.2" r="1.3" /><rect x="4.6" y="3.4" width="2.8" height="2.8" rx=".5" /><rect x="16.6" y="3.4" width="2.8" height="2.8" rx=".5" /><path d="M7.4 4.8h9.2M8.6 8.4 6.6 6.2M15.4 8.4l2-2.2" /></svg>
+              </span>
+              <p class="site-stat__number" data-count="120" data-suffix="+">120+</p>
+</div>
+              <h3>تصميم متاح</h3>
+              <p class="site-stat__text">تصاميم متنوعة جاهزة للتخصيص والطباعة.</p>
+            </li>
+          </ul>
         </div>
       </section>
 
@@ -132,46 +178,6 @@
         </div>
       </section>
 
-      <section class="featured-designs" id="featured-designs" aria-labelledby="featured-designs-title">
-        <div class="featured-designs__inner">
-          <header class="featured-designs__header">
-            <div>
-              <h2 id="featured-designs-title">تصفح حسب مناسبتك</h2>
-            </div>
-          </header>
-
-          <div class="featured-designs__grid occasion-grid">
-            <a class="occasion-card" href="{{ $toRole('customer', 'customer.store') }}?occasion=wedding-engagement" aria-label="تصفح منتجات زفاف وخطوبة">
-              <span class="occasion-card__media">
-                <img src="{{ asset('front/home/images/occasions/wedding-engagement-v2.png') }}" alt="خاتم زفاف في أجواء حفل أنيقة" loading="lazy" />
-              </span>
-              <span class="occasion-card__title">زفاف وخطوبة</span>
-            </a>
-
-            <a class="occasion-card" href="{{ $toRole('customer', 'customer.store') }}?occasion=newborn" aria-label="تصفح منتجات مولود جديد">
-              <span class="occasion-card__media">
-                <img src="{{ asset('front/home/images/occasions/newborn-occasion-v2.png') }}" alt="يدا مولود بملابس بيضاء ناعمة" loading="lazy" />
-              </span>
-              <span class="occasion-card__title">مولود جديد</span>
-            </a>
-
-            <a class="occasion-card" href="{{ $toRole('customer', 'customer.store') }}?occasion=graduation" aria-label="تصفح منتجات التخرج">
-              <span class="occasion-card__media">
-                <img src="{{ asset('front/home/images/occasions/graduation-v2.png') }}" alt="خريجة تحمل باقة ورد وترتدي قبعة التخرج" loading="lazy" />
-              </span>
-              <span class="occasion-card__title">تخرج</span>
-            </a>
-
-            <a class="occasion-card" href="{{ $toRole('customer', 'customer.store') }}?occasion=birthday" aria-label="تصفح منتجات أعياد الميلاد">
-              <span class="occasion-card__media">
-                <img src="{{ asset('front/home/images/occasions/birthday-v2.png') }}" alt="هدية عيد ميلاد مع بطاقة وزهور" loading="lazy" />
-              </span>
-              <span class="occasion-card__title">أعياد ميلاد</span>
-            </a>
-          </div>
-        </div>
-      </section>
-
       <section class="partner-cta" id="how-it-works" aria-label="كيف تعمل PALPRINTS">
         <div class="partner-cta__inner">
           <h2 class="partner-cta__video-title">شاهد كيف تعمل PALPRINTS</h2>
@@ -223,12 +229,49 @@
           </article>
         </div>
       </section>
+
+      <section class="about-us" id="about-palprints" aria-labelledby="about-us-title">
+        <div class="about-us__inner">
+          <div class="about-us__content">
+            <p class="about-us__eyebrow">من نحن؟</p>
+            <h2 id="about-us-title">ثلاثة أطراف… في منصة واحدة</h2>
+            <p class="about-us__text">PalPrints منصة متكاملة للطباعة حسب الطلب، تجمع العملاء والمصممين والمطابع في مكان واحد؛ ليختار العميل ويخصّص منتجه، ويعرض المصمم إبداعه، وتحوّل المطبعة الأفكار إلى منتجات مطبوعة بجودة واحترافية.</p>
+            <ul class="about-us__cards" aria-label="أطراف منصة PalPrints">
+              <li class="about-card">
+                <span class="about-card__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8Z" /><path d="M9 8V6.5a3 3 0 0 1 6 0V8" /></svg>
+                </span>
+                <h3>العملاء</h3>
+                <p>يختارون منتجهم ويخصّصونه، أو يطلبون تصميمًا جاهزًا ليصلهم مطبوعًا.</p>
+              </li>
+              <li class="about-card">
+                <span class="about-card__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.5 7.2 14.6 8.6 8.4h6.8l1.4 6.2z" /><path d="M12 21.5v-8.2" /><circle cx="12" cy="12.2" r="1.3" /><rect x="4.6" y="3.4" width="2.8" height="2.8" rx=".5" /><rect x="16.6" y="3.4" width="2.8" height="2.8" rx=".5" /><path d="M7.4 4.8h9.2M8.6 8.4 6.6 6.2M15.4 8.4l2-2.2" /></svg>
+                </span>
+                <h3>المصممون</h3>
+                <p>يعرضون إبداعهم ويبيعونه على منتجات متنوعة، دون مخزون أو معدات.</p>
+              </li>
+              <li class="about-card">
+                <span class="about-card__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V3.5h10V9" /><rect x="3.5" y="9" width="17" height="8" rx="2" /><path d="M7 14h10v6.5H7z" /></svg>
+                </span>
+                <h3>المطابع</h3>
+                <p>تستقبل طلبات جاهزة للتنفيذ وتحوّل الأفكار إلى منتجات مطبوعة بجودة واحترافية.</p>
+              </li>
+            </ul>
+            <a class="about-us__button" href="#how-it-works">
+              <span>تعرّف على PalPrints</span>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12H4m6-6-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </a>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer class="home-footer" aria-label="تذييل الموقع">
       <div class="home-footer__inner">
         <div class="home-footer__content">
-          <section class="home-footer__brand" id="about-palprints" aria-label="عن PALPRINTS">
+          <section class="home-footer__brand" aria-label="عن PALPRINTS">
             <a class="home-footer__wordmark" href="{{ route('home') }}" aria-label="PALPRINTS - الصفحة الرئيسية">
               <img src="{{ asset('front/home/images/palprints-wordmark-approved.png') }}" alt="PALPRINTS" />
             </a>
@@ -294,5 +337,6 @@
     </footer>
 
     <script src="{{ asset('front/home/js/home.js') }}?v={{ filemtime(public_path('front/home/js/home.js')) }}"></script>
+  @include('partials.page-loader')
   </body>
 </html>

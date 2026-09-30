@@ -49,5 +49,6 @@
     <script src="{{ asset('front/js/customer/storefront.js') }}?v={{ filemtime(public_path('front/js/customer/storefront.js')) }}"></script>
     <script src="{{ asset('front/shared/interactions.js') }}?v={{ filemtime(public_path('front/shared/interactions.js')) }}"></script>
     @stack('scripts')
+@include('partials.page-loader', ['wait' => View::hasSection('page-loader-wait')])
 </body>
 </html>

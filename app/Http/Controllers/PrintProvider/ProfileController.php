@@ -19,9 +19,22 @@ class ProfileController extends Controller
 {
     private const DAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
+    /** Services a print shop can offer, chosen from this list (plus its own "other" entries). */
+    private const SERVICE_OPTIONS = [
+        'tshirts' => 'طباعة التيشيرتات',
+        'hoodies' => 'طباعة الهوديز',
+        'mugs' => 'طباعة الأكواب',
+        'stickers' => 'طباعة الستيكرات',
+        'paper' => 'طباعة الأوراق والمطبوعات',
+        'posters' => 'طباعة البوسترات',
+        'bags' => 'طباعة الحقائب القماشية',
+        'phone_cases' => 'طباعة أغطية الجوال',
+        'rush' => 'طباعة مستعجلة',
+        'delivery' => 'التوصيل للعميل',
+    ];
+
     /** Required verification documents: print_providers column => label. */
     private const DOCUMENT_LABELS = [
-        'license_document' => 'رخصة المطبعة',
         'verification_document' => 'وثيقة التحقق',
         'id_document' => 'صورة الهوية',
     ];
@@ -59,6 +72,9 @@ class ProfileController extends Controller
                 'to' => '20:00',
             ], $provider->working_hours ?? []),
             'allDays' => self::DAYS,
+            'hasServices' => Schema::hasColumn('print_providers', 'services'),
+            'serviceOptions' => self::SERVICE_OPTIONS,
+            'hasContactEmail' => Schema::hasColumn('print_providers', 'contact_email'),
             'documentLabels' => self::DOCUMENT_LABELS,
             'documentFields' => array_keys(self::documentFields()),
             'approvalStatus' => $provider->approval_status ?? 'draft',
@@ -95,6 +111,7 @@ class ProfileController extends Controller
         $request->merge([
             'contact_name' => trim((string) $request->input('contact_name')),
             'email' => Str::lower(trim((string) $request->input('email'))),
+            'contact_email' => Str::lower(trim((string) $request->input('contact_email'))) ?: null,
             'company_name' => trim((string) $request->input('company_name')),
         ]);
 
@@ -107,6 +124,13 @@ class ProfileController extends Controller
             'phone' => ['required', 'string', 'max:30'],
             'owner_phone' => ['required', 'string', 'max:30'],
             'whatsapp_number' => ['nullable', 'string', 'max:30'],
+            'services' => ['nullable', 'array'],
+            'services.*' => ['string', Rule::in(array_keys(self::SERVICE_OPTIONS))],
+            'other_services' => ['nullable', 'string', 'max:500'],
+            // Only accepted once the contact_email column exists in the schema.
+            'contact_email' => Schema::hasColumn('print_providers', 'contact_email')
+                ? ['nullable', 'email', 'max:255']
+                : ['prohibited'],
             'address' => ['required', 'string', 'max:1000'],
             ...array_map(
                 fn () => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
@@ -161,7 +185,20 @@ class ProfileController extends Controller
                     $documents[$field] = $newPaths[$field] ?? $oldPaths[$field];
                 }
 
-                $user->printProvider()->updateOrCreate(['user_id' => $user->id], $documents + [
+                $contactEmail = Schema::hasColumn('print_providers', 'contact_email')
+                    ? ['contact_email' => $validated['contact_email'] ?? null]
+                    : [];
+
+                $services = Schema::hasColumn('print_providers', 'services')
+                    ? ['services' => [
+                        'selected' => array_values($validated['services'] ?? []),
+                        'other' => collect(preg_split('/[,،\n]+/u', (string) ($validated['other_services'] ?? '')))
+                            ->map(fn ($item) => Str::limit(trim((string) $item), 60, ''))
+                            ->filter()->unique()->take(10)->values()->all(),
+                    ]]
+                    : [];
+
+                $user->printProvider()->updateOrCreate(['user_id' => $user->id], $documents + $contactEmail + $services + [
                     'company_name' => $validated['company_name'],
                     'phone' => $validated['phone'],
                     'whatsapp_number' => $validated['whatsapp_number'] ?? null,

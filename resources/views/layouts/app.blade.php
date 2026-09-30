@@ -32,5 +32,6 @@
                 {{ $slot }}
             </main>
         </div>
+    @include('partials.page-loader')
     </body>
 </html>

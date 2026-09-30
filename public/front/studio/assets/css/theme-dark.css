@@ -1,0 +1,522 @@
+/* PalPrints shared dark theme — loaded after every page stylesheet. */
+html[data-bs-theme="dark"] {
+  color-scheme: dark;
+  --background: #101214;
+  --background-color: #101214;
+  --body-bg: #101214;
+  --bg: #101214;
+  --page-bg: #101214;
+  --surface: #15181c;
+  --surface-color: #15181c;
+  --card-bg: #1c2025;
+  --card-background: #1c2025;
+  --soft: #23282e;
+  --primary-light: #17152a;
+  --secondary-light: #241814;
+  --text-primary: #f5f5f7;
+  --text-secondary: #b7b7c0;
+  --text-muted: #92929d;
+  --text-disabled: #6f6f78;
+  --border: #3b424b;
+  --border-color: #3b424b;
+  --divider: #30363d;
+
+  /* Common PalPrints aliases used by the separate page systems. */
+  --pp-bg: #101214;
+  --pp-surface: #15181c;
+  --pp-card: #1c2025;
+  --pp-navy-50: #1c2025;
+  --pp-navy-100: #23282e;
+  --pp-navy-200: #3b424b;
+  --pp-navy-300: #4a535e;
+  --pp-navy-500: #9ca7bd;
+  --pp-navy-700: #dce2ef;
+  --pp-navy-800: #edf1f8;
+  --pp-navy-900: #f7f9fc;
+  --profile-bg: #101214;
+  --profile-body: #101214;
+  --profile-surface: #15181c;
+  --profile-soft: #1c2025;
+  --profile-soft-strong: #23282e;
+  --profile-border: #3b424b;
+  --profile-border-strong: #4a535e;
+  --profile-text: #f4f6ff;
+  --profile-secondary: #c5cada;
+  --profile-muted: #8f96ad;
+}
+
+html[data-bs-theme="dark"],
+html[data-bs-theme="dark"] body {
+  background-color: #101214 !important;
+  color: #f5f5f7;
+}
+
+html[data-bs-theme="dark"] body::before,
+html[data-bs-theme="dark"] body::after {
+  opacity: 0.18;
+}
+
+html[data-bs-theme="dark"] :where(
+  header,
+  nav,
+  aside,
+  footer,
+  .navbar,
+  .topbar,
+  .top-bar,
+  .page-header,
+  .main-header,
+  .sidebar,
+  [class*="sidebar"],
+  [class*="-card"],
+  [class*="__card"],
+  [class*="panel"],
+  [class*="modal-content"],
+  [class*="dropdown-menu"],
+  [class*="summary"]
+) {
+  border-color: #3b424b;
+}
+
+html[data-bs-theme="dark"] :where(
+  .navbar,
+  .topbar,
+  .top-bar,
+  .main-header,
+  .page-header,
+  .wallet-sidebar,
+  .admin-sidebar,
+  .profile-sidebar,
+  .designer-sidebar,
+  .dashboard-sidebar,
+  .data-card,
+  .stat-card,
+  .stats-card,
+  .metric-card,
+  .summary-card,
+  .settings-panel,
+  .support-panel,
+  .modal-content,
+  .dropdown-menu,
+  .basket-card,
+  .trend-card
+) {
+  background-color: #15181c !important;
+  box-shadow: 0 14px 38px rgb(0 0 0 / 32%);
+}
+
+/* Give standalone page cards a consistent near-black surface, including pages
+   that predate the shared theme variables. */
+html[data-bs-theme="dark"] :where(
+  [class$="-card"],
+  [class*="-card "],
+  [class$="__card"],
+  [class*="__card "],
+  [class$="-panel"],
+  [class*="-panel "]
+) {
+  background-color: #1c2025 !important;
+  border-color: #3b424b !important;
+}
+
+html[data-bs-theme="dark"] :where(
+  h1, h2, h3, h4, h5, h6,
+  strong,
+  legend,
+  label,
+  th,
+  .title,
+  [class*="title"],
+  [class*="heading"]
+) {
+  color: #f5f5f7;
+}
+
+html[data-bs-theme="dark"] :where(
+  p,
+  small,
+  td,
+  .subtitle,
+  [class*="description"],
+  [class*="muted"],
+  [class*="hint"]
+) {
+  border-color: #3b424b;
+}
+
+html[data-bs-theme="dark"] :where(input, select, textarea) {
+  color: #f5f5f7 !important;
+  background-color: #1c2025 !important;
+  border-color: #4a535e !important;
+  caret-color: #8b8fff;
+}
+
+html[data-bs-theme="dark"] :where(input, textarea)::placeholder {
+  color: #777781 !important;
+  opacity: 1;
+}
+
+html[data-bs-theme="dark"] :where(input, select, textarea):focus {
+  border-color: #7075ff !important;
+  box-shadow: 0 0 0 3px rgb(91 95 239 / 24%) !important;
+  outline: none;
+}
+
+html[data-bs-theme="dark"] .settings-page .profile-input-shell {
+  background: #1c242c !important;
+  border-color: #43515e !important;
+}
+
+/* Settings reference palette: dark graphite-navy with a subtle cool glow. */
+html[data-bs-theme="dark"] .settings-page {
+  --settings-text: #f2f5f8;
+  --settings-body: #d2d9e1;
+  --settings-muted: #94a3b2;
+  --settings-border: #3b424b;
+  --settings-surface: #1c2025;
+  --settings-muted-surface: #23282e;
+  --settings-soft: #20262d;
+}
+
+html[data-bs-theme="dark"] body.settings-page {
+  background:
+    radial-gradient(circle at 18% 0%, rgb(130 138 146 / 8%), transparent 34rem),
+    linear-gradient(135deg, #161a1e 0%, #101214 58%, #13171a 100%) !important;
+}
+
+html[data-bs-theme="dark"] .settings-page :where(.profile-sidebar, .profile-topbar) {
+  background-color: #15181c !important;
+  border-color: #30363d !important;
+}
+
+html[data-bs-theme="dark"] .settings-page .settings-panel {
+  background:
+    linear-gradient(135deg, #202932 0%, #181f26 100%) !important;
+  border-color: #35414b !important;
+  box-shadow: 0 18px 44px rgb(0 0 0 / 20%);
+}
+
+html[data-bs-theme="dark"] .settings-page .settings-section-head > span:not(.is-danger) {
+  color: #5da2ff;
+  background: #263342;
+  border: 1px solid #344554;
+  box-shadow: none;
+}
+
+html[data-bs-theme="dark"] .settings-page .profile-input-shell:hover,
+html[data-bs-theme="dark"] .settings-page .profile-input-shell:focus-within {
+  border-color: #5da2ff !important;
+  box-shadow: none !important;
+}
+
+html[data-bs-theme="dark"] .settings-page .profile-input-shell :where(input, select, textarea):focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+html[data-bs-theme="dark"] :where(option, optgroup) {
+  color: #f5f5f7;
+  background: #1c2025;
+}
+
+html[data-bs-theme="dark"] :where(table, thead, tbody, tr, th, td) {
+  border-color: #3b424b !important;
+}
+
+html[data-bs-theme="dark"] :where(th, thead tr) {
+  background-color: #23282e !important;
+}
+
+html[data-bs-theme="dark"] tbody tr:hover {
+  background-color: #151519 !important;
+}
+
+html[data-bs-theme="dark"] :where(hr, .divider, [class*="divider"]) {
+  border-color: #3b424b !important;
+  background-color: #3b424b;
+}
+
+html[data-bs-theme="dark"] :where(dialog, [role="dialog"], .modal, .overlay) {
+  color: #f5f5f7;
+}
+
+html[data-bs-theme="dark"] :where(.icon-btn, .theme-toggle-btn, .hamburger, .remove-item) {
+  color: #ededf1;
+  background-color: #1c2025;
+  border-color: #4a535e;
+}
+
+/* Settings navigation keeps the same flat geometry as the light theme. */
+html[data-bs-theme="dark"] .settings-tabs {
+  gap: 0;
+  padding: 0;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+html[data-bs-theme="dark"] .settings-tab {
+  min-height: 52px;
+  color: #b9b9c3 !important;
+  background: transparent;
+  border: 0 !important;
+  border-inline-end: 1px solid #3b424b !important;
+  border-radius: 0;
+}
+
+html[data-bs-theme="dark"] .settings-tab:last-child {
+  border-inline-end: 0 !important;
+}
+
+html[data-bs-theme="dark"] .settings-page .settings-tab:hover {
+  color: #f2f2f5 !important;
+  background: transparent;
+}
+
+html[data-bs-theme="dark"] .settings-tab i {
+  color: #90909b !important;
+}
+
+html[data-bs-theme="dark"] .settings-tab.active {
+  color: #5da2ff !important;
+  background: transparent;
+  box-shadow: none;
+}
+
+html[data-bs-theme="dark"] .settings-tab.active i {
+  color: #5da2ff !important;
+}
+
+html[data-bs-theme="dark"] .settings-tab::after {
+  inset-inline: 18px;
+  bottom: 0;
+  height: 3px;
+}
+
+html[data-bs-theme="dark"] .settings-tab.active::after {
+  background: #1677ff;
+  box-shadow: none;
+}
+
+html[data-bs-theme="dark"] .settings-tab.is-danger:not(.active),
+html[data-bs-theme="dark"] .settings-tab.is-danger:not(.active) i {
+  color: #ff6876 !important;
+}
+
+html[data-bs-theme="dark"] .settings-tab.is-danger:hover {
+  background: transparent;
+}
+
+html[data-bs-theme="dark"] .settings-section-head > span.is-danger {
+  color: #ff6673;
+  background: #251216;
+  border: 1px solid #5a252d;
+  box-shadow: none;
+}
+
+html[data-bs-theme="dark"] .settings-section-head > span.is-danger i {
+  color: inherit;
+}
+
+/* Printing earnings page: align the legacy wallet UI with the shared theme. */
+html[data-bs-theme="dark"] body.printing-earnings-page {
+  --navy: #f2f5f8;
+  --text: #cbd3dc;
+  --muted: #8f9ba8;
+  --border: #35414b;
+  --soft: #181f26;
+  color: var(--text);
+  background: #101214 !important;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page :where(.topbar, .wallet-sidebar) {
+  background: rgb(21 24 28 / 96%) !important;
+  border-color: #30363d !important;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .topbar {
+  box-shadow: 0 1px 0 rgb(255 255 255 / 3%);
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .header-logo img {
+  filter: brightness(0) invert(1);
+  opacity: 0.94;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page :where(.search-box, .account-dropdown, .notification-dropdown) {
+  color: var(--text);
+  background: #1c2025 !important;
+  border-color: #3b424b !important;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page :where(.account-dropdown, .notification-dropdown)::before {
+  background: #1c2025;
+  border-color: #3b424b;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .period-options button:not(.active) {
+  color: #cbd3dc;
+  background: #1c2025;
+  border-color: #3b424b;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .period-options button:not(.active):hover {
+  color: #fff;
+  background: #26313b;
+  border-color: #526578;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page :where(.data-card, .summary-card) {
+  background: linear-gradient(135deg, #202932 0%, #181f26 100%) !important;
+  border-color: #35414b !important;
+  box-shadow: 0 18px 44px rgb(0 0 0 / 18%);
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .data-card > header {
+  background: rgb(255 255 255 / 1.5%);
+  border-color: #35414b;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page :where(table, thead, tbody, tr, th, td) {
+  border-color: #35414b !important;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page :where(th, thead tr) {
+  color: #d8dee6;
+  background: #242c34 !important;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page tbody tr {
+  background: transparent;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page tbody tr:hover {
+  background: #252e37 !important;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page :where(.money.dark, .withdrawal-detail) {
+  color: #cbd3dc;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page :where(.heading-icon, .summary-card .card-icon) {
+  border: 1px solid rgb(93 162 255 / 22%);
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .heading-icon {
+  color: #5da2ff !important;
+  background: #1b2835 !important;
+  border-color: #30475c !important;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .heading-icon i {
+  color: inherit !important;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .summary-card h2 {
+  color: #dce2e8;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .summary-card small {
+  color: #96a2ad;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .summary-card.total .card-icon {
+  color: #5ee09a;
+  background: #163126 !important;
+  border-color: #285341 !important;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .summary-card.available .card-icon {
+  color: #69aaff;
+  background: #172d4a !important;
+  border-color: #285286 !important;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .summary-card.pending .card-icon {
+  color: #ffad5c;
+  background: #382718 !important;
+  border-color: #684526 !important;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .summary-card.total strong {
+  color: #f2f5f8;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .summary-card.available :where(h2, strong) {
+  color: #69aaff;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page .summary-card.pending :where(h2, strong) {
+  color: #ff9a3d;
+}
+
+html[data-bs-theme="dark"] .printing-earnings-page :where(.withdraw-dialog, .withdraw-dialog form, .method-card, .payout-account-field, .amount-field) {
+  color: var(--text);
+  background: #1c2025 !important;
+  border-color: #3b424b !important;
+}
+
+html[data-bs-theme="dark"] :where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid #8185ff;
+  outline-offset: 3px;
+}
+
+/* Settings fields use the blue border itself as the focus indicator. */
+html[data-bs-theme="dark"] .settings-page .profile-input-shell,
+html[data-bs-theme="dark"] .settings-page .profile-input-shell:hover,
+html[data-bs-theme="dark"] .settings-page .profile-input-shell:focus,
+html[data-bs-theme="dark"] .settings-page .profile-input-shell:focus-within,
+html[data-bs-theme="dark"] .settings-page .profile-input-shell :where(input, select, textarea),
+html[data-bs-theme="dark"] .settings-page .profile-input-shell :where(input, select, textarea):focus,
+html[data-bs-theme="dark"] .settings-page .profile-input-shell :where(input, select, textarea):focus-visible {
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  filter: none !important;
+  outline: none !important;
+}
+
+html[data-bs-theme="dark"] .settings-page .profile-input-shell :where(input, select, textarea) {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+html[data-bs-theme="dark"] .settings-page .profile-input-shell::before,
+html[data-bs-theme="dark"] .settings-page .profile-input-shell::after {
+  box-shadow: none !important;
+}
+
+html[data-bs-theme="dark"] ::selection {
+  color: #fff;
+  background: #5b5fef;
+}
+
+html[data-bs-theme="dark"] {
+  scrollbar-color: #59636f #101214;
+  scrollbar-width: thin;
+}
+
+html[data-bs-theme="dark"] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html[data-bs-theme="dark"] ::-webkit-scrollbar-track {
+  background: #101214;
+}
+
+html[data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #59636f;
+  border: 2px solid #101214;
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-bs-theme="dark"] *,
+  html[data-bs-theme="dark"] *::before,
+  html[data-bs-theme="dark"] *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -123,3 +123,29 @@ body.sidebar-collapsed .wallet-shell{margin-right:0}
 .section-reveal.is-visible{opacity:1;transform:translateY(0);transition-delay:var(--reveal-delay,0ms)}
 @media(prefers-reduced-motion:reduce){.section-reveal{opacity:1;transform:none;transition:none}}
 @media(max-width:700px){.withdraw-methods{grid-template-columns:1fr}.withdraw-methods .method-card{min-height:82px}}
+
+.wallet-sidebar-divider{flex:0 0 auto;height:1px;margin:4px 10px;background:var(--border)}
+
+/* Collapsed sidebar on desktop: icon-only rail, like the designer pages. */
+@media(min-width:761px){
+  .wallet-sidebar{transition:width .3s ease,transform .22s ease}
+  body.sidebar-collapsed .wallet-sidebar{width:72px;transform:none}
+  body.sidebar-collapsed .wallet-shell{margin-right:72px}
+  body.sidebar-collapsed .wallet-sidebar nav{padding-inline:10px}
+  body.sidebar-collapsed .wallet-sidebar nav a,
+  body.sidebar-collapsed .logout{justify-content:center;gap:0;padding-inline:0}
+  body.sidebar-collapsed .wallet-sidebar nav a span,
+  body.sidebar-collapsed .logout span{display:none}
+  body.sidebar-collapsed .wallet-sidebar nav a i,
+  body.sidebar-collapsed .logout i{width:24px;font-size:20px}
+  body.sidebar-collapsed .wallet-sidebar-divider{margin-inline:4px}
+  body.sidebar-collapsed .wallet-shell,
+  .wallet-shell{transition:margin-right .3s ease}
+}
+
+/* Logout: icon stays red and centered in the collapsed rail. */
+.wallet-sidebar .logout i{color:#dc2626}
+@media(min-width:761px){
+  body.sidebar-collapsed .wallet-sidebar #printProviderLogoutForm{display:flex;justify-content:center;margin-top:auto}
+  body.sidebar-collapsed .wallet-sidebar .logout{width:48px;margin:0 0 18px;padding:0;justify-content:center}
+}

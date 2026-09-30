@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\PrintProvider;
+use App\Support\OrderNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -101,6 +102,10 @@ class OrderController extends Controller
                 ]);
             }
         });
+
+        if ($record->status !== $changes['status'] && $record->user_id) {
+            OrderNotifier::statusChanged((int) $record->user_id, (string) $record->order_number, $changes['status']);
+        }
 
         AuditLog::create([
             'user_id' => $request->user()->id,

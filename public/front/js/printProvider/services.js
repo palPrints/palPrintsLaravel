@@ -55,6 +55,12 @@
     function icon(name) { const node = element("i", "bi bi-" + name); node.setAttribute("aria-hidden", "true"); return node; }
     function definition(id) { return catalog.find(function (product) { return product.id === id; }); }
     function copy(value) { return JSON.parse(JSON.stringify(value)); }
+    function closeDropdowns() {
+      ["accountDropdown", "notificationDropdown"].forEach(function (id) {
+        const popup = document.getElementById(id);
+        if (popup) { popup.hidden = true; popup.classList.remove("open"); }
+      });
+    }
 
     function defaults(product) {
       return Object.assign({ active: true, categories: product.categories.slice(), sizes: product.sizes.slice(), colors: product.colors.map(function (color) { return color.id; }) }, copy(product.defaults));

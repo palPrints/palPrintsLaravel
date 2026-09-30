@@ -79,5 +79,20 @@ class AppServiceProvider extends ServiceProvider
                 'customerCartCount' => $cartItems->sum('quantity'),
             ]);
         });
+
+        // Links used by resources/views/errors/*. Wrapped so a broken session/route never turns an error page into a second error.
+        View::composer(['errors.*', 'errors::*'], function ($view): void {
+            $homeUrl = url('/');
+            try {
+                $user = Auth::user();
+                $storeUrl = $user && ! $user->hasRole('customer') ? route('dashboard') : route('customer.store');
+                $supportUrl = $user && $user->hasRole('customer') ? route('customer.support') : route('login');
+                $loginUrl = route('login');
+            } catch (\Throwable) {
+                $storeUrl = $supportUrl = $loginUrl = $homeUrl;
+            }
+
+            $view->with(compact('homeUrl', 'storeUrl', 'supportUrl', 'loginUrl'));
+        });
     }
 }

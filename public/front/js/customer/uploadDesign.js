@@ -11,7 +11,10 @@
   const empty = document.getElementById("uploadDesignEmpty");
   const status = document.getElementById("uploadDesignStatus");
   const reset = document.getElementById("uploadDesignReset");
+  const done = document.getElementById("uploadDesignDone");
+  const assets = window.palPrintsCustomerAssets || {};
   let objectUrl = null;
+  let currentFile = null;
 
   function setStatus(message, type) {
     status.textContent = message;
@@ -27,6 +30,8 @@
     empty.hidden = false;
     reset.hidden = true;
     input.value = "";
+    currentFile = null;
+    done.textContent = "إغلاق";
   }
 
   function useFile(file) {
@@ -47,6 +52,8 @@
       preview.hidden = false;
       empty.hidden = true;
       reset.hidden = false;
+      currentFile = file;
+      done.textContent = assets.chooseProductUrl ? "اختيار المنتج" : "إغلاق";
       setStatus("تم اختيار " + file.name, "success");
     };
     probe.onerror = function () {
@@ -62,8 +69,33 @@
     else dialog.setAttribute("open", "");
   });
 
-  ["uploadDesignClose", "uploadDesignDone"].forEach(function (id) {
-    document.getElementById(id).addEventListener("click", function () { dialog.close(); });
+  document.getElementById("uploadDesignClose").addEventListener("click", function () { dialog.close(); });
+
+  /* Keeps the chosen image for the next pages (IndexedDB handles large files that
+     sessionStorage cannot), then continues to the product picker. */
+  function keepImage(file) {
+    return new Promise(function (resolve, reject) {
+      const request = indexedDB.open("palprintsUploads", 1);
+      request.onupgradeneeded = function () { request.result.createObjectStore("files"); };
+      request.onerror = function () { reject(request.error); };
+      request.onsuccess = function () {
+        const put = request.result.transaction("files", "readwrite").objectStore("files").put(file, "pending");
+        put.onsuccess = resolve;
+        put.onerror = function () { reject(put.error); };
+      };
+    });
+  }
+
+  done.addEventListener("click", function () {
+    if (!currentFile || !assets.chooseProductUrl) { dialog.close(); return; }
+    done.disabled = true;
+    setStatus("جارٍ تجهيز الصورة…", "");
+    keepImage(currentFile).then(function () {
+      window.location.href = assets.chooseProductUrl;
+    }).catch(function () {
+      done.disabled = false;
+      setStatus("تعذّر حفظ الصورة على هذا المتصفح. حاول مرة أخرى.", "error");
+    });
   });
 
   dialog.addEventListener("click", function (event) {
