@@ -6,6 +6,8 @@
       'description' => 'تسجيل الدخول إلى منصة PalPrints للطباعة حسب الطلب',
       'css' => 'login-system',
   ])
+  <link rel="stylesheet" href="{{ asset('front/shared/theme-dark.css') }}?v={{ filemtime(public_path('front/shared/theme-dark.css')) }}">
+  <script src="{{ asset('front/shared/theme-dark.js') }}?v={{ filemtime(public_path('front/shared/theme-dark.js')) }}"></script>
 </head>
 
 <body class="login-page">
@@ -76,6 +78,7 @@
                 name="password"
                 placeholder="أدخل كلمة المرور"
                 autocomplete="current-password"
+                minlength="6"
                 required
                 aria-describedby="passwordError"
                 @error('password') aria-invalid="true" @enderror
@@ -116,10 +119,6 @@
 
           <p @class(['form-status', 'is-error' => $formIsError, 'is-success' => ! $formIsError && $formMessage]) id="formStatus" role="{{ $formIsError ? 'alert' : 'status' }}" aria-live="polite">{{ $formMessage }}</p>
 
-          <p class="auth-footer">
-            <i class="bi bi-shield-check" aria-hidden="true"></i>
-            اتصال آمن · جميع عمليات الدخول مسجلة
-          </p>
         </form>
       </div>
     </section>

@@ -15,16 +15,12 @@
             <header class="page-header">
                 <h1 id="page-title">اختر المنتج</h1>
 
-                <button type="button" class="back-button" id="backButton" aria-label="العودة إلى الصفحة السابقة">
-                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
-                </button>
             </header>
 
             <div class="page-content">
                 <section class="products-section" aria-labelledby="products-heading">
                     <h2 id="products-heading" class="sr-only">المنتجات</h2>
 
-                    <nav class="categories" id="categoriesContainer" aria-label="تصنيفات المنتجات"></nav>
 
                     <div class="products-grid" id="productsGrid" aria-live="polite"></div>
                 </section>

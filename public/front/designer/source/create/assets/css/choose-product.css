@@ -11,36 +11,35 @@
 
 :root {
 
-    --color-navy: #142d70;
-    --color-navy-dark: #101f5b;
+    --color-navy: #0b1f3a;
+    --color-navy-dark: #0b1f3a;
 
-    --color-blue: #287ed4;
-    --color-cyan: #19c8d7;
+    --color-blue: #1677ff;
+    --color-primary: #1677ff;
+    --color-primary-hover: #0a68eb;
+    --color-primary-soft: #eff6ff;
 
-    --color-purple: #7b35e8;
-    --color-purple-light: #f7f2ff;
-
-    --color-background: #f8f9fd;
+    --color-background: #f7fafd;
 
     --color-white: #ffffff;
 
-    --color-border: #e6e8f0;
-    --color-border-dark: #dfe2ec;
+    --color-border: #dfe8f3;
+    --color-border-dark: #dfe8f3;
 
-    --color-text: #16245e;
-    --color-text-light: #6d7182;
+    --color-text: #2c405c;
+    --color-text-light: #5b7394;
 
-    --color-error: #c62828;
+    --color-error: #dc2626;
 
-    --radius-small: 10px;
-    --radius-medium: 14px;
-    --radius-large: 20px;
+    --radius-small: 8px;
+    --radius-medium: 12px;
+    --radius-large: 16px;
 
     --shadow-card:
-        0 4px 18px rgba(20, 45, 112, 0.07);
+        0 4px 18px rgba(11, 31, 58, 0.07);
 
     --shadow-hover:
-        0 10px 28px rgba(20, 45, 112, 0.12);
+        0 10px 28px rgba(11, 31, 58, 0.12);
 
     --transition:
         180ms ease;
@@ -155,13 +154,13 @@ legend {
 
     overflow: hidden;
 
-    background: var(--color-white);
+    background: transparent;
 
-    border: 1px solid var(--color-border);
+    border: 0;
 
-    border-radius: 18px;
+    border-radius: 0;
 
-    box-shadow: var(--shadow-card);
+    box-shadow: none;
 }
 
 
@@ -183,11 +182,9 @@ legend {
     padding:
         18px 22px;
 
-    background:
-        linear-gradient(110deg, #ffffff 0%, #f8fbfa 100%);
+    background: transparent;
 
-    border-bottom:
-        1px solid var(--color-border);
+    border-bottom: 0;
 }
 
 
@@ -234,9 +231,9 @@ legend {
 
 
 .back-button:hover {
-    border-color: var(--color-purple);
+    border-color: var(--color-primary);
 
-    background: #faf8ff;
+    background: var(--color-primary-soft);
 }
 
 
@@ -246,7 +243,7 @@ legend {
 
 
 .back-button:focus-visible {
-    outline: 3px solid rgba(123, 53, 232, 0.25);
+    outline: 3px solid rgba(22, 119, 255, 0.25);
 
     outline-offset: 3px;
 }
@@ -335,14 +332,14 @@ legend {
 
 
 .category-button:hover {
-    border-color: var(--color-purple);
+    border-color: var(--color-primary);
 
-    background: #fbfaff;
+    background: var(--color-primary-soft);
 }
 
 
 .category-button:focus-visible {
-    outline: 3px solid rgba(123, 53, 232, 0.25);
+    outline: 3px solid rgba(22, 119, 255, 0.25);
 
     outline-offset: 3px;
 }
@@ -354,13 +351,10 @@ legend {
 
     border-color: transparent;
 
-    background:
-        linear-gradient(90deg,
-            var(--color-cyan),
-            var(--color-purple));
+    background: var(--color-primary);
 
     box-shadow:
-        0 4px 12px rgba(123, 53, 232, 0.18);
+        0 4px 12px rgba(22, 119, 255, 0.18);
 }
 
 
@@ -392,9 +386,9 @@ legend {
     background: var(--color-white);
 
     border:
-        1px solid #eceef5;
+        1px solid var(--color-border);
 
-    border-radius: 14px;
+    border-radius: var(--radius-large);
 
     box-shadow: var(--shadow-card);
 
@@ -415,10 +409,10 @@ legend {
 
 .product-card.selected {
 
-    border-color: var(--color-purple);
+    border-color: var(--color-primary);
 
     box-shadow:
-        0 0 0 2px rgba(123, 53, 232, 0.08),
+        0 0 0 2px rgba(22, 119, 255, 0.08),
         var(--shadow-hover);
 }
 
@@ -442,7 +436,7 @@ legend {
 .product-card-button:focus-visible {
 
     outline:
-        3px solid rgba(123, 53, 232, 0.28);
+        3px solid rgba(22, 119, 255, 0.28);
 
     outline-offset: -3px;
 }
@@ -466,7 +460,7 @@ legend {
 
     padding: 14px;
 
-    background: #fbfbfe;
+    background: #f7fafd;
 }
 
 
@@ -506,7 +500,7 @@ legend {
 
     margin: 0;
 
-    color: var(--color-text);
+    color: var(--color-navy);
 
     font-size: 15px;
 
@@ -519,7 +513,7 @@ legend {
     margin:
         4px 0 0;
 
-    color: var(--color-purple);
+    color: var(--color-primary-hover);
 
     font-size: 15px;
 
@@ -549,7 +543,7 @@ legend {
 
     color: white;
 
-    background: var(--color-purple);
+    background: var(--color-primary);
 
     border-radius: 50%;
 
@@ -633,7 +627,7 @@ legend {
 
     overflow: hidden;
 
-    background: #f7f6ff;
+    background: var(--color-primary-soft);
 
     border-radius: 12px;
 }
@@ -661,7 +655,7 @@ legend {
 
     gap: 8px;
 
-    color: #888da0;
+    color: var(--color-text-light);
 
     font-size: 14px;
 }
@@ -781,14 +775,14 @@ legend {
 .color-option:has(input:checked) {
 
     border-color:
-        var(--color-purple);
+        var(--color-primary);
 }
 
 
 .color-option:has(input:focus-visible) {
 
     outline:
-        3px solid rgba(123, 53, 232, 0.25);
+        3px solid rgba(22, 119, 255, 0.25);
 
     outline-offset: 3px;
 }
@@ -859,18 +853,18 @@ legend {
 
 .size-option input:checked+.size-label {
 
-    color: var(--color-purple);
+    color: var(--color-primary);
 
-    border-color: var(--color-purple);
+    border-color: var(--color-primary);
 
-    background: var(--color-purple-light);
+    background: var(--color-primary-soft);
 }
 
 
 .size-option input:focus-visible+.size-label {
 
     outline:
-        3px solid rgba(123, 53, 232, 0.25);
+        3px solid rgba(22, 119, 255, 0.25);
 
     outline-offset: 2px;
 }
@@ -983,18 +977,18 @@ legend {
 
 .print-area-option input:checked+.print-area-label {
 
-    color: var(--color-purple);
+    color: var(--color-primary);
 
-    border-color: var(--color-purple);
+    border-color: var(--color-primary);
 
-    background: var(--color-purple-light);
+    background: var(--color-primary-soft);
 }
 
 
 .print-area-option input:focus-visible+.print-area-label {
 
     outline:
-        3px solid rgba(123, 53, 232, 0.25);
+        3px solid rgba(22, 119, 255, 0.25);
 
     outline-offset: 2px;
 }
@@ -1048,10 +1042,7 @@ legend {
 
     color: white;
 
-    background:
-        linear-gradient(90deg,
-            var(--color-cyan),
-            var(--color-purple));
+    background: var(--color-primary);
 
     border: 0;
 
@@ -1074,7 +1065,7 @@ legend {
     filter: brightness(1.05);
 
     box-shadow:
-        0 8px 18px rgba(123, 53, 232, 0.22);
+        0 8px 18px rgba(22, 119, 255, 0.22);
 }
 
 
@@ -1091,14 +1082,14 @@ legend {
     filter: brightness(0.96);
 
     box-shadow:
-        0 3px 8px rgba(123, 53, 232, 0.16);
+        0 3px 8px rgba(22, 119, 255, 0.16);
 }
 
 
 .start-design-button:focus-visible {
 
     outline:
-        3px solid rgba(123, 53, 232, 0.3);
+        3px solid rgba(22, 119, 255, 0.3);
 
     outline-offset: 3px;
 }

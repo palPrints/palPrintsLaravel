@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Design;
+use App\Models\BranchProductOffering;
 use App\Models\PrintFile;
 use App\Models\Product;
 use App\Models\Variant;
@@ -14,9 +15,11 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use ZipArchive;
 
 class CartController extends Controller
 {
@@ -34,6 +37,7 @@ class CartController extends Controller
                         'name' => $file->original_name,
                         'path' => $file->stored_path,
                         'size' => $file->file_size,
+                        'page_count' => $file->page_count,
                     ])
                     ->values()
                     ->all();
@@ -66,7 +70,7 @@ class CartController extends Controller
             'files.*' => ['file', 'mimes:pdf,jpg,jpeg,png,docx,pptx', 'max:51200'],
         ]);
 
-        $product = Product::where('code', 'PAPER-PRINT')->firstOrFail();
+        $product = Product::where('code', 'PAPER-PRINT')->where('is_active', true)->firstOrFail();
 
         $variant = Variant::where('product_id', $product->id)
             ->where('sku', 'like', '%-'.$validated['size'])
@@ -75,6 +79,22 @@ class CartController extends Controller
         if (! $variant) {
             throw ValidationException::withMessages([
                 'size' => 'حجم الورق غير متاح حالياً، حاول لاحقاً.',
+            ]);
+        }
+
+        $offering = BranchProductOffering::query()
+            ->where('product_id', $product->id)
+            ->where('is_active', true)
+            ->whereHas('printProviderBranch', fn ($query) => $query->where('is_active', true))
+            ->whereHas('branchOfferingVariants', fn ($query) => $query
+                ->where('variant_id', $variant->id)
+                ->where('is_available', true))
+            ->orderBy('base_price')
+            ->first();
+
+        if (! $offering) {
+            throw ValidationException::withMessages([
+                'size' => 'لا يوجد فرع مطبعة متاح لهذا الحجم حالياً.',
             ]);
         }
 
@@ -93,6 +113,8 @@ class CartController extends Controller
 
         $settings = array_merge($validated['settings'] ?? [], [
             'paper_size' => $validated['size'],
+            'branch_product_offering_id' => $offering->id,
+            'print_provider_branch_id' => $offering->print_provider_branch_id,
         ]);
 
         $item->fill([
@@ -105,6 +127,7 @@ class CartController extends Controller
 
         foreach ($request->file('files') as $file) {
             $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+            $pageCount = $this->detectPageCount($file, $extension);
             $filename = (string) Str::uuid().($extension ? '.'.$extension : '');
             $path = $file->storeAs('customer-print-files/tmp/'.$request->user()->id, $filename, 'local');
 
@@ -118,6 +141,7 @@ class CartController extends Controller
                 'mime_type' => $file->getClientMimeType(),
                 'extension' => $extension,
                 'file_size' => $file->getSize(),
+                'page_count' => $pageCount,
                 'status' => PrintFile::STATUS_ATTACHED_TO_CART,
                 'uploaded_at' => now(),
             ]);
@@ -253,6 +277,78 @@ class CartController extends Controller
         abort_unless($cartItem->cart->user_id === $request->user()->id, 403);
     }
 
+    private function detectPageCount(UploadedFile $file, string $extension): ?int
+    {
+        return match ($extension) {
+            'jpg', 'jpeg', 'png' => 1,
+            'pdf' => $this->countPdfPages($file->getRealPath()),
+            'pptx' => $this->countPresentationSlides($file->getRealPath()),
+            'docx' => $this->countDocumentPages($file->getRealPath()),
+            default => null,
+        };
+    }
+
+    private function countPdfPages(string|false $path): ?int
+    {
+        if (! $path || ! is_readable($path)) {
+            return null;
+        }
+
+        $contents = file_get_contents($path);
+        if ($contents === false) {
+            return null;
+        }
+
+        preg_match_all('/\/Type\s*\/Page\b/', $contents, $matches);
+
+        return count($matches[0]) ?: null;
+    }
+
+    private function countPresentationSlides(string|false $path): ?int
+    {
+        if (! $path || ! class_exists(ZipArchive::class)) {
+            return null;
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($path) !== true) {
+            return null;
+        }
+
+        $count = 0;
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            if (is_string($name) && preg_match('#^ppt/slides/slide\d+\.xml$#', $name)) {
+                $count++;
+            }
+        }
+        $zip->close();
+
+        return $count ?: null;
+    }
+
+    private function countDocumentPages(string|false $path): ?int
+    {
+        if (! $path || ! class_exists(ZipArchive::class)) {
+            return null;
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($path) !== true) {
+            return null;
+        }
+
+        $appXml = $zip->getFromName('docProps/app.xml');
+        $zip->close();
+
+        if (! is_string($appXml)) {
+            return null;
+        }
+
+        return preg_match('/<Pages>(\d+)<\/Pages>/', $appXml, $matches)
+            ? (int) $matches[1]
+            : null;
+    }
     private function deletePaperFilesForItem(CartItem $cartItem): void
     {
         $cartItem->loadMissing('printFiles');

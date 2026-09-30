@@ -62,6 +62,7 @@ class DesignController extends Controller
 
         $product = Product::query()
             ->where('is_active', true)
+            ->whereNotIn('code', CatalogProductData::NOT_DESIGNABLE)
             ->findOrFail((int) $validated['productId']);
 
         $status = $validated['status'] === 'submitted' ? 'review' : 'draft';

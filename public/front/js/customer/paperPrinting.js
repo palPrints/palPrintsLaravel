@@ -68,6 +68,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const supportedExtensions = ["pdf", "jpg", "jpeg", "png", "docx", "pptx"];
   const settingGroups = ["size", "paper", "color", "sides", "layout"];
+  const dbPaper = (window.palPrintsCustomerAssets && window.palPrintsCustomerAssets.paperPrinting) || {};
+  const dbPricing = dbPaper.pricing || {};
   const bindings = [
     { id: "spiral", icon: "bi-journal", price: 8 },
     { id: "clearCover", icon: "bi-file-earmark", price: 3 },
@@ -287,9 +289,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (state.overrideFileId && !state.files.some(function (file) { return file.id === state.overrideFileId; })) closeOverride();
   }
 
-  const optionValues = {
+  const defaultOptionValues = {
     size: ["A5", "A4"], paper: ["standard", "thick", "coated"], color: ["bw", "color"], sides: ["single", "double"], layout: ["1", "2", "4"]
   };
+  const optionValues = Object.assign({}, defaultOptionValues, (dbPaper.options && dbPaper.options.availableValues) || {});
   const optionTitles = { size: "paperSize", paper: "paperType", color: "printColor", sides: "printSides", layout: "pageLayout" };
 
   function openOverride(id) {
@@ -467,9 +470,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!settingGroups.every(function (key) { return settings[key]; })) return 0;
     const pagesPerSheet = Number(settings.layout) * (settings.sides === "double" ? 2 : 1);
     const sheets = Math.ceil(file.pages / pagesPerSheet);
-    const sheetBase = { A5: 0.12, A4: 0.2, A3: 0.42 }[settings.size];
-    const paperMultiplier = { standard: 1, thick: 1.55, coated: 2.1 }[settings.paper];
-    const ink = settings.color === "color" ? 0.42 : 0.09;
+    const sheetBase = (dbPricing.sheetBase || { A5: 0.12, A4: 0.2, A3: 0.42 })[settings.size] || 0.2;
+    const paperMultiplier = (dbPricing.paperMultiplier || { standard: 1, thick: 1.55, coated: 2.1 })[settings.paper] || 1;
+    const inkRates = dbPricing.ink || { bw: 0.09, color: 0.42 };
+    const ink = settings.color === "color" ? (inkRates.color || 0.42) : (inkRates.bw || 0.09);
     return (sheets * sheetBase * paperMultiplier) + (file.pages * ink);
   }
 
@@ -495,7 +499,9 @@ document.addEventListener("DOMContentLoaded", function () {
     let bindingCost = 0;
     if (state.grouping === "combined" && state.combinedBinding) bindingCost = bindingPrice(state.combinedBinding) * state.quantity;
     if (state.grouping === "separate") bindingCost = readyFiles().reduce(function (sum, file) { return sum + (bindingPrice(state.separateBindings[file.id]) * quantityFor(file)); }, 0);
-    const printTotal = lines.reduce(function (sum, line) { return sum + line.amount; }, 0);
+    const rawPrintTotal = lines.reduce(function (sum, line) { return sum + line.amount; }, 0);
+    const minimumPrintTotal = (Number(dbPricing.basePrice) || 0) + (Number(dbPricing.methodAddon) || 0);
+    const printTotal = Math.max(rawPrintTotal, minimumPrintTotal);
     return { lines: lines, printing: printTotal, binding: bindingCost, total: printTotal + bindingCost };
   }
 

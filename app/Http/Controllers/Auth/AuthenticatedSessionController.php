@@ -50,7 +50,7 @@ class AuthenticatedSessionController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        return redirect()->intended(route($user->dashboardRouteName(), absolute: false));
+        return redirect()->to($user->postLoginUrl($request));
     }
 
     public function destroy(Request $request): RedirectResponse

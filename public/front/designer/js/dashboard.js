@@ -252,23 +252,90 @@ document.addEventListener("DOMContentLoaded", function () {
     const salesMarker = document.getElementById("salesChartMarker");
     const caption = document.querySelector(".performance-panel .dashboard-panel-head p");
     let markerFrame = 0;
-    const series = {
-      week: {
-        sales: "M10 190 C90 188,105 160,150 168 S245 115,290 132 S380 145,430 108 S530 62,575 78 S660 52,710 36",
-        profit: "M10 207 C90 204,105 188,150 193 S245 153,290 166 S380 174,430 145 S530 104,575 118 S660 96,710 84",
-        label: "ملخص الأداء خلال آخر 7 أيام"
-      },
-      month: {
-        sales: "M10 185 C80 176,110 158,150 164 S240 130,290 138 S380 99,430 112 S520 70,575 82 S660 38,710 46",
-        profit: "M10 203 C80 196,110 185,150 190 S240 165,290 171 S380 139,430 148 S520 112,575 122 S660 86,710 94",
-        label: "ملخص الأداء خلال آخر 6 أشهر"
-      },
-      year: {
-        sales: "M10 202 C75 196,110 182,150 185 S235 158,290 165 S375 120,430 132 S520 86,575 96 S655 42,710 28",
-        profit: "M10 214 C75 210,110 199,150 202 S235 181,290 187 S375 154,430 162 S520 126,575 134 S655 92,710 78",
-        label: "ملخص الأداء خلال آخر 12 شهرًا"
+    const dataNode = document.getElementById("designerChartData");
+    let chartData = {};
+    try {
+      chartData = dataNode ? JSON.parse(dataNode.textContent) : {};
+    } catch (error) {
+      chartData = {};
+    }
+    const yAxis = document.getElementById("chartYAxis");
+    const monthsRow = document.getElementById("chartMonths");
+    const CHART = { left: 10, right: 710, top: 14, bottom: 218 };
+
+    function niceMax(value) {
+      if (value <= 0) return 100;
+      const magnitude = Math.pow(10, Math.floor(Math.log10(value)));
+      const step = [1, 2, 2.5, 5, 10].find(function (n) { return value <= n * magnitude; });
+      return step * magnitude;
+    }
+
+    function formatTick(value) {
+      if (value >= 1000) return (Math.round(value / 100) / 10).toString().replace(/\.0$/, "") + "K";
+      return String(Math.round(value * 10) / 10);
+    }
+
+    /* Smooth line through the points (Catmull-Rom converted to cubic Beziers). */
+    function smoothPath(points) {
+      if (!points.length) return "";
+      if (points.length === 1) return "M" + points[0][0] + " " + points[0][1];
+      let d = "M" + points[0][0].toFixed(1) + " " + points[0][1].toFixed(1);
+      for (let i = 0; i < points.length - 1; i += 1) {
+        const p0 = points[i - 1] || points[i];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const p3 = points[i + 2] || p2;
+        const c1y = Math.min(CHART.bottom, Math.max(CHART.top, p1[1] + (p2[1] - p0[1]) / 6));
+        const c2y = Math.min(CHART.bottom, Math.max(CHART.top, p2[1] - (p3[1] - p1[1]) / 6));
+        d += " C" + (p1[0] + (p2[0] - p0[0]) / 6).toFixed(1) + " " + c1y.toFixed(1)
+          + "," + (p2[0] - (p3[0] - p1[0]) / 6).toFixed(1) + " " + c2y.toFixed(1)
+          + "," + p2[0].toFixed(1) + " " + p2[1].toFixed(1);
       }
-    };
+      return d;
+    }
+
+    function toPoints(values, max) {
+      const count = values.length;
+      return values.map(function (value, index) {
+        const x = count === 1 ? (CHART.left + CHART.right) / 2 : CHART.left + (CHART.right - CHART.left) * index / (count - 1);
+        const y = CHART.bottom - (CHART.bottom - CHART.top) * (max ? value / max : 0);
+        return [x, y];
+      });
+    }
+
+    function buildSeries(key) {
+      const source = chartData[key] || chartData.month || { labels: [], sales: [], profit: [], label: "" };
+      const max = niceMax(Math.max.apply(null, source.sales.concat(source.profit, [0])));
+      const sales = smoothPath(toPoints(source.sales, max));
+      const profit = smoothPath(toPoints(source.profit, max));
+      const last = toPoints(source.sales, max).slice(-1)[0] || [CHART.left, CHART.bottom];
+      return { sales: sales, profit: profit, max: max, labels: source.labels, label: source.label, last: last };
+    }
+
+    function renderAxes(selected) {
+      if (yAxis) {
+        yAxis.innerHTML = [1, 0.75, 0.5, 0.25, 0].map(function (ratio) {
+          return "<span>" + formatTick(selected.max * ratio) + "</span>";
+        }).join("");
+      }
+      if (monthsRow) {
+        monthsRow.style.gridTemplateColumns = "repeat(" + Math.max(selected.labels.length, 1) + ", 1fr)";
+        monthsRow.innerHTML = selected.labels.map(function (label) {
+          return "<span>" + label + "</span>";
+        }).join("");
+      }
+    }
+
+    function renderChart(key) {
+      const selected = buildSeries(key);
+      if (salesLine) salesLine.setAttribute("d", selected.sales);
+      if (profitLine) profitLine.setAttribute("d", selected.profit);
+      if (salesArea) salesArea.setAttribute("d", selected.sales + " L" + CHART.right + " " + CHART.bottom + " L" + CHART.left + " " + CHART.bottom + " Z");
+      if (caption) caption.textContent = selected.label;
+      renderAxes(selected);
+    }
+
+    renderChart("month");
 
     function animateChart() {
       if (!salesLine || !profitLine) return;
@@ -308,15 +375,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     buttons.forEach(function (button) {
       button.addEventListener("click", function () {
-        const selected = series[button.getAttribute("data-chart-period")] || series.month;
         buttons.forEach(function (item) {
           item.classList.toggle("active", item === button);
           item.setAttribute("aria-pressed", item === button ? "true" : "false");
         });
-        if (salesLine) salesLine.setAttribute("d", selected.sales);
-        if (profitLine) profitLine.setAttribute("d", selected.profit);
-        if (salesArea) salesArea.setAttribute("d", selected.sales + " L710 218 L10 218 Z");
-        if (caption) caption.textContent = selected.label;
+        renderChart(button.getAttribute("data-chart-period"));
         animateChart();
       });
       button.setAttribute("aria-pressed", button.classList.contains("active") ? "true" : "false");
