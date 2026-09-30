@@ -88,3 +88,54 @@ body:not(.sidebar-collapsed) main{max-width:calc(1320px + var(--side))}
 .three-column .fields label>input,.three-column .fields label>select,.three-column .fields label>.input-icon{margin-top:3px}
 .fields input,.fields select,.fields textarea,.hours input{transition:border-color .18s ease,box-shadow .18s ease}
 .fields input:hover,.fields select:hover,.fields textarea:hover,.hours input:hover{border-color:var(--blue);box-shadow:0 0 0 2px rgb(22 119 255/.13)}
+
+/* View mode (read-only details) */
+.heading-action{margin-inline-start:auto;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
+[hidden]{display:none!important}
+.details-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 28px;margin:0}
+.details-grid.single{grid-template-columns:minmax(0,1fr)}
+.details-grid>div{min-width:0;padding:13px 2px 15px;border-bottom:1px solid #e7edf6}
+.details-grid>div.full{grid-column:1/-1}
+.details-grid dt{margin-bottom:5px;color:var(--muted);font-size:12px;font-weight:600;text-align:right}
+.details-grid dd{margin:0;color:#0b1f3a;font-size:14px;font-weight:700;line-height:1.65;overflow-wrap:anywhere;text-align:right}
+.details-grid dd[dir="ltr"]{text-align:right;direction:ltr;justify-content:flex-end}
+.availability-badge{width:max-content;padding:5px 11px;border-radius:20px;color:#087c42;background:#dcfce7;font-size:11px;font-weight:700}
+.availability-badge i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#0caf57}
+.availability-badge.off,#availabilityText.off{color:#b91c1c;background:#fee2e2}
+.work-days.is-static span{padding:7px 13px;border:1px solid var(--line);border-radius:20px;color:#405675;background:#fff}
+.work-days.is-static span.selected{color:var(--blue);border-color:var(--blue);background:#f8fbff}
+.status.missing{color:#b91c1c;background:#fee2e2}
+.form-errors{margin-bottom:20px}
+.review-card{margin-top:0}
+.submit-review-form{margin-top:16px;display:flex;justify-content:flex-end}
+.document-row .doc-link{justify-self:start;color:var(--blue);font-size:12px;font-weight:700;text-decoration:none}
+.document-row .doc-link:hover{text-decoration:underline}
+.owner-view{display:flex;align-items:center;gap:18px}
+.owner-view .details-grid{flex:1}
+.owner-photo{width:84px;height:84px;flex:0 0 84px;object-fit:cover;border-radius:16px;border:1px solid var(--line);background:#f6f9fd}
+.owner-photo.is-empty{display:grid;place-items:center;color:var(--blue);font-size:34px}
+.owner-photo.is-small{width:28px;height:28px;flex-basis:28px;border-radius:8px;vertical-align:middle;display:inline-block}
+.upload-fields{display:grid;gap:18px}
+.upload-field{display:grid;gap:8px;text-align:right}
+.upload-title{color:#0b1f3a;font-size:13px;font-weight:700}
+.upload-title em{color:#e11d25;font-style:normal}
+.upload-field input[type=file]{width:100%;padding:8px 10px;border:1px dashed #b9cde8;border-radius:10px;background:#f9fbfe;color:#526985;font:inherit;font-size:12px;cursor:pointer;transition:border-color .18s ease,background-color .18s ease}
+.upload-field input[type=file]:hover{border-color:var(--blue);background:var(--blue-soft)}
+.upload-field input[type=file]::file-selector-button{margin-inline-end:12px;padding:7px 14px;border:1px solid #9fc7ff;border-radius:8px;color:var(--blue);background:#fff;font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:color .18s ease,background-color .18s ease}
+.upload-field input[type=file]:hover::file-selector-button{color:#fff;background:var(--blue)}
+.upload-field small{color:var(--muted);font-size:11px;font-weight:600;line-height:1.7}
+.upload-field small i{color:#16a34a}
+.upload-field small a{color:var(--blue)}
+@media(max-width:560px){.details-grid{grid-template-columns:1fr}.heading-action{width:100%;justify-content:center;margin-top:8px}.page-heading{flex-wrap:wrap}}
+
+/* The shell (.wallet-shell) already offsets the content for the sidebar; undo the legacy standalone-page padding. */
+body main.printshop-main,
+body:not(.sidebar-collapsed) main.printshop-main{padding:27px 28px 50px}
+@media(max-width:560px){body main.printshop-main,body:not(.sidebar-collapsed) main.printshop-main{padding:22px 16px 40px}}
+.status.pending{color:#a76500;background:#fff0bf}
+.upload-pending{margin:0;padding:10px 12px;border:1px solid #ffdab8;border-radius:10px;background:#fff7ef;color:#a35200;font-size:11px;font-weight:600;line-height:1.7}
+
+/* Save / cancel side by side */
+.form-actions{direction:rtl;justify-content:flex-end;gap:12px;padding:6px 0 24px}
+.form-actions .primary-btn,.form-actions .secondary-btn{margin:0;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+@media(max-width:560px){.form-actions{flex-direction:row;flex-wrap:wrap}.form-actions .primary-btn,.form-actions .secondary-btn{flex:1;justify-content:center;width:auto}}

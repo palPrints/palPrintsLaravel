@@ -18,6 +18,7 @@ class PrintProvider extends Model
         'working_hours',
         'license_document',
         'verification_document',
+        'id_document',
         'approval_status',
         'profile_completed_at',
         'submitted_at',
