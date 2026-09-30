@@ -1167,3 +1167,12 @@ img {
     transition-duration: 0.001ms !important;
   }
 }
+
+.printshop-trend.is-down {
+  color: var(--pp-danger, #dc2626);
+}
+
+.printshop-status.is-cancelled {
+  color: #b91c1c;
+  background: #fee2e2;
+}

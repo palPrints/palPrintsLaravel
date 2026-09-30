@@ -14,108 +14,112 @@
         </a>
     </section>
 
-    <section class="printshop-profile-alert" aria-labelledby="profileAlertTitle">
-        <div class="printshop-profile-alert__message">
-            <span class="printshop-profile-alert__icon" aria-hidden="true">
-                <i class="bi bi-exclamation-triangle"></i>
-            </span>
-            <div>
-                <h2 id="profileAlertTitle">أكمل ملفك الشخصي</h2>
-                <p>هناك بعض البيانات الناقصة في ملفك الشخصي. أكملها الآن لعرض مطبعتك للعملاء وزيادة فرص الطلبات.</p>
+    @if (session('success'))
+        <section class="printshop-profile-alert" role="status">
+            <div class="printshop-profile-alert__message">
+                <span class="printshop-profile-alert__icon" aria-hidden="true"><i class="bi bi-check-circle"></i></span>
+                <div><h2>تم بنجاح</h2><p>{{ session('success') }}</p></div>
             </div>
-        </div>
-        <a class="printshop-accent-button" href="#">
-            <span>أكمل البيانات</span>
-            <i class="bi bi-chevron-left" aria-hidden="true"></i>
-        </a>
-    </section>
+        </section>
+    @endif
+
+    @unless (auth()->user()->hasApprovedBusinessAccount())
+        @php
+            $accountStatus = auth()->user()->approvalStatus();
+            [$alertTitle, $alertText, $alertAction] = match (true) {
+                $accountStatus === 'rejected' => ['تم رفض طلب التوثيق', 'عدّل بيانات ملفك الشخصي وأرسلها للمراجعة مرة أخرى.', 'تعديل البيانات'],
+                in_array($accountStatus, ['submitted', 'under_review'], true) => ['حسابك قيد المراجعة', 'ستتمكن من استخدام باقي الصفحات بعد اعتماد الحساب من الإدارة.', 'عرض الملف الشخصي'],
+                auth()->user()->hasCompletedRoleProfile() => ['أرسل حسابك للمراجعة', 'ملفك مكتمل. أرسله للإدارة ليتم توثيق الحساب وفتح باقي الصفحات.', 'إرسال للمراجعة'],
+                default => ['أكمل ملفك الشخصي', 'أكمل بيانات المطبعة ثم أرسلها للتوثيق حتى تتمكن من استخدام باقي الصفحات.', 'أكمل البيانات'],
+            };
+        @endphp
+        <section class="printshop-profile-alert" role="alert" aria-labelledby="profileAlertTitle">
+            <div class="printshop-profile-alert__message">
+                <span class="printshop-profile-alert__icon" aria-hidden="true">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </span>
+                <div>
+                    <h2 id="profileAlertTitle">{{ $alertTitle }}</h2>
+                    <p>{{ session('warning') ?: $alertText }}</p>
+                </div>
+            </div>
+            <a class="printshop-accent-button" href="{{ route('print-provider.profile') }}">
+                <span>{{ $alertAction }}</span>
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </a>
+        </section>
+    @endunless
+
+    @php
+        $statCards = [
+            ['key' => 'earnings', 'title' => 'الأرباح المستحقة', 'icon' => 'bi-cash-coin', 'tone' => 'is-green', 'currency' => true],
+            ['key' => 'completed', 'title' => 'الطلبات المكتملة هذا الشهر', 'icon' => 'bi-check-circle', 'tone' => 'is-blue', 'currency' => false],
+            ['key' => 'progress', 'title' => 'الطلبات قيد التنفيذ', 'icon' => 'bi-clock', 'tone' => 'is-amber', 'currency' => false],
+            ['key' => 'new', 'title' => 'الطلبات الجديدة', 'icon' => 'bi-bag', 'tone' => 'is-purple', 'currency' => false],
+        ];
+    @endphp
 
     <section class="printshop-stats" aria-label="ملخص أداء المطبعة">
-        <article class="printshop-stat-card">
-            <span class="printshop-stat-card__icon is-green" aria-hidden="true">
-                <i class="bi bi-cash-coin"></i>
-            </span>
-            <div class="printshop-stat-card__content">
-                <h2>الأرباح المستحقة</h2>
-                <strong dir="ltr" data-dashboard-counter="1240" data-counter-currency="true">1,240.00 ₪</strong>
-                <p><span class="printshop-trend"><i class="bi bi-arrow-up" aria-hidden="true"></i> 12%</span> مقارنة بالأسبوع الماضي</p>
-            </div>
-        </article>
-
-        <article class="printshop-stat-card">
-            <span class="printshop-stat-card__icon is-blue" aria-hidden="true">
-                <i class="bi bi-check-circle"></i>
-            </span>
-            <div class="printshop-stat-card__content">
-                <h2>الطلبات المكتملة هذا الشهر</h2>
-                <strong data-dashboard-counter="78">78</strong>
-                <p><span class="printshop-trend"><i class="bi bi-arrow-up" aria-hidden="true"></i> 18%</span> مقارنة بالأسبوع الماضي</p>
-            </div>
-        </article>
-
-        <article class="printshop-stat-card">
-            <span class="printshop-stat-card__icon is-amber" aria-hidden="true">
-                <i class="bi bi-clock"></i>
-            </span>
-            <div class="printshop-stat-card__content">
-                <h2>الطلبات قيد التنفيذ</h2>
-                <strong data-dashboard-counter="12">12</strong>
-                <p><span class="printshop-trend"><i class="bi bi-arrow-up" aria-hidden="true"></i> 20%</span> مقارنة بالأسبوع الماضي</p>
-            </div>
-        </article>
-
-        <article class="printshop-stat-card">
-            <span class="printshop-stat-card__icon is-purple" aria-hidden="true">
-                <i class="bi bi-bag"></i>
-            </span>
-            <div class="printshop-stat-card__content">
-                <h2>الطلبات الجديدة</h2>
-                <strong data-dashboard-counter="8">8</strong>
-                <p><span class="printshop-trend"><i class="bi bi-arrow-up" aria-hidden="true"></i> 5%</span> مقارنة بالأسبوع الماضي</p>
-            </div>
-        </article>
+        @foreach ($statCards as $card)
+            @php
+                $stat = $stats[$card['key']];
+                $value = $card['currency'] ? number_format($stat['value'], 2) : $stat['value'];
+            @endphp
+            <article class="printshop-stat-card">
+                <span class="printshop-stat-card__icon {{ $card['tone'] }}" aria-hidden="true">
+                    <i class="bi {{ $card['icon'] }}"></i>
+                </span>
+                <div class="printshop-stat-card__content">
+                    <h2>{{ $card['title'] }}</h2>
+                    <strong @if ($card['currency']) dir="ltr" data-counter-currency="true" @endif data-dashboard-counter="{{ $stat['value'] }}">{{ $value }}{{ $card['currency'] ? ' ₪' : '' }}</strong>
+                    @if ($stat['trend'])
+                        <p>
+                            <span class="printshop-trend {{ $stat['trend'][0] === 'down' ? 'is-down' : '' }}">
+                                @if ($stat['trend'][0] !== 'flat')
+                                    <i class="bi bi-arrow-{{ $stat['trend'][0] }}" aria-hidden="true"></i>
+                                @endif
+                                {{ $stat['trend'][1] }}
+                            </span> مقارنة بالأسبوع الماضي
+                        </p>
+                    @else
+                        <p>لا يوجد نشاط هذا الأسبوع</p>
+                    @endif
+                </div>
+            </article>
+        @endforeach
     </section>
 
     <section class="printshop-panel printshop-alerts-panel" aria-labelledby="alertsTitle">
         <header class="printshop-panel__header">
             <h2 id="alertsTitle"><i class="bi bi-bell" aria-hidden="true"></i> التنبيهات</h2>
-            <a href="#">عرض الكل <i class="bi bi-arrow-up-left" aria-hidden="true"></i></a>
         </header>
 
         <div class="printshop-alert-list">
-            <article class="printshop-alert-item">
-                <span class="printshop-alert-item__icon is-warning" aria-hidden="true"><i class="bi bi-exclamation-triangle"></i></span>
-                <div class="printshop-alert-item__content">
-                    <h3>المنتج "أكواب مخصصة" معطل من 3 أيام</h3>
-                    <p>فعّل المنتج ليتاح للعملاء مجددًا.</p>
-                </div>
-                <a class="printshop-secondary-button" href="#">تفعيل الآن</a>
-            </article>
-
-            <article class="printshop-alert-item">
-                <span class="printshop-alert-item__icon is-danger" aria-hidden="true"><i class="bi bi-truck"></i></span>
-                <div class="printshop-alert-item__content">
-                    <h3>الطلب #10352 جاهز للشحن من يومين</h3>
-                    <p>بانتظار الاستلام من شركة التوصيل.</p>
-                </div>
-                <a class="printshop-secondary-button" href="#">عرض الطلب</a>
-            </article>
-
-            <article class="printshop-alert-item">
-                <span class="printshop-alert-item__icon is-success" aria-hidden="true"><i class="bi bi-cash-coin"></i></span>
-                <div class="printshop-alert-item__content">
-                    <h3>رصيدك القابل للسحب وصل 1,240.00 ₪</h3>
-                    <p>يمكنك الآن طلب سحب الأرباح.</p>
-                </div>
-                <a class="printshop-secondary-button" href="#">اطلب سحب</a>
-            </article>
+            @forelse ($alerts as $alert)
+                <article class="printshop-alert-item">
+                    <span class="printshop-alert-item__icon {{ $alert['tone'] }}" aria-hidden="true"><i class="bi {{ $alert['icon'] }}"></i></span>
+                    <div class="printshop-alert-item__content">
+                        <h3>{{ $alert['title'] }}</h3>
+                        <p>{{ $alert['text'] }}</p>
+                    </div>
+                    <a class="printshop-secondary-button" href="{{ $alert['url'] }}">{{ $alert['action'] }}</a>
+                </article>
+            @empty
+                <article class="printshop-alert-item">
+                    <span class="printshop-alert-item__icon is-success" aria-hidden="true"><i class="bi bi-check2-circle"></i></span>
+                    <div class="printshop-alert-item__content">
+                        <h3>لا توجد تنبيهات حاليًا</h3>
+                        <p>كل شيء يسير على ما يرام.</p>
+                    </div>
+                </article>
+            @endforelse
         </div>
     </section>
 
     <section class="printshop-panel printshop-orders-panel" aria-labelledby="ordersTitle">
         <header class="printshop-panel__header">
             <h2 id="ordersTitle"><i class="bi bi-box-seam" aria-hidden="true"></i> آخر الطلبات</h2>
-            <a href="#">عرض الكل <i class="bi bi-arrow-up-left" aria-hidden="true"></i></a>
+            <a href="{{ route('print-provider.requests') }}">عرض الكل <i class="bi bi-arrow-up-left" aria-hidden="true"></i></a>
         </header>
 
         <div class="printshop-table-wrapper" tabindex="0" aria-label="جدول آخر الطلبات، قابل للتمرير أفقيًا">
@@ -130,41 +134,23 @@
                     </tr>
                 </thead>
                 <tbody id="ordersTableBody">
-                    <tr data-order-row data-search="#10358 10358 تيشيرت مطبوع جديد 12 سبتمبر 2026">
-                        <td><strong dir="ltr">#10358</strong></td>
-                        <td>تيشيرت مطبوع</td>
-                        <td><span class="printshop-status is-new">جديد</span></td>
-                        <td><time datetime="2026-09-12">12 سبتمبر 2026</time></td>
-                        <td><a class="printshop-view-button" href="#"><i class="bi bi-eye" aria-hidden="true"></i> عرض</a></td>
-                    </tr>
-                    <tr data-order-row data-search="#10357 10357 أكواب مخصصة قيد التنفيذ 11 سبتمبر 2026">
-                        <td><strong dir="ltr">#10357</strong></td>
-                        <td>أكواب مخصصة</td>
-                        <td><span class="printshop-status is-progress">قيد التنفيذ</span></td>
-                        <td><time datetime="2026-09-11">11 سبتمبر 2026</time></td>
-                        <td><a class="printshop-view-button" href="#"><i class="bi bi-eye" aria-hidden="true"></i> عرض</a></td>
-                    </tr>
-                    <tr data-order-row data-search="#10356 10356 ستيكرات مكتمل 10 سبتمبر 2026">
-                        <td><strong dir="ltr">#10356</strong></td>
-                        <td>ستيكرات</td>
-                        <td><span class="printshop-status is-complete">مكتمل</span></td>
-                        <td><time datetime="2026-09-10">10 سبتمبر 2026</time></td>
-                        <td><a class="printshop-view-button" href="#"><i class="bi bi-eye" aria-hidden="true"></i> عرض</a></td>
-                    </tr>
-                    <tr data-order-row data-search="#10355 10355 طباعة ورق قيد التنفيذ 9 سبتمبر 2026">
-                        <td><strong dir="ltr">#10355</strong></td>
-                        <td>طباعة ورق</td>
-                        <td><span class="printshop-status is-progress">قيد التنفيذ</span></td>
-                        <td><time datetime="2026-09-09">9 سبتمبر 2026</time></td>
-                        <td><a class="printshop-view-button" href="#"><i class="bi bi-eye" aria-hidden="true"></i> عرض</a></td>
-                    </tr>
-                    <tr data-order-row data-search="#10354 10354 هودي مطبوع مكتمل 8 سبتمبر 2026">
-                        <td><strong dir="ltr">#10354</strong></td>
-                        <td>هودي مطبوع</td>
-                        <td><span class="printshop-status is-complete">مكتمل</span></td>
-                        <td><time datetime="2026-09-08">8 سبتمبر 2026</time></td>
-                        <td><a class="printshop-view-button" href="#"><i class="bi bi-eye" aria-hidden="true"></i> عرض</a></td>
-                    </tr>
+                    @forelse ($recentOrders as $order)
+                        <tr data-order-row data-search="#{{ $order['number'] }} {{ $order['number'] }} {{ $order['product'] }} {{ $order['status_label'] }}">
+                            <td><strong dir="ltr">#{{ $order['number'] }}</strong></td>
+                            <td>{{ $order['product'] }}</td>
+                            <td><span class="printshop-status {{ $order['status_class'] }}">{{ $order['status_label'] }}</span></td>
+                            <td><time datetime="{{ $order['date']->toDateString() }}">{{ $order['date']->translatedFormat('j F Y') }}</time></td>
+                            <td><a class="printshop-view-button" href="{{ route('print-provider.requests') }}"><i class="bi bi-eye" aria-hidden="true"></i> عرض</a></td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5">
+                                <i class="bi bi-inbox" aria-hidden="true"></i>
+                                <strong>لا توجد طلبات بعد</strong>
+                                <span>ستظهر هنا الطلبات الموجهة إلى مطبعتك.</span>
+                            </td>
+                        </tr>
+                    @endforelse
                     <tr class="printshop-empty-search" id="emptySearchRow" hidden>
                         <td colspan="5">
                             <i class="bi bi-search" aria-hidden="true"></i>

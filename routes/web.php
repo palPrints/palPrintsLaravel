@@ -26,6 +26,7 @@ use App\Http\Controllers\Designer\NotificationController as DesignerNotification
 use App\Http\Controllers\Designer\ProfileController as DesignerProfileController;
 use App\Http\Controllers\Designer\SettingsController as DesignerSettingsController;
 use App\Http\Controllers\Designer\SupportController as DesignerSupportController;
+use App\Http\Controllers\PrintProvider\DashboardController as PrintProviderDashboardController;
 use App\Http\Controllers\PrintProvider\EarningsController as PrintProviderEarningsController;
 use App\Http\Controllers\PrintProvider\ProfileController as PrintProviderProfileController;
 use App\Http\Controllers\ProfileController;
@@ -123,20 +124,20 @@ Route::middleware(['auth', 'active'])->group(function () {
     });
     Route::get('/designer/dashboard', DesignerDashboardController::class)
         ->middleware('role:designer')->name('designer.dashboard');
-    Route::view('/print-provider/dashboard', 'printProvider.dashboard')
+    Route::get('/print-provider/dashboard', PrintProviderDashboardController::class)
         ->middleware('role:print_provider')->name('print-provider.dashboard');
     Route::get('/print-provider/profile', [PrintProviderProfileController::class, 'show'])
         ->middleware('role:print_provider')->name('print-provider.profile');
     Route::patch('/print-provider/profile', [PrintProviderProfileController::class, 'update'])
         ->middleware('role:print_provider')->name('print-provider.profile.update');
     Route::view('/print-provider/requests', 'printProvider.requests')
-        ->middleware('role:print_provider')->name('print-provider.requests');
+        ->middleware(['role:print_provider', 'account.approved'])->name('print-provider.requests');
     Route::get('/print-provider/earnings', PrintProviderEarningsController::class)
-        ->middleware('role:print_provider')->name('print-provider.earnings');
+        ->middleware(['role:print_provider', 'account.approved'])->name('print-provider.earnings');
     Route::post('/print-provider/earnings/withdraw', [PrintProviderEarningsController::class, 'withdraw'])
-        ->middleware('role:print_provider')->name('print-provider.earnings.withdraw');
+        ->middleware(['role:print_provider', 'account.approved'])->name('print-provider.earnings.withdraw');
     Route::view('/print-provider/services', 'printProvider.services')
-        ->middleware('role:print_provider')->name('print-provider.services');
+        ->middleware(['role:print_provider', 'account.approved'])->name('print-provider.services');
     Route::middleware('role:designer')->prefix('designer')->name('designer.')->group(function () {
         Route::middleware('account.approved')->group(function () {
             Route::get('/designs', [DesignController::class, 'index'])->name('designs.index');
