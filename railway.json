@@ -1,0 +1,9 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "deploy": {
+    "preDeployCommand": [
+      "php artisan db:seed --class=RoleAndPermissionSeeder --force",
+      "php artisan db:seed --class=AdminUserSeeder --force"
+    ]
+  }
+}
