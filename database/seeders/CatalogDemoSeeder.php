@@ -113,7 +113,7 @@ class CatalogDemoSeeder extends Seeder
         $data = [
             'TSHIRT-CLASSIC' => ['apparel', 'Classic T-Shirt', 'Cotton unisex t-shirt for everyday custom printing.', 'front/assets/images/customer/products/1.png', true],
             'HOODIE-PREMIUM' => ['apparel', 'Premium Hoodie', 'Warm fleece hoodie with front and back print support.', 'front/assets/images/customer/products/2.png', true],
-            'PAPER-PRINT' => ['office', 'Paper Printing', 'Document and flyer printing for everyday needs.', 'front/assets/images/customer/products/8.png', false],
+            'PAPER-PRINT' => ['office', 'Paper Printing', 'Document and flyer printing for everyday needs.', 'front/assets/images/customer/products/8.png', true],
             'STICKER-CUSTOM' => ['office', 'Custom Sticker', 'Vinyl stickers for packaging, laptops, and branding.', 'front/assets/images/customer/products/11.png', true],
             'MUG-CERAMIC' => ['drinkware', 'Ceramic Mug', '330 ml ceramic mug for full-color sublimation.', 'front/assets/images/customer/products/7.png', true],
             'CAP-CLASSIC' => ['apparel', 'Classic Cap', 'Adjustable cap ready for front embroidery or print.', 'front/assets/images/customer/products/3.png', false],

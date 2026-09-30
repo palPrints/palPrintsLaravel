@@ -59,6 +59,114 @@ class CatalogController extends Controller
         return $this->productDesigns('MUG-CERAMIC', 'customer.mugs', 'front/assets/images/customer/cup.webp');
     }
 
+    public function paperPrinting(): View
+    {
+        $product = Product::query()
+            ->with([
+                'branchProductOfferings.printProviderBranch',
+                'branchProductOfferings.branchOfferingVariants.variant.values.productAttributeValue.attributeValue',
+                'branchProductOfferings.branchOfferingVariants.variant.values.productAttributeValue.productAttribute.attribute',
+                'branchProductOfferings.branchPricingRules.branchPrintCapability.printingMethod',
+            ])
+            ->where('code', 'PAPER-PRINT')
+            ->first();
+
+        return view('customer.paperPrinting', [
+            'product' => $product,
+            'paperPrinting' => $this->paperPrintingData($product),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function paperPrintingData(?Product $product): array
+    {
+        if (! $product) {
+            return [
+                'available' => false,
+                'product' => null,
+                'options' => ['sizes' => [], 'availableValues' => ['size' => []]],
+                'pricing' => ['basePrice' => 0, 'methodAddon' => 0, 'currency' => 'ILS'],
+            ];
+        }
+
+        $offerings = $product->branchProductOfferings
+            ->filter(fn ($offering) => $offering->is_active && $offering->printProviderBranch?->is_active)
+            ->values();
+
+        $branchVariants = $offerings
+            ->flatMap(fn ($offering) => $offering->branchOfferingVariants)
+            ->filter(fn ($branchVariant) => $branchVariant->is_available && $branchVariant->variant?->is_active)
+            ->values();
+
+        $sizes = $branchVariants
+            ->map(function ($branchVariant) {
+                $sizeValue = $branchVariant->variant->values
+                    ->map(fn ($value) => $value->productAttributeValue)
+                    ->first(fn ($value) => $value?->productAttribute?->attribute?->code === 'size')
+                    ?->attributeValue;
+
+                if (! $sizeValue) {
+                    return null;
+                }
+
+                return [
+                    'id' => strtoupper($sizeValue->value),
+                    'code' => $sizeValue->code,
+                    'name' => $sizeValue->value,
+                    'variant_id' => $branchVariant->variant_id,
+                ];
+            })
+            ->filter()
+            ->unique('id')
+            ->sortBy('id')
+            ->values();
+
+        $pricingRules = $offerings->flatMap(fn ($offering) => $offering->branchPricingRules)
+            ->filter(fn ($rule) => $rule->is_active)
+            ->values();
+
+        $methodAddon = $pricingRules
+            ->filter(fn ($rule) => $rule->pricing_type === 'print_method_addon')
+            ->filter(fn ($rule) => $rule->branchPrintCapability?->printingMethod?->code === 'digital-paper')
+            ->min('amount');
+
+        return [
+            'available' => $product->is_active && $offerings->isNotEmpty() && $sizes->isNotEmpty(),
+            'product' => [
+                'id' => $product->id,
+                'code' => $product->code,
+                'name' => $product->name,
+                'is_active' => $product->is_active,
+            ],
+            'options' => [
+                'sizes' => $sizes->all(),
+                'availableValues' => [
+                    'size' => $sizes->pluck('id')->all(),
+                ],
+            ],
+            'pricing' => [
+                'basePrice' => (float) ($offerings->min('base_price') ?? 0),
+                'methodAddon' => (float) ($methodAddon ?? 0),
+                'currency' => $offerings->first()?->currency ?? 'ILS',
+                'sheetBase' => [
+                    'A5' => 0.12,
+                    'A4' => 0.20,
+                    'A3' => 0.42,
+                ],
+                'paperMultiplier' => [
+                    'standard' => 1,
+                    'thick' => 1.55,
+                    'coated' => 2.1,
+                ],
+                'ink' => [
+                    'bw' => 0.09,
+                    'color' => 0.42,
+                ],
+            ],
+        ];
+    }
     private function productDesigns(string $productCode, string $view, string $fallbackImage): View
     {
         $product = Product::query()

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Design;
+use App\Models\BranchProductOffering;
+use App\Models\PrintFile;
 use App\Models\Product;
 use App\Models\Variant;
 use App\Support\CatalogProductData;
@@ -13,8 +15,11 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use ZipArchive;
 
 class CartController extends Controller
 {
@@ -22,15 +27,32 @@ class CartController extends Controller
     {
         $cart = $this->activeCart($request);
 
-        $items = $cart->items()->with('product')->get()->map(fn (CartItem $item) => [
-            'id' => $item->id,
-            'product_name' => $item->product?->name ?? 'منتج',
-            'product_image' => asset($item->product?->image ?: 'front/assets/images/customer/products/1.png'),
-            'quantity' => $item->quantity,
-            'unit_price' => (float) $item->unit_price,
-            'total_price' => (float) $item->unit_price * $item->quantity,
-            'options' => $item->selected_options ?? [],
-        ]);
+        $items = $cart->items()->with(['product', 'printFiles'])->get()->map(function (CartItem $item) {
+            $options = $item->selected_options ?? [];
+
+            if ($item->item_type === CartItem::TYPE_CUSTOMER_UPLOAD) {
+                $options['files'] = $item->printFiles
+                    ->where('status', '!=', PrintFile::STATUS_DELETED)
+                    ->map(fn (PrintFile $file) => [
+                        'name' => $file->original_name,
+                        'path' => $file->stored_path,
+                        'size' => $file->file_size,
+                        'page_count' => $file->page_count,
+                    ])
+                    ->values()
+                    ->all();
+            }
+
+            return [
+                'id' => $item->id,
+                'product_name' => $item->product?->name ?? 'منتج',
+                'product_image' => asset($item->product?->image ?: 'front/assets/images/customer/products/1.png'),
+                'quantity' => $item->quantity,
+                'unit_price' => (float) $item->unit_price,
+                'total_price' => (float) $item->unit_price * $item->quantity,
+                'options' => $options,
+            ];
+        });
 
         return view('customer.basket', [
             'items' => $items,
@@ -38,17 +60,6 @@ class CartController extends Controller
         ]);
     }
 
-    /**
-     * Paper printing has no real "design" to pick — it's a customer file
-     * upload, not a catalog design — so cart_items.design_id (required FK)
-     * is satisfied with a placeholder Design row created for product
-     * PAPER-PRINT (see the conversation with the data team about eventually
-     * making design_id nullable for upload-based products). Each print job
-     * becomes ONE cart line with quantity=1 and unit_price = the full job
-     * total already computed client-side by the pricing engine in
-     * paperPrinting.js — the +/- stepper on the basket page then just
-     * multiplies whole extra copies of the job, not individual pages.
-     */
     public function storePaper(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -59,57 +70,86 @@ class CartController extends Controller
             'files.*' => ['file', 'mimes:pdf,jpg,jpeg,png,docx,pptx', 'max:51200'],
         ]);
 
-        $product = Product::where('code', 'PAPER-PRINT')->firstOrFail();
+        $product = Product::where('code', 'PAPER-PRINT')->where('is_active', true)->firstOrFail();
 
         $variant = Variant::where('product_id', $product->id)
             ->where('sku', 'like', '%-'.$validated['size'])
             ->first();
 
-        $design = Design::where('product_id', $product->id)->where('status', 'published')->first();
-
-        if (! $variant || ! $design) {
+        if (! $variant) {
             throw ValidationException::withMessages([
-                'size' => 'حجم الورق غير متاح حاليًا، حاول لاحقًا.',
+                'size' => 'حجم الورق غير متاح حالياً، حاول لاحقاً.',
+            ]);
+        }
+
+        $offering = BranchProductOffering::query()
+            ->where('product_id', $product->id)
+            ->where('is_active', true)
+            ->whereHas('printProviderBranch', fn ($query) => $query->where('is_active', true))
+            ->whereHas('branchOfferingVariants', fn ($query) => $query
+                ->where('variant_id', $variant->id)
+                ->where('is_available', true))
+            ->orderBy('base_price')
+            ->first();
+
+        if (! $offering) {
+            throw ValidationException::withMessages([
+                'size' => 'لا يوجد فرع مطبعة متاح لهذا الحجم حالياً.',
             ]);
         }
 
         $cart = $this->activeCart($request);
 
-        $files = [];
-        foreach ($request->file('files') as $file) {
-            $path = $file->store('customer/paper-uploads/'.$request->user()->id, 'public');
-            $files[] = ['name' => $file->getClientOriginalName(), 'path' => $path];
+        $item = CartItem::firstOrNew([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'variant_id' => $variant->id,
+            'design_id' => null,
+        ]);
+
+        if ($item->exists) {
+            $this->deletePaperFilesForItem($item);
         }
 
-        CartItem::updateOrCreate(
-            [
-                'cart_id' => $cart->id,
+        $settings = array_merge($validated['settings'] ?? [], [
+            'paper_size' => $validated['size'],
+            'branch_product_offering_id' => $offering->id,
+            'print_provider_branch_id' => $offering->print_provider_branch_id,
+        ]);
+
+        $item->fill([
+            'item_type' => CartItem::TYPE_CUSTOMER_UPLOAD,
+            'quantity' => 1,
+            'unit_price' => $validated['total_price'],
+            'selected_options' => $settings,
+        ]);
+        $item->save();
+
+        foreach ($request->file('files') as $file) {
+            $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+            $pageCount = $this->detectPageCount($file, $extension);
+            $filename = (string) Str::uuid().($extension ? '.'.$extension : '');
+            $path = $file->storeAs('customer-print-files/tmp/'.$request->user()->id, $filename, 'local');
+
+            PrintFile::create([
+                'user_id' => $request->user()->id,
                 'product_id' => $product->id,
-                'variant_id' => $variant->id,
-                'design_id' => $design->id,
-            ],
-            [
-                'quantity' => 1,
-                'unit_price' => $validated['total_price'],
-                'selected_options' => array_merge($validated['settings'] ?? [], ['files' => $files]),
-            ]
-        );
+                'cart_item_id' => $item->id,
+                'original_name' => $file->getClientOriginalName(),
+                'stored_path' => $path,
+                'disk' => 'local',
+                'mime_type' => $file->getClientMimeType(),
+                'extension' => $extension,
+                'file_size' => $file->getSize(),
+                'page_count' => $pageCount,
+                'status' => PrintFile::STATUS_ATTACHED_TO_CART,
+                'uploaded_at' => now(),
+            ]);
+        }
 
         return redirect()->route('customer.basket')->with('status', 'item-added');
     }
 
-    /**
-     * Add-to-cart for the catalog products that go through the shared
-     * productPreview page (t-shirts, hoodies, mugs). The browser only says
-     * WHAT was picked (product code, design, color/size ids, quantity);
-     * the product, design, variant and price are all resolved here so the
-     * client can't set its own price.
-     *
-     * The preview page's colors/sizes are not guaranteed to exist as real
-     * variants yet (e.g. the t-shirt preview offers XXL, the catalog only
-     * has S-XL), so the variant FK falls back to the closest active variant
-     * while the customer's actual choice is always kept in selected_options.
-     */
     public function storeCatalog(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -135,7 +175,7 @@ class CartController extends Controller
 
         if (! $product || ! $design) {
             throw ValidationException::withMessages([
-                'product_code' => 'هذا المنتج غير متاح للطلب حاليًا.',
+                'product_code' => 'هذا المنتج غير متاح للطلب حالياً.',
             ]);
         }
 
@@ -143,7 +183,7 @@ class CartController extends Controller
             ->where('product_id', $product->id)->where('is_active', true)->orderBy('id')->get();
         if ($variants->isEmpty()) {
             throw ValidationException::withMessages([
-                'product_code' => 'لا توجد خيارات متاحة لهذا المنتج حاليًا.',
+                'product_code' => 'لا توجد خيارات متاحة لهذا المنتج حالياً.',
             ]);
         }
 
@@ -166,10 +206,8 @@ class CartController extends Controller
                 'design_id' => $design->id,
             ]);
 
-            // UNIQUE(cart_id, product_id, variant_id, design_id): same choice
-            // again just adds to the quantity; a different choice that maps
-            // to the same variant replaces the line, like the paper flow does.
             $sameChoice = $item->exists && ($item->selected_options ?? []) == $options;
+            $item->item_type = CartItem::TYPE_CATALOG_DESIGN;
             $item->quantity = min(99, ($sameChoice ? $item->quantity : 0) + $group['quantity']);
             $item->unit_price = $unitPrice;
             $item->selected_options = $options;
@@ -182,11 +220,6 @@ class CartController extends Controller
     }
 
     /**
-     * Matches by the variant's real color/size attribute values (through
-     * variant_values), not by SKU text, because the catalog holds both
-     * "tshirt-white" and "white" style codes for the same choice. Falls back
-     * to a size-only, then color-only, then any active variant.
-     *
      * @param  \Illuminate\Support\Collection<int, Variant>  $variants
      */
     private function matchVariant($variants, string $colorId, string $sizeId): Variant
@@ -225,11 +258,7 @@ class CartController extends Controller
     {
         $this->authorizeItem($request, $cartItem);
 
-        foreach (($cartItem->selected_options['files'] ?? []) as $file) {
-            if (! empty($file['path'])) {
-                Storage::disk('public')->delete($file['path']);
-            }
-        }
+        $this->deletePaperFilesForItem($cartItem);
 
         $cartItem->delete();
 
@@ -246,5 +275,99 @@ class CartController extends Controller
     private function authorizeItem(Request $request, CartItem $cartItem): void
     {
         abort_unless($cartItem->cart->user_id === $request->user()->id, 403);
+    }
+
+    private function detectPageCount(UploadedFile $file, string $extension): ?int
+    {
+        return match ($extension) {
+            'jpg', 'jpeg', 'png' => 1,
+            'pdf' => $this->countPdfPages($file->getRealPath()),
+            'pptx' => $this->countPresentationSlides($file->getRealPath()),
+            'docx' => $this->countDocumentPages($file->getRealPath()),
+            default => null,
+        };
+    }
+
+    private function countPdfPages(string|false $path): ?int
+    {
+        if (! $path || ! is_readable($path)) {
+            return null;
+        }
+
+        $contents = file_get_contents($path);
+        if ($contents === false) {
+            return null;
+        }
+
+        preg_match_all('/\/Type\s*\/Page\b/', $contents, $matches);
+
+        return count($matches[0]) ?: null;
+    }
+
+    private function countPresentationSlides(string|false $path): ?int
+    {
+        if (! $path || ! class_exists(ZipArchive::class)) {
+            return null;
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($path) !== true) {
+            return null;
+        }
+
+        $count = 0;
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            if (is_string($name) && preg_match('#^ppt/slides/slide\d+\.xml$#', $name)) {
+                $count++;
+            }
+        }
+        $zip->close();
+
+        return $count ?: null;
+    }
+
+    private function countDocumentPages(string|false $path): ?int
+    {
+        if (! $path || ! class_exists(ZipArchive::class)) {
+            return null;
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($path) !== true) {
+            return null;
+        }
+
+        $appXml = $zip->getFromName('docProps/app.xml');
+        $zip->close();
+
+        if (! is_string($appXml)) {
+            return null;
+        }
+
+        return preg_match('/<Pages>(\d+)<\/Pages>/', $appXml, $matches)
+            ? (int) $matches[1]
+            : null;
+    }
+    private function deletePaperFilesForItem(CartItem $cartItem): void
+    {
+        $cartItem->loadMissing('printFiles');
+
+        foreach ($cartItem->printFiles as $file) {
+            if ($file->stored_path) {
+                Storage::disk($file->disk ?: 'local')->delete($file->stored_path);
+            }
+
+            $file->update([
+                'status' => PrintFile::STATUS_DELETED,
+                'deleted_at' => now(),
+            ]);
+        }
+
+        foreach (($cartItem->selected_options['files'] ?? []) as $file) {
+            if (! empty($file['path'])) {
+                Storage::disk('public')->delete($file['path']);
+            }
+        }
     }
 }

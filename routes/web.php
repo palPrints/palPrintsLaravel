@@ -110,7 +110,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/mugs', [CustomerCatalogController::class, 'mugs'])->name('mugs');
         Route::get('/tshirts', [CustomerCatalogController::class, 'tshirts'])->name('tshirts');
         Route::view('/stickers', 'customer.stickers')->name('stickers');
-        Route::view('/paper-printing', 'customer.paperPrinting')->name('paperPrinting');
+        Route::get('/paper-printing', [CustomerCatalogController::class, 'paperPrinting'])->name('paperPrinting');
         Route::get('/basket', [CustomerCartController::class, 'index'])->name('basket');
         Route::post('/cart/catalog', [CustomerCartController::class, 'storeCatalog'])->name('cart.store-catalog');
         Route::post('/cart/paper',[CustomerCartController::class, 'storePaper'])->name('cart.store-paper');

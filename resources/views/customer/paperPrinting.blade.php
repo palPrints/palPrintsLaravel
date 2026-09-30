@@ -192,6 +192,10 @@
 @endsection
 
 @push('scripts')
+    <script>
+        window.palPrintsCustomerAssets = window.palPrintsCustomerAssets || {};
+        window.palPrintsCustomerAssets.paperPrinting = @json($paperPrinting);
+    </script>
     <script src="{{ asset('front/designer/js/profile-core.js') }}?v={{ filemtime(public_path('front/designer/js/profile-core.js')) }}"></script>
     <script src="{{ asset('front/js/customer/paperPrinting.js') }}?v={{ filemtime(public_path('front/js/customer/paperPrinting.js')) }}"></script>
 @endpush

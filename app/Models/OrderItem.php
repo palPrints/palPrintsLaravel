@@ -9,12 +9,16 @@ class OrderItem extends Model
 {
     use HasFactory;
 
+    public const TYPE_CATALOG_DESIGN = 'catalog_design';
+    public const TYPE_CUSTOMER_UPLOAD = 'customer_upload';
+
     protected $fillable = [
         'order_id',
         'product_id',
         'variant_id',
         'design_id',
         'designer_id',
+        'item_type',
         'print_provider_branch_id',
         'branch_product_offering_id',
         'quantity',
@@ -68,5 +72,10 @@ class OrderItem extends Model
     public function branchProductOffering()
     {
         return $this->belongsTo(BranchProductOffering::class);
+    }
+
+    public function printFiles()
+    {
+        return $this->hasMany(PrintFile::class);
     }
 }
