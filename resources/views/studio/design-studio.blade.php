@@ -421,11 +421,11 @@
               const draft = doc && doc.drafts && doc.drafts[productId];
               if (!draft) { window.alert("تعذر حفظ التصميم. حاول مرة أخرى."); return; }
               sessionStorage.setItem("palprintsStudioWorkflowContext", JSON.stringify({
-                schemaVersion: 1, workflowMode: "customer", source: "design-studio", designId: selection.designId,
+                schemaVersion: 1, workflowMode: @json($workflowMode ?? 'customer'), source: "design-studio", designId: selection.designId,
                 productId: productId, activeAreaId: draft.activeAreaId,
                 preview: { colorId: draft.colorId || null, sizeId: draft.sizeId || null }, updatedAt: new Date().toISOString()
               }));
-              window.location.href = @json(route('customer.productPreview'));
+              window.location.href = @json($previewUrl ?? route('customer.productPreview'));
             } catch (error) { window.alert("تعذر فتح المعاينة. حاول مرة أخرى."); }
           }, 400);
         });
@@ -454,11 +454,37 @@
         } catch (error) { /* Nothing stored, or storage is blocked. */ }
       }
 
+      /* A designer picks the product on the designer "choose product" page, which saves only database ids
+         (product, color, size, print areas). Turn that choice into the studio's own product so the same studio,
+         preview and cart code serve designers and customers. */
+      function adoptDesignerSelection() {
+        try {
+          const selection = JSON.parse(sessionStorage.getItem(SELECTION_KEY) || "null");
+          if (!selection || selection.editorProduct || !selection.productId) return;
+          const db = DB.find(function (item) { return String(item.id) === String(selection.productId); });
+          const catalog = (window.PALPRINTS_PRODUCT_CATALOG || {}).products || [];
+          const product = db && catalog.find(function (item) { return item.code === String(db.code).toUpperCase(); });
+          if (!product) { sessionStorage.removeItem(SELECTION_KEY); return; }
+          const areaIds = product.editor.printAreas.map(function (area) { return area.id; });
+          const areas = (selection.printAreaIds || []).map(studioAreaId).filter(function (id) { return areaIds.includes(id); });
+          const colorId = String(selection.colorId || "").toLowerCase();
+          sessionStorage.setItem(SELECTION_KEY, JSON.stringify({
+            productId: product.id, editorProduct: product,
+            colorId: product.colors.some(function (color) { return color.id === colorId; }) ? colorId : product.defaultColor,
+            sizeId: product.sizes.some(function (size) { return size.id === studioSizeId(selection.sizeId); }) ? studioSizeId(selection.sizeId) : product.sizes[0].id,
+            printAreaIds: areas.length ? [areas[0]] : [product.editor.defaultAreaId],
+            category: selection.category || null,
+            designId: "designer-" + Date.now()
+          }));
+        } catch (error) { /* The studio then asks the designer to choose a product. */ }
+      }
+
       try {
         mergeCatalog();
         const seed = JSON.parse(sessionStorage.getItem(SEED_KEY) || "null");
         sessionStorage.removeItem(SEED_KEY);
         if (seed && seed.source === "upload") await openUploadedDesign(seed);
+        adoptDesignerSelection();
         refreshStoredSelection();
       } catch (error) { /* The studio opens with whatever selection already exists. */ }
 

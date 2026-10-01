@@ -16,6 +16,7 @@
 @push('styles')
     <base href="{{ asset('front/studio') }}/">
     <link rel="stylesheet" href="{{ asset('front/css/customer/productPreview.css') }}?v={{ filemtime(public_path('front/css/customer/productPreview.css')) }}">
+    <link rel="stylesheet" href="{{ asset('front/designer/css/designerFlow.css') }}?v={{ filemtime(public_path('front/designer/css/designerFlow.css')) }}">
 @endpush
 
 @section('content')
@@ -135,6 +136,15 @@
             <button type="button" class="preview-button is-secondary" id="openAllowedColors"><i class="bi bi-check2-square" aria-hidden="true"></i><span>اختيار الألوان</span></button>
           </section>
 
+          <section class="designer-size-approval" id="designerSizeApproval" aria-labelledby="designerSizesTitle" hidden>
+            <div class="designer-size-approval__head">
+              <span class="option-label" id="designerSizesTitle"><i class="bi bi-rulers" aria-hidden="true"></i> حدد المقاسات المناسبة لهذا التصميم</span>
+              <span class="audience-badge" id="audienceBadge"></span>
+            </div>
+            <p id="allowedSizesSummary"></p>
+            <div class="size-chips" id="allowedSizeOptions" role="group" aria-label="المقاسات المناسبة"></div>
+          </section>
+
           <section class="printing-technology-section" id="printingTechnologySection" aria-labelledby="printingTechnologyTitle">
             <label for="printingTechnology" id="printingTechnologyTitle"><i class="bi bi-printer" aria-hidden="true"></i> تقنية الطباعة</label>
             <select id="printingTechnology" disabled><option value="">غير متاحة — لم تتم تهيئتها بعد</option></select>
@@ -143,6 +153,13 @@
 
         </aside>
       </div>
+
+      @if(auth()->user()?->hasRole('designer'))
+        <div class="designer-publish-actions">
+          <a class="designer-flow-button is-ghost" href="{{ route('design-studio') }}"><i class="bi bi-arrow-right" aria-hidden="true"></i><span>رجوع للاستوديو</span></a>
+          <button type="button" class="designer-flow-button is-primary" id="designerContinueButton"><span>متابعة لتفاصيل النشر</span><i class="bi bi-arrow-left" aria-hidden="true"></i></button>
+        </div>
+      @endif
 
       <div class="preview-purchase-row" id="customerPurchaseRow">
         <section class="price-card price-card--horizontal" aria-labelledby="priceTitle">
@@ -192,6 +209,8 @@
 
 @push('scripts')
     <script>
+        window.palPrintsAudiences = @json(\App\Support\CatalogProductData::AUDIENCES);
+        window.palPrintsDesignerAssets = { reviewUrl: @json(auth()->user()?->hasRole('designer') ? route('designer.designs.review') : null) };
         window.PALPRINTS_AUTH = { role: @json(auth()->user()?->hasRole('designer') ? 'designer' : 'customer') };
         window.palPrintsCustomerAssets = window.palPrintsCustomerAssets || {};
         window.palPrintsCustomerAssets.cartCatalogUrl = @json(route('customer.cart.store-catalog'));
@@ -199,6 +218,7 @@
     </script>
     <script src="{{ asset('front/studio/assets/js/pages/design-studio-product-catalog.js') }}"></script>
     <script src="{{ asset('front/studio/assets/js/pages/design-studio-graphics.js') }}"></script>
+    <script src="{{ asset('front/js/customer/designComposite.js') }}?v={{ filemtime(public_path('front/js/customer/designComposite.js')) }}"></script>
     <script src="{{ asset('front/js/customer/role-auth-resolver.js') }}?v={{ filemtime(public_path('front/js/customer/role-auth-resolver.js')) }}"></script>
     <script src="{{ asset('front/js/customer/productPreview.js') }}?v={{ filemtime(public_path('front/js/customer/productPreview.js')) }}"></script>
 @endpush

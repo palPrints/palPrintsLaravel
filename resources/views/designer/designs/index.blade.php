@@ -194,21 +194,21 @@
             return [
                 'id' => $design->id,
                 'title' => $design->title,
-                'image' => $design->image ?: (filled($design->product?->image)
+                'image' => $design->image ? (preg_match('#^(https?:)?//#', $design->image) ? $design->image : asset($design->image)) : (filled($design->product?->image)
                     ? (preg_match('#^(https?:)?//#', $design->product->image) ? $design->product->image : asset($design->product->image))
                     : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=520&fit=crop&q=85'),
                 'productType' => $design->product?->name ?? '',
                 'status' => $design->status,
                 'updatedAt' => $updatedAt ? $updatedAt->toIso8601String() : null,
                 'previewUrl' => route('designer.designs.review', ['id' => $design->id]),
-                'editorUrl' => route('designer.designs.editor', ['designId' => $design->id]),
+                'editorUrl' => route('design-studio'),
             ];
         })->values()->all();
     @endphp
 
     <script>
         window.palPrintsDesignerRoutes = {
-            editor: @json(route('designer.designs.editor')),
+            editor: @json(route('design-studio')),
             review: @json(route('designer.designs.review'))
         };
 

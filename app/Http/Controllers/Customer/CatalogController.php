@@ -232,9 +232,15 @@ class CatalogController extends Controller
     private function publishedDesign(Design $design, string $fallbackImage): array
     {
         $options = $design->selected_options ?? [];
+        $audience = CatalogProductData::AUDIENCES[$options['display_category'] ?? ''] ?? null;
+        $allowedSizes = $audience
+            ? collect($audience['sizes'])->filter(fn ($size) => in_array($size['id'], $options['allowed_size_ids'] ?? [], true))->values()->all()
+            : [];
 
         return [
             'id' => (string) $design->id,
+            'allowedColors' => array_values($options['allowed_color_ids'] ?? []),
+            'allowedSizes' => $allowedSizes,
             'category' => $options['display_category'] ?? 'adults',
             'title' => $design->title,
             'description' => $design->description ?: $design->product?->name,

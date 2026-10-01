@@ -22,6 +22,36 @@ class CatalogProductData
     /** Printing-service products: customers upload their own files, so designers cannot design them. */
     public const NOT_DESIGNABLE = ['PAPER-PRINT', 'STICKER-CUSTOM'];
 
+    /** Clothing is sold by audience; the designer picks one when starting a design. Other products have none. */
+    public const APPAREL_CODES = ['TSHIRT-CLASSIC', 'HOODIE-PREMIUM'];
+
+    /**
+     * Audience => label and the sizes it offers. The kids sizes are not in the product attributes yet,
+     * so the sizes live here until the database holds them per audience.
+     */
+    public const AUDIENCES = [
+        'adults' => [
+            'label' => 'رجال / نساء',
+            'hint' => 'مقاسات S إلى XXL',
+            'sizes' => [['id' => 'S', 'name' => 'S'], ['id' => 'M', 'name' => 'M'], ['id' => 'L', 'name' => 'L'], ['id' => 'XL', 'name' => 'XL'], ['id' => 'XXL', 'name' => 'XXL']],
+        ],
+        'oversized' => [
+            'label' => 'أوفر سايز',
+            'hint' => 'قصّة واسعة، مقاسات M إلى XXL',
+            'sizes' => [['id' => 'M', 'name' => 'M'], ['id' => 'L', 'name' => 'L'], ['id' => 'XL', 'name' => 'XL'], ['id' => 'XXL', 'name' => 'XXL']],
+        ],
+        'kids' => [
+            'label' => 'أطفال',
+            'hint' => 'من 4 إلى 14 سنة',
+            'sizes' => [['id' => '4', 'name' => '4 سنوات'], ['id' => '6', 'name' => '6 سنوات'], ['id' => '8', 'name' => '8 سنوات'], ['id' => '10', 'name' => '10 سنوات'], ['id' => '12', 'name' => '12 سنة'], ['id' => '14', 'name' => '14 سنة']],
+        ],
+    ];
+
+    public static function isApparel(string $code): bool
+    {
+        return in_array(strtoupper($code), self::APPAREL_CODES, true);
+    }
+
     /**
      * @return array{categories: array<int, array<string, string>>, products: array<int, array<string, mixed>>}
      */
@@ -328,6 +358,18 @@ class CatalogProductData
         }
 
         return asset('front/designer/source/create/'.$meta['thumbnail']);
+    }
+
+    /** Arabic category label for the admin pages; falls back to the name stored in the database. */
+    public static function categoryName(string $slug, string $fallback): string
+    {
+        return match ($slug) {
+            'apparel' => 'ملابس',
+            'accessories' => 'اكسسوارات',
+            'drinkware' => 'أكواب',
+            'office' => 'مطبوعات',
+            default => $fallback,
+        };
     }
 
     private static function productOrder(string $code): int
