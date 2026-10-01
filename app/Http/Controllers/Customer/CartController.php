@@ -27,10 +27,20 @@ class CartController extends Controller
     {
         $cart = $this->activeCart($request);
 
-        $items = $cart->items()->with(['product', 'printFiles'])->get()->map(function (CartItem $item) {
+        $items = $cart->items()->with(['product', 'design', 'printFiles'])->get()->map(function (CartItem $item) {
             $options = $item->selected_options ?? [];
 
+            $designImage = null;
+
             if ($item->item_type === CartItem::TYPE_CUSTOMER_UPLOAD) {
+                // The customer's own artwork (private storage) is shown on top of the product picture.
+                $artwork = $item->printFiles
+                    ->where('status', '!=', PrintFile::STATUS_DELETED)
+                    ->first(fn (PrintFile $file) => str_starts_with((string) $file->mime_type, 'image/'));
+                $designImage = $artwork && $item->product?->code !== 'PAPER-PRINT'
+                    ? route('customer.print-files.preview', $artwork)
+                    : null;
+
                 $options['files'] = $item->printFiles
                     ->where('status', '!=', PrintFile::STATUS_DELETED)
                     ->map(fn (PrintFile $file) => [
@@ -43,10 +53,19 @@ class CartController extends Controller
                     ->all();
             }
 
+            // Catalog lines are a design printed on a product, so show the design the customer picked;
+            // paper-print lines only carry a placeholder design, so they keep the product's name and image.
+            $design = $item->item_type === CartItem::TYPE_CUSTOMER_UPLOAD || $item->product?->code === 'PAPER-PRINT'
+                ? null
+                : $item->design;
+
             return [
                 'id' => $item->id,
-                'product_name' => $item->product?->name ?? 'منتج',
-                'product_image' => asset($item->product?->image ?: 'front/assets/images/customer/products/1.png'),
+                'product_name' => $design?->title ?: ($options['design_name'] ?? null) ?: ($item->product?->name ?? 'منتج'),
+                'design_overlay' => $designImage,
+                'mockup' => $options['mockup'] ?? null,
+                'product_label' => $design || ! empty($options['design_name']) ? $item->product?->name : null,
+                'product_image' => asset($design?->image ?: $item->product?->image ?: 'front/assets/images/customer/products/1.png'),
                 'quantity' => $item->quantity,
                 'unit_price' => (float) $item->unit_price,
                 'total_price' => (float) $item->unit_price * $item->quantity,
@@ -220,6 +239,194 @@ class CartController extends Controller
     }
 
     /**
+     * Add-to-cart for a design the customer made themselves (uploaded image or design studio). There is no
+     * published Design row for it, so the line is a "customer_upload" item (design_id null) that carries the
+     * artwork files in print_files and the studio layout in selected_options, like paper printing does.
+     * Pricing is a placeholder for now: the cheapest active print shop's base price for the product.
+     */
+    public function storeCustomDesign(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'product_code' => ['required', 'in:TSHIRT-CLASSIC,HOODIE-PREMIUM,MUG-CERAMIC'],
+            'design_name' => ['nullable', 'string', 'max:120'],
+            'groups' => ['required', 'json'],
+            'layout' => ['nullable', 'json', 'max:200000'],
+            'files' => ['nullable', 'array', 'max:20'],
+            'files.*' => ['file', 'mimes:png,jpg,jpeg,webp,svg', 'max:10240'],
+            'file_assets' => ['nullable', 'array', 'max:20'],
+            'file_assets.*' => ['string', 'max:120'],
+        ]);
+
+        $groups = collect(json_decode($validated['groups'], true) ?: []);
+        $groups->each(fn ($group) => validator((array) $group, [
+            'color_id' => ['required', 'string', 'max:40'],
+            'color_name' => ['nullable', 'string', 'max:40'],
+            'size_id' => ['required', 'string', 'max:24'],
+            'size_name' => ['nullable', 'string', 'max:24'],
+            'quantity' => ['required', 'integer', 'min:1', 'max:99'],
+            'print_areas' => ['nullable', 'array'],
+            'print_areas.*' => ['string', 'max:50'],
+            'mockup' => ['nullable', 'array'],
+        ])->validate());
+
+        if ($groups->isEmpty() || $groups->count() > 99) {
+            throw ValidationException::withMessages(['groups' => 'اختر لونًا ومقاسًا وكمية على الأقل.']);
+        }
+
+        $product = Product::where('code', $validated['product_code'])->where('is_active', true)->first();
+        $variants = $product
+            ? Variant::with('values.productAttributeValue.attributeValue', 'values.productAttributeValue.productAttribute.attribute')
+                ->where('product_id', $product->id)->where('is_active', true)->orderBy('id')->get()
+            : collect();
+
+        if (! $product || $variants->isEmpty()) {
+            throw ValidationException::withMessages(['product_code' => 'هذا المنتج غير متاح للطلب حاليًا.']);
+        }
+
+        $offering = BranchProductOffering::query()
+            ->where('product_id', $product->id)
+            ->where('is_active', true)
+            ->whereHas('printProviderBranch', fn ($query) => $query->where('is_active', true))
+            ->orderBy('base_price')
+            ->first();
+
+        if (! $offering) {
+            throw ValidationException::withMessages(['product_code' => 'لا يوجد فرع مطبعة متاح لهذا المنتج حاليًا.']);
+        }
+
+        $user = $request->user();
+        $cart = $this->activeCart($request);
+        $files = $request->file('files', []);
+        $layout = ($validated['layout'] ?? null) ? json_decode($validated['layout'], true) : null;
+
+        foreach ($groups as $group) {
+            $variant = $this->matchVariant($variants, $group['color_id'], $group['size_id']);
+
+            $item = CartItem::create([
+                'cart_id' => $cart->id,
+                'product_id' => $product->id,
+                'variant_id' => $variant->id,
+                'design_id' => null,
+                'item_type' => CartItem::TYPE_CUSTOMER_UPLOAD,
+                'quantity' => $group['quantity'],
+                'unit_price' => $offering->base_price,
+                'selected_options' => array_filter([
+                    'color' => $group['color_name'] ?? $group['color_id'],
+                    'size' => $group['size_name'] ?? $group['size_id'],
+                    'print_areas' => $group['print_areas'] ?? [],
+                    'design_name' => $validated['design_name'] ?? null,
+                    'layout' => $layout,
+                    'branch_product_offering_id' => $offering->id,
+                    'print_provider_branch_id' => $offering->print_provider_branch_id,
+                ]),
+            ]);
+
+            $assetFiles = [];
+
+            // Every line of the same design keeps its own copy of the files, so removing one line never breaks another.
+            foreach ($files as $index => $file) {
+                $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+                $path = $file->storeAs('customer-print-files/tmp/'.$user->id, Str::uuid().($extension ? '.'.$extension : ''), 'local');
+
+                $saved = PrintFile::create([
+                    'user_id' => $user->id,
+                    'product_id' => $product->id,
+                    'cart_item_id' => $item->id,
+                    'original_name' => $file->getClientOriginalName(),
+                    'stored_path' => $path,
+                    'disk' => 'local',
+                    'mime_type' => $file->getClientMimeType(),
+                    'extension' => $extension,
+                    'file_size' => $file->getSize(),
+                    'page_count' => 1,
+                    'status' => PrintFile::STATUS_ATTACHED_TO_CART,
+                    'uploaded_at' => now(),
+                ]);
+
+                if (isset($validated['file_assets'][$index])) {
+                    $assetFiles[$validated['file_assets'][$index]] = route('customer.print-files.preview', $saved, false);
+                }
+            }
+
+            // How the design looked in the preview, so the cart can redraw it the same way.
+            if ($mockup = $this->cleanMockup((array) ($group['mockup'] ?? []), $assetFiles)) {
+                $item->update(['selected_options' => array_merge($item->selected_options ?? [], ['mockup' => $mockup])]);
+            }
+        }
+
+        $request->session()->flash('status', 'item-added');
+
+        return response()->json(['redirect' => route('customer.basket')]);
+    }
+
+    /**
+     * Keeps only what the cart thumbnail needs, with every value checked: the browser is not trusted, and the
+     * result is rendered into inline styles and image URLs.
+     *
+     * @param  array<string, mixed>  $mockup
+     * @param  array<string, string>  $assetFiles  studio asset id => preview URL of the saved file
+     * @return array<string, mixed>|null
+     */
+    private function cleanMockup(array $mockup, array $assetFiles): ?array
+    {
+        $number = fn ($value, float $min = -500, float $max = 500) => max($min, min($max, round((float) $value, 3)));
+        $hex = fn ($value) => is_string($value) && preg_match('/^#[0-9a-fA-F]{6}$/', $value) ? $value : null;
+        $localPath = fn ($value, string $prefix) => is_string($value)
+            && str_starts_with($value, $prefix)
+            && ! str_contains($value, '..')
+            && preg_match('#^/[A-Za-z0-9_\-./%]+$#', $value)
+            && is_file(public_path(ltrim(rawurldecode($value), '/')))
+            ? $value : null;
+
+        $image = $localPath($mockup['image'] ?? null, '/front/') ?? $localPath($mockup['image'] ?? null, '/storage/');
+        $zone = (array) ($mockup['zone'] ?? []);
+
+        if (! $image || ! isset($zone['top'], $zone['left'], $zone['width'], $zone['height'])) {
+            return null;
+        }
+
+        $frame = fn (array $item) => [
+            'x' => $number($item['x'] ?? 50), 'y' => $number($item['y'] ?? 50),
+            'width' => $number($item['width'] ?? 20, 0), 'height' => $number($item['height'] ?? 20, 0),
+            'rotation' => $number($item['rotation'] ?? 0, -360, 360),
+            'flip_x' => (bool) ($item['flipX'] ?? false), 'flip_y' => (bool) ($item['flipY'] ?? false),
+            'layer' => (int) $number($item['layer'] ?? 1, 1, 999),
+        ];
+
+        $images = collect($mockup['images'] ?? [])->take(40)->map(function ($item) use ($assetFiles, $frame, $hex, $localPath) {
+            $item = (array) $item;
+            $src = isset($item['asset_id']) ? ($assetFiles[$item['asset_id']] ?? null) : $localPath($item['src'] ?? null, '/front/studio/assets/images/studio-graphics/');
+
+            return $src ? $frame($item) + ['src' => $src, 'tint' => $hex($item['tint'] ?? null)] : null;
+        })->filter()->values()->all();
+
+        $texts = collect($mockup['texts'] ?? [])->take(20)->map(function ($item) use ($frame, $hex, $number) {
+            $item = (array) $item;
+            $family = preg_replace('/[^\p{L}\p{N} \-_]/u', '', (string) ($item['font_family'] ?? 'Cairo')) ?: 'Cairo';
+
+            return $frame($item) + [
+                'content' => mb_substr(strip_tags((string) ($item['content'] ?? '')), 0, 200),
+                'size_percent' => $number($item['size_percent'] ?? 10, 1, 100),
+                'font_family' => $family,
+                'color' => $hex($item['color'] ?? null) ?? '#0b1f3a',
+                'font_weight' => in_array($item['font_weight'] ?? '', ['bold', '700', '800'], true) ? 'bold' : 'normal',
+                'font_style' => ($item['font_style'] ?? '') === 'italic' ? 'italic' : 'normal',
+                'text_align' => in_array($item['text_align'] ?? '', ['left', 'right', 'center'], true) ? $item['text_align'] : 'center',
+                'line_height' => $number($item['line_height'] ?? 1.2, 0.8, 3),
+            ];
+        })->filter(fn ($text) => $text['content'] !== '')->values()->all();
+
+        return [
+            'image' => $image,
+            'tint' => $hex($mockup['tint'] ?? null),
+            'area_name' => mb_substr((string) ($mockup['areaName'] ?? ''), 0, 50),
+            'zone' => ['top' => $number($zone['top'], 0, 100), 'left' => $number($zone['left'], 0, 100), 'width' => $number($zone['width'], 0, 100), 'height' => $number($zone['height'], 0, 100)],
+            'images' => $images,
+            'texts' => $texts,
+        ];
+    }
+
+    /**
      * @param  \Illuminate\Support\Collection<int, Variant>  $variants
      */
     private function matchVariant($variants, string $colorId, string $sizeId): Variant
@@ -239,6 +446,23 @@ class CartController extends Controller
             ?? $variants->first($hasSize)
             ?? $variants->first($hasColor)
             ?? $variants->first();
+    }
+
+    /** Shows a customer's own uploaded image (private storage) to its owner, for the cart thumbnail. */
+    public function printFilePreview(Request $request, PrintFile $printFile)
+    {
+        abort_unless($printFile->user_id === $request->user()->id, 403);
+        abort_unless(str_starts_with((string) $printFile->mime_type, 'image/') && $printFile->status !== PrintFile::STATUS_DELETED, 404);
+
+        $disk = Storage::disk($printFile->disk ?: 'local');
+        abort_unless($disk->exists($printFile->stored_path), 404);
+
+        return response()->file($disk->path($printFile->stored_path), [
+            'Content-Type' => $printFile->mime_type,
+            'Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'", // keeps an uploaded SVG from running scripts
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, max-age=3600',
+        ]);
     }
 
     public function update(Request $request, CartItem $cartItem): RedirectResponse

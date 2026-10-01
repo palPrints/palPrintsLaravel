@@ -50,13 +50,23 @@
                 @foreach($items as $item)
                     <article class="basket-item" data-id="{{ $item['id'] }}">
                         <div class="product-info">
-                            <div class="product-media"><img src="{{ $item['product_image'] }}" alt="{{ $item['product_name'] }}"></div>
+                            <div class="product-media" @if(!empty($item['design_overlay'])) style="position:relative" @endif>
+                                @if(!empty($item['mockup']))
+                                    @include('customer.partials.cart-mockup', ['mockup' => $item['mockup'], 'alt' => $item['product_name']])
+                                @else
+                                <img src="{{ $item['product_image'] }}" alt="{{ $item['product_name'] }}">
+                                @if(!empty($item['design_overlay']))
+                                    <img class="design-overlay" src="{{ $item['design_overlay'] }}" alt="التصميم" style="position:absolute;inset:50% auto auto 50%;width:38%;height:auto;max-height:46%;transform:translate(-50%,-50%);object-fit:contain">
+                                @endif
+                                @endif
+                            </div>
                             <div>
                                 <h3>{{ $item['product_name'] }}</h3>
                                 @if(!empty($item['options']))
                                     <div class="tags">
+                                        @if(!empty($item['product_label']))<span>{{ $item['product_label'] }}</span>@endif
                                         @foreach($item['options'] as $key => $value)
-                                            @if($key !== 'files' && is_scalar($value))
+                                            @if(! in_array($key, ['files', 'design_name', 'layout', 'branch_product_offering_id', 'print_provider_branch_id'], true) && is_scalar($value))
                                                 <span>{{ $value }}</span>
                                             @endif
                                         @endforeach
@@ -89,7 +99,10 @@
                                 <button type="submit" aria-label="زيادة الكمية">+</button>
                             </form>
                         </div>
-                        <form method="POST" action="{{ route('customer.cart.destroy', $item['id']) }}" style="display:contents">
+                        <form method="POST" action="{{ route('customer.cart.destroy', $item['id']) }}" style="display:contents"
+                              data-confirm-title="حذف المنتج من السلة"
+                              data-confirm-message="هل تريد حذف :name من السلة؟"
+                              data-confirm-name="{{ $item['product_name'] }}">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="remove-item" aria-label="حذف المنتج"><i class="bi bi-trash3"></i></button>

@@ -1416,3 +1416,18 @@ body[data-user-role="designer"] .preview-mobile-bar { display: none !important; 
     transition-duration: .001ms !important;
   }
 }
+
+/* Product color: a layer in the color's database hex, masked to the product shape, under the multiplied product picture. */
+.preview-product-tint {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.preview-product-image.is-tinted { mix-blend-mode: multiply; }

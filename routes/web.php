@@ -113,7 +113,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/paper-printing', [CustomerCatalogController::class, 'paperPrinting'])->name('paperPrinting');
         Route::get('/basket', [CustomerCartController::class, 'index'])->name('basket');
         Route::post('/cart/catalog', [CustomerCartController::class, 'storeCatalog'])->name('cart.store-catalog');
+        Route::post('/cart/custom-design', [CustomerCartController::class, 'storeCustomDesign'])->name('cart.store-custom-design');
         Route::post('/cart/paper',[CustomerCartController::class, 'storePaper'])->name('cart.store-paper');
+        Route::get('/print-files/{printFile}/preview', [CustomerCartController::class, 'printFilePreview'])->name('print-files.preview');
         Route::patch('/cart/{cartItem}', [CustomerCartController::class, 'update'])->name('cart.update');
         Route::delete('/cart/{cartItem}', [CustomerCartController::class, 'destroy'])->name('cart.destroy');
         Route::view('/basket/empty', 'customer.basket-empty')->name('basket.empty');

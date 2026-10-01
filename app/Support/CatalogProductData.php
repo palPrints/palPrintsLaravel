@@ -87,8 +87,14 @@ class CatalogProductData
                 ->filter(fn (BranchProductOffering $offering) => $offering->is_active)
                 ->flatMap(fn (BranchProductOffering $offering) => $offering->branchPrintAreas)
                 ->where('is_active', true)
-                ->unique('code')
-                ->map(fn ($area) => ['id' => $area->code, 'name' => $area->name])
+                ->groupBy('code')
+                // Sizes differ per print shop, so use the smallest each shop supports: a design that fits it prints everywhere.
+                ->map(fn ($areas, $code) => [
+                    'id' => $code,
+                    'name' => $areas->first()->name,
+                    'widthMm' => (int) $areas->min('max_width_mm'),
+                    'heightMm' => (int) $areas->min('max_height_mm'),
+                ])
                 ->values()
                 ->all(),
         ];

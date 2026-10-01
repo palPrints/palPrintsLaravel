@@ -55,6 +55,7 @@
             <div class="product-stage" id="productStage">
               <span class="current-view-badge" id="currentViewBadge"></span>
               <div class="product-canvas" id="productCanvas" aria-live="polite">
+                <div class="preview-product-tint" id="productTint" aria-hidden="true" hidden></div>
                 <img class="preview-product-image" id="productImage" alt="">
                 <div class="preview-design-placement" id="designPlacement" aria-hidden="true">
                   <div class="preview-design-art" id="designArt"></div>
@@ -194,6 +195,7 @@
         window.PALPRINTS_AUTH = { role: @json(auth()->user()?->hasRole('designer') ? 'designer' : 'customer') };
         window.palPrintsCustomerAssets = window.palPrintsCustomerAssets || {};
         window.palPrintsCustomerAssets.cartCatalogUrl = @json(route('customer.cart.store-catalog'));
+        window.palPrintsCustomerAssets.cartCustomDesignUrl = @json(route('customer.cart.store-custom-design'));
     </script>
     <script src="{{ asset('front/studio/assets/js/pages/design-studio-product-catalog.js') }}"></script>
     <script src="{{ asset('front/studio/assets/js/pages/design-studio-graphics.js') }}"></script>

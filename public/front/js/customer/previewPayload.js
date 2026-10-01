@@ -12,6 +12,14 @@
    *  - product: the published design card ({ id, title, price, designer, image })
    *  - options: { colors, sizes } from the database (window.palPrintsCustomerAssets.productOptions)
    */
+  /** Fits a widthMm:heightMm box inside the box's width/height (percent of the picture), centered in it. */
+  function fitPlacement(widthMm, heightMm, box) {
+    const ratio = widthMm / heightMm;
+    let width = box.width, height = box.width / ratio;
+    if (height > box.height) { height = box.height; width = box.height * ratio; }
+    return { top: box.top + (box.height - height) / 2, left: box.left + (box.width - width) / 2, width: width, height: height };
+  }
+
   function build(config) {
     // A design picked from the store replaces whatever the design studio left behind;
     // otherwise the preview would keep showing the studio design (and fail to add to cart).
@@ -31,7 +39,10 @@
     const dbAreas = Array.isArray(options.printAreas) ? options.printAreas : [];
     const printAreas = dbAreas.length ? dbAreas.map(function (area) {
       const known = config.printAreas.find(function (item) { return item.id === area.id; });
-      return { id: area.id, name: area.name, image: product.image, fee: 0, placement: known ? known.placement : fallbackPlacement };
+      // Where the design sits comes from the print area's real size (mm) in the database: its width:height ratio
+      // is kept and fitted into the printable box of the picture; the config placement is only the fallback.
+      const placement = area.widthMm > 0 && area.heightMm > 0 ? fitPlacement(area.widthMm, area.heightMm, known ? known.placement : fallbackPlacement) : (known ? known.placement : fallbackPlacement);
+      return { id: area.id, name: area.name, image: product.image, fee: 0, placement: placement, dimensions: area.widthMm > 0 ? (area.widthMm / 10) + " × " + (area.heightMm / 10) + " سم" : undefined };
     }) : config.printAreas;
     const areaIds = printAreas.slice(0, 1).map(function (area) { return area.id; });
 
