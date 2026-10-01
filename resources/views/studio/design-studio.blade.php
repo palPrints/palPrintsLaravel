@@ -297,8 +297,13 @@
           if (!sizes.length) sizes = src.sizes;
           let areas = (db.printAreas || []).map(function (area) {
             const match = src.printAreas.find(function (item) { return item.id === studioAreaId(area.id); });
-            return match ? Object.assign(clone(match), { name: area.name }) : null;
+            return match ? Object.assign(clone(match), { name: area.name, fromWrap: String(area.id) !== studioAreaId(area.id) }) : null;
           }).filter(Boolean);
+          // The studio has one area per id, but the database can list a mug's "wrap" next to "front" (both become "front"):
+          // keep one per id and prefer the remapped one ("wrap", the real full-wrap area).
+          const unique = new Map();
+          areas.forEach(function (area) { if (!unique.has(area.id) || area.fromWrap) unique.set(area.id, area); });
+          areas = Array.from(unique.values()).map(function (area) { delete area.fromWrap; return area; });
           if (!areas.length) areas = clone(src.printAreas);
           const defaultAreaId = areas.some(function (area) { return area.id === "front"; }) ? "front" : areas[0].id;
           merged.push(Object.assign({}, src, {
@@ -426,11 +431,35 @@
         });
       }
 
+      /* The studio re-reads the product saved in the browser session (a refresh, or coming back to the studio).
+         A copy saved by an older page load can be stale or invalid (for example a mug with two areas that map to the
+         same id), and the studio refuses to open it. Replace it with the current product from the catalog. */
+      function refreshStoredSelection() {
+        try {
+          const selection = JSON.parse(sessionStorage.getItem(SELECTION_KEY) || "null");
+          if (!selection || !selection.editorProduct) return;
+          const catalog = (window.PALPRINTS_PRODUCT_CATALOG || {}).products || [];
+          const stored = selection.editorProduct;
+          const fresh = catalog.find(function (item) { return item.id === stored.id; })
+            || catalog.find(function (item) { return stored.categoryId && item.categoryId === stored.categoryId; });
+          if (!fresh) { sessionStorage.removeItem(SELECTION_KEY); return; }
+          const areaIds = fresh.editor.printAreas.map(function (area) { return area.id; });
+          selection.editorProduct = clone(fresh);
+          selection.productId = fresh.id;
+          const kept = (selection.printAreaIds || []).filter(function (id) { return areaIds.includes(id); });
+          selection.printAreaIds = kept.length ? kept : [fresh.editor.defaultAreaId];
+          if (!fresh.colors.some(function (color) { return color.id === selection.colorId; })) selection.colorId = fresh.defaultColor;
+          if (!fresh.sizes.some(function (size) { return size.id === selection.sizeId; })) selection.sizeId = fresh.sizes[0].id;
+          sessionStorage.setItem(SELECTION_KEY, JSON.stringify(selection));
+        } catch (error) { /* Nothing stored, or storage is blocked. */ }
+      }
+
       try {
         mergeCatalog();
         const seed = JSON.parse(sessionStorage.getItem(SEED_KEY) || "null");
         sessionStorage.removeItem(SEED_KEY);
         if (seed && seed.source === "upload") await openUploadedDesign(seed);
+        refreshStoredSelection();
       } catch (error) { /* The studio opens with whatever selection already exists. */ }
 
       start();

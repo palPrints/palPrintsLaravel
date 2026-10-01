@@ -91,7 +91,7 @@ class DesignController extends Controller
         return response()->json([
             'id' => $design->id,
             'status' => $design->status,
-            'message' => $status === 'review' ? 'Design submitted for review.' : 'Draft saved.',
+            'message' => $status === 'review' ? 'تم إرسال التصميم للمراجعة.' : 'تم حفظ المسودة.',
         ], 201);
     }
 }

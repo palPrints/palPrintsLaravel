@@ -12,11 +12,6 @@ document.addEventListener("DOMContentLoaded", function () {
         closeSidebar: "إغلاق القائمة الجانبية",
         logoutConfirm: "هل تريد تسجيل الخروج من حسابك؟"
       },
-      en: {
-        openSidebar: "Open sidebar",
-        closeSidebar: "Close sidebar",
-        logoutConfirm: "Do you want to log out of your account?"
-      }
     }
   });
 
@@ -66,15 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  /* Language, theme and motion are per-device preferences. */
-  const languageToggle = document.getElementById("settingsLanguageToggle");
-  languageToggle.checked = Core.getLanguage() === "en";
-  languageToggle.addEventListener("change", function () {
-    Core.applyLanguage(languageToggle.checked ? "en" : "ar");
-  });
-  Core.onLanguageChange(function (language) {
-    languageToggle.checked = language === "en";
-  });
+  /* Theme and motion are per-device preferences (the site is Arabic only). */
 
   const themeToggle = document.getElementById("settingsThemeToggle");
   themeToggle.checked = document.documentElement.getAttribute("data-bs-theme") === "dark";

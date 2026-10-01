@@ -11,7 +11,7 @@
   const $ = id => document.getElementById(id);
   const elements = {
     pageTitle: $("previewPageTitle"), pageDescription: $("previewPageDescription"), breadcrumbProductName: $("breadcrumbProductName"), colorLabel: $("colorControlLabel"),
-    viewTabs: $("viewTabs"), canvas: $("productCanvas"), image: $("productImage"), placement: $("designPlacement"), art: $("designArt"),
+    viewTabs: $("viewTabs"), canvas: $("productCanvas"), image: $("productImage"), placement: $("designPlacement"), art: $("designArt"), tint: $("productTint"),
     imagePlaceholder: $("imagePlaceholder"), viewBadge: $("currentViewBadge"), colorOptions: $("colorOptions"), colorName: $("selectedColorName"),
     sizeOptions: $("sizeOptions"), sizeName: $("selectedSizeName"), pieceSelector: $("pieceSelector"), pieceTabs: $("pieceTabs"),
     activePieceLabel: $("activePieceLabel"), customerSize: $("customerSizeGroup"), customerQuantity: $("customerQuantitySection"),
@@ -105,6 +105,8 @@
       technologies: Array.isArray(source) ? source.map((item, index) => typeof item === "string" ? { id: item, name: item, additionalCost: null } : { id: validText(item.id, "tech-" + index), name: validText(item.name, validText(item.id, "تقنية " + (index + 1))), additionalCost: numeric(item.additionalCost ?? item.cost) }) : []
     };
   }
+  // The design studio's catalog has no database code; its categories map to the products the server can order.
+  const STUDIO_PRODUCT_CODES = { tshirts: "TSHIRT-CLASSIC", hoodies: "HOODIE-PREMIUM", mugs: "MUG-CERAMIC" };
   async function buildStudioPayload(context) {
     if (!context?.designId || !context?.productId) return null;
     const selection = read(sessionStorage, KEYS.selection, null);
@@ -123,7 +125,7 @@
       const preview = { images: [], texts: [], icons: [] };
       (draft.areas?.[area.id]?.objects || []).forEach((model, index) => {
         const common = { x: (Number(model.x) || 0) * 100, y: (Number(model.y) || 0) * 100, rotation: Number(model.angle) || 0, layerOrder: index + 1, flipX: Boolean(model.flipX), flipY: Boolean(model.flipY) };
-        if (model.kind === "image" && sources.get(model.assetId)) preview.images.push({ ...common, src: sources.get(model.assetId), alt: "صورة مرفوعة في التصميم", width: (Number(model.width) || .2) * 100, height: (Number(model.height) || .2) * 100 });
+        if (model.kind === "image" && sources.get(model.assetId)) preview.images.push({ ...common, assetId: model.assetId, src: sources.get(model.assetId), alt: "صورة مرفوعة في التصميم", width: (Number(model.width) || .2) * 100, height: (Number(model.height) || .2) * 100 });
         if (model.kind === "graphic") {
           const graphic = graphics.get(model.graphicId);
           if (graphic?.assetPath) preview.images.push({ ...common, src: graphic.assetPath, alt: graphic.nameAr || graphic.nameEn || "رسم من التصميم", width: (Number(model.width) || .2) * 100, height: (Number(model.height) || .2) * 100, tint: graphic.recolorable ? model.color || graphic.defaultColor : null });
@@ -138,7 +140,7 @@
     const sizeId = sizes.some(item => item.id === context.preview?.sizeId) ? context.preview.sizeId : (draft.sizeId || sizes[0]?.id);
     const artworkAreas = rawAreas.filter(area => (draft.areas?.[area.id]?.objects || []).length).map(area => area.id);
     const selectedAreas = artworkAreas.length ? artworkAreas : [context.activeAreaId || rawAreas[0]?.id].filter(Boolean);
-    const printAreas = rawAreas.map(area => ({ id: area.id, name: area.name, role: area.role, image: area.mockup || area.image || product.thumbnail, fee: numeric(area.fee), placement: { top: Number(area.printZone?.topPct) || 0, left: Number(area.printZone?.leftPct) || 0, width: Number(area.printZone?.widthPct) || 100, height: Number(area.printZone?.heightPct) || 100 } }));
+    const printAreas = rawAreas.map(area => ({ id: area.id, name: area.name, role: area.role, image: area.mockup || area.image || product.thumbnail, fee: numeric(area.fee) ?? 0, placement: { top: Number(area.printZone?.topPct) || 0, left: Number(area.printZone?.leftPct) || 0, width: Number(area.printZone?.widthPct) || 100, height: Number(area.printZone?.heightPct) || 100 } }));
     const basePrice = numeric(product.sellingPrice ?? product.price);
     const pricingConfigured = basePrice !== null && selectedAreas.every(id => numeric(printAreas.find(area => area.id === id)?.fee) !== null);
     const item = { colorId, sizeId, printAreaIds: selectedAreas };
@@ -158,10 +160,11 @@
     });
     return {
       studioContext: true,
-      product: { id: product.id, name: product.studioTitle || product.name, sellingPrice: basePrice, currency: product.currency || "ILS", colors, sizes, printAreas, pricingConfigured, quantityMax: numeric(product.orderLimits?.maxQuantity ?? product.maxQuantity), printing: printingMetadata(product) },
+      product: { id: product.id, code: product.code || STUDIO_PRODUCT_CODES[product.categoryId] || null, name: product.studioTitle || product.name, sellingPrice: basePrice, currency: product.currency || "ILS", colors, sizes, printAreas, pricingConfigured, quantityMax: numeric(product.orderLimits?.maxQuantity ?? product.maxQuantity), printing: printingMetadata(product) },
       design: { id: context.designId, name: selection?.designName || "تصميم مخصص", designerName: selection?.designerName || "PALPRINTS", preview: previewByArea[context.activeAreaId] || previewByArea[rawAreas[0]?.id], previewByArea },
       selection: { items: [item], defaultItem: { ...item, printAreaIds: item.printAreaIds.slice() }, activeItemIndex: 0 },
-      customerWarnings: qualityWarnings
+      customerWarnings: qualityWarnings,
+      studioSave: { designId: context.designId, assetIds: ids, assets: documentState.assets || [], layout: { areas: draft.areas || {}, colorId, sizeId } }
     };
   }
 
@@ -180,6 +183,7 @@
   const initialItems = configuredMaximum > 0 ? itemSource.slice(0, Math.floor(configuredMaximum)) : itemSource;
   const activeIndex = Math.max(0, Math.min(initialItems.length - 1, payload.selection.activeItemIndex || 0));
   const state = {
+    tintToken: 0,
     items: initialItems.map(item => ({ colorId: item.colorId, sizeId: item.sizeId, printAreaIds: new Set(item.printAreaIds) })),
     defaultItem: { ...payload.selection.defaultItem, printAreaIds: payload.selection.defaultItem.printAreaIds.slice() }, activePieceIndex: activeIndex,
     currentAreaId: workflow?.activeAreaId || payload.selection.items[activeIndex].printAreaIds[0] || payload.product.printAreas[0].id,
@@ -239,9 +243,34 @@
     });
     if (!container.children.length) { const empty = document.createElement("span"); empty.className = "preview-design-placeholder"; empty.textContent = "لا توجد عناصر تصميم في هذه الجهة"; container.appendChild(empty); }
   }
+  // Tints the product picture with the color's hex from the database: a colored layer masked to the product shape sits under the picture.
+  const alphaProbe = new Map();
+  function tintHex(color) {
+    const hex = /^#[0-9a-f]{6}$/i.test(color?.value || "") ? color.value : null; if (!hex) return null;
+    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.95 ? null : hex; // white needs no tint
+  }
+  function hasTransparentBackground(src) {
+    if (!src) return Promise.resolve(false);
+    if (!alphaProbe.has(src)) alphaProbe.set(src, new Promise(resolve => {
+      const probe = new Image(); probe.crossOrigin = "anonymous";
+      probe.onload = () => { try { const canvas = document.createElement("canvas"); canvas.width = canvas.height = 24; const context = canvas.getContext("2d"); context.drawImage(probe, 0, 0, 24, 24); const at = (x, y) => context.getImageData(x, y, 1, 1).data[3]; resolve([at(0, 0), at(23, 0), at(0, 23), at(23, 23)].every(alpha => alpha < 20)); } catch (error) { resolve(false); } };
+      probe.onerror = () => resolve(false); probe.src = src;
+    }));
+    return alphaProbe.get(src);
+  }
+  function applyTint(src, hex) {
+    const mask = "url('" + src + "')";
+    elements.tint.style.backgroundColor = hex; elements.tint.style.webkitMaskImage = elements.tint.style.maskImage = mask; elements.tint.hidden = false;
+    elements.image.className = "preview-product-image is-tinted"; // drops the old filter-based tone class
+  }
+  function clearTint() { elements.tint.hidden = true; elements.image.classList.remove("is-tinted"); }
   function renderCanvas() {
     const area = currentArea(), selected = activePiece().printAreaIds.has(area.id);
     elements.image.hidden = false; elements.image.className = "preview-product-image " + (currentColor()?.toneClass || ""); elements.image.src = imageFor(area); elements.image.alt = payload.product.name + " — " + area.name;
+    clearTint(); const color = currentColor(), source = imageFor(area, color), token = ++state.tintToken;
+    // Colors that have their own mockup picture keep it; the rest are tinted with the color's real hex when the picture is a transparent cut-out.
+    if (tintHex(color) && !color.areaMockups?.[area.id]) hasTransparentBackground(source).then(ok => { if (ok && token === state.tintToken) applyTint(source, tintHex(color)); });
     elements.image.onload = () => { elements.imagePlaceholder.hidden = true; elements.image.hidden = false; elements.placement.hidden = !selected; };
     elements.image.onerror = () => { elements.image.hidden = true; elements.placement.hidden = true; elements.imagePlaceholder.hidden = false; };
     Object.assign(elements.placement.style, { top: area.placement.top + "%", left: area.placement.left + "%", width: area.placement.width + "%", height: area.placement.height + "%" });
@@ -294,25 +323,62 @@
   }
   function renderAll() { applyRoleUi(); renderMeta(); renderViewTabs(); renderCanvas(); renderColors(); renderSizes(); renderQuantity(); renderPieces(); renderAreas(); renderPrinting(); renderPrice(); renderWarnings(); renderAllowedSummary(); renderValidation(); elements.zoomValue.textContent = Math.round(state.zoom * 100) + "%"; sync(); }
   function showToast(message, error) { clearTimeout(state.toastTimer); elements.toast.className = "preview-toast is-visible " + (error ? "is-error" : "is-success"); elements.toastIcon.className = "bi " + (error ? "bi-exclamation-lg" : "bi-check2"); elements.toastMessage.textContent = message; state.toastTimer = setTimeout(() => elements.toast.classList.remove("is-visible"), 3000); }
+  // What the cart thumbnail needs to redraw the design exactly as previewed: the product picture (and its color tint),
+  // the print zone, and the artwork placed inside it.
+  async function cartMockup(piece) {
+    const areas = selectedAreas(piece), area = areas.find(item => (payload.design.previewByArea?.[item.id]?.images?.length || payload.design.previewByArea?.[item.id]?.texts?.length)) || areas[0];
+    if (!area) return null;
+    const color = currentColor(piece), source = imageFor(area, color), path = value => { try { return new URL(value, document.baseURI).pathname; } catch (error) { return ""; } };
+    const hex = tintHex(color), tint = hex && !color.areaMockups?.[area.id] && await hasTransparentBackground(source) ? hex : null;
+    const preview = payload.design.previewByArea?.[area.id] || { images: [], texts: [] };
+    const box = item => ({ x: item.x, y: item.y, width: item.width, height: item.height, rotation: item.rotation || 0, flipX: Boolean(item.flipX), flipY: Boolean(item.flipY), layer: item.layerOrder || 1 });
+    return {
+      image: path(source), tint, areaName: area.name,
+      zone: { top: area.placement.top, left: area.placement.left, width: area.placement.width, height: area.placement.height },
+      images: (preview.images || []).map(item => ({ ...box(item), asset_id: item.assetId || null, src: item.assetId ? null : path(item.src), tint: item.tint || null })),
+      texts: (preview.texts || []).map(item => ({ ...box(item), content: item.content, size_percent: item.sizePercent, font_family: item.fontFamily, color: item.color, font_weight: item.fontWeight, font_style: item.fontStyle, text_align: item.textAlign, line_height: item.lineHeight }))
+    };
+  }
+  async function customDesignForm(groupList, pieces) {
+    const save = payload.studioSave, form = new FormData();
+    form.append("product_code", payload.product.code);
+    form.append("design_name", payload.design.name || "");
+    for (let index = 0; index < groupList.length; index += 1) groupList[index].mockup = await cartMockup(pieces[index]);
+    form.append("groups", JSON.stringify(groupList));
+    form.append("layout", JSON.stringify(save.layout));
+    const extensions = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/svg+xml": "svg" };
+    for (const id of save.assetIds) {
+      const blob = await getAssetBlob(save.designId, id); if (!blob) continue;
+      const record = save.assets.find(asset => asset.assetId === id), extension = extensions[blob.type] || "png";
+      const base = String(record?.name || id).replace(/\.[a-z0-9]+$/i, "").slice(0, 80) || "design";
+      form.append("files[]", blob, base + "." + extension); form.append("file_assets[]", id);
+    }
+    return form;
+  }
   // Laravel: the cart lives in the database, so "add to cart" posts to the server.
   function addToCart() {
     if (role !== "customer") return;
     const message = validationMessage(); if (message) { showToast(message, true); return; }
-    const endpoint = (window.palPrintsCustomerAssets || {}).cartCatalogUrl;
+    const assets = window.palPrintsCustomerAssets || {};
+    const custom = Boolean(payload.studioSave);
+    const endpoint = custom ? assets.cartCustomDesignUrl : assets.cartCatalogUrl;
     const csrf = document.querySelector('meta[name="csrf-token"]');
     if (!payload.product.code || !endpoint) { showToast("تعذر تحديد المنتج. عد إلى صفحة المنتجات واختر المنتج من جديد.", true); return; }
     const groups = new Map();
     state.items.forEach(piece => { const ids = [...piece.printAreaIds], key = JSON.stringify([piece.colorId, piece.sizeId, ids]), group = groups.get(key) || { piece, quantity: 0 }; group.quantity += 1; groups.set(key, group); });
-    const body = {
-      product_code: payload.product.code,
-      design_id: payload.design.id,
-      groups: [...groups.values()].map(group => {
-        const color = currentColor(group.piece), size = payload.product.sizes.find(item => item.id === group.piece.sizeId);
-        return { color_id: group.piece.colorId, color_name: color ? color.name : group.piece.colorId, size_id: group.piece.sizeId, size_name: size ? size.name : group.piece.sizeId, quantity: group.quantity, print_areas: selectedAreas(group.piece).map(area => area.name) };
-      })
-    };
+    const groupList = [...groups.values()].map(group => {
+      const color = currentColor(group.piece), size = payload.product.sizes.find(item => item.id === group.piece.sizeId);
+      return { color_id: group.piece.colorId, color_name: color ? color.name : group.piece.colorId, size_id: group.piece.sizeId, size_name: size ? size.name : group.piece.sizeId, quantity: group.quantity, print_areas: selectedAreas(group.piece).map(area => area.name) };
+    });
+    const pieces = [...groups.values()].map(group => group.piece);
+    const body = { product_code: payload.product.code, design_id: payload.design.id, groups: groupList };
     [elements.addToCart, elements.mobileAdd].forEach(button => { button.disabled = true; });
-    fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json", "X-CSRF-TOKEN": csrf ? csrf.content : "" }, body: JSON.stringify(body) })
+    const headers = { "Accept": "application/json", "X-CSRF-TOKEN": csrf ? csrf.content : "" };
+    // A customer-made design is saved with its artwork files (multipart); a published design only sends ids (JSON).
+    const request = custom
+      ? customDesignForm(groupList, pieces).then(form => fetch(endpoint, { method: "POST", headers, body: form }))
+      : fetch(endpoint, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    request
       .then(response => response.json().catch(() => ({})).then(data => {
         if (!response.ok) { const firstError = data.errors ? Object.values(data.errors)[0][0] : data.message; throw new Error(firstError || "تعذرت إضافة المنتج إلى السلة. حاول مرة أخرى."); }
         return data;
