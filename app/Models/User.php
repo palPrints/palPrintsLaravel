@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -134,6 +135,26 @@ class User extends Authenticatable
     public function printFiles(): HasMany
     {
         return $this->hasMany(PrintFile::class);
+    }
+
+    public function designFavorites(): HasMany
+    {
+        return $this->hasMany(DesignFavorite::class);
+    }
+
+    public function favoriteDesigns(): BelongsToMany
+    {
+        return $this->belongsToMany(Design::class, 'design_favorites')->withTimestamps();
+    }
+
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
+
+    public function supportMessages(): HasMany
+    {
+        return $this->hasMany(SupportMessage::class, 'sender_id');
     }
 
     public function primaryRole(): ?string
