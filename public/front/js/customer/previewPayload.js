@@ -28,10 +28,14 @@
     const options = config.options || {};
     const toneClass = config.toneClass || function () { return ""; };
 
-    const colors = (options.colors || []).map(function (color) {
+    // A designer approves the colors and sizes that suit a design; when they did, only those are offered.
+    const approvedColors = Array.isArray(product.allowedColors) ? product.allowedColors : [];
+    const colorList = (options.colors || []).filter(function (color) { return !approvedColors.length || approvedColors.indexOf(color.id) !== -1; });
+    const colors = (colorList.length ? colorList : (options.colors || [])).map(function (color) {
       return { id: color.id, name: color.name, value: color.value, image: product.image, toneClass: toneClass(color.id) };
     });
-    const sizes = (options.sizes && options.sizes.length) ? options.sizes : config.fallbackSizes;
+    const approvedSizes = Array.isArray(product.allowedSizes) ? product.allowedSizes : [];
+    const sizes = approvedSizes.length ? approvedSizes : ((options.sizes && options.sizes.length) ? options.sizes : config.fallbackSizes);
     const colorId = colors.length ? colors[0].id : "default";
     const sizeId = (sizes.find(function (size) { return size.id === config.defaultSizeId; }) || sizes[0]).id;
     // Print areas come from the database; the config only supplies where the design sits on the picture.

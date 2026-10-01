@@ -64,10 +64,17 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', DashboardRedirectController::class)->name('dashboard');
 
     // Design studio page, ported as-is from the frontend repo.
-    Route::get('/design-studio', fn () => view('studio.design-studio', [
-        'dbCatalog' => \App\Support\CatalogProductData::forDesigner()['products'],
-        'chooseProductUrl' => auth()->user()?->hasRole('designer') ? route('designer.designs.create') : route('customer.chooseProduct'),
-    ]))->middleware('role:customer|designer')->name('design-studio');
+    Route::get('/design-studio', function () {
+        $isDesigner = auth()->user()?->hasRole('designer');
+
+        return view('studio.design-studio', [
+            'dbCatalog' => \App\Support\CatalogProductData::forDesigner()['products'],
+            'chooseProductUrl' => $isDesigner ? route('designer.designs.create') : route('customer.chooseProduct'),
+            // Both roles use the same preview page; it switches to the designer view for designers.
+            'previewUrl' => $isDesigner ? route('designer.designs.preview') : route('customer.productPreview'),
+            'workflowMode' => $isDesigner ? 'designer' : 'customer',
+        ]);
+    })->middleware('role:customer|designer')->name('design-studio');
 
     Route::post('/onboarding/submit', [OnboardingController::class, 'submit'])
         ->name('onboarding.submit');
@@ -151,7 +158,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::middleware('account.approved')->group(function () {
             Route::get('/designs', [DesignController::class, 'index'])->name('designs.index');
             Route::get('/designs/create', [DesignController::class, 'create'])->name('designs.create');
-            Route::get('/designs/editor', [DesignController::class, 'editor'])->name('designs.editor');
+            Route::view('/designs/preview', 'customer.productPreview')->name('designs.preview');
             Route::get('/designs/review', [DesignController::class, 'review'])->name('designs.review');
             Route::post('/designs', [DesignController::class, 'store'])->name('designs.store');
         });
