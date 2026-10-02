@@ -112,21 +112,11 @@ class ProfileController extends Controller
     {
         $listed = Product::query()->where('is_active', true)->pluck('id');   // what the form offers; other offerings are left alone
         $wanted = $listed->intersect($productIds)->values();
-        $branch = $provider->branches()->orderBy('id')->first();
-
-        if (! $branch && $wanted->isEmpty()) {
+        if (! $provider->branches()->exists() && $wanted->isEmpty()) {
             return;
         }
 
-        $branch ??= PrintProviderBranch::create([
-            'print_provider_id' => $provider->id,
-            'name' => $provider->company_name,
-            'city' => Str::limit(trim(explode('،', str_replace(',', '،', (string) $provider->address))[0]) ?: 'غير محدد', 100, ''),
-            'address' => $provider->address,
-            'phone' => $provider->phone,
-            'working_hours' => $provider->working_hours,
-            'is_active' => true,
-        ]);
+        $branch = $provider->primaryBranch();
 
         $offerings = BranchProductOffering::query()
             ->whereIn('print_provider_branch_id', PrintProviderBranch::where('print_provider_id', $provider->id)->select('id'))

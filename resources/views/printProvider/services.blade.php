@@ -63,7 +63,7 @@
                     <div class="services-number-fields">
                         <label>السعة الإنتاجية اليومية <span class="services-required">*</span><input id="productCapacity" name="capacity" type="number" min="1" step="1" max="1000000" required /></label>
                         <label>مدة الإنتاج المتوقعة (أيام) <span class="services-required">*</span><input id="productDays" name="days" type="number" min="1" step="1" max="365" required /></label>
-                        <label>سعر الطباعة <span class="services-required">*</span><span class="services-price-field"><input id="productPrice" name="price" type="number" min="0.01" step="0.01" max="1000000" required /><b aria-hidden="true">$</b></span></label>
+                        <label>سعر المنتج الأساسي <span class="services-required">*</span><span class="services-price-field"><input id="productPrice" name="price" type="number" min="0.01" step="0.01" max="1000000" required /><b aria-hidden="true">₪</b></span></label>
                     </div>
                     <div id="settingsOptions"></div>
                     <p class="services-form-error" id="settingsError" role="alert" hidden></p>
@@ -80,5 +80,6 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('front/js/printProvider/services.js') }}"></script>
+    <script>window.palPrintsServices = @json($servicesData);</script>
+    <script src="{{ asset('front/js/printProvider/services.js') }}?v={{ filemtime(public_path('front/js/printProvider/services.js')) }}"></script>
 @endpush
