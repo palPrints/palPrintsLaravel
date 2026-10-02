@@ -162,6 +162,7 @@ class UserController extends Controller
                     // The identity picture is only stored once the schema has the column.
                     'idDocument' => $this->storageUrl($profile?->getAttribute('id_document')),
                     'idDocumentAvailable' => Schema::hasColumn('print_providers', 'id_document'),
+                    'contactEmail' => $profile?->getAttribute('contact_email') ?: '',
                     'status' => $this->onboardingStatus($user, $profile?->approval_status),
                     'submittedAt' => $request?->submitted_at?->locale('ar')->translatedFormat('j F Y') ?? '—',
                     'approvedAt' => $profile?->approved_at?->locale('ar')->translatedFormat('j F Y') ?? '—',

@@ -327,17 +327,20 @@ class CatalogProductData
      */
     public static function areaDefinitions(string $code): array
     {
-        return match ($code) {
+        // Sizes (mm) match the print zones the design studio draws (A4 on clothes, 20 x 9 cm on the mug).
+        return match (strtoupper($code)) {
             'TSHIRT-CLASSIC' => [
-                ['code' => 'front', 'name' => 'أمامي', 'width' => 300, 'height' => 400],
-                ['code' => 'back', 'name' => 'خلفي', 'width' => 320, 'height' => 420],
+                ['code' => 'front', 'name' => 'أمامي', 'width' => 210, 'height' => 297],
+                ['code' => 'back', 'name' => 'خلفي', 'width' => 210, 'height' => 297],
+                ['code' => 'right-sleeve', 'name' => 'الكم الأيمن', 'width' => 100, 'height' => 120],
+                ['code' => 'left-sleeve', 'name' => 'الكم الأيسر', 'width' => 100, 'height' => 120],
             ],
             'HOODIE-PREMIUM' => [
-                ['code' => 'front', 'name' => 'أمامي', 'width' => 280, 'height' => 340],
-                ['code' => 'back', 'name' => 'خلفي', 'width' => 320, 'height' => 380],
+                ['code' => 'front', 'name' => 'أمامي', 'width' => 210, 'height' => 297],
+                ['code' => 'back', 'name' => 'خلفي', 'width' => 210, 'height' => 297],
             ],
             'MUG-CERAMIC' => [
-                ['code' => 'wrap', 'name' => 'طباعة محيطية كاملة', 'width' => 200, 'height' => 80],
+                ['code' => 'wrap', 'name' => 'طباعة محيطية كاملة', 'width' => 200, 'height' => 90],
             ],
             'NOTEBOOK-CUSTOM' => [
                 ['code' => 'cover', 'name' => 'غلاف', 'width' => 148, 'height' => 210],

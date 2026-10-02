@@ -19,7 +19,6 @@ class PrintProvider extends Model
         'contact_email',
         'services',
         'working_hours',
-        'license_document',
         'verification_document',
         'id_document',
         'approval_status',

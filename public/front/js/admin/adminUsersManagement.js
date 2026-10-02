@@ -179,6 +179,7 @@
           '<dl class="designer-contact">' +
             '<div><dt>اسم المسؤول</dt><dd>' + (shop.contactName || '—') + '</dd></div>' +
             '<div><dt>البريد الإلكتروني</dt><dd dir="ltr">' + shop.email + '</dd></div>' +
+            '<div><dt>بريد المسؤول</dt><dd dir="ltr">' + (shop.contactEmail || '—') + '</dd></div>' +
             '<div><dt>رقم الهاتف</dt><dd dir="ltr">' + shop.phone + '</dd></div>' +
             '<div><dt>واتساب</dt><dd dir="ltr">' + (shop.whatsapp || '—') + '</dd></div>' +
             '<div><dt>العنوان</dt><dd>' + (shop.address || '—') + '</dd></div>' +

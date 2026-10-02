@@ -17,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /** The shop's products page: its offerings (price, production time, capacity, colours and sizes) kept in the database. */
@@ -54,6 +55,7 @@ class ServicesController extends Controller
         $colorIds = $this->options($variants, 'color')->pluck('id')->all();
         $sizeIds = $this->options($variants, 'size')->pluck('id')->all();
         $methods = $this->methods($product);
+        $areaOptions = $this->areaOptions($product);
 
         $data = $request->validate([
             'price' => ['required', 'numeric', 'min:0.01', 'max:1000000', 'decimal:0,2'],
@@ -63,6 +65,10 @@ class ServicesController extends Controller
             'colors.*' => ['string', 'in:'.implode(',', $colorIds ?: ['-'])],
             'sizes' => ['required', 'array', 'min:1'],
             'sizes.*' => ['string', 'in:'.implode(',', $sizeIds ?: ['-'])],
+            'areas' => ['required', 'array', 'min:1'],
+            'areas.*.code' => ['required', 'string', 'in:'.$areaOptions->pluck('code')->implode(',')],
+            'areas.*.width_cm' => ['required', 'numeric', 'min:1', 'max:200'],
+            'areas.*.height_cm' => ['required', 'numeric', 'min:1', 'max:200'],
             'methods' => ['required', 'array', 'min:1'],
             'methods.*.id' => ['required', 'integer', 'in:'.$methods->pluck('id')->implode(',')],
             'methods.*.price' => ['required', 'numeric', 'min:0', 'max:100000', 'decimal:0,2'],
@@ -75,6 +81,12 @@ class ServicesController extends Controller
             'capacity.required' => 'أدخل السعة الإنتاجية اليومية.',
             'colors.required' => 'اختر لونًا واحدًا على الأقل.',
             'sizes.required' => 'اختر مقاسًا واحدًا على الأقل.',
+            'areas.required' => 'اختر منطقة طباعة واحدة على الأقل.',
+            'areas.min' => 'اختر منطقة طباعة واحدة على الأقل.',
+            'areas.*.width_cm.required' => 'أدخل أقصى عرض لكل منطقة مختارة.',
+            'areas.*.height_cm.required' => 'أدخل أقصى ارتفاع لكل منطقة مختارة.',
+            'areas.*.width_cm.min' => 'أقصى عرض يجب أن يكون 1 سم على الأقل.',
+            'areas.*.height_cm.min' => 'أقصى ارتفاع يجب أن يكون 1 سم على الأقل.',
             'methods.required' => 'اختر طريقة طباعة واحدة على الأقل.',
             'methods.min' => 'اختر طريقة طباعة واحدة على الأقل.',
             'methods.*.price.required' => 'أدخل سعر كل طريقة طباعة مختارة.',
@@ -84,6 +96,15 @@ class ServicesController extends Controller
             'methods.*.rate.max' => 'السعر لكل 100 سم² كبير جدًا.',
             'methods.*.rate.decimal' => 'السعر لكل 100 سم² يحتمل خانتين عشريتين كحد أقصى.',
         ]);
+
+        foreach ($data['areas'] as $index => $chosen) {
+            $option = $areaOptions->firstWhere('code', $chosen['code']);
+            if ((float) $chosen['width_cm'] > $option['widthCm'] || (float) $chosen['height_cm'] > $option['heightCm']) {
+                throw ValidationException::withMessages([
+                    'areas.'.$index.'.width_cm' => 'أقصى مقاس لمنطقة «'.$option['name'].'» لا يتجاوز '.$option['widthCm'].' × '.$option['heightCm'].' سم.',
+                ]);
+            }
+        }
 
         $branch = $this->provider($request)->primaryBranch();
 
@@ -114,7 +135,7 @@ class ServicesController extends Controller
             }
 
             $this->saveBasePrice($offering, (float) $data['price']);
-            $this->savePrinting($offering, $product, collect($data['methods']));
+            $this->savePrinting($offering, $product, collect($data['areas']), collect($data['methods']));
         });
 
         return response()->json([
@@ -155,17 +176,30 @@ class ServicesController extends Controller
      * Every print area of the product gets a capability per chosen method, priced by one add-on rule. Methods that are no
      * longer chosen are switched off, not deleted.
      *
-     * @param  Collection<int, array{id: int, price: float|string}>  $chosen
+     * @param  Collection<int, array{code: string, width_cm: float|string, height_cm: float|string}>  $areas  the areas the shop offers
+     * @param  Collection<int, array{id: int, price: float|string}>  $chosen  the printing methods it offers
      */
-    private function savePrinting(BranchProductOffering $offering, Product $product, Collection $chosen): void
+    private function savePrinting(BranchProductOffering $offering, Product $product, Collection $areas, Collection $chosen): void
     {
         $prices = $chosen->mapWithKeys(fn (array $method) => [(int) $method['id'] => (float) $method['price']]);
         $rates = $chosen->mapWithKeys(fn (array $method) => [(int) $method['id'] => (float) ($method['rate'] ?? 0)]);
+        $offered = $areas->keyBy('code');
 
-        foreach (CatalogProductData::areaDefinitions($product->code) as $definition) {
+        foreach ($this->areaOptions($product) as $option) {
+            if (! $offered->has($option['code'])) {
+                // Not offered by this shop: switched off (not deleted) so it can be ticked again later.
+                BranchPrintArea::where('branch_product_offering_id', $offering->id)->where('code', $option['code'])->update(['is_active' => false]);
+
+                continue;
+            }
+
+            $widthMm = (int) round((float) $offered[$option['code']]['width_cm'] * 10);
+            $heightMm = (int) round((float) $offered[$option['code']]['height_cm'] * 10);
+            $definition = ['width' => $widthMm, 'height' => $heightMm];
+
             $area = BranchPrintArea::updateOrCreate(
-                ['branch_product_offering_id' => $offering->id, 'code' => $definition['code']],
-                ['name' => $definition['name'], 'max_width_mm' => $definition['width'], 'max_height_mm' => $definition['height'], 'is_active' => true],
+                ['branch_product_offering_id' => $offering->id, 'code' => $option['code']],
+                ['name' => $option['name'], 'max_width_mm' => $widthMm, 'max_height_mm' => $heightMm, 'is_active' => true],
             );
 
             foreach ($area->branchPrintCapabilities()->get() as $capability) {
@@ -193,6 +227,24 @@ class ServicesController extends Controller
                 );
             }
         }
+    }
+
+    /**
+     * The print areas a product has, with the largest size (cm) a shop can claim for each. They come from the same
+     * definitions the studio is built on; when the platform gets a table for product print areas, only this method changes.
+     *
+     * @return Collection<int, array{code: string, name: string, widthCm: float, heightCm: float}>
+     */
+    private function areaOptions(Product $product): Collection
+    {
+        return collect(CatalogProductData::areaDefinitions($product->code))
+            ->map(fn (array $area) => [
+                'code' => $area['code'],
+                'name' => $area['name'],
+                'widthCm' => round($area['width'] / 10, 1),
+                'heightCm' => round($area['height'] / 10, 1),
+            ])
+            ->values();
     }
 
     /** @return Collection<int, array{id: int, code: string, name: string}> */
@@ -253,7 +305,12 @@ class ServicesController extends Controller
                         // A shop that never chose options starts with everything ticked.
                         'colors' => $hasRows ? $chosen->pluck('color')->unique()->values()->all() : $colors->pluck('id')->all(),
                         'sizes' => $hasRows ? $chosen->pluck('size')->unique()->values()->all() : $sizes->pluck('id')->all(),
-                        'methods' => $offering->branchPrintAreas
+                        'areas' => $offering->branchPrintAreas->isEmpty()
+                            ? $this->areaOptions($product)->map(fn (array $option) => ['code' => $option['code'], 'widthCm' => $option['widthCm'], 'heightCm' => $option['heightCm']])->all()
+                            : $offering->branchPrintAreas->where('is_active', true)
+                                ->map(fn ($area) => ['code' => $area->code, 'widthCm' => round($area->max_width_mm / 10, 1), 'heightCm' => round($area->max_height_mm / 10, 1)])
+                                ->values()->all(),
+                        'methods' => $offering->branchPrintAreas->where('is_active', true)
                             ->flatMap(fn ($area) => $area->branchPrintCapabilities)
                             ->where('is_active', true)
                             ->groupBy('printing_method_id')
@@ -275,6 +332,7 @@ class ServicesController extends Controller
                     'image' => filled($product->image) ? asset($product->image) : null,
                     'colors' => $colors->values()->all(),
                     'sizes' => $sizes->values()->all(),
+                    'areas' => $this->areaOptions($product)->all(),
                     'methods' => $this->methods($product)->all(),
                     'settings' => $settings,
                 ];

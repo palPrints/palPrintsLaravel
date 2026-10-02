@@ -41,9 +41,11 @@
       });
     }
 
-    function showToast(message) {
+    function showToast(message, isError) {
+      if (!message) return;
       window.clearTimeout(toastTimer);
       toast.textContent = message;
+      toast.classList.toggle("is-error", Boolean(isError));
       toast.classList.add("is-visible");
       toastTimer = window.setTimeout(function () { toast.classList.remove("is-visible"); }, 3500);
     }
@@ -114,7 +116,7 @@
         money.append(amount);
         details.append(money);
         const rows = settings.configured
-          ? [["clock", settings.days + (settings.days === 1 ? " يوم" : " أيام")], ["box", settings.capacity + " قطعة يوميًا"], ["palette", settings.colors.length + " ألوان"], ["printer", settings.methods.length + (settings.methods.length === 1 ? " طريقة طباعة" : " طرق طباعة")], ["grid", settings.sizes.length === 1 ? (product.sizes.find(function (size) { return size.id === settings.sizes[0]; }) || {}).label : settings.sizes.length + " مقاسات"]]
+          ? [["clock", settings.days + (settings.days === 1 ? " يوم" : " أيام")], ["box", settings.capacity + " قطعة يوميًا"], ["palette", settings.colors.length + " ألوان"], ["printer", settings.methods.length + (settings.methods.length === 1 ? " طريقة طباعة" : " طرق طباعة")], ["bounding-box", settings.areas.length + (settings.areas.length === 1 ? " منطقة طباعة" : " مناطق طباعة")], ["grid", settings.sizes.length === 1 ? (product.sizes.find(function (size) { return size.id === settings.sizes[0]; }) || {}).label : settings.sizes.length + " مقاسات"]]
           : [["info-circle", "أكمل السعر ومدة الإنتاج والسعة ليظهر للعملاء"]];
         rows.forEach(function (detail) { const item = element("li"); item.append(icon(detail[0]), element("span", "", detail[1])); details.append(item); });
         const edit = element("button", "services-button services-edit"); edit.type = "button"; edit.dataset.editProduct = product.id; edit.setAttribute("aria-label", "تعديل إعدادات " + product.name); edit.append(icon("pencil-square"), element("span", "", settings.configured ? "تعديل الإعدادات" : "إكمال الإعدادات"));
@@ -150,6 +152,39 @@
         });
         container.append(fieldset);
       });
+
+      // Print areas: the ones this shop prints on, each with the largest size (cm) it can print there.
+      const areas = element("fieldset", "services-options services-methods services-areas"); areas.dataset.optionGroup = "areas";
+      const areaTitle = element("legend", "", "مناطق الطباعة المتاحة عندك "); areaTitle.append(element("span", "services-required", "*")); areas.append(areaTitle);
+      areas.append(element("p", "services-methods-hint", "اختر المناطق التي تطبع عليها هذه القطعة، وحدد أكبر مقاس تقدر على طباعته فيها. لا يمكن أن يتجاوز مقاس المنطقة الذي يصمم عليه الزبون."));
+      product.areas.forEach(function (option) {
+        const saved = (settings.areas || []).find(function (item) { return item.code === option.code; });
+        const row = element("div", "services-method");
+        const label = element("label", "services-method-name");
+        const box = element("input"); box.type = "checkbox"; box.name = "areas"; box.value = option.code; box.checked = Boolean(saved);
+        label.append(box, element("span", "", option.name), element("small", "services-area-limit", "الحد " + option.widthCm + " × " + option.heightCm + " سم"));
+        const sizes = element("div", "services-method-prices");
+        function sizeField(caption, key, value, max) {
+          const field = element("label", "services-method-price");
+          field.append(element("small", "", caption));
+          const wrap = element("span", "services-method-input");
+          const input = element("input"); input.type = "number"; input.min = "1"; input.step = "0.1"; input.max = String(max); input.dataset[key] = option.code;
+          input.value = saved ? value : ""; input.disabled = !saved; input.required = Boolean(saved); input.setAttribute("aria-label", caption + " — " + option.name);
+          wrap.append(input, element("b", "", "سم"));
+          field.append(wrap);
+          return field;
+        }
+        sizes.append(sizeField("أقصى عرض", "areaWidth", saved && saved.widthCm, option.widthCm), sizeField("أقصى ارتفاع", "areaHeight", saved && saved.heightCm, option.heightCm));
+        box.addEventListener("change", function () {
+          sizes.querySelectorAll("input").forEach(function (input) {
+            input.disabled = !box.checked; input.required = box.checked;
+            if (box.checked && input.value === "") input.value = input.dataset.areaWidth !== undefined ? option.widthCm : option.heightCm;
+          });
+        });
+        row.append(label, sizes);
+        areas.append(row);
+      });
+      container.append(areas);
 
       // Printing methods: a method is offered when ticked, with its own price on top of the product price.
       const methods = element("fieldset", "services-options services-methods"); methods.dataset.optionGroup = "methods";
@@ -192,6 +227,7 @@
       const product = find(id);
       const existing = product.settings;
       draft = { id: id, price: existing && existing.price, days: existing && existing.days, capacity: existing && existing.capacity,
+        areas: existing ? existing.areas.map(function (area) { return { code: area.code, widthCm: area.widthCm, heightCm: area.heightCm }; }) : product.areas.map(function (area) { return { code: area.code, widthCm: area.widthCm, heightCm: area.heightCm }; }),
         methods: existing ? existing.methods.map(function (method) { return { id: method.id, price: method.price, rate: method.rate }; }) : [],
         colors: existing ? existing.colors.slice() : product.colors.map(function (color) { return color.id; }),
         sizes: existing ? existing.sizes.slice() : product.sizes.map(function (size) { return size.id; }) };
@@ -224,7 +260,7 @@
         request("PATCH", url(config.toggleUrl, id)).then(function (data) {
           replace(data.product); renderProducts(); showToast(data.message);
           const target = products.querySelector('[data-toggle-product="' + id + '"]'); if (target) target.focus();
-        }).catch(function (exception) { toggle.disabled = false; showToast(exception.message); });
+        }).catch(function (exception) { toggle.disabled = false; showToast(exception.message, true); });
         return;
       }
       const edit = event.target.closest("[data-edit-product]");
@@ -255,6 +291,10 @@
       let emptyGroup = null;
       ["colors", "sizes"].forEach(function (group) { body[group] = Array.from(form.querySelectorAll('input[name="' + group + '"]:checked')).map(function (input) { return input.value; }); if (!body[group].length && !emptyGroup) emptyGroup = group; });
       if (emptyGroup) { error.textContent = "اختر خيارًا واحدًا على الأقل من كل مجموعة متاحة."; error.hidden = false; form.querySelector('input[name="' + emptyGroup + '"]').focus(); return; }
+      body.areas = Array.from(form.querySelectorAll('input[name="areas"]:checked')).map(function (input) {
+        return { code: input.value, width_cm: Number(form.querySelector('[data-area-width="' + input.value + '"]').value), height_cm: Number(form.querySelector('[data-area-height="' + input.value + '"]').value) };
+      });
+      if (!body.areas.length) { error.textContent = "اختر منطقة طباعة واحدة على الأقل."; error.hidden = false; form.querySelector('input[name="areas"]').focus(); return; }
       body.methods = Array.from(form.querySelectorAll('input[name="methods"]:checked')).map(function (input) {
         const price = form.querySelector('[data-method-price="' + input.value + '"]'), rate = form.querySelector('[data-method-rate="' + input.value + '"]');
         return { id: Number(input.value), price: Number(price.value), rate: Number(rate.value || 0) };
