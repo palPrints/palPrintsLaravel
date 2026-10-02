@@ -21,6 +21,8 @@
     $savedServices = $provider->services ?? [];
     $selectedServices = $savedServices['selected'] ?? [];
     $otherServices = $savedServices['other'] ?? [];
+    $selectedProducts = array_map('intval', old('products', $selectedProductIds));
+    $shownProducts = $productOptions->whereIn('id', $selectedProductIds);
     $shownServices = array_merge(
         array_values(array_intersect_key($serviceOptions, array_flip($selectedServices))),
         $otherServices,
@@ -122,6 +124,17 @@
                 </dl>
             </section>
 
+            <section class="form-card">
+                <header class="card-title"><span><i class="bi bi-box-seam"></i></span><h2>المنتجات التي أطبعها</h2></header>
+                <div class="work-days is-static service-chips">
+                    @forelse ($shownProducts as $product)
+                        <span class="selected">{{ $product->name }}</span>
+                    @empty
+                        <span>{{ $dash }}</span>
+                    @endforelse
+                </div>
+            </section>
+
             @if ($hasServices)
                 <section class="form-card">
                     <header class="card-title"><span><i class="bi bi-printer"></i></span><h2>الخدمات التي أقدمها</h2></header>
@@ -220,6 +233,22 @@
                             <label>البريد الإلكتروني للمسؤول<span class="input-icon"><i class="bi bi-envelope"></i><input name="contact_email" type="email" value="{{ old('contact_email', $provider->contact_email) }}" dir="ltr"></span></label>
                         @endif
                     </div>
+                </section>
+
+                <section class="form-card">
+                    <header class="card-title"><span><i class="bi bi-box-seam"></i></span><h2>المنتجات التي أطبعها</h2></header>
+                    <p class="services-hint">اختر المنتجات التي تقدمها مطبعتك. بعد موافقة الإدارة على طلبك تظهر هذه المنتجات في صفحة خدمات الطباعة لتكمل أسعارها ومدة تجهيزها.</p>
+                    @foreach ($productOptions->groupBy(fn ($product) => $product->category?->name ?? 'منتجات أخرى') as $categoryName => $group)
+                        <h3 class="services-group">{{ $categoryName }}</h3>
+                        <div class="service-options">
+                            @foreach ($group as $product)
+                                <label class="service-option">
+                                    <input type="checkbox" name="products[]" value="{{ $product->id }}" @checked(in_array($product->id, $selectedProducts, true))>
+                                    <span>{{ $product->name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    @endforeach
                 </section>
 
                 @if ($hasServices)

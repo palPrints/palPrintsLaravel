@@ -165,8 +165,10 @@
       const canReview = shop.status === "pending" && shop.reviewUrl;
       const documents =
         '<ul class="print-shop-documents">' +
-          renderDocumentRow('bi-file-earmark-text', 'رخصة المطبعة', shop.licenseDocument) +
           renderDocumentRow('bi-patch-check', 'وثيقة التحقق', shop.verificationDocument) +
+          (shop.idDocumentAvailable
+            ? renderDocumentRow('bi-person-vcard', 'صورة الهوية', shop.idDocument)
+            : '<li class="print-shop-document-row"><span><i class="bi bi-person-vcard" aria-hidden="true"></i>صورة الهوية</span><strong class="is-missing">غير متاحة بعد</strong></li>') +
         '</ul>';
       return '<section class="designer-expansion print-shop-expansion" aria-label="تفاصيل ' + shop.name + '">' +
         '<div class="designer-tabs" role="tablist"><button class="' + (infoVisible ? 'active' : '') + '" type="button" data-print-shop-tab="info" data-print-shop-tab-index="' + index + '">البيانات</button><button class="' + (!infoVisible ? 'active' : '') + '" type="button" data-print-shop-tab="jobs" data-print-shop-tab-index="' + index + '">وظائف الطباعة</button></div>' +
@@ -180,6 +182,7 @@
             '<div><dt>رقم الهاتف</dt><dd dir="ltr">' + shop.phone + '</dd></div>' +
             '<div><dt>واتساب</dt><dd dir="ltr">' + (shop.whatsapp || '—') + '</dd></div>' +
             '<div><dt>العنوان</dt><dd>' + (shop.address || '—') + '</dd></div>' +
+            '<div><dt>المنتجات التي تطبعها</dt><dd>' + (shop.products || '—') + '</dd></div>' +
             '<div><dt>ساعات العمل</dt><dd>' + (shop.workingHours || '—') + '</dd></div>' +
             '<div><dt>تاريخ الانضمام</dt><dd>' + shop.joined + '</dd></div>' +
             '<div><dt>تاريخ تقديم الطلب</dt><dd>' + (shop.submittedAt || '—') + '</dd></div>' +

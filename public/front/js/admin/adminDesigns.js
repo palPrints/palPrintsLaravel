@@ -104,6 +104,13 @@
       setText("dialogDesigner", data.designer);
       setText("dialogProduct", data.product || "—");
       setText("dialogDate", data.date);
+      [["audience", "dialogAudience"], ["previewColor", "dialogPreviewColor"], ["colors", "dialogColors"], ["sizes", "dialogSizes"]].forEach(function (pair) {
+        setText(pair[1], data[pair[0]] || "");
+        dialog.querySelector('[data-detail-row="' + pair[0] + '"]').hidden = !data[pair[0]];
+      });
+      setText("dialogBasePrice", data.basePrice);
+      setText("dialogSellingPrice", data.sellingPrice);
+      setText("dialogProfit", data.profit);
       status.className = "design-status " + data.status;
       status.textContent = stateLabels[data.status];
 
@@ -125,14 +132,9 @@
       if (event.target === dialog) dialog.close();
     });
 
-    function reviewDesign(action) {
+    function reviewDesign(action, reason) {
       if (!activeRow) return;
-
-      let reason = null;
-      if (action === "reject") {
-        reason = window.prompt("سبب رفض التصميم (اختياري):", "");
-        if (reason === null) return;
-      }
+      reason = reason === undefined ? null : reason;
 
       const row = activeRow;
       const buttons = dialogActions.querySelectorAll("button");
@@ -173,7 +175,20 @@
     }
 
     document.getElementById("approveDesign").addEventListener("click", function () { reviewDesign("approve"); });
-    document.getElementById("rejectDesign").addEventListener("click", function () { reviewDesign("reject"); });
+    const rejectDialog = document.getElementById("rejectDialog"), rejectReason = document.getElementById("rejectReason");
+    rejectReason.addEventListener("input", function () { setText("rejectCount", String(rejectReason.value.length)); });
+    document.getElementById("rejectDesign").addEventListener("click", function () {
+      rejectReason.value = ""; setText("rejectCount", "0");
+      rejectDialog.showModal(); rejectReason.focus();
+    });
+    document.getElementById("rejectCancel").addEventListener("click", function () { rejectDialog.close(); });
+    rejectDialog.addEventListener("click", function (event) { if (event.target === rejectDialog) rejectDialog.close(); });
+    document.getElementById("rejectForm").addEventListener("submit", function (event) {
+      event.preventDefault();
+      const reason = rejectReason.value.trim();
+      rejectDialog.close();
+      reviewDesign("reject", reason);
+    });
 
     updateSummary();
     filterRows();
