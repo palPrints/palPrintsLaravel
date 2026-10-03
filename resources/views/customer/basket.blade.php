@@ -53,12 +53,10 @@
                             <div class="product-media"><img src="{{ $item['product_image'] }}" alt="{{ $item['product_name'] }}"></div>
                             <div>
                                 <h3>{{ $item['product_name'] }}</h3>
-                                @if(!empty($item['options']))
+                                @if(!empty($item['option_tags']) || !empty($item['options']['print_areas']) || !empty($item['options']['files']))
                                     <div class="tags">
-                                        @foreach($item['options'] as $key => $value)
-                                            @if($key !== 'files' && is_scalar($value))
-                                                <span>{{ $value }}</span>
-                                            @endif
+                                        @foreach($item['option_tags'] ?? [] as $tag)
+                                            <span>{{ $tag }}</span>
                                         @endforeach
                                         @if(!empty($item['options']['print_areas']) && is_array($item['options']['print_areas']))
                                             <span><i class="bi bi-printer"></i> طباعة: {{ implode(' + ', $item['options']['print_areas']) }}</span>

@@ -4,6 +4,9 @@
   const PAGE_SIZE = 8;
   const CART_STORAGE_KEY = "stickerCart";
   const FAVORITES_STORAGE_KEY = "palprints-sticker-favorites";
+  const FAVORITE_ITEMS_STORAGE_KEY = "palprints-sticker-favorite-items";
+  const assets = window.palPrintsCustomerAssets || {};
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || "";
 
   const categoryMeta = {
     quotes: { label: "خطوط وعبارات", title: "تصاميم خطوط وعبارات جاهزة" },
@@ -118,8 +121,24 @@
     ]
   };
 
+  const databaseStickerDesigns = Array.isArray(assets.publishedDesigns) ? assets.publishedDesigns : [];
+
+  if (databaseStickerDesigns.length) {
+    Object.keys(catalog).forEach((category) => { catalog[category] = []; });
+    databaseStickerDesigns.forEach((design) => {
+      const category = Object.prototype.hasOwnProperty.call(catalog, design.category) ? design.category : "simple";
+      catalog[category].push({
+        ...design,
+        id: String(design.id),
+        category,
+        alt: design.description || design.title,
+        image: design.image || assets.stickerIconFallback || "assets/images/icons8-sticker-48.png"
+      });
+    });
+  }
+
   const designById = new Map(
-    Object.values(catalog).flat().map((design) => [design.id, design])
+    Object.values(catalog).flat().map((design) => [String(design.id), design])
   );
 
   const state = {
@@ -191,9 +210,13 @@
   }
 
   function readFavorites() {
+    if (databaseStickerDesigns.length) {
+      return new Set(databaseStickerDesigns.filter((design) => design.is_favorite).map((design) => String(design.id)));
+    }
+
     try {
       const stored = JSON.parse(localStorage.getItem(FAVORITES_STORAGE_KEY) || "[]");
-      return new Set(Array.isArray(stored) ? stored.filter((id) => designById.has(id)) : []);
+      return new Set(Array.isArray(stored) ? stored.map(String).filter((id) => designById.has(id)) : []);
     } catch (_) {
       return new Set();
     }
@@ -560,22 +583,52 @@
       if (button.dataset.pageAction === "next") goToPage(state.page + 1);
     });
 
-    elements.grid.addEventListener("click", (event) => {
+    elements.grid.addEventListener("click", async (event) => {
       const favoriteButton = event.target.closest("[data-favorite-design]");
       if (favoriteButton) {
-        const designId = favoriteButton.dataset.favoriteDesign;
+        const designId = String(favoriteButton.dataset.favoriteDesign);
         const design = designById.get(designId);
         if (!design) return;
 
         const wasFavorite = favorites.has(designId);
-        if (wasFavorite) favorites.delete(designId);
-        else favorites.add(designId);
-        favoriteButton.setAttribute("aria-pressed", String(!wasFavorite));
-        favoriteButton.setAttribute(
-          "aria-label",
-          `${wasFavorite ? "إضافة" : "إزالة"} تصميم ${design.title} ${wasFavorite ? "إلى" : "من"} المفضلة`
-        );
-        favoriteButton.querySelector("i").className = `bi bi-heart${wasFavorite ? "" : "-fill"}`;
+        const applyFavoriteState = (isFavorite) => {
+          if (isFavorite) favorites.add(designId);
+          else favorites.delete(designId);
+          favoriteButton.setAttribute("aria-pressed", String(isFavorite));
+          favoriteButton.setAttribute(
+            "aria-label",
+            `${isFavorite ? "إزالة" : "إضافة"} تصميم ${design.title} ${isFavorite ? "من" : "إلى"} المفضلة`
+          );
+          favoriteButton.querySelector("i").className = `bi bi-heart${isFavorite ? "-fill" : ""}`;
+        };
+
+        if (design.favorite_url) {
+          favoriteButton.disabled = true;
+          try {
+            const response = await fetch(design.favorite_url, {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "X-CSRF-TOKEN": csrfToken,
+                "X-Requested-With": "XMLHttpRequest"
+              }
+            });
+            if (!response.ok) throw new Error("favorite failed");
+            const data = await response.json();
+            applyFavoriteState(Boolean(data.favorited));
+            if (data.favorited) {
+              window.PalPrintNotifications?.add(`تمت إضافة «${design.title}» إلى المفضلة`, "heart-fill");
+            }
+          } catch (_) {
+            applyFavoriteState(wasFavorite);
+            fallbackToast("تعذر تحديث المفضلة، حاولي مرة أخرى.", "exclamation-triangle");
+          } finally {
+            favoriteButton.disabled = false;
+          }
+          return;
+        }
+
+        applyFavoriteState(!wasFavorite);
         saveFavorites();
 
         if (!wasFavorite) {
@@ -583,7 +636,6 @@
         }
         return;
       }
-
       const button = event.target.closest("[data-add-design]");
       if (!button) return;
       const design = (catalog[state.category] || []).find((item) => item.id === button.dataset.addDesign);

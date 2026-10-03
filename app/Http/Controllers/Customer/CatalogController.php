@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Design;
+use App\Models\DesignFavorite;
 use App\Models\Product;
 use App\Support\CatalogProductData;
 use Illuminate\Contracts\View\View;
@@ -51,6 +52,11 @@ class CatalogController extends Controller
     public function mugs(): View
     {
         return $this->productDesigns('MUG-CERAMIC', 'customer.mugs', 'front/assets/images/customer/cup.webp');
+    }
+
+    public function stickers(): View
+    {
+        return $this->productDesigns('STICKER-CUSTOM', 'customer.stickers', 'front/assets/images/customer/icons8-sticker-48.png');
     }
 
     public function paperPrinting(): View
@@ -172,14 +178,27 @@ class CatalogController extends Controller
         $designs = collect();
 
         if ($product) {
-            $designs = Design::query()
+            $publishedDesigns = Design::query()
                 ->with(['designer', 'product'])
                 ->where('product_id', $product->id)
                 ->where('status', 'published')
                 ->latest('published_at')
                 ->latest()
-                ->get()
-                ->map(fn (Design $design) => $this->publishedDesign($design, $fallbackImage));
+                ->get();
+
+            $favoriteIds = DesignFavorite::query()
+                ->where('user_id', auth()->id())
+                ->whereIn('design_id', $publishedDesigns->pluck('id'))
+                ->pluck('design_id')
+                ->map(fn ($id) => (string) $id)
+                ->all();
+
+            $designs = $publishedDesigns
+                ->map(fn (Design $design) => $this->publishedDesign(
+                    $design,
+                    $fallbackImage,
+                    in_array((string) $design->id, $favoriteIds, true)
+                ));
         }
 
         return view($view, [
@@ -223,7 +242,7 @@ class CatalogController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function publishedDesign(Design $design, string $fallbackImage): array
+    private function publishedDesign(Design $design, string $fallbackImage, bool $isFavorite = false): array
     {
         $options = $design->selected_options ?? [];
 
@@ -235,6 +254,8 @@ class CatalogController extends Controller
             'designer' => $design->designer?->name ?? 'PalPrints Designer',
             'price' => (float) ($design->selling_price ?: $design->base_price),
             'image' => $design->image ? asset($design->image) : asset($fallbackImage),
+            'is_favorite' => $isFavorite,
+            'favorite_url' => route('customer.designs.favorite', $design),
         ];
     }
 

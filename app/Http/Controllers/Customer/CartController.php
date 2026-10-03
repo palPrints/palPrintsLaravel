@@ -36,6 +36,7 @@ class CartController extends Controller
                     ->map(fn (PrintFile $file) => [
                         'name' => $file->original_name,
                         'path' => $file->stored_path,
+                        'preview_url' => $file->preview_path ? route('customer.print-files.preview', $file) : null,
                         'size' => $file->file_size,
                         'page_count' => $file->page_count,
                     ])
@@ -130,6 +131,7 @@ class CartController extends Controller
             $pageCount = $this->detectPageCount($file, $extension);
             $filename = (string) Str::uuid().($extension ? '.'.$extension : '');
             $path = $file->storeAs('customer-print-files/tmp/'.$request->user()->id, $filename, 'local');
+            $preview = $this->createPreview($file, $path, $extension, $request->user()->id);
 
             PrintFile::create([
                 'user_id' => $request->user()->id,
@@ -137,6 +139,8 @@ class CartController extends Controller
                 'cart_item_id' => $item->id,
                 'original_name' => $file->getClientOriginalName(),
                 'stored_path' => $path,
+                'preview_path' => $preview['path'],
+                'preview_disk' => $preview['disk'],
                 'disk' => 'local',
                 'mime_type' => $file->getClientMimeType(),
                 'extension' => $extension,
@@ -264,7 +268,97 @@ class CartController extends Controller
 
         return back()->with('status', 'item-removed');
     }
+    public function previewPrintFile(Request $request, PrintFile $printFile): BinaryFileResponse
+    {
+        abort_unless($printFile->user_id === $request->user()->id, 403);
+        abort_unless($printFile->preview_path && $printFile->status !== PrintFile::STATUS_DELETED, 404);
 
+        $disk = $printFile->preview_disk ?: $printFile->disk ?: 'local';
+        abort_unless(Storage::disk($disk)->exists($printFile->preview_path), 404);
+
+        $path = Storage::disk($disk)->path($printFile->preview_path);
+        $mime = Storage::disk($disk)->mimeType($printFile->preview_path) ?: 'image/jpeg';
+
+        return response()->file($path, ['Content-Type' => $mime]);
+    }
+
+
+    private function paperOptionTags(array $options): array
+    {
+        $labels = [
+            'paper_size' => 'حجم الورق',
+            'paper_type' => 'نوع الورق',
+            'color_mode' => 'لون الطباعة',
+            'sides' => 'جوانب الطباعة',
+            'layout' => 'تخطيط الصفحة',
+            'grouping' => 'طريقة الملفات',
+            'binding' => 'التغليف',
+            'quantity' => 'الكمية',
+            'file_count' => 'عدد الملفات',
+            'page_count' => 'عدد الصفحات',
+        ];
+
+        $values = [
+            'standard' => 'عادي 80 جم',
+            'thick' => 'فاخر 120 جم',
+            'coated' => 'مصقول 150 جم',
+            'bw' => 'أبيض وأسود',
+            'color' => 'ملون',
+            'single' => 'وجه واحد',
+            'double' => 'وجهين',
+            '1' => 'صفحة واحدة لكل وجه',
+            '2' => 'صفحتان لكل وجه',
+            '4' => '4 صفحات لكل وجه',
+            'combined' => 'دمج الملفات',
+            'separate' => 'فصل الملفات',
+            'none' => 'بدون تغليف',
+        ];
+
+        return collect($labels)
+            ->map(function (string $label, string $key) use ($options, $values) {
+                if (! array_key_exists($key, $options) || $options[$key] === '' || $options[$key] === null) {
+                    return null;
+                }
+
+                $value = $options[$key];
+                if (is_array($value)) {
+                    $value = implode('، ', array_map(fn ($item) => $values[(string) $item] ?? (string) $item, $value));
+                } else {
+                    $value = $values[(string) $value] ?? (string) $value;
+                }
+
+                return $label.': '.$value;
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    private function createPreview(UploadedFile $file, string $storedPath, string $extension, int $userId): array
+    {
+        if (in_array($extension, ['jpg', 'jpeg', 'png'], true)) {
+            return ['path' => $storedPath, 'disk' => 'local'];
+        }
+
+        if ($extension !== 'pdf' || ! class_exists(\Imagick::class) || ! $file->getRealPath()) {
+            return ['path' => null, 'disk' => null];
+        }
+
+        try {
+            $previewPath = 'customer-print-files/previews/'.$userId.'/'.Str::uuid().'.jpg';
+            $image = new \Imagick($file->getRealPath().'[0]');
+            $image->setImageBackgroundColor('white');
+            $image->setImageFormat('jpg');
+            $image->setImageCompressionQuality(85);
+            Storage::disk('local')->put($previewPath, $image->getImagesBlob());
+            $image->clear();
+            $image->destroy();
+
+            return ['path' => $previewPath, 'disk' => 'local'];
+        } catch (\Throwable) {
+            return ['path' => null, 'disk' => null];
+        }
+    }
     private function activeCart(Request $request): Cart
     {
         return Cart::firstOrCreate(
@@ -356,6 +450,10 @@ class CartController extends Controller
         foreach ($cartItem->printFiles as $file) {
             if ($file->stored_path) {
                 Storage::disk($file->disk ?: 'local')->delete($file->stored_path);
+            }
+
+            if ($file->preview_path && $file->preview_path !== $file->stored_path) {
+                Storage::disk($file->preview_disk ?: $file->disk ?: 'local')->delete($file->preview_path);
             }
 
             $file->update([
