@@ -375,66 +375,54 @@ body.home-page {
 }
 
 @media (max-width: 820px) {
+  /* Same composition as desktop: subject on the left, text column on the
+     right over the blue background. Everything is positioned in cqw so the
+     whole stage scales with the screen; the stage is taller than 16:9 to leave
+     the text enough room. */
   .home-hero {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     aspect-ratio: auto;
-    padding-top: 28px;
-    text-align: center;
+    height: 78cqw;
   }
 
   .home-hero__wordmark {
-    position: static;
-    font-size: clamp(3.6rem, 21vw, 6.5rem);
+    top: 3.7cqw;
   }
 
   .home-hero__subject {
-    display: none;
+    top: 14cqw;
+    left: -8cqw;
+    width: 100cqw;
+    max-width: none;
   }
 
   .home-hero__content {
-    position: static;
-    align-items: center;
-    width: min(100%, 520px);
-    padding: 12px var(--sp-5) 0;
-    text-align: center;
+    top: 36cqw;
+    right: 4cqw;
+    width: 41cqw;
   }
 
   .home-hero__content h1 {
-    font-size: clamp(1.6rem, 6.6vw, 2.2rem);
+    font-size: clamp(0.9rem, 4.3cqw, 1.7rem);
+    line-height: 1.4;
   }
 
   .home-hero__content p {
-    margin-top: var(--sp-3);
-    font-size: 1rem;
-    line-height: 1.75;
+    margin-top: 1.6cqw;
+    font-size: clamp(0.6rem, 2.6cqw, 1rem);
+    line-height: 1.7;
   }
 
   .home-hero__cta {
-    gap: 8px;
-    min-height: 48px;
-    margin-top: var(--sp-5);
-    padding: 0 26px;
-    font-size: 1rem;
+    gap: 1.2cqw;
+    min-height: 7.5cqw;
+    margin-top: 2.6cqw;
+    padding: 0 3.6cqw;
+    font-size: clamp(0.58rem, 2.4cqw, 0.95rem);
   }
 
   .home-hero__cta svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  .home-hero__photo {
-    position: static;
-    order: 1;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1 / 1;
-    margin-top: -64px;
-    content: url("../images/home-hero-man.png");
-    object-position: 32% center;
-    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 22%);
-    mask-image: linear-gradient(to bottom, transparent, #000 22%);
+    width: 3cqw;
+    height: 3cqw;
   }
 }
 
@@ -569,16 +557,50 @@ body.home-page {
 }
 
 @media (max-width: 900px) {
+  /* The three cards stay side by side, just more compact and centred. */
   .site-stats__list {
-    grid-template-columns: 1fr;
-    max-width: 420px;
-    margin-inline: auto;
+    gap: var(--sp-2);
+  }
+
+  .site-stat {
+    padding: var(--sp-3) var(--sp-2);
+    text-align: center;
+  }
+
+  .site-stat__head {
+    align-items: center;
+    gap: var(--sp-1);
+  }
+
+  .site-stat__icon {
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+  }
+
+  .site-stat__icon svg {
+    inline-size: 1.4rem;
+    block-size: 1.4rem;
+  }
+
+  .site-stat__number {
+    align-self: center;
+    font-size: clamp(1.4rem, 6vw, 2.25rem);
+  }
+
+  .site-stat h3 {
+    font-size: clamp(0.8rem, 3vw, 1rem);
+  }
+
+  .site-stat__text {
+    font-size: clamp(0.66rem, 2.4vw, 0.85rem);
+    line-height: 1.6;
+    overflow-wrap: anywhere;
   }
 }
 
 @media (max-width: 600px) {
   .site-stats {
-    padding: var(--sp-8) var(--sp-4);
+    padding: var(--sp-8) var(--sp-3);
   }
 }
 
@@ -712,10 +734,36 @@ body.home-page {
 }
 
 @media (max-width: 900px) {
+  /* The three cards stay side by side, just more compact and centred. */
   .about-us__cards {
-    grid-template-columns: 1fr;
-    max-width: 420px;
-    margin-inline: auto;
+    gap: var(--sp-2);
+  }
+
+  .about-card {
+    padding: var(--sp-3) var(--sp-2);
+    text-align: center;
+  }
+
+  .about-card__icon {
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+  }
+
+  .about-card__icon svg {
+    inline-size: 1.3rem;
+    block-size: 1.3rem;
+  }
+
+  .about-card h3 {
+    margin-top: var(--sp-2);
+    font-size: clamp(0.82rem, 3vw, 1rem);
+  }
+
+  .about-card p {
+    margin-top: var(--sp-1);
+    font-size: clamp(0.66rem, 2.4vw, 0.84rem);
+    line-height: 1.6;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -1130,7 +1178,7 @@ body.home-page {
 }
 
 .partner-card__button--blue {
-  align-self: flex-start;
+  align-self: center;
   color: #fff;
   background: var(--pp-primary);
   box-shadow: var(--pp-shadow-primary);
@@ -1338,6 +1386,73 @@ body.home-page {
   }
 }
 
+@media (max-width: 760px) {
+  /* Same layout as desktop: text on the start (right) side, photo beside it
+     on the left — just tighter. The doubled class beats the later, generic
+     ".partner-card h2/p" mobile sizes. */
+  .partner-card--designer {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    min-height: 0;
+  }
+
+  .partner-card__content {
+    min-width: 0;
+    padding: 20px 0;
+    padding-inline: 16px 4px;
+  }
+
+  .partner-card.partner-card--designer h2 {
+    font-size: 1.1rem;
+    line-height: 1.5;
+  }
+
+  .partner-card.partner-card--designer p {
+    margin-top: var(--sp-2);
+    font-size: 0.72rem;
+    line-height: 1.7;
+  }
+
+  .partner-card__benefits {
+    gap: 5px;
+    margin-top: var(--sp-3);
+    font-size: 0.66rem;
+  }
+
+  .partner-card__benefits li::before {
+    margin-inline-end: 4px;
+  }
+
+  .partner-card__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .partner-card__actions .partner-card__button {
+    width: 100%;
+    min-height: 36px;
+    padding: 0.45rem 0.5rem;
+    font-size: 0.72rem;
+  }
+
+  .partner-card__photo {
+    min-height: 100%;
+  }
+
+  /* Fill the column and crop the sides (face + bag stay in frame) instead of
+     blowing the cutout up to 230% and cutting off her head. */
+  .partner-card__photo img {
+    inset: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 30% top;
+    transform: none;
+  }
+}
+
 @media (max-width: 600px) {
   .products-carousel {
     display: block;
@@ -1348,7 +1463,7 @@ body.home-page {
   }
 
   .products-carousel__track {
-    gap: 14px;
+    gap: 10px;
     width: 100%;
     padding: 4px 2px 14px;
     scroll-padding-inline: 2px;
@@ -1356,33 +1471,21 @@ body.home-page {
   }
 
   .product-card {
-    width: min(76vw, 240px);
-    padding: 20px 16px 16px;
+    width: min(42vw, 150px);
+    padding: 14px 10px 12px;
   }
 
   .product-card__media {
-    height: 150px;
+    height: 100px;
+  }
+
+  .product-card__name {
+    margin-top: var(--sp-2);
+    font-size: 0.875rem;
   }
 
   .partner-cta {
     padding: 3.25rem var(--sp-4);
-  }
-
-  .partner-card__content {
-    padding: 28px 22px;
-  }
-
-  .partner-card--designer {
-    grid-template-columns: 1fr;
-  }
-
-  .partner-card__photo {
-    min-height: 290px;
-  }
-
-  .partner-card__photo img {
-    width: min(96%, 340px);
-    height: 104%;
   }
 
   .partner-card--printer {
@@ -1405,13 +1508,84 @@ body.home-page {
   }
 
   .partner-card__button--blue {
-    align-self: stretch;
+    align-self: center;
+    width: auto;
+    min-height: 42px;
+    padding: 0.5rem 1.6rem;
+    font-size: 0.8125rem;
   }
 }
 
+.home-admin-header__menu {
+  appearance: none;
+  -webkit-appearance: none;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  color: var(--pp-text-strong);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.home-admin-header__menu svg {
+  width: 22px;
+  height: 22px;
+}
+
+.home-admin-header__menu:focus-visible {
+  outline: 2px solid var(--pp-focus-ring);
+  outline-offset: 2px;
+}
+
 @media (max-width: 1000px) {
+  .home-admin-header__menu {
+    display: inline-flex;
+  }
+
   .home-admin-header__nav {
     display: none;
+    position: absolute;
+    top: 100%;
+    inset-inline: 0;
+    padding: 12px 16px;
+    background: var(--pp-surface);
+    border-bottom: 1px solid var(--pp-border);
+    box-shadow: var(--pp-shadow);
+  }
+
+  .home-admin-header__nav.is-open {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .home-admin-header__nav a {
+    padding: 12px 16px;
+    border-radius: var(--pp-radius-sm);
+  }
+
+  .home-admin-header__nav a:hover,
+  .home-admin-header__nav a.is-active {
+    background: var(--pp-primary-soft);
+  }
+}
+
+@media (max-width: 380px) {
+  .home-admin-header__logo img {
+    max-width: 82px;
+  }
+
+  .home-admin-header__actions .home-admin-header__button {
+    padding-inline: 8px;
+    font-size: 0.6875rem;
   }
 }
 

@@ -11,6 +11,7 @@
 @section('content')
 <main class="admin-main admin-users-main" id="adminUsersMain">
     <section class="users-management" aria-labelledby="usersPageTitle">
+        @include('admin.partials.breadcrumb', ['label' => 'إدارة المستخدمين'])
         <h1 id="usersPageTitle">العملاء</h1>
 
         <div class="users-toolbar">

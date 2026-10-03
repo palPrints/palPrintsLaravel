@@ -14,11 +14,7 @@
 @section('content')
 <main id="adminMain">
     <section class="payments-overview" aria-labelledby="paymentsTitle">
-        <nav class="breadcrumb" aria-label="مسار التنقل">
-            <a href="{{ route('admin.dashboard') }}">الرئيسية</a>
-            <i class="bi bi-chevron-left" aria-hidden="true"></i>
-            <span aria-current="page">المدفوعات والأرباح</span>
-        </nav>
+        @include('admin.partials.breadcrumb', ['label' => 'المدفوعات والأرباح'])
 
         <header class="page-heading">
             <span class="heading-icon" aria-hidden="true"><i class="bi bi-wallet2"></i></span>

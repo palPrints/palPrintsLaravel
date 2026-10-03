@@ -1,0 +1,263 @@
+/*
+ * Print provider dark mode (html[data-bs-theme="dark"], toggled from Settings > Preferences).
+ * The first block redefines the palette variables used by every print provider stylesheet;
+ * the rules after "Generated" are the light-colour rules of those stylesheets flipped for dark.
+ * Regenerate the generated part when the print provider CSS changes its colours.
+ */
+html[data-bs-theme="dark"] {
+  color-scheme: dark;
+  --blue-50: #172a48;
+  --blue-100: #1d3558;
+  --blue-soft: #172a48;
+  --navy: #f2f6ff;
+  --text: #d5deed;
+  --muted: #9bacc6;
+  --border: #2a3a58;
+  --line: #2a3a58;
+  --soft: #0b1020;
+  --bg: #0b1020;
+  --pp-blue-50: #172a48;
+  --pp-blue-100: #1d3558;
+  --pp-blue-200: #294b77;
+  --pp-blue-800: #9fc7ff;
+  --pp-navy-50: #151f34;
+  --pp-navy-100: #1b2740;
+  --pp-navy-200: #2a3a58;
+  --pp-navy-300: #3a4d70;
+  --pp-navy-400: #8fa1bc;
+  --pp-navy-500: #9bacc6;
+  --pp-navy-700: #d5deed;
+  --pp-navy-800: #e3eaf7;
+  --pp-navy-900: #f2f6ff;
+  --pp-navy-rgb: 0, 0, 0;
+  --pp-orange-50: #2b2118;
+  --pp-orange-100: #493416;
+  --pp-surface: #111a2e;
+  --pp-bg: #0b1020;
+  --pp-border: #2a3a58;
+}
+
+html[data-bs-theme="dark"] body { background: #0b1020; }
+html[data-bs-theme="dark"] .header-logo img,
+html[data-bs-theme="dark"] .printshop-brand img { filter: brightness(0) invert(1); }
+html[data-bs-theme="dark"] .printshop-toast,
+html[data-bs-theme="dark"] .print-services-page .services-toast { background: #2a3a58; color: #fff; }
+html[data-bs-theme="dark"] input::placeholder,
+html[data-bs-theme="dark"] textarea::placeholder { color: #7f92ae; }
+html[data-bs-theme="dark"] dialog { color: var(--text); background: #111a2e; }
+
+/* Generated */
+/* shell.css */
+html[data-bs-theme="dark"] .wallet-sidebar{background:#141b2b}
+html[data-bs-theme="dark"] .wallet-sidebar nav a{color:#b3c1d4}
+html[data-bs-theme="dark"] .topbar{background:rgb(17 26 46 / 96%)}
+html[data-bs-theme="dark"] .search-box{background:#141b2b}
+html[data-bs-theme="dark"] .counter{border:2px solid #242d42}
+html[data-bs-theme="dark"] .notification-dropdown{background:#141b2b}
+html[data-bs-theme="dark"] .summary-card{background:#141b2b}
+html[data-bs-theme="dark"] .summary-card.available{border-color:#374f71}
+html[data-bs-theme="dark"] .summary-card.total .card-icon{color:#b0e8c5;background:#1c492c}
+html[data-bs-theme="dark"] .summary-card.pending{border-color:#664a31;background:#3b2917}
+html[data-bs-theme="dark"] .summary-card.pending h2{color:#e4c1a2}
+html[data-bs-theme="dark"] .summary-card.pending .card-icon{background:#4c341e}
+html[data-bs-theme="dark"] .period-options button{color:#b3c1d4;background:#141b2b}
+html[data-bs-theme="dark"] .data-card{background:#141b2b}
+html[data-bs-theme="dark"] th{color:#b3c1d4}
+html[data-bs-theme="dark"] tbody tr:hover{background:#132231}
+html[data-bs-theme="dark"] .money{color:#b5e9cc}
+html[data-bs-theme="dark"] .status.pending,html[data-bs-theme="dark"] .status.review{color:#e6ccaa;background:#554721}
+html[data-bs-theme="dark"] .status.available,html[data-bs-theme="dark"] .status.complete,html[data-bs-theme="dark"] .status.accepted{color:#b8ead1;background:#1c492c}
+html[data-bs-theme="dark"] .status.withdrawn,html[data-bs-theme="dark"] .status.transferred{background:#18283d}
+html[data-bs-theme="dark"] .status.rejected{background:#441a1a}
+html[data-bs-theme="dark"] .withdrawal-detail{color:#b3c1d4}
+html[data-bs-theme="dark"] .withdraw-dialog .cancel{background:#141b2b}
+html[data-bs-theme="dark"] .logout:hover{background:#381616}
+html[data-bs-theme="dark"] .search-box:hover,html[data-bs-theme="dark"] .search-box:focus-within{background:#141b2b}
+html[data-bs-theme="dark"] .account-dropdown{background:#141b2b}
+html[data-bs-theme="dark"] .account-dropdown .logout-link:hover{background:#381616}
+html[data-bs-theme="dark"] .notification-dropdown::before,html[data-bs-theme="dark"] .account-dropdown::before{background:#141b2b}
+html[data-bs-theme="dark"] .withdraw-methods .method-card{background:#141b2b}
+html[data-bs-theme="dark"] .withdraw-methods .method-card::after{border:2px solid #435265}
+html[data-bs-theme="dark"] .withdraw-methods .method:hover .method-card{border-color:#374f71}
+html[data-bs-theme="dark"] .payout-account-field{background:#141b2b}
+html[data-bs-theme="dark"] .summary-card.total:hover{border-color:#336948}
+html[data-bs-theme="dark"] .withdraw-dialog .cancel:hover{border-color:#374f71}
+
+/* dashboard.css */
+html[data-bs-theme="dark"] .printshop-logout:hover{background:#381616}
+html[data-bs-theme="dark"] .printshop-topbar{background:rgba(17, 26, 46, 0.96)}
+html[data-bs-theme="dark"] .printshop-notification-dot{border:2px solid #242d42}
+html[data-bs-theme="dark"] .printshop-search:focus-within{background:#141b2b}
+html[data-bs-theme="dark"] .printshop-stat-card__icon.is-green{color:#a6e5bf;background:#1c492c}
+html[data-bs-theme="dark"] .printshop-stat-card__icon.is-amber{color:#e1c698;background:#574c22}
+html[data-bs-theme="dark"] .printshop-stat-card__icon.is-purple{background:#2b183e}
+html[data-bs-theme="dark"] .printshop-alert-item__icon.is-warning{color:#e3cc9f;background:#574c22}
+html[data-bs-theme="dark"] .printshop-alert-item__icon.is-danger{background:#441a1a}
+html[data-bs-theme="dark"] .printshop-alert-item__icon.is-success{background:#1c492c}
+html[data-bs-theme="dark"] .printshop-secondary-button,html[data-bs-theme="dark"] .printshop-view-button{background:#141b2b}
+html[data-bs-theme="dark"] .printshop-status.is-progress{color:#e6c1aa;background:#574c22}
+html[data-bs-theme="dark"] .printshop-status.is-complete{color:#b0e8c5;background:#1c492c}
+html[data-bs-theme="dark"] .printshop-stat-card:hover{border-color:#314866}
+html[data-bs-theme="dark"] .printshop-panel:hover,html[data-bs-theme="dark"] .printshop-profile-alert:hover{border-color:#314762}
+html[data-bs-theme="dark"] .printshop-status.is-cancelled{background:#441a1a}
+
+/* profile.css */
+html[data-bs-theme="dark"] .topbar{background:#141b2b}
+html[data-bs-theme="dark"] .search{background:#141b2b}
+html[data-bs-theme="dark"] .dropdown{background:#141b2b}
+html[data-bs-theme="dark"] .dropdown::before{background:#141b2b}
+html[data-bs-theme="dark"] .sidebar{background:#141b2b}
+html[data-bs-theme="dark"] .logout:hover{background:#381616}
+html[data-bs-theme="dark"] .profile-card{background:#141b2b}
+html[data-bs-theme="dark"] .cover{background:linear-gradient(110deg,#192b41,#152136 50%,#1c3047)}
+html[data-bs-theme="dark"] .avatar{border:5px solid #242d42}
+html[data-bs-theme="dark"] .avatar label{border:3px solid #242d42}
+html[data-bs-theme="dark"] .verified{color:#b8ead1;background:#1c492c}
+html[data-bs-theme="dark"] .secondary-btn{background:#141b2b}
+html[data-bs-theme="dark"] .stats article{background:#141b2b}
+html[data-bs-theme="dark"] .stat-icon.orange{background:#45331b}
+html[data-bs-theme="dark"] .stat-icon.green{color:#a6e5bf;background:#1c492c}
+html[data-bs-theme="dark"] .services span:hover{border-color:#364e6f}
+html[data-bs-theme="dark"] .bank-logo{background:#141b2b}
+html[data-bs-theme="dark"] .secure i{color:#9ee3b8}
+html[data-bs-theme="dark"] .document>span{color:#b8ead1;background:#1c492c}
+html[data-bs-theme="dark"] .setting>span{background:#394759}
+html[data-bs-theme="dark"] .setting>span::after{background:#141b2b}
+html[data-bs-theme="dark"] .completion-alert{border:1px solid #654a31;background:#392816}
+html[data-bs-theme="dark"] .completion-alert>span{background:#4e361e}
+html[data-bs-theme="dark"] .form-card{background:#141b2b}
+html[data-bs-theme="dark"] .card-title h2{color:#d8e2f4}
+html[data-bs-theme="dark"] .logo-preview{border:2px dashed #2b3f59;background:#142033}
+html[data-bs-theme="dark"] .outline-btn,html[data-bs-theme="dark"] .outline-primary{background:#141b2b}
+html[data-bs-theme="dark"] .fields label,html[data-bs-theme="dark"] .hours label{color:#d6e2f3}
+html[data-bs-theme="dark"] .fields input,html[data-bs-theme="dark"] .fields select,html[data-bs-theme="dark"] .fields textarea,html[data-bs-theme="dark"] .hours input{border:1px solid #2c4059;color:#bccce5;background:#141b2b}
+html[data-bs-theme="dark"] .input-icon i{color:#b1cde8}
+html[data-bs-theme="dark"] .input-icon.whatsapp i{color:#96e1b7}
+html[data-bs-theme="dark"] .table-head{background:#152336;color:#b5c5de}
+html[data-bs-theme="dark"] .status.uploaded{color:#b8ead1;background:#1c492c}
+html[data-bs-theme="dark"] .status.review{color:#e5cda7;background:#5c4f24}
+html[data-bs-theme="dark"] .availability #availabilityText{color:#b8ead1;background:#1c492c}
+html[data-bs-theme="dark"] .switch>span{background:#394759}
+html[data-bs-theme="dark"] .switch>span::after{background:#141b2b}
+html[data-bs-theme="dark"] .form-card h3{color:#d4dff3}
+html[data-bs-theme="dark"] .work-days button{color:#b0bfd4;background:#141b2b}
+html[data-bs-theme="dark"] .work-days button.selected{background:#142133}
+html[data-bs-theme="dark"] .review-notice{border:1px solid #62472f;background:#392816}
+html[data-bs-theme="dark"] .review-notice h3,html[data-bs-theme="dark"] .admin-notes h3{color:#e2bb9c}
+html[data-bs-theme="dark"] .admin-notes h3{color:#d6e2f3}
+html[data-bs-theme="dark"] .admin-notes b{color:#c8d8ef}
+html[data-bs-theme="dark"] .outline-primary{border-color:#344b6c}
+html[data-bs-theme="dark"] .search:hover,html[data-bs-theme="dark"] .search:focus-within{background:#141b2b}
+html[data-bs-theme="dark"] #availabilityText.off{color:#e09a95;background:#441d1a}
+html[data-bs-theme="dark"] .form-actions>.secondary-btn:hover{background:#142034;border-color:#2f4462}
+html[data-bs-theme="dark"] .status.missing{color:#e09a95;background:#441d1a}
+html[data-bs-theme="dark"] .details-grid>div{border-bottom:1px solid #2a3950}
+html[data-bs-theme="dark"] .details-grid dd{color:#d6e2f3}
+html[data-bs-theme="dark"] .availability-badge{color:#b8ead1;background:#1c492c}
+html[data-bs-theme="dark"] .availability-badge.off,html[data-bs-theme="dark"] #availabilityText.off{background:#441a1a}
+html[data-bs-theme="dark"] .work-days.is-static span{color:#b0bfd4;background:#141b2b}
+html[data-bs-theme="dark"] .work-days.is-static span.selected{background:#142133}
+html[data-bs-theme="dark"] .status.missing{background:#441a1a}
+html[data-bs-theme="dark"] .owner-photo{background:#152336}
+html[data-bs-theme="dark"] .upload-title{color:#d6e2f3}
+html[data-bs-theme="dark"] .upload-field input[type=file]{border:1px dashed #334b6b;background:#142033}
+html[data-bs-theme="dark"] .upload-field input[type=file]::file-selector-button{border:1px solid #344b6c;background:#141b2b}
+html[data-bs-theme="dark"] .upload-field small i{color:#9ee3b8}
+html[data-bs-theme="dark"] .status.pending{color:#e5cda7;background:#5c4f24}
+html[data-bs-theme="dark"] .upload-pending{border:1px solid #62472f;background:#392816;color:#e6c8a9}
+html[data-bs-theme="dark"] .service-option{background:#141b2b}
+html[data-bs-theme="dark"] .service-option:hover{border-color:#2e425f}
+
+/* requests.css */
+html[data-bs-theme="dark"] .topbar{background:#141b2b}
+html[data-bs-theme="dark"] .search:hover,html[data-bs-theme="dark"] .search:focus-within{background:#141b2b}
+html[data-bs-theme="dark"] .dropdown{background:#141b2b}
+html[data-bs-theme="dark"] .dropdown::before{background:#141b2b}
+html[data-bs-theme="dark"] .sidebar{background:#141b2b}
+html[data-bs-theme="dark"] .logout:hover{background:#381616}
+html[data-bs-theme="dark"] .breadcrumb i{color:#afc7de}
+html[data-bs-theme="dark"] .heading-icon{background:#17273b}
+html[data-bs-theme="dark"] .page-heading h1{color:#d8e2f4}
+html[data-bs-theme="dark"] .stat-card{border:1px solid #2f4258;background:#141b2b}
+html[data-bs-theme="dark"] .stat-card:hover{border-color:#314a65}
+html[data-bs-theme="dark"] .stat-label{color:#abbad0}
+html[data-bs-theme="dark"] .stat-completed .stat-icon{color:#b3e9ca;background:#1e4e33}
+html[data-bs-theme="dark"] .stat-ready .stat-icon{background:#5c4f24}
+html[data-bs-theme="dark"] .stat-progress .stat-icon{background:#17273b}
+html[data-bs-theme="dark"] .stat-new .stat-icon{background:#22183e}
+html[data-bs-theme="dark"] .stat-number{color:#dbe4f5}
+html[data-bs-theme="dark"] .stat-card p b{color:#a9e6c1}
+html[data-bs-theme="dark"] .orders-panel{border:1px solid #304459;background:#141b2b}
+html[data-bs-theme="dark"] .orders-toolbar{border-bottom:1px solid #304356}
+html[data-bs-theme="dark"] .status-tabs button{color:#b3c6dc}
+html[data-bs-theme="dark"] .filter-button{border:1px solid #334a5f;color:#bdd3ec;background:#141b2b}
+html[data-bs-theme="dark"] .filter-button:hover{border-color:#365170;background:#142133}
+html[data-bs-theme="dark"] .filter-menu{border:1px solid #314559;background:#141b2b}
+html[data-bs-theme="dark"] .filter-menu::before{border-top:1px solid #314559;border-left:1px solid #314559;background:#141b2b}
+html[data-bs-theme="dark"] .filter-menu label{color:#abbed4}
+html[data-bs-theme="dark"] .filter-menu .date-filter-field{color:#abbed4}
+html[data-bs-theme="dark"] .date-filter-field input{border:1px solid #34485d;color:#bed4ec;background:#141b2b}
+html[data-bs-theme="dark"] .filter-actions{border-top:1px solid #2f3e50}
+html[data-bs-theme="dark"] .filter-actions button{border:1px solid #334a5f;color:#abbed4;background:#141b2b}
+html[data-bs-theme="dark"] .filter-actions button:hover{border-color:#365170}
+html[data-bs-theme="dark"] .orders-table{color:#afc3d9}
+html[data-bs-theme="dark"] .orders-table th,html[data-bs-theme="dark"] .orders-table td{border-bottom:1px solid #304356}
+html[data-bs-theme="dark"] .orders-table thead th{color:#b0cae6;background:#152336}
+html[data-bs-theme="dark"] .orders-table tbody tr:not(.empty-orders-row):hover{background:#142033}
+html[data-bs-theme="dark"] .orders-table td strong{color:#d8e2f4}
+html[data-bs-theme="dark"] .price{color:#aae6c1}
+html[data-bs-theme="dark"] .order-status.is-new{background:#17273b}
+html[data-bs-theme="dark"] .order-status.is-progress{color:#e3c39d;background:#5c4f24}
+html[data-bs-theme="dark"] .order-status.is-ready{background:#2b1a42}
+html[data-bs-theme="dark"] .order-status.is-completed{color:#b9ebcf;background:#1f4f31}
+html[data-bs-theme="dark"] .order-status.is-rejected{background:#441a1a}
+html[data-bs-theme="dark"] .details-button{border:1px solid #334a5f;color:#bfd5ed;background:#141b2b}
+html[data-bs-theme="dark"] .details-button:hover{border-color:#365170}
+html[data-bs-theme="dark"] .table-pagination button{border:1px solid #334a5f;color:#bfd5ed;background:#141b2b}
+html[data-bs-theme="dark"] .table-pagination button:hover{border-color:#365170}
+html[data-bs-theme="dark"] .order-dialog{background:#141b2b}
+html[data-bs-theme="dark"] .order-dialog-head > button:hover{background:#381616}
+html[data-bs-theme="dark"] .order-detail-item{border:1px solid #2f3f52;background:#162432}
+html[data-bs-theme="dark"] .order-detail-item strong{color:#c7d9ef}
+html[data-bs-theme="dark"] .order-products-list{border:1px solid #304254}
+html[data-bs-theme="dark"] .order-product-row{border-bottom:1px solid #2e3e50}
+html[data-bs-theme="dark"] .order-product-row:nth-child(even){background:#162432}
+html[data-bs-theme="dark"] .order-product-info strong{color:#c4d9ee}
+html[data-bs-theme="dark"] .order-product-info b{color:#aae6c1}
+html[data-bs-theme="dark"] .product-options span{border:1px solid #2b435a;color:#b1c8de;background:#162738}
+html[data-bs-theme="dark"] .product-visual img{border:1px solid #304254;background:#141b2b}
+html[data-bs-theme="dark"] .order-dialog footer{background:#182333}
+
+/* services.css */
+html[data-bs-theme="dark"] .print-services-page .services-button--secondary{background:#141b2b}
+html[data-bs-theme="dark"] .print-services-page .services-badge{color:#b0e8c5;background:#1b452e}
+html[data-bs-theme="dark"] .print-services-page .services-badge--paused{background:#381616}
+html[data-bs-theme="dark"] .print-services-page .services-switch::after{background:#141b2b}
+html[data-bs-theme="dark"] .print-services-page .services-dialog{background:#141b2b}
+html[data-bs-theme="dark"] .print-services-page .services-close:hover{background:#381616}
+html[data-bs-theme="dark"] .print-services-page .services-added{color:#b0e8c5;background:#1b452e}
+html[data-bs-theme="dark"] .print-services-page .services-number-fields input{background:#141b2b}
+html[data-bs-theme="dark"] .print-services-page .services-price-field{background:#141b2b}
+html[data-bs-theme="dark"] .print-services-page .services-choice{background:#141b2b}
+html[data-bs-theme="dark"] .print-services-page .services-choice:has(input:checked){background:#142133}
+html[data-bs-theme="dark"] .print-services-page .services-form-error,html[data-bs-theme="dark"] .print-services-page .services-storage-warning{color:#e4c1a2;background:#3b2917}
+html[data-bs-theme="dark"] .print-services-page .services-stickers span{border:3px solid #242d42}
+html[data-bs-theme="dark"] .print-services-page .services-poster{background:#392c16;border:5px solid #544638}
+@media (max-width: 480px){html[data-bs-theme="dark"] .print-services-page .search-box,html[data-bs-theme="dark"] .print-services-page .search-box:hover,html[data-bs-theme="dark"] .print-services-page .search-box:focus-within{background:#141b2b}}
+
+/* account.css */
+html[data-bs-theme="dark"] .print-account-page .acct-role-badge{background:#162639;border:1px solid #2e425f}
+html[data-bs-theme="dark"] .print-account-page .acct-flash{color:#b0e8c5;background:#183d27;border:1px solid #336a48}
+html[data-bs-theme="dark"] .print-account-page .acct-tabs{background:#152336}
+html[data-bs-theme="dark"] .print-account-page .acct-panel{background:#141b2b}
+html[data-bs-theme="dark"] .print-account-page .acct-section-head > span.is-danger{background:#381616}
+html[data-bs-theme="dark"] .print-account-page .acct-input:hover{border-color:#374f71}
+html[data-bs-theme="dark"] .print-account-page .acct-errors{color:#e09a95;background:#381916;border:1px solid #5b2e2c}
+html[data-bs-theme="dark"] .print-account-page .acct-button.is-outline{background:#141b2b;border-color:#2e425f}
+html[data-bs-theme="dark"] .print-account-page .acct-switch-track::after{background:#141b2b}
+html[data-bs-theme="dark"] .print-account-page .acct-status{color:#b0e8c5;background:#1c492c}
+html[data-bs-theme="dark"] .print-account-page .acct-status.is-warning{color:#e6c1aa;background:#574c22}
+html[data-bs-theme="dark"] .print-account-page .acct-note{background:#3b2917;border:1px solid #563f29}
+html[data-bs-theme="dark"] .print-account-page .acct-upload{border:1px dashed #334c6b}
+html[data-bs-theme="dark"] .print-account-page .acct-ticket > span{color:#b0e8c5;background:#1c492c}
+html[data-bs-theme="dark"] .print-account-page .acct-ticket > span.is-open{color:#e7cdae;background:#5c4f24}

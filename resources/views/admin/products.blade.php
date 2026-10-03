@@ -14,6 +14,7 @@
 @section('content')
 <main id="adminMain">
     <section class="products-page" aria-labelledby="productsTitle">
+        @include('admin.partials.breadcrumb', ['label' => 'إدارة المنتجات'])
         <header class="products-header">
             <div>
                 <h1 id="productsTitle">إدارة المنتجات</h1>

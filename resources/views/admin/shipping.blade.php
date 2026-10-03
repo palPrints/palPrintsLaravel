@@ -19,6 +19,7 @@
 @section('content')
 <main class="admin-main admin-shipping-main" id="adminShippingMain">
     <section class="shipping-overview" aria-labelledby="shippingTitle">
+        @include('admin.partials.breadcrumb', ['label' => 'إدارة الشحن'])
         <h1 id="shippingTitle">إدارة الشحن</h1>
 
         <div class="shipping-summary-grid" aria-label="ملخص حالات الشحن">

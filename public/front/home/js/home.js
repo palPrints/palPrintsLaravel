@@ -1,4 +1,31 @@
 (() => {
+  const menu = document.querySelector(".home-admin-header__menu");
+  const navigation = document.getElementById("homeNavigation");
+  if (!menu || !navigation) return;
+
+  const setOpen = (open) => {
+    navigation.classList.toggle("is-open", open);
+    menu.setAttribute("aria-expanded", String(open));
+    menu.setAttribute("aria-label", open ? "إغلاق قائمة التنقل" : "فتح قائمة التنقل");
+  };
+
+  menu.addEventListener("click", () => setOpen(menu.getAttribute("aria-expanded") !== "true"));
+  navigation.addEventListener("click", (event) => {
+    if (event.target.closest("a")) setOpen(false);
+  });
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".home-admin-header")) setOpen(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && menu.getAttribute("aria-expanded") === "true") {
+      setOpen(false);
+      menu.focus();
+    }
+  });
+  window.matchMedia("(max-width: 1000px)").addEventListener("change", () => setOpen(false));
+})();
+
+(() => {
   const track = document.getElementById("productsCarouselTrack");
   if (!track) return;
 

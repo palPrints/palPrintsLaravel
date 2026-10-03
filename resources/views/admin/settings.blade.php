@@ -19,7 +19,7 @@
 
 @section('content')
 <main class="admin-main admin-tools-main" id="adminSettingsMain">
-    <nav class="admin-settings-breadcrumb" aria-label="مسار التنقل"><a href="{{ route('admin.dashboard') }}">لوحة التحكم</a><i class="bi bi-chevron-left"></i><span>الإعدادات</span></nav>
+    @include('admin.partials.breadcrumb', ['label' => 'إعدادات النظام'])
     <header class="admin-tools-heading admin-settings-heading"><span class="admin-settings-heading-icon"><i class="bi bi-gear"></i></span><div><h1>إعدادات النظام</h1><p>إدارة إعدادات المنصة ووسائل الدفع والإشعارات والرسوم.</p></div><span class="admin-settings-role-badge"><i class="bi bi-shield-check"></i><span>حساب مدير النظام</span></span></header>
 
     <div class="admin-settings-layout">

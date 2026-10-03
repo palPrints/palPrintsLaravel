@@ -31,6 +31,7 @@
 
 @section('content')
 <main class="admin-main admin-reference-main" id="adminDashboardMain">
+    @include('admin.partials.breadcrumb', ['label' => 'لوحة التحكم'])
     <section class="admin-reference-heading" id="overview" aria-labelledby="dashboardTitle">
         <div>
             <h1 id="dashboardTitle">لوحة التحكم</h1>

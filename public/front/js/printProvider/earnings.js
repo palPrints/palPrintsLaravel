@@ -1,23 +1,5 @@
 "use strict";
 document.addEventListener("DOMContentLoaded",function(){
-  const sidebar=document.getElementById("walletSidebar"),backdrop=document.getElementById("sidebarBackdrop");
-  const menuButton=document.getElementById("menuButton");
-  const mobileLayout=window.matchMedia("(max-width:760px)");
-  function syncMenuState(){
-    const open=mobileLayout.matches?document.body.classList.contains("sidebar-open"):!document.body.classList.contains("sidebar-collapsed");
-    menuButton.setAttribute("aria-expanded",String(open));
-    menuButton.setAttribute("aria-label",open?"إغلاق القائمة":"فتح القائمة");
-    menuButton.querySelector("i").className=open?"bi bi-x-lg":"bi bi-list";
-  }
-  function closeMenu(){document.body.classList.remove("sidebar-open");backdrop.classList.remove("open");syncMenuState()}
-  menuButton.addEventListener("click",function(){
-    if(mobileLayout.matches){const open=!document.body.classList.contains("sidebar-open");document.body.classList.toggle("sidebar-open",open);backdrop.classList.toggle("open",open)}
-    else{document.body.classList.toggle("sidebar-collapsed")}
-    syncMenuState();
-  });
-  backdrop.addEventListener("click",closeMenu);
-  mobileLayout.addEventListener("change",function(){document.body.classList.remove("sidebar-open");backdrop.classList.remove("open");syncMenuState()});
-  syncMenuState();
   const revealItems=Array.from(document.querySelectorAll("#walletMain > *"));
   revealItems.forEach(function(item,index){item.classList.add("section-reveal");item.style.setProperty("--reveal-delay",String(index*160)+"ms")});
   if(window.matchMedia("(prefers-reduced-motion: reduce)").matches||!("IntersectionObserver" in window)){

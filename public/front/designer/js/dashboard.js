@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
       profileTitle: "الملف الشخصي",
       earnings: "الأرباح",
       settings: "الإعدادات",
-      support: "التواصل مع الدعم الفني",
+      support: "مركز المساعدة",
       logout: "تسجيل الخروج",
       logoutConfirm: "هل تريد تسجيل الخروج من حسابك؟",
       designerIntroLabel: "ابدأ تصميمًا جديدًا",

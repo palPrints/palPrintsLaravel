@@ -136,9 +136,18 @@
   .shipping-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+@media (max-width: 760px) {
+  .shipping-overview h1 { margin-bottom: 14px; font-size: 20px; }
+  /* All four summary cards in one row: narrow, centred, stacked (icon, label, number). */
+  .shipping-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .shipping-summary-card { min-height: 0; flex-direction: column-reverse; justify-content: flex-end; gap: 6px; padding: 10px 4px; text-align: center; }
+  .shipping-summary-icon { width: 32px; height: 32px; flex-basis: 32px; border-radius: 8px; font-size: 16px; }
+  .shipping-summary-card p { margin-bottom: 4px; font-size: clamp(8.5px, 2.5vw, 12px); line-height: 1.4; }
+  .shipping-summary-card strong { font-size: clamp(16px, 5vw, 24px); }
+}
+
 @media (max-width: 600px) {
   .admin-shipping-main { padding: 24px 16px 40px; }
-  .shipping-summary-grid { grid-template-columns: 1fr; }
   .shipping-records-toolbar { padding: 0 0 12px; }
 }
 
