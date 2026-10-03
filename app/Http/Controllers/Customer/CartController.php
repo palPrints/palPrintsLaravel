@@ -10,6 +10,7 @@ use App\Models\BranchProductOffering;
 use App\Models\PrintFile;
 use App\Models\Product;
 use App\Models\Variant;
+use App\Services\PrintShopRouter;
 use App\Support\CatalogProductData;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -101,23 +102,13 @@ class CartController extends Controller
             ]);
         }
 
-        $offering = BranchProductOffering::query()
-            ->where('product_id', $product->id)
-            ->where('is_active', true)
-            ->whereHas('printProviderBranch', fn ($query) => $query->where('is_active', true))
-            ->whereHas('branchOfferingVariants', fn ($query) => $query
-                ->where('variant_id', $variant->id)
-                ->where('is_available', true))
-            ->orderBy('base_price')
-            ->first();
-
-        if (! $offering) {
-            throw ValidationException::withMessages([
-                'size' => 'لا يوجد فرع مطبعة متاح لهذا الحجم حالياً.',
-            ]);
-        }
-
         $cart = $this->activeCart($request);
+        $router = app(PrintShopRouter::class);
+        $replacing = CartItem::where(['cart_id' => $cart->id, 'product_id' => $product->id, 'variant_id' => $variant->id, 'design_id' => null])->value('id');
+
+        // One shop must make the whole cart, this paper job included.
+        $route = $this->routeCart($request, $cart, [$router->need($product, collect([$variant->id]), [], null)], $replacing, 'size');
+        $offering = $route['offerings'][$product->id];
 
         $item = CartItem::firstOrNew([
             'cart_id' => $cart->id,
@@ -143,6 +134,7 @@ class CartController extends Controller
             'selected_options' => $settings,
         ]);
         $item->save();
+        $this->applyRoute($cart, $route);
 
         foreach ($request->file('files') as $file) {
             $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension());
@@ -209,6 +201,15 @@ class CartController extends Controller
         $unitPrice = (float) ($design->selling_price ?: $design->base_price);
         $cart = $this->activeCart($request);
 
+        $router = app(PrintShopRouter::class);
+        $route = $this->routeCart($request, $cart, collect($validated['groups'])->map(fn ($group) => $router->need(
+            $product,
+            collect([$this->matchVariant($variants, $group['color_id'], $group['size_id'])->id]),
+            $group['print_areas'] ?? [],
+            null,
+            (int) $group['quantity'],
+        ))->all(), null, 'product_code');
+
         foreach ($validated['groups'] as $group) {
             $variant = $this->matchVariant($variants, $group['color_id'], $group['size_id']);
 
@@ -232,6 +233,8 @@ class CartController extends Controller
             $item->selected_options = $options;
             $item->save();
         }
+
+        $this->applyRoute($cart, $route);
 
         $request->session()->flash('status', 'item-added');
 
@@ -283,17 +286,19 @@ class CartController extends Controller
             throw ValidationException::withMessages(['product_code' => 'هذا المنتج غير متاح للطلب حاليًا.']);
         }
 
-        $offering = BranchProductOffering::query()
-            ->where('product_id', $product->id)
-            ->where('is_active', true)
-            ->whereHas('printProviderBranch', fn ($query) => $query->where('is_active', true))
-            ->orderBy('base_price')
-            ->first();
-
-        if (! $offering) {
-            throw ValidationException::withMessages(['product_code' => 'لا يوجد فرع مطبعة متاح لهذا المنتج حاليًا.']);
-        }
-
+        // One shop must make the whole cart: it offers the colours, sizes and print areas of every line and the designs fit.
+        // Among those, the customer's own city comes first, then the cheapest.
+        $cart = $this->activeCart($request);
+        $router = app(PrintShopRouter::class);
+        $layoutData = ($validated['layout'] ?? null) ? json_decode($validated['layout'], true) : null;
+        $route = $this->routeCart($request, $cart, $groups->map(fn ($group) => $router->need(
+            $product,
+            collect([$this->matchVariant($variants, $group['color_id'], $group['size_id'])->id]),
+            $group['print_areas'] ?? [],
+            is_array($layoutData) ? $layoutData : null,
+            (int) $group['quantity'],
+        ))->all(), null, 'product_code');
+        $offering = $route['offerings'][$product->id];
         $user = $request->user();
         $cart = $this->activeCart($request);
         $files = $request->file('files', []);
@@ -353,6 +358,8 @@ class CartController extends Controller
                 $item->update(['selected_options' => array_merge($item->selected_options ?? [], ['mockup' => $mockup])]);
             }
         }
+
+        $this->applyRoute($cart, $route);
 
         $request->session()->flash('status', 'item-added');
 
@@ -429,6 +436,46 @@ class CartController extends Controller
     /**
      * @param  \Illuminate\Support\Collection<int, Variant>  $variants
      */
+    /**
+     * The shop that will make the whole cart: the lines already in it plus the new ones. When no single shop can make it all
+     * the new line is refused, so an order never ends up with a shop that cannot fulfil part of it.
+     *
+     * @param  array<int, array>  $newNeeds
+     * @return array{branchId: int, offerings: array<int, BranchProductOffering>, estimate: float}
+     */
+    private function routeCart(Request $request, Cart $cart, array $newNeeds, ?int $replacingItemId, string $errorField): array
+    {
+        $router = app(PrintShopRouter::class);
+        $current = $cart->items()->with('product')->get()
+            ->filter(fn (CartItem $item) => $item->product && $item->id !== $replacingItemId)
+            ->map(fn (CartItem $item) => $router->needFromCartItem($item));
+
+        $route = $router->chooseForOrder($current->concat($newNeeds)->values(), $router->customerCity($request->user()));
+
+        if (! $route) {
+            throw ValidationException::withMessages([$errorField => $current->isEmpty()
+                ? 'لا توجد مطبعة متاحة تقدم مناطق الطباعة والألوان والمقاسات التي اخترتها بهذا الحجم حاليًا.'
+                : 'لا توجد مطبعة واحدة تستطيع تنفيذ كل منتجات سلتك مع هذا المنتج. أكمل طلب السلة الحالية أولًا ثم اطلب هذا المنتج في طلب منفصل.']);
+        }
+
+        return $route;
+    }
+
+    /** Lines that remember their shop (paper and the customer's own designs) follow the shop chosen for the whole cart. */
+    private function applyRoute(Cart $cart, array $route): void
+    {
+        foreach ($cart->items()->get() as $item) {
+            $options = $item->selected_options ?? [];
+            $offering = $route['offerings'][$item->product_id] ?? null;
+
+            if ($offering && array_key_exists('branch_product_offering_id', $options)) {
+                $options['branch_product_offering_id'] = $offering->id;
+                $options['print_provider_branch_id'] = $offering->print_provider_branch_id;
+                $item->update(['selected_options' => $options]);
+            }
+        }
+    }
+
     private function matchVariant($variants, string $colorId, string $sizeId): Variant
     {
         $color = CatalogProductData::normalizeCode($colorId);

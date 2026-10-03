@@ -134,9 +134,30 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgb(50 135 255 / 35%)
 
 /* Laravel additions: real design images, neutral category badge. */
 .category { color: #1875c9; background: #eff7ff; border: 1px solid #c8e1f7; }
-.design-preview img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.design-preview { height: 320px; background: radial-gradient(circle at 50% 45%, #fff 0, #f1f6fd 75%); }
+.design-preview::after, .design-preview strong { display: none; }
+.design-preview img { position: absolute; inset: 0; width: 100%; height: 100%; padding: 12px; box-sizing: border-box; object-fit: contain; }
 .design-preview img[hidden] { display: none; }
 .design-preview-empty { position: absolute; top: 50%; left: 50%; color: #b9a6dc; font-size: 64px; transform: translate(-50%, -50%); }
 .design-preview-empty[hidden] { display: none; }
 .dialog-metadata div[hidden] { display: none; }
 .design-table code { color: var(--navy); }
+
+/* Reject dialog: the reason is typed in a proper box instead of the browser prompt. */
+.reject-dialog { width: min(440px, calc(100% - 28px)); padding: 0; color: var(--text); background: #fff; border: 0; border-radius: 16px; box-shadow: 0 24px 60px rgb(11 31 58 / 25%); }
+.reject-dialog::backdrop { background: rgb(11 31 58 / 52%); backdrop-filter: blur(4px); }
+.reject-dialog-card { display: grid; gap: 8px; padding: 26px 24px 22px; direction: rtl; text-align: right; }
+.reject-dialog-mark { display: grid; place-items: center; width: 52px; height: 52px; margin: 0 auto 4px; color: #c93c3c; background: #fff3f3; border-radius: 50%; font-size: 24px; }
+.reject-dialog-card h2 { margin: 0; color: var(--navy); font-size: 19px; text-align: center; }
+.reject-dialog-card p { margin: 0 0 8px; color: var(--muted); font-size: 13px; line-height: 1.8; text-align: center; }
+.reject-dialog-card label { color: var(--navy); font-size: 13px; font-weight: 800; }
+.reject-dialog-card label small { color: var(--muted); font-weight: 600; }
+.reject-dialog-card textarea { box-sizing: border-box; width: 100%; padding: 12px 14px; color: var(--navy); font: inherit; font-size: 14px; line-height: 1.7; resize: vertical; background: #fff; border: 1px solid var(--border); border-radius: 10px; transition: border-color .16s ease, box-shadow .16s ease; }
+.reject-dialog-card textarea:focus { border-color: #dc3f45; box-shadow: 0 0 0 3px rgb(220 63 69 / 14%); outline: 0; }
+.reject-count { color: var(--muted); font-size: 12px; text-align: left; direction: ltr; }
+.reject-dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+.reject-dialog-actions button { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid; border-radius: 10px; cursor: pointer; font: inherit; font-size: 14px; font-weight: 800; transition: .18s ease; }
+.reject-cancel { color: var(--navy); background: #fff; border-color: var(--border) !important; }
+.reject-cancel:hover { background: #f4f7fb; }
+.reject-confirm { color: #fff; background: #dc3f45; border-color: #dc3f45 !important; }
+.reject-confirm:hover { background: #c93c3c; }
