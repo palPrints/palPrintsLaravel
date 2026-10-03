@@ -134,6 +134,18 @@ html[data-bs-theme="dark"] .status-pill.is-requested { color:#63b8ee; }
 html[data-bs-theme="dark"] .status-pill.is-transferring { color:#b88cff; }
 html[data-bs-theme="dark"] .status-pill.is-rejected { color:#ff8595; }
 @media (max-width:1091.98px) { .earnings-summary { grid-template-columns:repeat(2,minmax(0,1fr)); } .earnings-summary .earnings-stat:last-child { grid-column:1/-1; } }
-@media (max-width:767.98px) { .earnings-header { align-items:flex-start; flex-direction:column; } .earnings-withdraw-cta { width:100%; } .earnings-summary { grid-template-columns:1fr; } .earnings-summary .earnings-stat:last-child { grid-column:auto; } .earnings-stat { min-height:0; padding:18px; } .earnings-history-head { min-height:66px; padding:14px 16px; } .earnings-filter-grid { grid-template-columns:1fr; } .earnings-filter-grid .is-wide { grid-column:auto; } }
+@media (max-width:767.98px) { .earnings-summary { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; } .earnings-summary .earnings-stat:last-child { grid-column:auto; } .earnings-stat { min-height:0; padding:10px; } .earnings-stat-icon { width:32px; height:32px; flex-basis:32px; font-size:15px; } .earnings-stat h2 { font-size:11px; line-height:1.45; } .earnings-summary .earnings-stat strong { margin-top:3px; font-size:15px; overflow-wrap:anywhere; } .earnings-history-head { min-height:66px; padding:14px 16px; } .earnings-filter-grid { grid-template-columns:1fr; } .earnings-filter-grid .is-wide { grid-column:auto; } }
+/* Phones: icon, smaller title and the request button share one row; the description runs full width below. */
+@media (max-width:767.98px) {
+  .earnings-header { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:6px 10px; }
+  .earnings-heading-group,.earnings-heading-copy { display:contents; }
+  .earnings-header .designer-heading-icon { grid-column:1; grid-row:1; width:36px; height:36px; flex-basis:36px; font-size:17px; }
+  .earnings-header h1 { grid-column:2; grid-row:1; font-size:1.05rem; }
+  .earnings-header p { grid-column:1/-1; grid-row:2; margin:0; font-size:13px; }
+  .earnings-header .earnings-withdraw-cta { grid-column:3; grid-row:1; width:auto; min-height:38px; margin-inline-start:0; padding:0 .7rem; gap:6px; font-size:12px; }
+}
 @media (max-width:479.98px) { .earnings-stat strong { font-size:24px; } .earnings-filter-actions { flex-direction:column-reverse; } .earnings-filter-actions .profile-button { width:100%; } }
 @media (prefers-reduced-motion:reduce) { .earnings-filter-dialog[open],.earnings-withdraw-dialog[open] { animation:none; } .earnings-stat { transition:box-shadow 120ms ease; transform:none; } }
+
+/* Mobile (phones): a narrower table that still scrolls inside its card. */
+@media (max-width:768px) { .earnings-table { min-width:620px; } .earnings-table th,.earnings-table td { padding:12px; } }

@@ -710,3 +710,103 @@ body.admin-dashboard-page.sidebar-collapsed {
   border-radius: 8px;
   cursor: pointer;
 }
+
+/* ===== Admin shell on phones: header + drawer =====
+   Kept last so it wins over the older per-breakpoint topbar rules above.
+   Header: logo, menu toggle, search (icon that expands), then account + bell
+   (they used to be hidden at <=620px). Dropdowns pin to the screen edges so
+   they can't run off a narrow viewport. */
+@media (max-width: 760px) {
+  .admin-dashboard-page .topbar {
+    height: 60px;
+    grid-template-columns: auto 44px minmax(0, 1fr) auto;
+    gap: 4px;
+    padding-inline: 12px;
+  }
+
+  .admin-dashboard-page .header-logo {
+    width: auto;
+    height: 60px;
+    overflow: visible;
+    justify-content: flex-start;
+    border: 0;
+  }
+
+  .admin-dashboard-page .admin-logo-full img {
+    width: 92px;
+  }
+
+  .admin-dashboard-page .admin-search-box {
+    display: flex;
+    grid-column: 3;
+  }
+
+  .admin-dashboard-page .header-actions {
+    display: flex;
+    grid-column: 4;
+    gap: 0;
+  }
+
+  .admin-dashboard-page .header-actions .icon-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .admin-dashboard-page .admin-sidebar {
+    top: 60px;
+    height: calc(100dvh - 60px);
+    width: min(var(--sidebar), 84vw);
+  }
+
+  .admin-dashboard-page .notification-dropdown,
+  .admin-dashboard-page .account-dropdown {
+    position: fixed;
+    top: 66px;
+    inset-inline: 12px;
+    width: auto;
+    max-width: none;
+  }
+
+  .admin-dashboard-page .account-dropdown {
+    inset-inline: 12px auto;
+    width: min(240px, calc(100vw - 24px));
+  }
+}
+
+/* ===== Breadcrumb at the top of every admin page (partials/breadcrumb) ===== */
+.admin-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  color: var(--pp-navy-500);
+  font-size: 13px;
+  font-weight: 600;
+}
+.admin-breadcrumb a,
+.admin-breadcrumb span {
+  padding: 3px 7px;
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.18s ease, transform 0.18s ease;
+}
+.admin-breadcrumb a:hover,
+.admin-breadcrumb span:hover {
+  color: var(--pp-blue-600);
+  transform: translateY(-2px);
+}
+.admin-breadcrumb i {
+  color: #8ca2c0;
+  font-size: 11px;
+}
+.admin-breadcrumb span {
+  color: var(--pp-navy-900);
+  font-weight: 800;
+}
+@media (max-width: 760px) {
+  .admin-breadcrumb {
+    gap: 8px;
+    margin-bottom: 14px;
+    font-size: 12px;
+  }
+}

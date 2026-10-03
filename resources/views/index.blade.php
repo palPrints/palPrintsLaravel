@@ -8,7 +8,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PALPRINTS</title>
-    <link rel="stylesheet" href="{{ asset('front/home/css/home.css') }}?v={{ filemtime(public_path('front/home/css/home.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('front/home/css/home.css') }}?v={{ hash_file('sha256', public_path('front/home/css/home.css')) }}" />
     <link rel="stylesheet" href="{{ asset('front/shared/theme-dark.css') }}?v={{ filemtime(public_path('front/shared/theme-dark.css')) }}" />
     <script src="{{ asset('front/shared/theme-dark.js') }}?v={{ filemtime(public_path('front/shared/theme-dark.js')) }}"></script>
   </head>
@@ -17,7 +17,7 @@
       <a class="home-admin-header__logo" href="{{ route('home') }}" aria-label="الصفحة الرئيسية">
         <img src="{{ asset('front/home/images/palprints-wordmark-transparent.png') }}" alt="PalPrints" />
       </a>
-      <nav class="home-admin-header__nav" aria-label="التنقل الرئيسي">
+      <nav class="home-admin-header__nav" id="homeNavigation" aria-label="التنقل الرئيسي">
         <a class="is-active" href="{{ route('home') }}">الرئيسية</a>
         <a href="#what-to-print">المنتجات</a>
         <a href="#how-it-works">كيف نعمل</a>
@@ -26,6 +26,9 @@
       <nav class="home-admin-header__actions" aria-label="إجراءات الحساب">
         <a class="home-admin-header__button home-admin-header__button--start" href="{{ $toRole('customer', 'customer.store') }}">ابدأ الآن</a>
         <a class="home-admin-header__button home-admin-header__button--login" href="{{ route('login') }}">تسجيل الدخول</a>
+        <button class="home-admin-header__menu" type="button" aria-label="فتح قائمة التنقل" aria-controls="homeNavigation" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+        </button>
       </nav>
     </header>
 
@@ -211,7 +214,15 @@
             </div>
 
             <div class="partner-card__photo" aria-hidden="true">
-              <img src="{{ asset('front/home/images/designer-partner-cutout.png') }}" alt="" loading="lazy" />
+              <img
+                src="{{ asset('front/home/images/designer-partner-cutout.png') }}"
+                srcset="{{ asset('front/home/images/designer-partner-cutout-640.png') }} 640w, {{ asset('front/home/images/designer-partner-cutout.png') }} 1122w"
+                sizes="(max-width: 760px) 50vw, 410px"
+                width="1122"
+                height="1402"
+                alt=""
+                loading="lazy"
+              />
             </div>
           </article>
 

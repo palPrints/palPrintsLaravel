@@ -46,7 +46,7 @@
 }
 .pp-input-shell textarea { resize: vertical; min-height: 72px; }
 
-.support-channels { display: grid; grid-template-columns: repeat(3, 1fr); margin: var(--sp-3) 0 var(--sp-4); border: 1px solid var(--pp-border); border-radius: var(--pp-radius-lg); background: var(--pp-surface); box-shadow: var(--pp-shadow-sm); }
+.support-channels { display: grid; grid-template-columns: repeat(3, 1fr); margin: var(--sp-3) 0 var(--sp-4); }
 .support-channel {
   position: relative;
   min-height: 76px;
@@ -61,7 +61,7 @@
   cursor: pointer;
 }
 .support-channel + .support-channel::before { content: ""; position: absolute; inset-block: 14px; inset-inline-start: 0; width: 1px; background: var(--pp-border); }
-.support-channel:hover { background: var(--pp-surface-muted); }
+.support-channel:hover { background: transparent; }
 .support-channel > i { flex: none; color: var(--pp-primary); font-size: 1.35rem; }
 .support-channel > span { min-width: 0; flex: 1; display: grid; gap: 2px; }
 .support-channel strong { font-size: .85rem; color: var(--pp-text-strong); font-weight: 700; }
@@ -110,9 +110,19 @@
   .support-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
-  .support-channels { grid-template-columns: 1fr; }
-  .support-channel + .support-channel::before { inset-block: auto; inset-inline: 10px; width: auto; height: 1px; }
+  .support-channels { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .support-channel { min-height: 0; flex-direction: column; justify-content: center; gap: 6px; padding: var(--sp-3) 6px; text-align: center; }
+  .support-channel > span { flex: 0 0 auto; justify-items: center; }
+  .support-channel strong { font-size: .75rem; }
+  .support-channel small { font-size: .6rem; overflow-wrap: anywhere; }
+  .support-channel > b { font-size: .65rem; }
 }
 @media (max-width: 560px) {
-  .pp-field-grid { grid-template-columns: 1fr; }
+  .pp-field-grid { gap: var(--sp-3); }
+  .pp-field > span:first-child { font-size: .75rem; }
+  .pp-input-shell { gap: .4rem; padding-inline: .55rem; }
+  .pp-input-shell select, .pp-input-shell input { min-width: 0; font-size: .8rem; text-overflow: ellipsis; }
 }
+
+.pp-page-heading h1#pageTitle { font-size: 1.2rem; }
+@media (max-width: 560px) { .pp-page-heading h1#pageTitle { font-size: 1.05rem; } }

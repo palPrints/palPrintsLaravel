@@ -17,7 +17,7 @@
 
 @section('content')
 <main class="admin-main admin-tools-main support-clean-main" id="adminSupportMain">
-    <nav class="admin-settings-breadcrumb" aria-label="مسار التنقل"><a href="{{ route('admin.dashboard') }}">لوحة التحكم</a><i class="bi bi-chevron-left"></i><span>الدعم الفني</span></nav>
+    @include('admin.partials.breadcrumb', ['label' => 'الدعم الفني'])
     <header class="support-clean-title"><div><h1>الدعم الفني</h1><p>إدارة مشاكل العملاء والمصممين والمطابع.</p></div><span><i class="bi bi-chat-dots"></i><b id="supportNewCount">{{ $newCount }}</b> مشاكل جديدة</span></header>
 
     <section class="support-clean-card support-clean-list" aria-labelledby="incomingProblemsTitle">

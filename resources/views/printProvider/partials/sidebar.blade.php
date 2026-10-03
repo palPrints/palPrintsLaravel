@@ -16,8 +16,12 @@
             <i class="bi bi-wallet2" aria-hidden="true"></i><span>الأرباح والمحفظة</span>
         </a>
         <div class="wallet-sidebar-divider" aria-hidden="true"></div>
-        <a href="#"><i class="bi bi-gear" aria-hidden="true"></i><span>الإعدادات</span></a>
-        <a href="#"><i class="bi bi-headphones" aria-hidden="true"></i><span>الدعم الفني</span></a>
+        <a href="{{ route('print-provider.settings') }}" @class(['active' => request()->routeIs('print-provider.settings*')]) @if(request()->routeIs('print-provider.settings*')) aria-current="page" @endif>
+            <i class="bi bi-gear" aria-hidden="true"></i><span>الإعدادات</span>
+        </a>
+        <a href="{{ route('print-provider.support') }}" @class(['active' => request()->routeIs('print-provider.support*')]) @if(request()->routeIs('print-provider.support*')) aria-current="page" @endif>
+            <i class="bi bi-headphones" aria-hidden="true"></i><span>مركز المساعدة</span>
+        </a>
     </nav>
 
     <form method="POST" action="{{ route('logout') }}" id="printProviderLogoutForm">

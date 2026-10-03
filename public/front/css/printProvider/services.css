@@ -110,9 +110,15 @@
 .print-services-page .services-mousepad img { width: 78px; }
 @media (max-width: 1180px) { .print-services-page .services-products { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) {
-  .print-services-page .services-heading { align-items: stretch; flex-direction: column; gap: 12px; }
+  .print-services-page .services-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 10px; row-gap: 0; }
+  .print-services-page .services-heading > div { display: contents; }
+  .print-services-page .services-heading h1, .print-services-page .services-heading p { grid-column: 1 / -1; }
   .print-services-page .services-heading h1 { font-size: 23px; }
-  .print-services-page #openCatalog { align-self: flex-start; }
+  .print-services-page .services-heading h1 { display: flex; align-items: center; gap: 8px; }
+  .print-services-page .services-heading h1 i { margin-inline-end: 0; }
+  .print-services-page .services-heading p { margin-bottom: 12px; line-height: 1.8; }
+  .print-services-page .services-summary { display: flex; min-width: 0; }
+  .print-services-page #openCatalog { width: auto; min-width: 0; margin-bottom: 0; padding-inline: 12px; }
   .print-services-page .services-catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .print-services-page .services-settings-body { grid-template-columns: 1fr; gap: 16px; }
   .print-services-page .services-product-preview { grid-column: 1; grid-row: 1; display: grid; grid-template-columns: 105px 1fr; align-items: center; column-gap: 12px; text-align: start; }
@@ -122,11 +128,17 @@
   .print-services-page .services-dialog { padding: 16px; }
 }
 @media (max-width: 575.98px) {
-  .print-services-page .services-products { grid-template-columns: 1fr; gap: 12px; }
-  .print-services-page .services-product > .services-product-art { height: 165px; }
+  .print-services-page .services-products { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .print-services-page .services-product { padding: 12px 10px; }
+  .print-services-page .services-product > .services-product-art { height: 110px; margin-block: 8px; }
+  .print-services-page .services-product > h3 { font-size: 14px; }
+  .print-services-page .services-product > .services-category { font-size: 11px; margin-bottom: 8px; }
+  .print-services-page .services-details { gap: 5px; margin-bottom: 10px; font-size: 11px; }
+  .print-services-page .services-details li { gap: 6px; }
+  .print-services-page .services-details .services-money { font-size: 14px; }
+  .print-services-page .services-edit { min-height: 36px; padding: 7px; font-size: 12px; }
 }
 @media (max-width: 480px) {
-  .print-services-page .services-product-art { height: 165px; }
   .print-services-page .services-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .print-services-page .services-catalog-card .services-stickers { transform: rotate(-12deg) scale(.75); }
   .print-services-page .services-catalog-card .services-mousepad { width: 80px; height: 60px; }

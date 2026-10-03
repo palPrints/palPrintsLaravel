@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('front/css/customer/storefront.css') }}?v={{ filemtime(public_path('front/css/customer/storefront.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/shared/interactions.css') }}?v={{ filemtime(public_path('front/shared/interactions.css')) }}">
-    <link rel="stylesheet" href="{{ asset('front/css/shared/site-footer.css') }}?v={{ filemtime(public_path('front/css/shared/site-footer.css')) }}">
+    <link rel="stylesheet" href="{{ asset('front/css/shared/site-footer.css') }}?v={{ hash_file('sha256', public_path('front/css/shared/site-footer.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/shared/confirm-dialog.css') }}?v={{ filemtime(public_path('front/shared/confirm-dialog.css')) }}">
     @stack('styles')
 </head>

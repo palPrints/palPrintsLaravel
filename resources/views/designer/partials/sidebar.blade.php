@@ -8,7 +8,7 @@
     ];
     $secondaryItems = [
         ['route' => 'designer.settings', 'active' => ['designer.settings'], 'icon' => 'bi-gear', 'i18n' => 'settings', 'label' => 'الإعدادات'],
-        ['route' => 'designer.support', 'active' => ['designer.support'], 'icon' => 'bi-headset', 'i18n' => 'support', 'label' => 'التواصل مع الدعم الفني'],
+        ['route' => 'designer.support', 'active' => ['designer.support'], 'icon' => 'bi-headset', 'i18n' => 'support', 'label' => 'مركز المساعدة'],
     ];
 @endphp
 

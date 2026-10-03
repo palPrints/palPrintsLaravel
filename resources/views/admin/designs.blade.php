@@ -15,6 +15,7 @@
 @section('content')
 <main id="adminMain">
     <section class="designs-page" aria-labelledby="designsTitle">
+        @include('admin.partials.breadcrumb', ['label' => 'إدارة التصاميم'])
         <h1 id="designsTitle">إدارة التصاميم</h1>
 
         <div class="design-summary" aria-label="ملخص التصاميم">
