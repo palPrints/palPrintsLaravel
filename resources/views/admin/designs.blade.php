@@ -58,6 +58,13 @@
                                 data-designer="{{ $design['designer'] }}"
                                 data-product="{{ $design['product'] }}"
                                 data-date="{{ $design['date'] }}"
+                                data-base-price="{{ $design['basePrice'] }}"
+                                data-selling-price="{{ $design['sellingPrice'] }}"
+                                data-profit="{{ $design['profit'] }}"
+                                data-audience="{{ $design['audience'] }}"
+                                data-sizes="{{ $design['sizes'] }}"
+                                data-colors="{{ $design['colors'] }}"
+                                data-preview-color="{{ $design['previewColor'] }}"
                                 data-reason="{{ $design['rejectionReason'] }}"
                                 data-review-url="{{ route('admin.designs.review', $design['id']) }}">
                                 <td><code>{{ $design['code'] }}</code></td>
@@ -90,10 +97,31 @@
             <div><dt>المصمم</dt><dd id="dialogDesigner"></dd></div>
             <div><dt>المنتج</dt><dd id="dialogProduct"></dd></div>
             <div><dt>تاريخ الرفع</dt><dd id="dialogDate"></dd></div>
+            <div data-detail-row="audience"><dt>الفئة</dt><dd id="dialogAudience"></dd></div>
+            <div data-detail-row="previewColor"><dt>لون المعاينة</dt><dd id="dialogPreviewColor"></dd></div>
+            <div data-detail-row="colors"><dt>الألوان المناسبة</dt><dd id="dialogColors"></dd></div>
+            <div data-detail-row="sizes"><dt>المقاسات المناسبة</dt><dd id="dialogSizes"></dd></div>
+            <div><dt>تكلفة المنتج</dt><dd id="dialogBasePrice"></dd></div>
+            <div><dt>سعر البيع</dt><dd id="dialogSellingPrice"></dd></div>
+            <div><dt>ربح المصمم من كل قطعة</dt><dd id="dialogProfit"></dd></div>
             <div id="dialogReasonRow" hidden><dt>سبب الرفض</dt><dd id="dialogReason"></dd></div>
         </dl>
         <footer id="dialogActions"><button class="approve-design" id="approveDesign" type="button"><i class="bi bi-check-circle"></i>اعتماد التصميم</button><button class="reject-design" id="rejectDesign" type="button">رفض التصميم</button></footer>
     </div>
+</dialog>
+<dialog class="reject-dialog" id="rejectDialog" aria-labelledby="rejectDialogTitle">
+    <form class="reject-dialog-card" id="rejectForm" method="dialog">
+        <span class="reject-dialog-mark" aria-hidden="true"><i class="bi bi-x-octagon"></i></span>
+        <h2 id="rejectDialogTitle">رفض التصميم</h2>
+        <p>اكتب سبب الرفض ليصل إلى المصمم ويعرف ما يحتاج تعديله. يمكنك تركه فارغًا.</p>
+        <label for="rejectReason">سبب الرفض <small>(اختياري)</small></label>
+        <textarea id="rejectReason" rows="4" maxlength="500" placeholder="مثال: جودة الصورة منخفضة، أو التصميم يخالف حقوق الملكية."></textarea>
+        <small class="reject-count"><span id="rejectCount">0</span>/500</small>
+        <div class="reject-dialog-actions">
+            <button type="button" class="reject-cancel" id="rejectCancel">إلغاء</button>
+            <button type="submit" class="reject-confirm" id="rejectConfirm"><i class="bi bi-x-circle"></i>تأكيد الرفض</button>
+        </div>
+    </form>
 </dialog>
 @endsection
 

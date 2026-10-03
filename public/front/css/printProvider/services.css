@@ -90,8 +90,12 @@
 .print-services-page .services-dialog-footer .services-button--primary { flex: 1; }
 .print-services-page .services-dialog-footer .services-button--secondary { min-width: 120px; }
 .print-services-page .services-form-error, .print-services-page .services-storage-warning { padding: 10px 12px; font-size: 12px; border-radius: 8px; color: #b25500; background: #fff6ed; }
-.print-services-page .services-toast { position: fixed; z-index: 100; bottom: 24px; left: 50%; width: max-content; max-width: calc(100% - 32px); padding: 12px 20px; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; border-radius: 10px; background: var(--pp-navy-900); color: #fff; box-shadow: var(--pp-shadow-lg); font-size: 13px; transition: opacity .18s, transform .18s; }
-.print-services-page .services-toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+.print-services-page .services-toast { position: fixed; z-index: 3000; top: 86px; left: 50%; display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100% - 32px); padding: 12px 18px; transform: translate(-50%, -14px); opacity: 0; pointer-events: none; border-radius: 12px; color: #14532d; background: #f0fdf4; border: 1px solid #86efac; box-shadow: 0 12px 28px rgb(22 101 52 / 18%); font-size: 14px; font-weight: 700; visibility: hidden; transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s; }
+.print-services-page .services-toast:empty { display: none; }
+.print-services-page .services-toast::before { content: "\2713"; display: grid; place-items: center; flex: none; width: 24px; height: 24px; color: #fff; font-size: 14px; background: #16a34a; border-radius: 50%; }
+.print-services-page .services-toast.is-error { color: #92400e; background: #fffbeb; border-color: #fcd34d; box-shadow: 0 12px 28px rgb(146 64 14 / 18%); }
+.print-services-page .services-toast.is-error::before { content: "!"; background: #d97706; font-weight: 800; }
+.print-services-page .services-toast.is-visible { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition-delay: 0s; }
 /* Small compositions use the project's original product photography. */
 .print-services-page .services-brand { position: absolute; width: 34%; height: auto; top: 48%; left: 33%; }
 .print-services-page .services-art--mug .services-brand { top: 52%; left: 27%; width: 29%; }
@@ -153,3 +157,29 @@
   .print-services-page .wallet-shell { padding-top: 116px; }
 }
 @media (prefers-reduced-motion: reduce) { .print-services-page *, .print-services-page *::after { transition: none !important; } }
+
+/* Printing methods in the product settings: one card per method with its price beside the name. */
+.print-services-page .services-methods { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.print-services-page .services-methods legend { grid-column: 1 / -1; float: none; width: 100%; margin-bottom: 2px; }
+.print-services-page .services-methods-hint { grid-column: 1 / -1; margin: 0 0 2px; color: #667a96; font-size: 12px; line-height: 1.7; }
+.print-services-page .services-method { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; padding: 10px 12px; background: #fff; border: 1px solid #e1eaf5; border-radius: 10px; transition: border-color .16s ease, background .16s ease; }
+.print-services-page .services-method:has(input[type="checkbox"]:checked) { background: #f8fbff; border-color: #8ebeff; }
+.print-services-page .services-method-name { display: flex; align-items: center; gap: 9px; min-width: 0; color: #0b1f3a; font-size: 13px; font-weight: 800; cursor: pointer; }
+.print-services-page .services-method-name input { width: 17px; height: 17px; margin: 0; flex: none; accent-color: var(--pp-blue-600); cursor: pointer; }
+.print-services-page .services-method-price { position: relative; flex: none; width: 112px; display: flex; align-items: center; direction: ltr; }
+.print-services-page .services-method-price input { box-sizing: border-box; width: 100%; min-height: 38px; padding: 0 28px 0 10px; color: #0b1f3a; font: inherit; font-size: 13px; text-align: left; background: #fff; border: 1px solid #d9e4f2; border-radius: 8px; }
+.print-services-page .services-method-price input:disabled { background: #f1f5fa; }
+.print-services-page .services-method-price input:focus { border-color: var(--pp-blue-600); box-shadow: 0 0 0 3px rgb(22 119 255 / 14%); outline: 0; }
+.print-services-page .services-method-price b { position: absolute; right: 10px; color: #667a96; font-size: 13px; pointer-events: none; }
+@media (max-width: 640px) { .print-services-page .services-methods { grid-template-columns: 1fr; } }
+
+/* Two prices per printing method: a fixed fee and a rate per square centimetre of design. */
+.print-services-page .services-method { flex-direction: column; align-items: stretch; gap: 10px; }
+.print-services-page .services-method-prices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.print-services-page .services-method-price { flex: none; width: auto; display: grid; gap: 4px; direction: rtl; }
+.print-services-page .services-method-price small { color: #667a96; font-size: 11px; font-weight: 700; }
+.print-services-page .services-method-input { position: relative; display: flex; align-items: center; direction: ltr; }
+.print-services-page .services-method-price input { padding-right: 28px; }
+
+/* Print areas reuse the method cards; the zone limit sits under the name. */
+.print-services-page .services-area-limit { margin-inline-start: 6px; color: #667a96; font-size: 11px; font-weight: 600; }

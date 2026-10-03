@@ -170,7 +170,7 @@ class CatalogProductData
             ->all();
     }
 
-    private static function swatch(string $code): string
+    public static function swatch(string $code): string
     {
         return self::SWATCHES[$code] ?? '#888888';
     }
@@ -325,28 +325,31 @@ class CatalogProductData
     /**
      * @return array<int, array{code: string, name: string, width: int, height: int}>
      */
-    private static function areaDefinitions(string $code): array
+    public static function areaDefinitions(string $code): array
     {
-        return match ($code) {
+        // Sizes (mm) match the print zones the design studio draws (A4 on clothes, 20 x 9 cm on the mug).
+        return match (strtoupper($code)) {
             'TSHIRT-CLASSIC' => [
-                ['code' => 'front', 'name' => 'Front', 'width' => 300, 'height' => 400],
-                ['code' => 'back', 'name' => 'Back', 'width' => 320, 'height' => 420],
+                ['code' => 'front', 'name' => 'أمامي', 'width' => 210, 'height' => 297],
+                ['code' => 'back', 'name' => 'خلفي', 'width' => 210, 'height' => 297],
+                ['code' => 'right-sleeve', 'name' => 'الكم الأيمن', 'width' => 100, 'height' => 120],
+                ['code' => 'left-sleeve', 'name' => 'الكم الأيسر', 'width' => 100, 'height' => 120],
             ],
             'HOODIE-PREMIUM' => [
-                ['code' => 'front', 'name' => 'Front', 'width' => 280, 'height' => 340],
-                ['code' => 'back', 'name' => 'Back', 'width' => 320, 'height' => 380],
+                ['code' => 'front', 'name' => 'أمامي', 'width' => 210, 'height' => 297],
+                ['code' => 'back', 'name' => 'خلفي', 'width' => 210, 'height' => 297],
             ],
             'MUG-CERAMIC' => [
-                ['code' => 'wrap', 'name' => 'Full Wrap', 'width' => 200, 'height' => 80],
+                ['code' => 'wrap', 'name' => 'طباعة محيطية كاملة', 'width' => 200, 'height' => 90],
             ],
             'NOTEBOOK-CUSTOM' => [
-                ['code' => 'cover', 'name' => 'Cover', 'width' => 148, 'height' => 210],
+                ['code' => 'cover', 'name' => 'غلاف', 'width' => 148, 'height' => 210],
             ],
             'PHONE-CASE' => [
-                ['code' => 'back', 'name' => 'Back', 'width' => 75, 'height' => 150],
+                ['code' => 'back', 'name' => 'خلفي', 'width' => 75, 'height' => 150],
             ],
             default => [
-                ['code' => 'front', 'name' => 'Front', 'width' => 250, 'height' => 250],
+                ['code' => 'front', 'name' => 'أمامي', 'width' => 250, 'height' => 250],
             ],
         };
     }

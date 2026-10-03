@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AttributeValue;
 use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Design;
@@ -34,10 +35,23 @@ class DesignController extends Controller
             ->whereIn('status', array_keys(self::STATES))
             ->latest('submitted_at')
             ->latest('id')
-            ->get()
-            ->map(function (Design $design) {
+            ->get();
+
+        // Colours are stored by code; the page shows their names.
+        $colorCodes = $designs->flatMap(fn (Design $design) => array_merge(
+            (array) ($design->selected_options['allowed_color_ids'] ?? []),
+            array_filter([$design->selected_options['color_id'] ?? null])
+        ))->unique()->values();
+        $colorNames = AttributeValue::whereIn('code', $colorCodes)->pluck('value', 'code');
+
+        $designs = $designs->map(function (Design $design) use ($colorNames) {
                 $category = $design->product?->category;
                 $date = $design->submitted_at ?? $design->created_at;
+                $options = $design->selected_options ?? [];
+                $audience = CatalogProductData::AUDIENCES[$options['display_category'] ?? ''] ?? null;
+                $sizeNames = $audience
+                    ? collect($audience['sizes'])->whereIn('id', $options['allowed_size_ids'] ?? [])->pluck('name')->all()
+                    : [];
 
                 return [
                     'id' => $design->id,
@@ -53,6 +67,13 @@ class DesignController extends Controller
                     'date' => $date?->locale('ar')->translatedFormat('j F Y'),
                     'state' => self::STATES[$design->status],
                     'rejectionReason' => $design->rejection_reason,
+                    'basePrice' => number_format((float) $design->base_price, 2).' ₪',
+                    'sellingPrice' => number_format((float) $design->selling_price, 2).' ₪',
+                    'profit' => number_format((float) $design->designer_profit, 2).' ₪',
+                    'audience' => $audience['label'] ?? '',
+                    'sizes' => implode('، ', $sizeNames),
+                    'colors' => collect($options['allowed_color_ids'] ?? [])->map(fn ($code) => $colorNames[$code] ?? $code)->implode('، '),
+                    'previewColor' => $colorNames[$options['color_id'] ?? ''] ?? '',
                 ];
             });
 

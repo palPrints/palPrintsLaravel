@@ -326,7 +326,6 @@ class FullDemoScenarioSeeder extends Seeder
                 'phone' => '+970599222222',
                 'whatsapp_number' => '+970599222222',
                 'working_hours' => ['sun_thu' => '09:00-17:00'],
-                'license_document' => 'demo/license.pdf',
                 'verification_document' => 'demo/verification.pdf',
                 'approval_status' => 'approved',
                 'approved_at' => now()->subDays(5),
