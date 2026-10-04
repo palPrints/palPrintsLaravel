@@ -35,7 +35,7 @@
         <div class="home-hero__content">
           <h1 id="home-hero-title">أول منصة فلسطينية للطباعة حسب الطلب</h1>
           <p>مساحة متكاملة لاكتشاف المنتجات والتصاميم، عرض الإبداعات، وتقديم خدمات الطباعة ضمن تجربة واحدة.</p>
-          <a class="home-hero__cta" href="{{ $toRole('customer', 'customer.store') }}">
+          <a class="home-hero__cta" href="{{ $viewer ? route('dashboard') : route('register') }}">
             <span>استكشف PALPRINTS</span>
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12H4m6-6-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
           </a>
