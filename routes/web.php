@@ -47,6 +47,13 @@ Route::get('/', function () {
     return view('index');
 })->name('home');
 
+Route::view('/about', 'about')->name('about');
+Route::view('/faq', 'pages.faq')->name('faq');
+Route::view('/contact', 'pages.contact')->name('contact');
+Route::view('/returns', 'pages.returns')->name('returns');
+Route::view('/shipping', 'pages.shipping')->name('shipping');
+Route::view('/delivery-partners', 'pages.delivery-partners')->name('delivery-partners');
+
 Route::view('/terms', 'legal.placeholder', [
     'title' => 'الشروط والأحكام',
     'message' => 'هذه الصفحة مهيأة لإضافة النص القانوني النهائي قبل إطلاق المنصة.',
