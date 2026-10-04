@@ -244,11 +244,11 @@
 
             <div class="partner-card__photo" aria-hidden="true">
               <img
-                src="{{ asset('front/home/images/designer-partner-cutout.png') }}"
-                srcset="{{ asset('front/home/images/designer-partner-cutout-640.png') }} 640w, {{ asset('front/home/images/designer-partner-cutout.png') }} 1122w"
+                src="{{ asset('front/home/images/designer-partner-hijab.png') }}"
+                srcset="{{ asset('front/home/images/designer-partner-hijab-640.png') }} 640w, {{ asset('front/home/images/designer-partner-hijab.png') }} 1024w"
                 sizes="(max-width: 760px) 50vw, 410px"
-                width="1122"
-                height="1402"
+                width="1024"
+                height="1535"
                 alt=""
                 loading="lazy"
               />

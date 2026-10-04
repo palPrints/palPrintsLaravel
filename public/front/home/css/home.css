@@ -885,15 +885,18 @@ body.home-page {
 .products-carousel__track {
   display: flex;
   flex: 1;
-  gap: 20px;
+  gap: var(--cards-gap, 20px);
   min-width: 0;
   padding: 4px 4px 12px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
+  scroll-padding-inline: 4px;
   scroll-behavior: smooth;
   scrollbar-width: none;
   -ms-overflow-style: none;
   direction: ltr;
+  --cards: 5;
+  --cards-gap: 20px;
 }
 
 .products-carousel__track::-webkit-scrollbar {
@@ -902,10 +905,10 @@ body.home-page {
 
 .product-card {
   display: flex;
-  flex: none;
+  flex: 0 0 calc((100% - (var(--cards) - 1) * var(--cards-gap)) / var(--cards));
   flex-direction: column;
   align-items: center;
-  width: 180px;
+  min-width: 0;
   padding: var(--sp-5) var(--sp-4) var(--sp-4);
   background: var(--pp-surface);
   border: 1px solid var(--pp-border);
@@ -1013,7 +1016,7 @@ body.home-page {
 
 .partner-card--designer {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(230px, 0.7fr);
+  grid-template-columns: minmax(0, 1.3fr) minmax(230px, 0.8fr);
   min-height: 390px;
   overflow: hidden;
   color: #fff;
@@ -1038,9 +1041,9 @@ body.home-page {
   bottom: 0;
   left: 50%;
   display: block;
-  width: min(138%, 410px);
+  width: 100%;
   max-width: none;
-  height: 110%;
+  height: 100%;
   object-fit: contain;
   object-position: center bottom;
   filter: drop-shadow(0 16px 24px rgb(0 0 0 / 28%));
@@ -1441,16 +1444,22 @@ body.home-page {
     min-height: 100%;
   }
 
-  /* Fill the column and crop the sides (face + bag stay in frame) instead of
-     blowing the cutout up to 230% and cutting off her head. */
+  /* Show the whole cutout (head, hijab and bag) — no cropping. */
   .partner-card__photo img {
     inset: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: 30% top;
+    object-fit: contain;
+    object-position: center bottom;
     transform: none;
+  }
+}
+
+@media (max-width: 900px) and (min-width: 601px) {
+  .products-carousel__track {
+    --cards: 4;
+    --cards-gap: 14px;
   }
 }
 
@@ -1472,6 +1481,7 @@ body.home-page {
   }
 
   .product-card {
+    flex: none;
     width: min(42vw, 150px);
     padding: 14px 10px 12px;
   }
@@ -2057,4 +2067,10 @@ body.home-page {
   .paper-print__button:hover {
     transform: none;
   }
+}
+
+.products-carousel__arrow:disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
 }
