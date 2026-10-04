@@ -124,3 +124,13 @@ body.storefront-page.checkout-page::after{display:none}
 .checkout-page .receipt-drop.has-file .receipt-text small{display:none}
 .checkout-page .receipt-drop input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
 .checkout-page .field.invalid .receipt-drop{border-color:var(--danger);background:#fff7f7}
+
+/* The field box is .input-wrap; the inner <input> must not draw a second box. */
+.checkout-page .new-address .input-wrap input,
+.checkout-page .new-address .input-wrap input:hover,
+.checkout-page .new-address .input-wrap input:focus {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
