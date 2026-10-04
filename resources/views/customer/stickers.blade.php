@@ -34,7 +34,6 @@
         <section class="catalog-heading stickers-heading" aria-labelledby="stickersTitle">
             <h1 id="stickersTitle"><img src="{{ asset('front/assets/images/customer/icons8-sticker-48.png') }}" alt=""> ستيكرات</h1>
             <p>مجموعة متنوعة من الملصقات لتزيين مقتنياتك والتعبير عن هويتك.</p>
-            @include('customer.partials.upload-design')
         </section>
 
         <nav class="stickers-categories" aria-label="تصنيفات الملصقات">

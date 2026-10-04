@@ -1,7 +1,7 @@
 @php
     $navItems = [
         ['route' => 'designer.dashboard', 'active' => ['designer.dashboard'], 'icon' => 'bi-grid', 'i18n' => 'dashboard', 'label' => 'لوحة التحكم'],
-        ['route' => 'designer.designs.create', 'active' => ['designer.designs.create', 'designer.designs.editor', 'designer.designs.review'], 'icon' => 'bi-cloud-arrow-up', 'i18n' => 'uploadDesign', 'label' => 'رفع تصميم جديد'],
+        ['route' => 'designer.designs.create', 'active' => ['designer.designs.create', 'designer.designs.preview', 'designer.designs.review'], 'icon' => 'bi-cloud-arrow-up', 'i18n' => 'uploadDesign', 'label' => 'رفع تصميم جديد'],
         ['route' => 'designer.designs.index', 'active' => ['designer.designs.index'], 'icon' => 'bi-images', 'i18n' => 'myDesigns', 'label' => 'تصاميمي'],
         ['route' => 'designer.profile', 'active' => ['designer.profile'], 'icon' => 'bi-person', 'i18n' => 'profileTitle', 'label' => 'الملف الشخصي'],
         ['route' => 'designer.earnings', 'active' => ['designer.earnings'], 'icon' => 'bi-coin', 'i18n' => 'earnings', 'label' => 'الأرباح'],

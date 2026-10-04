@@ -22,6 +22,36 @@ class CatalogProductData
     /** Printing-service products: customers upload their own files, so designers cannot design them. */
     public const NOT_DESIGNABLE = ['PAPER-PRINT', 'STICKER-CUSTOM'];
 
+    /** Clothing is sold by audience; the designer picks one when starting a design. Other products have none. */
+    public const APPAREL_CODES = ['TSHIRT-CLASSIC', 'HOODIE-PREMIUM'];
+
+    /**
+     * Audience => label and the sizes it offers. The kids sizes are not in the product attributes yet,
+     * so the sizes live here until the database holds them per audience.
+     */
+    public const AUDIENCES = [
+        'adults' => [
+            'label' => 'رجال / نساء',
+            'hint' => 'مقاسات S إلى XXL',
+            'sizes' => [['id' => 'S', 'name' => 'S'], ['id' => 'M', 'name' => 'M'], ['id' => 'L', 'name' => 'L'], ['id' => 'XL', 'name' => 'XL'], ['id' => 'XXL', 'name' => 'XXL']],
+        ],
+        'oversized' => [
+            'label' => 'أوفر سايز',
+            'hint' => 'قصّة واسعة، مقاسات M إلى XXL',
+            'sizes' => [['id' => 'M', 'name' => 'M'], ['id' => 'L', 'name' => 'L'], ['id' => 'XL', 'name' => 'XL'], ['id' => 'XXL', 'name' => 'XXL']],
+        ],
+        'kids' => [
+            'label' => 'أطفال',
+            'hint' => 'من 4 إلى 14 سنة',
+            'sizes' => [['id' => '4', 'name' => '4 سنوات'], ['id' => '6', 'name' => '6 سنوات'], ['id' => '8', 'name' => '8 سنوات'], ['id' => '10', 'name' => '10 سنوات'], ['id' => '12', 'name' => '12 سنة'], ['id' => '14', 'name' => '14 سنة']],
+        ],
+    ];
+
+    public static function isApparel(string $code): bool
+    {
+        return in_array(strtoupper($code), self::APPAREL_CODES, true);
+    }
+
     /**
      * @return array{categories: array<int, array<string, string>>, products: array<int, array<string, mixed>>}
      */
@@ -82,6 +112,21 @@ class CatalogProductData
         return [
             'colors' => self::uniqueOptions($attributes['color'] ?? collect(), true),
             'sizes' => self::uniqueOptions($attributes['size'] ?? collect()),
+            // Print areas the active print shops offer for this product (code + Arabic name).
+            'printAreas' => $product->branchProductOfferings
+                ->filter(fn (BranchProductOffering $offering) => $offering->is_active)
+                ->flatMap(fn (BranchProductOffering $offering) => $offering->branchPrintAreas)
+                ->where('is_active', true)
+                ->groupBy('code')
+                // Sizes differ per print shop, so use the smallest each shop supports: a design that fits it prints everywhere.
+                ->map(fn ($areas, $code) => [
+                    'id' => $code,
+                    'name' => $areas->first()->name,
+                    'widthMm' => (int) $areas->min('max_width_mm'),
+                    'heightMm' => (int) $areas->min('max_height_mm'),
+                ])
+                ->values()
+                ->all(),
         ];
     }
 
@@ -125,7 +170,7 @@ class CatalogProductData
             ->all();
     }
 
-    private static function swatch(string $code): string
+    public static function swatch(string $code): string
     {
         return self::SWATCHES[$code] ?? '#888888';
     }
@@ -146,6 +191,7 @@ class CatalogProductData
         return [
             'id' => (string) $product->id,
             'databaseId' => $product->id,
+            'code' => $product->code,
             'categoryId' => $product->category?->slug ?? 'catalog',
             'name' => $product->name,
             'description' => $product->description,
@@ -279,28 +325,31 @@ class CatalogProductData
     /**
      * @return array<int, array{code: string, name: string, width: int, height: int}>
      */
-    private static function areaDefinitions(string $code): array
+    public static function areaDefinitions(string $code): array
     {
-        return match ($code) {
+        // Sizes (mm) match the print zones the design studio draws (A4 on clothes, 20 x 9 cm on the mug).
+        return match (strtoupper($code)) {
             'TSHIRT-CLASSIC' => [
-                ['code' => 'front', 'name' => 'Front', 'width' => 300, 'height' => 400],
-                ['code' => 'back', 'name' => 'Back', 'width' => 320, 'height' => 420],
+                ['code' => 'front', 'name' => 'أمامي', 'width' => 210, 'height' => 297],
+                ['code' => 'back', 'name' => 'خلفي', 'width' => 210, 'height' => 297],
+                ['code' => 'right-sleeve', 'name' => 'الكم الأيمن', 'width' => 100, 'height' => 120],
+                ['code' => 'left-sleeve', 'name' => 'الكم الأيسر', 'width' => 100, 'height' => 120],
             ],
             'HOODIE-PREMIUM' => [
-                ['code' => 'front', 'name' => 'Front', 'width' => 280, 'height' => 340],
-                ['code' => 'back', 'name' => 'Back', 'width' => 320, 'height' => 380],
+                ['code' => 'front', 'name' => 'أمامي', 'width' => 210, 'height' => 297],
+                ['code' => 'back', 'name' => 'خلفي', 'width' => 210, 'height' => 297],
             ],
             'MUG-CERAMIC' => [
-                ['code' => 'wrap', 'name' => 'Full Wrap', 'width' => 200, 'height' => 80],
+                ['code' => 'wrap', 'name' => 'طباعة محيطية كاملة', 'width' => 200, 'height' => 90],
             ],
             'NOTEBOOK-CUSTOM' => [
-                ['code' => 'cover', 'name' => 'Cover', 'width' => 148, 'height' => 210],
+                ['code' => 'cover', 'name' => 'غلاف', 'width' => 148, 'height' => 210],
             ],
             'PHONE-CASE' => [
-                ['code' => 'back', 'name' => 'Back', 'width' => 75, 'height' => 150],
+                ['code' => 'back', 'name' => 'خلفي', 'width' => 75, 'height' => 150],
             ],
             default => [
-                ['code' => 'front', 'name' => 'Front', 'width' => 250, 'height' => 250],
+                ['code' => 'front', 'name' => 'أمامي', 'width' => 250, 'height' => 250],
             ],
         };
     }
@@ -312,6 +361,18 @@ class CatalogProductData
         }
 
         return asset('front/designer/source/create/'.$meta['thumbnail']);
+    }
+
+    /** Arabic category label for the admin pages; falls back to the name stored in the database. */
+    public static function categoryName(string $slug, string $fallback): string
+    {
+        return match ($slug) {
+            'apparel' => 'ملابس',
+            'accessories' => 'اكسسوارات',
+            'drinkware' => 'أكواب',
+            'office' => 'مطبوعات',
+            default => $fallback,
+        };
     }
 
     private static function productOrder(string $code): int

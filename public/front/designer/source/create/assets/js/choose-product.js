@@ -27,6 +27,7 @@ const state = {
     selectedColor: null,
     selectedSize: null,
     selectedPrintAreas: [],
+    selectedCategory: null,
 };
 
 const backendResponse = window.palPrintsDesignerCatalogResponse || {
@@ -162,8 +163,43 @@ function selectProduct(productId) {
     const defaultArea = product.printAreas.find(area => area.id === "front") || product.printAreas[0];
     state.selectedPrintAreas = defaultArea ? [defaultArea.id] : [];
 
+    state.selectedCategory = null;
     announce(`تم اختيار ${product.name}`);
+
+    // Clothing is sold by audience (men/women, oversized, kids): ask first, then open the studio.
+    if (isApparel(product)) {
+        openAudienceDialog();
+        return;
+    }
+
     startDesign();
+}
+
+function isApparel(product) {
+    return (window.palPrintsApparelCodes || []).includes(String(product.code || "").toUpperCase());
+}
+
+function openAudienceDialog() {
+    const dialog = document.getElementById("audienceDialog");
+    if (!dialog || typeof dialog.showModal !== "function") {
+        startDesign();
+        return;
+    }
+
+    if (!dialog.dataset.ready) {
+        dialog.dataset.ready = "1";
+        dialog.querySelectorAll("[data-audience]").forEach(button => {
+            button.addEventListener("click", () => {
+                state.selectedCategory = button.dataset.audience;
+                dialog.close();
+                startDesign();
+            });
+        });
+        document.getElementById("audienceCancel").addEventListener("click", () => dialog.close());
+        dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
+    }
+
+    dialog.showModal();
 }
 
 function renderProductDetails() {
@@ -352,6 +388,10 @@ function validateSelection() {
         return { valid: false, message: "يرجى اختيار منطقة طباعة واحدة على الأقل." };
     }
 
+    if (isApparel(state.selectedProduct) && !state.selectedCategory) {
+        return { valid: false, message: "يرجى اختيار الفئة المناسبة للتصميم." };
+    }
+
     return { valid: true, message: "" };
 }
 
@@ -367,6 +407,7 @@ function createDesignerPayload() {
         colorId: state.selectedColor.id,
         sizeId: state.selectedSize.id,
         printAreaIds: [...state.selectedPrintAreas],
+        category: state.selectedCategory,
     };
 }
 

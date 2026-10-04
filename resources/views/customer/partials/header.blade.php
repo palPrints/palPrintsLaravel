@@ -1,5 +1,5 @@
 {{--
-    Cart badge count and notifications are static placeholders; not wired to real data yet.
+    Cart badge count is still a placeholder; the notifications bell reads user_notifications.
     The "المتجر" mega menu lists the actual product categories from customer.store
     (resources/views/customer/store.blade.php) — every entry points at an existing
     route/anchor; items still marked data-available="false" there show "قريبًا" here.

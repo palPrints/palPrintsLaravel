@@ -18,6 +18,15 @@
     $isAvailable = old('available', $hours['available']);
     $dash = 'غير مضاف';
     $viewDays = $hours['days'];
+    $savedServices = $provider->services ?? [];
+    $selectedServices = $savedServices['selected'] ?? [];
+    $otherServices = $savedServices['other'] ?? [];
+    $selectedProducts = array_map('intval', old('products', $selectedProductIds));
+    $shownProducts = $productOptions->whereIn('id', $selectedProductIds);
+    $shownServices = array_merge(
+        array_values(array_intersect_key($serviceOptions, array_flip($selectedServices))),
+        $otherServices,
+    );
 @endphp
 
 @section('content')
@@ -59,7 +68,7 @@
             <span><i class="bi bi-exclamation-triangle"></i></span>
             <div>
                 <h2>أكمل ملفك الشخصي</h2>
-                <p>اضغط "تعديل البيانات" وأدخل بيانات المطبعة وصاحبها، وارفع رخصة المطبعة وصورة الهوية، ثم احفظ التغييرات لتتمكن من إرسال الملف للمراجعة.</p>
+                <p>اضغط "تعديل البيانات" وأدخل بيانات المطبعة وصاحبها، وارفع وثيقة التحقق وصورة الهوية، ثم احفظ التغييرات لتتمكن من إرسال الملف للمراجعة.</p>
             </div>
         </section>
     @endunless
@@ -111,9 +120,33 @@
                 <dl class="details-grid single">
                     <div><dt>اسم المسؤول</dt><dd>{{ $user->name ?: $dash }}</dd></div>
                     <div><dt>رقم هاتف صاحب المطبعة</dt><dd dir="ltr">{{ $user->phone ?: $dash }}</dd></div>
+                    <div><dt>البريد الإلكتروني للمسؤول</dt><dd dir="ltr">{{ $provider->contact_email ?: $user->email ?: $dash }}</dd></div>
                 </dl>
             </section>
 
+            <section class="form-card">
+                <header class="card-title"><span><i class="bi bi-box-seam"></i></span><h2>المنتجات التي أطبعها</h2></header>
+                <div class="work-days is-static service-chips">
+                    @forelse ($shownProducts as $product)
+                        <span class="selected">{{ $product->name }}</span>
+                    @empty
+                        <span>{{ $dash }}</span>
+                    @endforelse
+                </div>
+            </section>
+
+            @if ($hasServices)
+                <section class="form-card">
+                    <header class="card-title"><span><i class="bi bi-printer"></i></span><h2>الخدمات التي أقدمها</h2></header>
+                    <div class="work-days is-static service-chips">
+                        @forelse ($shownServices as $service)
+                            <span class="selected">{{ $service }}</span>
+                        @empty
+                            <span>{{ $dash }}</span>
+                        @endforelse
+                    </div>
+                </section>
+            @endif
             <section class="form-card">
                 <header class="card-title"><span><i class="bi bi-clock"></i></span><h2>معلومات العمل</h2></header>
                 <div class="availability">
@@ -196,8 +229,45 @@
                     <div class="fields single">
                         <label>اسم المسؤول <em>*</em><input name="contact_name" required value="{{ old('contact_name', $user->name) }}"></label>
                         <label>رقم هاتف صاحب المطبعة <em>*</em><span class="input-icon"><i class="bi bi-telephone"></i><input name="owner_phone" required value="{{ old('owner_phone', $user->phone) }}" dir="ltr"></span></label>
+                        @if ($hasContactEmail)
+                            <label>البريد الإلكتروني للمسؤول<span class="input-icon"><i class="bi bi-envelope"></i><input name="contact_email" type="email" value="{{ old('contact_email', $provider->contact_email) }}" dir="ltr"></span></label>
+                        @endif
                     </div>
                 </section>
+
+                <section class="form-card">
+                    <header class="card-title"><span><i class="bi bi-box-seam"></i></span><h2>المنتجات التي أطبعها</h2></header>
+                    <p class="services-hint">اختر المنتجات التي تقدمها مطبعتك. بعد موافقة الإدارة على طلبك تظهر هذه المنتجات في صفحة خدمات الطباعة لتكمل أسعارها ومدة تجهيزها.</p>
+                    @foreach ($productOptions->groupBy(fn ($product) => $product->category?->name ?? 'منتجات أخرى') as $categoryName => $group)
+                        <h3 class="services-group">{{ $categoryName }}</h3>
+                        <div class="service-options">
+                            @foreach ($group as $product)
+                                <label class="service-option">
+                                    <input type="checkbox" name="products[]" value="{{ $product->id }}" @checked(in_array($product->id, $selectedProducts, true))>
+                                    <span>{{ $product->name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    @endforeach
+                </section>
+
+                @if ($hasServices)
+                    <section class="form-card">
+                        <header class="card-title"><span><i class="bi bi-printer"></i></span><h2>الخدمات التي أقدمها</h2></header>
+                        <p class="services-hint">اختر الخدمات التي تقدمها مطبعتك، وأضف أي خدمة غير موجودة بالقائمة.</p>
+                        <div class="service-options">
+                            @foreach ($serviceOptions as $code => $label)
+                                <label class="service-option">
+                                    <input type="checkbox" name="services[]" value="{{ $code }}" @checked(in_array($code, old('services', $selectedServices), true))>
+                                    <span>{{ $label }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                        <div class="fields single">
+                            <label>خدمات أخرى<input name="other_services" maxlength="500" value="{{ old('other_services', implode('، ', $otherServices)) }}" placeholder="افصل بين الخدمات بفاصلة"></label>
+                        </div>
+                    </section>
+                @endif
     
                 <section class="form-card">
                     <header class="card-title"><span><i class="bi bi-clock"></i></span><h2>معلومات العمل</h2></header>

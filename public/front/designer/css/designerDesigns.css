@@ -42,7 +42,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 1rem;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .design-tabs,
@@ -82,9 +85,9 @@
 
 .design-tab.is-active {
   color: #ffffff;
-  background: var(--profile-gradient);
-  border-color: transparent;
-  box-shadow: 0 8px 20px rgb(78 57 225 / 24%);
+  background: #1677ff;
+  border-color: #1677ff;
+  box-shadow: 0 6px 16px rgb(22 119 255 / 24%);
 }
 
 .tab-count {
@@ -358,7 +361,7 @@ html[dir="ltr"] .design-group-link:hover > i { transform: translateX(3px); }
 
 .design-card-actions {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 42px;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
   margin-top: auto;
 }
@@ -492,4 +495,165 @@ html[dir="ltr"] .design-group-link:hover > i { transform: translateX(3px); }
   .filter-menu {
     width: 100%;
   }
+}
+
+/* Design system: solid primary blue buttons with white text. */
+.profile-page a.designs-new-button {
+  color: #ffffff;
+  background: #1677ff;
+  box-shadow: 0 6px 16px rgb(22 119 255 / 24%);
+}
+
+.profile-page a.designs-new-button:hover {
+  color: #ffffff;
+  background: #0a68eb;
+  box-shadow: 0 8px 20px rgb(22 119 255 / 30%);
+}
+
+.design-tab.is-active:hover {
+  color: #ffffff;
+  background: #0a68eb;
+}
+
+/* Design system: design cards. */
+.design-card {
+  background: #ffffff;
+  border: 1px solid #dfe8f3;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgb(11 31 58 / 6%);
+}
+
+.design-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgb(11 31 58 / 12%);
+}
+
+.design-card .card-image {
+  background: #f7fafd;
+}
+
+.design-card .card-title {
+  color: #0b1f3a;
+  font-size: 1.05rem;
+}
+
+.design-card .tag {
+  color: #0f58be;
+  background: #eff6ff;
+}
+
+.design-card .card-desc {
+  color: #5b7394;
+}
+
+.design-card .card-btn {
+  border-radius: 12px;
+}
+
+.design-card .card-btn.trend {
+  color: #0a68eb;
+  background: #ffffff;
+  border: 1px solid #bed9ff;
+}
+
+.design-card .card-btn.trend:hover {
+  color: #ffffff;
+  background: #1677ff;
+  border-color: #1677ff;
+}
+
+.design-card .card-btn.tertiary {
+  color: #ffffff;
+  background: #1677ff;
+  border: 1px solid #1677ff;
+}
+
+.design-card .card-btn.tertiary:hover {
+  color: #ffffff;
+  background: #0a68eb;
+  border-color: #0a68eb;
+}
+
+.design-card .design-more-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #2c405c;
+  background: #ffffff;
+  border: 1px solid #dfe8f3;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: color .18s ease, background .18s ease, border-color .18s ease;
+}
+
+.design-card .design-more-button:hover,
+.design-card .design-more-button[aria-expanded="true"] {
+  color: #0a68eb;
+  background: #eff6ff;
+  border-color: #bed9ff;
+}
+
+/* "View all" link and the empty-state action follow the same primary blue. */
+.designs-state .card-btn.tertiary {
+  color: #ffffff;
+  background: #1677ff;
+  border: 1px solid #1677ff;
+}
+
+/* "View all" keeps its look on hover. */
+.design-group-link:hover,
+.design-group-link:focus-visible {
+  color: var(--profile-text);
+  background: var(--profile-surface);
+  border-color: var(--profile-border);
+}
+
+/* Design system: filter dropdown. */
+.filter-button {
+  color: #2c405c;
+  background: #ffffff;
+  border: 1px solid #dfe8f3;
+}
+
+.filter-button:hover,
+.filter-button[aria-expanded="true"] {
+  color: #0a68eb;
+  background: #eff6ff;
+  border-color: #bed9ff;
+}
+
+.filter-menu {
+  background: #ffffff;
+  border: 1px solid #dfe8f3;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgb(11 31 58 / 12%);
+}
+
+.filter-menu > p {
+  color: #5b7394;
+}
+
+.filter-option,
+.design-menu-option {
+  color: #2c405c;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.filter-option:hover,
+.design-menu-option:hover {
+  color: #0a68eb;
+  background: #f7fafd;
+}
+
+.filter-option.is-active {
+  color: #0a68eb;
+  background: #eff6ff;
+  font-weight: 700;
+}
+
+.filter-option i {
+  color: inherit;
 }

@@ -5,6 +5,7 @@
     it would have thrown immediately), so this page uses plain server-rendered
     forms for quantity/remove instead, same pattern as the orders page's
     cancel button. The "ترند فلسطين" trending strip below is still a static
+    
     marketing strip (not cart data), left as-is.
 --}}
 @extends('customer.layouts.app')
@@ -48,7 +49,7 @@
             <h2 class="sr-only" id="basketTitle">منتجات السلة</h2>
             <div class="basket-items" id="basketItems">
                 @foreach($items as $item)
-                    <article class="basket-item" data-id="{{ $item['id'] }}">
+                    <article class="basket-item" data-id="{{ $item['id'] }}" data-unit-price="{{ $item['unit_price'] }}">
                         <div class="product-info">
                             <div class="product-media"><img src="{{ $item['product_image'] }}" alt="{{ $item['product_name'] }}"></div>
                             <div>
@@ -69,22 +70,22 @@
                             </div>
                         </div>
                         <div class="item-price">
-                            <strong dir="ltr">{{ number_format($item['total_price'], 0) }} ₪</strong>
-                            <span dir="ltr">{{ number_format($item['unit_price'], 0) }} ₪ × {{ $item['quantity'] }}</span>
+                            <strong dir="ltr" data-line-total>{{ number_format($item['total_price'], 0) }} ₪</strong>
+                            <span dir="ltr" data-unit-summary>{{ number_format($item['unit_price'], 0) }} ₪ × {{ $item['quantity'] }}</span>
                         </div>
                         <div class="quantity">
-                            <form method="POST" action="{{ route('customer.cart.update', $item['id']) }}" style="display:contents">
+                            <form method="POST" action="{{ route('customer.cart.update', $item['id']) }}" style="display:contents" data-quantity-form>
                                 @csrf
                                 @method('PATCH')
-                                <input type="hidden" name="quantity" value="{{ max(1, $item['quantity'] - 1) }}">
-                                <button type="submit" aria-label="إنقاص الكمية" @if($item['quantity'] <= 1) disabled @endif>−</button>
+                                <input type="hidden" name="quantity" value="{{ max(1, $item['quantity'] - 1) }}" data-quantity-input>
+                                <button type="submit" data-quantity-action="decrease" aria-label="إنقاص الكمية" @if($item['quantity'] <= 1) disabled @endif>−</button>
                             </form>
-                            <output>{{ $item['quantity'] }}</output>
-                            <form method="POST" action="{{ route('customer.cart.update', $item['id']) }}" style="display:contents">
+                            <output data-quantity-output>{{ $item['quantity'] }}</output>
+                            <form method="POST" action="{{ route('customer.cart.update', $item['id']) }}" style="display:contents" data-quantity-form>
                                 @csrf
                                 @method('PATCH')
-                                <input type="hidden" name="quantity" value="{{ $item['quantity'] + 1 }}">
-                                <button type="submit" aria-label="زيادة الكمية">+</button>
+                                <input type="hidden" name="quantity" value="{{ $item['quantity'] + 1 }}" data-quantity-input>
+                                <button type="submit" data-quantity-action="increase" aria-label="زيادة الكمية">+</button>
                             </form>
                         </div>
                         <form method="POST" action="{{ route('customer.cart.destroy', $item['id']) }}" style="display:contents">
@@ -102,6 +103,8 @@
         </section>
     @endif
 
+    <div class="toast" id="basketToast" role="status" aria-live="polite"></div>
+
     <section class="trending" aria-labelledby="trendingTitle">
         <div class="section-heading"><div><h2 id="trendingTitle">ترند فلسطين</h2><p>منتجات مستوحاة من فلسطين، الأكثر رواجًا بين عملائنا</p></div></div>
         <div class="product-grid">
@@ -112,3 +115,7 @@
         </div>
     </section>
 @endsection
+
+@push('scripts')
+    <script src="{{ asset('front/js/customer/orderBasket.js') }}?v={{ filemtime(public_path('front/js/customer/orderBasket.js')) }}"></script>
+@endpush

@@ -35,14 +35,13 @@
         <div class="catalog-heading">
             <h1><img src="{{ asset('front/assets/images/t-shirt.png') }}" alt=""> تيشيرتات</h1>
             <p>اكتشف مجموعة مميزة من التيشيرتات بتصاميم فريدة تناسب كل الأذواق والمناسبات.</p>
-            @include('customer.partials.upload-design')
         </div>
+
         <div class="tshirt-filters" role="group" aria-label="تصنيف التيشيرتات">
             <button type="button" data-filter="kids" aria-pressed="false"><i class="bi bi-emoji-smile" aria-hidden="true"></i>أطفال</button>
             <button type="button" data-filter="adults" aria-pressed="false"><i class="bi bi-people" aria-hidden="true"></i>رجال / نساء</button>
             <button type="button" data-filter="oversized" aria-pressed="false"><i class="bi bi-bag" aria-hidden="true"></i>أوفر سايز</button>
         </div>
-
         <div class="products-grid" id="productGrid" aria-live="polite"></div>
         <p class="products-empty" id="productsEmpty" role="status" hidden><i class="bi bi-inbox" aria-hidden="true"></i>لا توجد منتجات مطابقة لبحثك. جرّب كلمة أخرى أو ألغِ التصنيف المحدد.</p>
 

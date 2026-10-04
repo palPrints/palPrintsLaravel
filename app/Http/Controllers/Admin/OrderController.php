@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\PrintProvider;
+use App\Support\OrderNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -24,6 +26,7 @@ class OrderController extends Controller
     /** Database status => [UI state, label, css class, shipment text]. */
     private const STATES = [
         'pending' => ['pending', 'معلق', 'is-pending', 'بانتظار التجهيز'],
+        'awaiting_payment_review' => ['pending', 'بانتظار مراجعة الدفع', 'is-pending', 'بانتظار اعتماد الدفع'],
         'confirmed' => ['processing', 'قيد التنفيذ', 'is-processing', 'قيد التجهيز'],
         'processing' => ['processing', 'قيد التنفيذ', 'is-processing', 'قيد التجهيز'],
         'in_production' => ['processing', 'قيد التنفيذ', 'is-processing', 'قيد التجهيز'],
@@ -102,6 +105,10 @@ class OrderController extends Controller
             }
         });
 
+        if ($record->status !== $changes['status'] && $record->user_id) {
+            OrderNotifier::statusChanged((int) $record->user_id, (string) $record->order_number, $changes['status']);
+        }
+
         AuditLog::create([
             'user_id' => $request->user()->id,
             'action' => 'admin.order_updated',
@@ -114,6 +121,89 @@ class OrderController extends Controller
         return response()->json(['ok' => true, 'message' => 'تم حفظ حالة الطلب بنجاح.']);
     }
 
+
+    public function approvePayment(Request $request, int $order): JsonResponse
+    {
+        abort_unless(Schema::hasTable('orders') && Schema::hasTable('payments'), 404);
+
+        [$record, $payment] = DB::transaction(function () use ($order, $request) {
+            $record = DB::table('orders')->where('id', $order)->lockForUpdate()->first();
+            abort_if($record === null, 404);
+
+            $payment = DB::table('payments')
+                ->where('order_id', $order)
+                ->orderByDesc('id')
+                ->lockForUpdate()
+                ->first();
+
+            abort_if($payment === null, 422, 'لا يوجد سجل دفع مرتبط بهذا الطلب.');
+            abort_if($record->payment_status === 'paid', 422, 'هذا الطلب مدفوع مسبقاً.');
+            abort_if($payment->status !== 'pending_review', 422, 'هذا الدفع ليس بانتظار المراجعة.');
+
+            $payload = json_decode($payment->gateway_payload ?? '[]', true) ?: [];
+            $payload['reviewed_by'] = $request->user()->id;
+            $payload['reviewed_at'] = now()->toISOString();
+            $payload['review_result'] = 'approved';
+
+            DB::table('orders')->where('id', $order)->update([
+                'status' => 'processing',
+                'payment_status' => 'paid',
+                'updated_at' => now(),
+            ]);
+
+            DB::table('payments')->where('id', $payment->id)->update([
+                'status' => 'paid',
+                'paid_at' => now(),
+                'gateway_payload' => json_encode($payload, JSON_UNESCAPED_UNICODE),
+                'updated_at' => now(),
+            ]);
+
+            if ($record->status !== 'processing' && Schema::hasTable('order_status_history')) {
+                DB::table('order_status_history')->insert([
+                    'order_id' => $order,
+                    'changed_by' => $request->user()->id,
+                    'from_status' => $record->status,
+                    'to_status' => 'processing',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            return [$record, $payment];
+        });
+
+        if ($record->user_id) {
+            OrderNotifier::statusChanged((int) $record->user_id, (string) $record->order_number, 'processing');
+        }
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'admin.payment_approved',
+            'description' => 'اعتماد دفع الطلب '.$record->order_number,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'new_values' => ['order_id' => $order, 'payment_id' => $payment->id, 'payment_status' => 'paid'],
+        ]);
+
+        return response()->json(['ok' => true, 'message' => 'تم اعتماد الدفع وتحويل الطلب إلى قيد التنفيذ.']);
+    }
+
+    public function paymentReceipt(int $order)
+    {
+        abort_unless(Schema::hasTable('payments'), 404);
+
+        $payment = DB::table('payments')->where('order_id', $order)->orderByDesc('id')->first();
+        abort_if($payment === null, 404);
+
+        $payload = json_decode($payment->gateway_payload ?? '[]', true) ?: [];
+        $path = $payload['receipt_path'] ?? null;
+        $disk = $payload['receipt_disk'] ?? 'local';
+        $name = $payload['receipt_original_name'] ?? basename((string) $path);
+
+        abort_if(! $path || ! Storage::disk($disk)->exists($path), 404);
+
+        return Storage::disk($disk)->response($path, $name);
+    }
     /** SQL for one column of the print provider/branch of the order's first item. */
     private function firstItemProvider(string $expression): string
     {
@@ -135,12 +225,16 @@ class OrderController extends Controller
             ->selectRaw($this->firstItemProvider('pp.id').' as print_provider_id')
             ->selectRaw($this->firstItemProvider('pp.company_name').' as printer_name')
             ->selectRaw($this->firstItemProvider('b.city').' as printer_city')
+            ->selectRaw('(select payments.gateway_payload from payments where payments.order_id = orders.id order by payments.id desc limit 1) as payment_payload')
             ->orderByDesc('orders.created_at')
             ->limit(200)
             ->get()
             ->map(function ($order) {
                 [$state, $label, $class, $shipment] = self::STATES[$order->status] ?? ['pending', $order->status, 'is-pending', '—'];
                 $date = Carbon::parse($order->created_at);
+
+                $paymentPayload = json_decode($order->payment_payload ?? '[]', true) ?: [];
+                $receiptPath = $paymentPayload['receipt_path'] ?? null;
 
                 return [
                     'id' => $order->id,
@@ -157,7 +251,10 @@ class OrderController extends Controller
                         : null,
                     'printerId' => $order->print_provider_id,
                     'payment' => $order->payment_method,
+                    'paymentStatus' => $order->payment_status,
                     'paid' => $order->payment_status === 'paid',
+                    'receiptUrl' => $receiptPath ? route('admin.orders.payment-receipt', $order->id) : null,
+                    'approvePaymentUrl' => $order->payment_status === 'pending_review' ? route('admin.orders.payment.approve', $order->id) : null,
                     'notes' => $order->notes,
                     'iso' => $date->toDateString(),
                     'date' => $date->locale('ar')->translatedFormat('j F Y'),

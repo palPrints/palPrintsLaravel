@@ -6,6 +6,7 @@
 @push('styles')
     <base href='{{ asset('front/designer/source/create') }}/'>
     <link rel='stylesheet' href='{{ asset('front/designer/source/create/assets/css/choose-product.css') }}'>
+    <link rel='stylesheet' href='{{ asset('front/designer/css/designerFlow.css') }}?v={{ filemtime(public_path('front/designer/css/designerFlow.css')) }}'>
 @endpush
 
 @section('content')
@@ -76,6 +77,26 @@
         </section>
 
         <div class="sr-only" id="liveRegion" role="status" aria-live="polite" aria-atomic="true"></div>
+
+        {{-- Clothing is sold by audience: the designer says who the design is for before opening the studio. --}}
+        <dialog class="flow-dialog" id="audienceDialog" aria-labelledby="audienceTitle">
+            <div class="flow-dialog__head">
+                <h2 id="audienceTitle">لمن هذا التصميم؟</h2>
+                <p>اختر الفئة المناسبة، وبناءً عليها تظهر المقاسات المتاحة للعملاء.</p>
+            </div>
+            <div class="flow-dialog__options">
+                @foreach(\App\Support\CatalogProductData::AUDIENCES as $key => $audience)
+                    <button type="button" class="audience-option" data-audience="{{ $key }}">
+                        <span class="audience-option__icon" aria-hidden="true"><i class="bi {{ ['adults' => 'bi-people', 'oversized' => 'bi-bag', 'kids' => 'bi-emoji-smile'][$key] ?? 'bi-tag' }}"></i></span>
+                        <span class="audience-option__text"><strong>{{ $audience['label'] }}</strong><small>{{ $audience['hint'] }}</small></span>
+                        <i class="bi bi-chevron-left audience-option__go" aria-hidden="true"></i>
+                    </button>
+                @endforeach
+            </div>
+            <div class="flow-dialog__foot">
+                <button type="button" class="flow-dialog__cancel" id="audienceCancel">إلغاء</button>
+            </div>
+        </dialog>
     </div>
 </main>
 @endsection
@@ -84,11 +105,12 @@
     <script>
         window.palPrintsCreateRoutes = {
             choose: @json(route('designer.designs.create')),
-            editor: @json(route('designer.designs.editor')),
+            editor: @json(route('design-studio')),
             review: @json(route('designer.designs.review')),
             dashboard: @json(route('designer.dashboard'))
         };
         window.palPrintsDesignerCatalogResponse = @json($designerCatalog);
+        window.palPrintsApparelCodes = @json(\App\Support\CatalogProductData::APPAREL_CODES);
     </script>
     <script src='{{ asset('front/designer/source/create/assets/js/choose-product.js') }}'></script>
 @endpush

@@ -136,7 +136,6 @@
                 <section class="settings-panel" data-settings-panel="preferences" hidden>
                     <header class="settings-section-head"><span><i class="bi bi-sliders"></i></span><div><h2>تفضيلات العرض</h2><p>خصص طريقة ظهور واستخدام المنصة.</p></div></header>
                     <div class="settings-options-list">
-                        <div class="settings-option"><div><strong>لغة المنصة</strong><small>التبديل بين اللغة العربية واللغة الإنجليزية.</small></div><label class="profile-switch" aria-label="تغيير اللغة"><input type="checkbox" id="settingsLanguageToggle"><span class="profile-switch-track"></span></label></div>
                         <div class="settings-option"><div><strong>الوضع الداكن</strong><small>استخدام الألوان الداكنة في واجهة الحساب.</small></div><label class="profile-switch"><input type="checkbox" id="settingsThemeToggle"><span class="profile-switch-track"></span></label></div>
                         <div class="settings-option"><div><strong>تقليل الحركات</strong><small>تقليل مؤثرات الانتقال والحركة.</small></div><label class="profile-switch"><input type="checkbox" id="reduceMotionToggle"><span class="profile-switch-track"></span></label></div>
                     </div>

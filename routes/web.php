@@ -31,6 +31,7 @@ use App\Http\Controllers\Designer\SupportController as DesignerSupportController
 use App\Http\Controllers\PrintProvider\DashboardController as PrintProviderDashboardController;
 use App\Http\Controllers\PrintProvider\EarningsController as PrintProviderEarningsController;
 use App\Http\Controllers\PrintProvider\ProfileController as PrintProviderProfileController;
+use App\Http\Controllers\PrintProvider\ServicesController as PrintProviderServicesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleDashboardController;
 use App\Http\Controllers\OnboardingController;
@@ -65,6 +66,19 @@ Route::view('/privacy', 'legal.placeholder', [
 Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', DashboardRedirectController::class)->name('dashboard');
 
+    // Design studio page, ported as-is from the frontend repo.
+    Route::get('/design-studio', function () {
+        $isDesigner = auth()->user()?->hasRole('designer');
+
+        return view('studio.design-studio', [
+            'dbCatalog' => \App\Support\CatalogProductData::forDesigner()['products'],
+            'chooseProductUrl' => $isDesigner ? route('designer.designs.create') : route('customer.chooseProduct'),
+            // Both roles use the same preview page; it switches to the designer view for designers.
+            'previewUrl' => $isDesigner ? route('designer.designs.preview') : route('customer.productPreview'),
+            'workflowMode' => $isDesigner ? 'designer' : 'customer',
+        ]);
+    })->middleware('role:customer|designer')->name('design-studio');
+
     Route::post('/onboarding/submit', [OnboardingController::class, 'submit'])
         ->name('onboarding.submit');
 
@@ -81,6 +95,8 @@ Route::middleware(['auth', 'active'])->group(function () {
 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders');
         Route::patch('/orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
+        Route::get('/orders/{order}/payment-receipt', [AdminOrderController::class, 'paymentReceipt'])->name('orders.payment-receipt');
+        Route::post('/orders/{order}/payment/approve', [AdminOrderController::class, 'approvePayment'])->name('orders.payment.approve');
 
         Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments');
         Route::post('/payments/withdrawals/{withdrawal}/review', [AdminPaymentController::class, 'review'])->name('payments.withdrawals.review');
@@ -100,16 +116,19 @@ Route::middleware(['auth', 'active'])->group(function () {
     });
     Route::middleware('role:customer')->prefix('customer')->name('customer.')->group(function () {
         Route::get('/store', [CustomerCatalogController::class, 'store'])->name('store');
+        Route::get('/choose-product', [CustomerCatalogController::class, 'chooseProduct'])->name('chooseProduct');
+        Route::view('/product-preview', 'customer.productPreview')->name('productPreview');
         Route::get('/hoodies', [CustomerCatalogController::class, 'hoodies'])->name('hoodies');
         Route::get('/mugs', [CustomerCatalogController::class, 'mugs'])->name('mugs');
         Route::get('/tshirts', [CustomerCatalogController::class, 'tshirts'])->name('tshirts');
         Route::get('/stickers', [CustomerCatalogController::class, 'stickers'])->name('stickers');
         Route::get('/paper-printing', [CustomerCatalogController::class, 'paperPrinting'])->name('paperPrinting');
-        Route::view('/product-preview', 'customer.productPreview')->name('productPreview');
         Route::get('/basket', [CustomerCartController::class, 'index'])->name('basket');
         Route::get('/print-files/{printFile}/preview', [CustomerCartController::class, 'previewPrintFile'])->name('print-files.preview');
         Route::post('/cart/catalog', [CustomerCartController::class, 'storeCatalog'])->name('cart.store-catalog');
+        Route::post('/cart/custom-design', [CustomerCartController::class, 'storeCustomDesign'])->name('cart.store-custom-design');
         Route::post('/cart/paper',[CustomerCartController::class, 'storePaper'])->name('cart.store-paper');
+        Route::get('/print-files/{printFile}/preview', [CustomerCartController::class, 'printFilePreview'])->name('print-files.preview');
         Route::patch('/cart/{cartItem}', [CustomerCartController::class, 'update'])->name('cart.update');
         Route::delete('/cart/{cartItem}', [CustomerCartController::class, 'destroy'])->name('cart.destroy');
         Route::view('/basket/empty', 'customer.basket-empty')->name('basket.empty');
@@ -141,13 +160,16 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->middleware(['role:print_provider', 'account.approved'])->name('print-provider.earnings');
     Route::post('/print-provider/earnings/withdraw', [PrintProviderEarningsController::class, 'withdraw'])
         ->middleware(['role:print_provider', 'account.approved'])->name('print-provider.earnings.withdraw');
-    Route::view('/print-provider/services', 'printProvider.services')
-        ->middleware(['role:print_provider', 'account.approved'])->name('print-provider.services');
+    Route::middleware(['role:print_provider', 'account.approved'])->prefix('print-provider/services')->name('print-provider.services')->group(function () {
+        Route::get('/', [PrintProviderServicesController::class, 'index']);
+        Route::put('/products/{product}', [PrintProviderServicesController::class, 'save'])->name('.save');
+        Route::patch('/products/{product}/toggle', [PrintProviderServicesController::class, 'toggle'])->name('.toggle');
+    });
     Route::middleware('role:designer')->prefix('designer')->name('designer.')->group(function () {
         Route::middleware('account.approved')->group(function () {
             Route::get('/designs', [DesignController::class, 'index'])->name('designs.index');
             Route::get('/designs/create', [DesignController::class, 'create'])->name('designs.create');
-            Route::get('/designs/editor', [DesignController::class, 'editor'])->name('designs.editor');
+            Route::view('/designs/preview', 'customer.productPreview')->name('designs.preview');
             Route::get('/designs/review', [DesignController::class, 'review'])->name('designs.review');
             Route::post('/designs', [DesignController::class, 'store'])->name('designs.store');
         });

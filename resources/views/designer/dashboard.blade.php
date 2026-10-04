@@ -163,7 +163,7 @@
                         <tr>
                             <td>
                                 <a class="design-cell" href="{{ route('designer.designs.review', ['id' => $design->id]) }}" aria-label="معاينة تصميم {{ $design->title }}">
-                                    <img src="{{ $design->image ?: (filled($design->product?->image) ? (preg_match('#^(https?:)?//#', $design->product->image) ? $design->product->image : asset($design->product->image)) : asset('front/designer/assets/images/file.png')) }}" alt="معاينة تصميم {{ $design->title }}">
+                                    <img src="{{ $design->image ? (preg_match('#^(https?:)?//#', $design->image) ? $design->image : asset($design->image)) : (filled($design->product?->image) ? (preg_match('#^(https?:)?//#', $design->product->image) ? $design->product->image : asset($design->product->image)) : asset('front/designer/assets/images/file.png')) }}" alt="معاينة تصميم {{ $design->title }}">
                                     <span><strong>{{ $design->title }}</strong><small>{{ $design->product?->name }}</small></span>
                                 </a>
                             </td>

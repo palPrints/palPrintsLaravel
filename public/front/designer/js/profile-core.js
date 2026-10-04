@@ -89,7 +89,7 @@
      PalProfile.registerDictionary({ ar: {...}, en: {...} })
      ======================================================= */
 
-  const dictionaries = { ar: {}, en: {} };
+  const dictionaries = { ar: {} };
 
   const languageListeners = [];
 
@@ -98,7 +98,7 @@
       return;
     }
 
-    ["ar", "en"].forEach(function (language) {
+    ["ar"].forEach(function (language) {
       Object.assign(
         dictionaries[language],
         dictionary[language] || {}
@@ -107,9 +107,7 @@
   }
 
   function getLanguage() {
-    return document.documentElement.getAttribute("lang") === "en"
-      ? "en"
-      : "ar";
+    return "ar"; /* the site is Arabic only */
   }
 
   function translate(key) {
@@ -229,7 +227,7 @@
   }
 
   function applyLanguage(language) {
-    const next = language === "en" ? "en" : "ar";
+    const next = "ar"; /* the site is Arabic only */
 
     document.documentElement.setAttribute("lang", next);
     document.documentElement.setAttribute(
@@ -909,23 +907,6 @@
         notificationThreeTime: "أمس",
         viewNotifications: "عرض كل الإشعارات"
       },
-      en: {
-        cartTitle: "Shopping cart",
-        cartCount: "2 items",
-        cartItemOne: "Modern design T-shirt",
-        cartItemTwo: "Custom printed mug",
-        total: "Total",
-        viewCart: "View cart",
-        notificationsTitle: "Notifications",
-        notificationsCount: "3 new",
-        notificationOne: "Your order has been confirmed",
-        notificationOneTime: "5 minutes ago",
-        notificationTwo: "Your design is ready for printing",
-        notificationTwoTime: "1 hour ago",
-        notificationThree: "New earnings were added to your wallet",
-        notificationThreeTime: "Yesterday",
-        viewNotifications: "View all notifications"
-      }
     };
 
     const entries = [];
@@ -1051,14 +1032,6 @@
     if (themeButton) {
       themeButton.addEventListener("click", function () {
         applyTheme(currentTheme() === "dark" ? "light" : "dark");
-      });
-    }
-
-    const languageButton = document.getElementById("languageToggleButton");
-
-    if (languageButton) {
-      languageButton.addEventListener("click", function () {
-        applyLanguage(getLanguage() === "ar" ? "en" : "ar");
       });
     }
 

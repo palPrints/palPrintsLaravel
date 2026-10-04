@@ -17,15 +17,18 @@
 
 (() => {
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const hero = document.querySelector(".home-hero");
   const revealGroups = [
+    {
+      element: document.querySelector(".site-stats"),
+      items: ".site-stats__header, .site-stat",
+    },
+    {
+      element: document.querySelector(".about-us"),
+      items: ".about-us__eyebrow, .about-us__content > h2, .about-us__text, .about-card, .about-us__button",
+    },
     {
       element: document.querySelector(".what-to-print"),
       items: ".what-to-print__header, .products-carousel",
-    },
-    {
-      element: document.querySelector(".featured-designs"),
-      items: ".featured-designs__header, .occasion-card",
     },
     {
       element: document.querySelector(".partner-cta__video-title"),
@@ -58,11 +61,6 @@
     });
   };
 
-  if (hero) {
-    hero.classList.add("hero-reveal");
-    prepareItems(hero, ".home-hero__content > *");
-  }
-
   revealGroups.forEach(({ element, items, revealSelf }) => {
     element.classList.add("scroll-reveal");
     if (revealSelf) element.classList.add("reveal-self");
@@ -72,38 +70,8 @@
   document.documentElement.classList.add("reveal-ready");
 
   if (reduceMotion) {
-    hero?.classList.add("is-visible");
     revealGroups.forEach(({ element }) => element.classList.add("is-visible"));
     return;
-  }
-
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => hero?.classList.add("is-visible"));
-  });
-
-  if (hero) {
-    const slides = hero.querySelector(".home-hero__slides");
-    let ticking = false;
-
-    const updateHeroParallax = () => {
-      ticking = false;
-      const rect = hero.getBoundingClientRect();
-      if (rect.bottom <= 0 || rect.top >= window.innerHeight) return;
-      const shift = Math.min(Math.max(-rect.top * 0.12, 0), 24);
-      slides?.style.setProperty("--hero-parallax", `${shift}px`);
-    };
-
-    window.addEventListener(
-      "scroll",
-      () => {
-        if (ticking) return;
-        ticking = true;
-        requestAnimationFrame(updateHeroParallax);
-      },
-      { passive: true },
-    );
-
-    updateHeroParallax();
   }
 
   if (!("IntersectionObserver" in window)) {
@@ -126,4 +94,47 @@
   );
 
   revealGroups.forEach(({ element }) => observer.observe(element));
+})();
+
+(() => {
+  const counters = document.querySelectorAll("[data-count]");
+  if (!counters.length) return;
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion || !("IntersectionObserver" in window)) return;
+
+  const duration = 1600;
+  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+  const render = (el, value) => {
+    el.textContent = `${Math.round(value)}${el.dataset.suffix || ""}`;
+  };
+
+  const run = (el) => {
+    const target = Number(el.dataset.count);
+    const start = performance.now();
+
+    const tick = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      render(el, target * easeOutCubic(progress));
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+
+    requestAnimationFrame(tick);
+  };
+
+  counters.forEach((el) => render(el, 0));
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        run(entry.target);
+        observer.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.6 },
+  );
+
+  counters.forEach((el) => observer.observe(el));
 })();

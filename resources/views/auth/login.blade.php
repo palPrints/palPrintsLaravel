@@ -125,5 +125,6 @@
   </main>
 
   <script src="{{ asset('front/auth/js/login.js') }}?v={{ filemtime(public_path('front/auth/js/login.js')) }}"></script>
+@include('partials.page-loader')
 </body>
 </html>

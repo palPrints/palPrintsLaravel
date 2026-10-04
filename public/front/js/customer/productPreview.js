@@ -1,977 +1,491 @@
-(function () {
+(async function initializeProductPreview(window, document) {
   "use strict";
 
-  const SESSION_KEY = "palprintsCustomerPreview";
-  const ALLOWED_TONES = new Set([
-    "hoodie-tone--cream",
-    "hoodie-tone--black",
-    "hoodie-tone--pink",
-    "hoodie-tone--purple",
-    "hoodie-tone--blue",
-    "hoodie-tone--green"
-  ]);
-  const DARK_TONES = new Set([
-    "hoodie-tone--black",
-    "hoodie-tone--purple",
-    "hoodie-tone--blue",
-    "hoodie-tone--green"
-  ]);
-  const ALLOWED_ICONS = new Set([
-    "tree-fill",
-    "flower2",
-    "emoji-smile",
-    "rocket-takeoff",
-    "moon-stars-fill",
-    "leaf",
-    "emoji-laughing",
-    "stars"
-  ]);
-
+  const KEYS = {
+    preview: "palprintsCustomerPreview", cart: "palprints-product-cart", workflow: "palprintsStudioWorkflowContext",
+    selection: "palprintsDesignerSelection", review: "palprintsReviewState", design: "palprintsDesign:",
+    asset: "palprintsDesignAsset:", role: "palprints-user-role"
+  };
+  const roleAuth = window.PALPRINTS_ROLE_AUTH;
+  const objectUrls = [];
+  const $ = id => document.getElementById(id);
   const elements = {
-    viewTabs: document.getElementById("viewTabs"),
-    productCanvas: document.getElementById("productCanvas"),
-    productImage: document.getElementById("productImage"),
-    designPlacement: document.getElementById("designPlacement"),
-    designArt: document.getElementById("designArt"),
-    imagePlaceholder: document.getElementById("imagePlaceholder"),
-    currentViewBadge: document.getElementById("currentViewBadge"),
-    colorOptions: document.getElementById("colorOptions"),
-    selectedColorName: document.getElementById("selectedColorName"),
-    sizeOptions: document.getElementById("sizeOptions"),
-    selectedSizeName: document.getElementById("selectedSizeName"),
-    pieceSelector: document.getElementById("pieceSelector"),
-    pieceTabs: document.getElementById("pieceTabs"),
-    activePieceLabel: document.getElementById("activePieceLabel"),
-    pieceEditorPanel: document.getElementById("pieceEditorPanel"),
-    quantityValue: document.getElementById("quantityValue"),
-    decreaseQuantity: document.getElementById("decreaseQuantity"),
-    increaseQuantity: document.getElementById("increaseQuantity"),
-    printAreaOptions: document.getElementById("printAreaOptions"),
-    printAreaError: document.getElementById("printAreaError"),
-    priceBreakdown: document.getElementById("priceBreakdown"),
-    totalPrice: document.getElementById("totalPrice"),
-    mobileTotalPrice: document.getElementById("mobileTotalPrice"),
-    summaryTitle: document.getElementById("summaryTitle"),
-    designMeta: document.getElementById("designMeta"),
-    summaryValidation: document.getElementById("summaryValidation"),
-    customerWarnings: document.getElementById("customerWarnings"),
-    zoomOut: document.getElementById("zoomOut"),
-    zoomIn: document.getElementById("zoomIn"),
-    zoomValue: document.getElementById("zoomValue"),
-    fitPreview: document.getElementById("fitPreview"),
-    openFullscreen: document.getElementById("openFullscreen"),
-    fullscreenDialog: document.getElementById("fullscreenDialog"),
-    fullscreenTitle: document.getElementById("fullscreenTitle"),
-    fullscreenStage: document.getElementById("fullscreenStage"),
-    closeFullscreen: document.getElementById("closeFullscreen"),
-    addToCartButton: document.getElementById("addToCartButton"),
-    mobileAddToCart: document.getElementById("mobileAddToCart"),
-    toast: document.getElementById("previewToast"),
-    toastIcon: document.querySelector("#previewToast .preview-toast-icon i"),
-    toastMessage: document.getElementById("previewToastMessage")
+    pageTitle: $("previewPageTitle"), pageDescription: $("previewPageDescription"), breadcrumbProductName: $("breadcrumbProductName"), colorLabel: $("colorControlLabel"),
+    viewTabs: $("viewTabs"), canvas: $("productCanvas"), image: $("productImage"), placement: $("designPlacement"), art: $("designArt"), tint: $("productTint"),
+    imagePlaceholder: $("imagePlaceholder"), viewBadge: $("currentViewBadge"), colorOptions: $("colorOptions"), colorName: $("selectedColorName"),
+    sizeOptions: $("sizeOptions"), sizeName: $("selectedSizeName"), pieceSelector: $("pieceSelector"), pieceTabs: $("pieceTabs"),
+    activePieceLabel: $("activePieceLabel"), customerSize: $("customerSizeGroup"), customerQuantity: $("customerQuantitySection"),
+    customerAreas: $("customerPrintAreaGroup"), quantity: $("quantityValue"), quantityLimit: $("quantityLimitText"),
+    decrease: $("decreaseQuantity"), increase: $("increaseQuantity"), areaOptions: $("printAreaOptions"),
+    printingSection: $("printingTechnologySection"), printingSelect: $("printingTechnology"), printingNote: $("printingTechnologyNote"),
+    designerColors: $("designerColorApproval"), allowedSummary: $("allowedColorsSummary"), openAllowed: $("openAllowedColors"),
+    allowedDialog: $("allowedColorsDialog"), allowedOptions: $("allowedColorOptions"), selectAll: $("selectAllColors"), clearAll: $("clearAllColors"),
+    closeAllowed: $("closeAllowedColors"), cancelAllowed: $("cancelAllowedColors"), confirmAllowed: $("confirmAllowedColors"),
+    purchaseRow: $("customerPurchaseRow"), mobileBar: $("previewMobileBar"),
+    priceBreakdown: $("priceBreakdown"), total: $("totalPrice"), mobileTotal: $("mobileTotalPrice"), summaryTitle: $("summaryTitle"),
+    designMeta: $("designMeta"), validation: $("summaryValidation"), warnings: $("customerWarnings"), zoomOut: $("zoomOut"),
+    zoomIn: $("zoomIn"), zoomValue: $("zoomValue"), fit: $("fitPreview"), openFullscreen: $("openFullscreen"),
+    fullscreen: $("fullscreenDialog"), fullscreenTitle: $("fullscreenTitle"), fullscreenStage: $("fullscreenStage"), closeFullscreen: $("closeFullscreen"),
+    addToCart: $("addToCartButton"), mobileAdd: $("mobileAddToCart"), toast: $("previewToast"),
+    toastIcon: document.querySelector("#previewToast .preview-toast-icon i"), toastMessage: $("previewToastMessage"), cartBadge: $("cartBadge")
   };
+  if (!elements.canvas) return;
 
-  if (!elements.productCanvas) return;
+  function read(storage, key, fallback) {
+    try { const value = storage.getItem(key); return value ? JSON.parse(value) : fallback; } catch (error) { return fallback; }
+  }
+  const workflow = read(sessionStorage, KEYS.workflow, null);
+  const access = await roleAuth.resolve({ contextRole: workflow?.workflowMode, developmentDefault: "customer" });
+  if (!access.role) { roleAuth.redirectToLogin(); return; }
+  const role = access.role;
+  const numeric = value => Number.isFinite(Number(value)) ? Number(value) : null;
+  const validText = (value, fallback) => typeof value === "string" && value.trim() ? value.trim().slice(0, 120) : fallback;
 
-  function createFallbackPayload() {
+  function fallbackPayload() {
     return {
-      version: 2,
+      studioContext: false,
       product: {
-        id: "hoodie-classic",
-        name: "هودي رجال / نساء",
-        sellingPrice: 20,
-        currency: "ILS",
-        colors: [
-          { id: "cream", name: "كريمي", value: "#eee6d6", image: "assets/images/hoodie.png", toneClass: "hoodie-tone--cream" },
-          { id: "black", name: "أسود", value: "#151719", image: "assets/images/hoodie.png", toneClass: "hoodie-tone--black" },
-          { id: "pink", name: "وردي", value: "#d9a6a9", image: "assets/images/hoodie.png", toneClass: "hoodie-tone--pink" },
-          { id: "purple", name: "بنفسجي", value: "#76758d", image: "assets/images/hoodie.png", toneClass: "hoodie-tone--purple" },
-          { id: "blue", name: "أزرق", value: "#7f9eb7", image: "assets/images/hoodie.png", toneClass: "hoodie-tone--blue" },
-          { id: "green", name: "أخضر", value: "#45605b", image: "assets/images/hoodie.png", toneClass: "hoodie-tone--green" }
-        ],
-        sizes: ["S", "M", "L", "XL", "XXL"].map(function (name) { return { id: name.toLowerCase(), name: name }; }),
-        printAreas: [
-          { id: "front", name: "الأمام", image: "assets/images/hoodie.png", fee: 5, placement: { top: 25, left: 29, width: 42, height: 42 } },
-          { id: "back", name: "الخلف", image: "assets/images/hoodie-back-clean.png", fee: 5, placement: { top: 26, left: 30, width: 40, height: 42 } }
-        ]
+        id: "hoodie-classic", name: "هودي رجال / نساء", sellingPrice: 20, currency: "ILS", pricingConfigured: true, quantityMax: 99,
+        colors: [{ id: "cream", name: "كريمي", value: "#eee6d6", image: "assets/images/hoodie.png" }, { id: "black", name: "أسود", value: "#151719", image: "assets/images/hoodie.png" }, { id: "pink", name: "وردي", value: "#d9a6a9", image: "assets/images/hoodie.png" }],
+        sizes: ["S", "M", "L", "XL", "XXL"].map(name => ({ id: name.toLowerCase(), name })),
+        printAreas: [{ id: "front", name: "الأمام", image: "assets/images/hoodie.png", fee: 5, placement: { top: 25, left: 29, width: 42, height: 42 } }, { id: "back", name: "الخلف", image: "assets/images/hoodie-back-clean.png", fee: 5, placement: { top: 26, left: 30, width: 40, height: 42 } }],
+        printing: { customerSelectable: false, technologies: [] }
       },
-      design: {
-        id: "salam",
-        name: "سلام دائم",
-        designerName: "Omar K",
-        preview: {
-          images: [],
-          texts: [
-            { content: "سلام", fontFamily: "Cairo", color: "#ffffff", autoContrast: true, x: 50, y: 63, width: 82, size: 30, rotation: 0, layerOrder: 2 }
-          ],
-          icons: [
-            { name: "flower2", color: "#ffffff", autoContrast: true, x: 50, y: 33, size: 28, rotation: 0, layerOrder: 1 }
-          ]
-        }
-      },
-      selection: {
-        colorId: "black",
-        sizeId: "m",
-        quantity: 1,
-        printAreaIds: ["front"],
-        defaultItem: { colorId: "black", sizeId: "m", printAreaIds: ["front"] },
-        items: [{ colorId: "black", sizeId: "m", printAreaIds: ["front"] }],
-        activeItemIndex: 0
-      },
-      customerWarnings: []
+      design: { id: "salam", name: "سلام دائم", designerName: "Omar K", preview: { images: [], texts: [{ content: "سلام", color: "#fff", x: 50, y: 60, width: 80, sizePercent: 18, layerOrder: 1 }], icons: [] }, previewByArea: {} },
+      selection: { items: [{ colorId: "black", sizeId: "m", printAreaIds: ["front"] }], defaultItem: { colorId: "black", sizeId: "m", printAreaIds: ["front"] }, activeItemIndex: 0 }, customerWarnings: []
     };
   }
-
-  function safeString(value, fallback, maximum) {
-    const text = typeof value === "string" ? value.trim() : "";
-    return (text || fallback).slice(0, maximum || 120);
-  }
-
-  function safeNumber(value, fallback, minimum, maximum) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return fallback;
-    return Math.min(maximum, Math.max(minimum, number));
-  }
-
-  function safeImageSource(value, fallback) {
-    const source = typeof value === "string" ? value.trim() : "";
-    if (/^(assets\/|data:image\/(?:png|jpe?g|webp|gif);base64,|https:\/\/)/i.test(source)) return source;
-    return fallback;
-  }
-
-  function normalizePayload(candidate) {
-    const fallback = createFallbackPayload();
-    if (!candidate || ![1, 2].includes(candidate.version) || !candidate.product || !candidate.design) return fallback;
-
-    const rawProduct = candidate.product;
-    const rawColors = Array.isArray(rawProduct.colors) ? rawProduct.colors : [];
-    const colors = rawColors.map(function (color, index) {
-      const fallbackColor = fallback.product.colors[index % fallback.product.colors.length];
-      return {
-        id: safeString(color && color.id, fallbackColor.id, 40),
-        name: safeString(color && color.name, fallbackColor.name, 40),
-        value: /^#[0-9a-f]{6}$/i.test(color && color.value) ? color.value : fallbackColor.value,
-        image: safeImageSource(color && color.image, fallbackColor.image),
-        // "" means "no tint" (t-shirts/mugs show the design image as-is).
-        toneClass: color && (color.toneClass === "" || ALLOWED_TONES.has(color.toneClass)) ? color.toneClass : fallbackColor.toneClass
-      };
-    }).filter(function (color, index, list) {
-      return list.findIndex(function (item) { return item.id === color.id; }) === index;
-    });
-
-    const rawSizes = Array.isArray(rawProduct.sizes) ? rawProduct.sizes : [];
-    const sizes = rawSizes.map(function (size, index) {
-      const fallbackSize = fallback.product.sizes[index % fallback.product.sizes.length];
-      return {
-        id: safeString(size && size.id, fallbackSize.id, 24),
-        name: safeString(size && size.name, fallbackSize.name, 24)
-      };
-    }).filter(function (size, index, list) {
-      return list.findIndex(function (item) { return item.id === size.id; }) === index;
-    });
-
-    const rawAreas = Array.isArray(rawProduct.printAreas) ? rawProduct.printAreas : [];
-    const areas = rawAreas.map(function (area, index) {
-      const fallbackArea = fallback.product.printAreas[index % fallback.product.printAreas.length];
-      const placement = area && area.placement ? area.placement : fallbackArea.placement;
-      return {
-        id: safeString(area && area.id, fallbackArea.id, 40),
-        name: safeString(area && area.name, fallbackArea.name, 50),
-        image: safeImageSource(area && area.image, fallbackArea.image),
-        fee: safeNumber(area && area.fee, fallbackArea.fee, 0, 9999),
-        placement: {
-          top: safeNumber(placement.top, fallbackArea.placement.top, 0, 100),
-          left: safeNumber(placement.left, fallbackArea.placement.left, 0, 100),
-          width: safeNumber(placement.width, fallbackArea.placement.width, 5, 100),
-          height: safeNumber(placement.height, fallbackArea.placement.height, 5, 100)
-        }
-      };
-    }).filter(function (area, index, list) {
-      return list.findIndex(function (item) { return item.id === area.id; }) === index;
-    });
-
-    const design = candidate.design;
-    const preview = design.preview || {};
-    const images = (Array.isArray(preview.images) ? preview.images : []).slice(0, 12).map(function (item) {
-      return {
-        src: safeImageSource(item && item.src, ""),
-        alt: safeString(item && item.alt, "عنصر من التصميم", 100),
-        x: safeNumber(item && item.x, 50, 0, 100),
-        y: safeNumber(item && item.y, 50, 0, 100),
-        width: safeNumber(item && item.width, 50, 1, 100),
-        height: safeNumber(item && item.height, 50, 1, 100),
-        rotation: safeNumber(item && item.rotation, 0, -360, 360),
-        layerOrder: safeNumber(item && item.layerOrder, 1, 0, 100)
-      };
-    }).filter(function (item) { return Boolean(item.src); });
-
-    const texts = (Array.isArray(preview.texts) ? preview.texts : []).slice(0, 20).map(function (item) {
-      return {
-        content: safeString(item && item.content, "", 300),
-        fontFamily: item && item.fontFamily === "Cairo" ? "Cairo" : "Cairo",
-        color: /^#[0-9a-f]{6}$/i.test(item && item.color) ? item.color : "#ffffff",
-        autoContrast: Boolean(item && item.autoContrast),
-        x: safeNumber(item && item.x, 50, 0, 100),
-        y: safeNumber(item && item.y, 50, 0, 100),
-        width: safeNumber(item && item.width, 70, 5, 100),
-        size: safeNumber(item && item.size, 24, 8, 80),
-        rotation: safeNumber(item && item.rotation, 0, -360, 360),
-        layerOrder: safeNumber(item && item.layerOrder, 1, 0, 100)
-      };
-    }).filter(function (item) { return Boolean(item.content); });
-
-    const icons = (Array.isArray(preview.icons) ? preview.icons : []).slice(0, 20).map(function (item) {
-      return {
-        name: ALLOWED_ICONS.has(item && item.name) ? item.name : "stars",
-        color: /^#[0-9a-f]{6}$/i.test(item && item.color) ? item.color : "#ffffff",
-        autoContrast: Boolean(item && item.autoContrast),
-        x: safeNumber(item && item.x, 50, 0, 100),
-        y: safeNumber(item && item.y, 50, 0, 100),
-        size: safeNumber(item && item.size, 28, 8, 80),
-        rotation: safeNumber(item && item.rotation, 0, -360, 360),
-        layerOrder: safeNumber(item && item.layerOrder, 1, 0, 100)
-      };
-    });
-
-    const product = {
-      id: safeString(rawProduct.id, fallback.product.id, 80),
-      code: safeString(rawProduct.code, "", 40),
-      name: safeString(rawProduct.name, fallback.product.name, 100),
-      sellingPrice: safeNumber(rawProduct.sellingPrice, 20, 0, 999999),
-      currency: "ILS",
-      colors: colors.length ? colors : fallback.product.colors,
-      sizes: sizes.length ? sizes : fallback.product.sizes,
-      printAreas: areas.length ? areas : fallback.product.printAreas
-    };
-
-    const rawSelection = candidate.selection || {};
-    const validColorId = product.colors.some(function (color) { return color.id === rawSelection.colorId; }) ? rawSelection.colorId : product.colors[0].id;
-    const validSizeId = product.sizes.some(function (size) { return size.id === rawSelection.sizeId; }) ? rawSelection.sizeId : product.sizes[0].id;
-    const requestedAreaIds = Array.isArray(rawSelection.printAreaIds) ? rawSelection.printAreaIds : [];
-    const validAreaIds = product.printAreas.filter(function (area) { return requestedAreaIds.includes(area.id); }).map(function (area) { return area.id; });
-    const legacyItem = {
-      colorId: validColorId,
-      sizeId: validSizeId,
-      printAreaIds: validAreaIds.length ? validAreaIds : [product.printAreas[0].id]
-    };
-
-    function normalizeSelectionItem(item, itemFallback) {
-      const source = item && typeof item === "object" ? item : itemFallback;
-      const colorId = product.colors.some(function (color) { return color.id === source.colorId; }) ? source.colorId : itemFallback.colorId;
-      const sizeId = product.sizes.some(function (size) { return size.id === source.sizeId; }) ? source.sizeId : itemFallback.sizeId;
-      const requestedIds = Array.isArray(source.printAreaIds) ? source.printAreaIds : itemFallback.printAreaIds;
-      const areaIds = product.printAreas.filter(function (area) { return requestedIds.includes(area.id); }).map(function (area) { return area.id; });
-      return { colorId: colorId, sizeId: sizeId, printAreaIds: areaIds.length ? areaIds : itemFallback.printAreaIds.slice() };
-    }
-
-    const defaultItem = normalizeSelectionItem(rawSelection.defaultItem, legacyItem);
-    const legacyQuantity = Math.round(safeNumber(rawSelection.quantity, 1, 1, 99));
-    const rawItems = candidate.version === 2 && Array.isArray(rawSelection.items) && rawSelection.items.length
-      ? rawSelection.items.slice(0, 99)
-      : Array.from({ length: legacyQuantity }, function () { return legacyItem; });
-    const items = rawItems.map(function (item) { return normalizeSelectionItem(item, defaultItem); });
-    const activeItemIndex = Math.round(safeNumber(rawSelection.activeItemIndex, 0, 0, items.length - 1));
-    const activeItem = items[activeItemIndex];
-
+  function normalizeLegacy(candidate) {
+    if (!candidate?.product || !candidate?.design) return fallbackPayload();
+    const fallback = fallbackPayload(), raw = candidate.product, source = candidate.selection || {};
+    const colors = Array.isArray(raw.colors) && raw.colors.length ? raw.colors : fallback.product.colors;
+    const sizes = Array.isArray(raw.sizes) && raw.sizes.length ? raw.sizes : fallback.product.sizes;
+    const areas = Array.isArray(raw.printAreas) && raw.printAreas.length ? raw.printAreas : fallback.product.printAreas;
+    const colorId = colors.some(item => item.id === source.colorId) ? source.colorId : colors[0].id;
+    const sizeId = sizes.some(item => item.id === source.sizeId) ? source.sizeId : sizes[0].id;
+    const ids = areas.filter(area => (source.printAreaIds || []).includes(area.id)).map(area => area.id);
+    const base = { colorId, sizeId, printAreaIds: ids.length ? ids : [areas[0].id] };
+    const rawItems = Array.isArray(source.items) && source.items.length ? source.items : Array.from({ length: Math.max(1, Math.min(99, Number(source.quantity) || 1)) }, () => base);
+    const items = rawItems.map(item => ({
+      colorId: colors.some(color => color.id === item.colorId) ? item.colorId : base.colorId,
+      sizeId: sizes.some(size => size.id === item.sizeId) ? item.sizeId : base.sizeId,
+      printAreaIds: areas.filter(area => (item.printAreaIds || base.printAreaIds).includes(area.id)).map(area => area.id)
+    }));
     return {
-      version: 2,
-      product: product,
-      design: {
-        id: safeString(design.id, fallback.design.id, 80),
-        name: safeString(design.name, fallback.design.name, 100),
-        designerName: safeString(design.designerName, fallback.design.designerName, 100),
-        preview: { images: images, texts: texts, icons: icons }
-      },
-      selection: {
-        colorId: activeItem.colorId,
-        sizeId: activeItem.sizeId,
-        printAreaIds: activeItem.printAreaIds.slice(),
-        quantity: items.length,
-        defaultItem: defaultItem,
-        items: items,
-        activeItemIndex: activeItemIndex
-      },
-      customerWarnings: (Array.isArray(candidate.customerWarnings) ? candidate.customerWarnings : []).slice(0, 10).map(function (warning) {
-        return {
-          message: safeString(warning && (warning.message || warning.text), "", 240),
-          customerVisible: Boolean(warning && warning.customerVisible),
-          blocking: Boolean(warning && (warning.blocking || warning.severity === "error"))
-        };
-      }).filter(function (warning) { return warning.message; })
+      studioContext: false,
+      product: { ...raw, colors, sizes, printAreas: areas, pricingConfigured: raw.pricingConfigured !== false, quantityMax: numeric(raw.quantityMax) ?? 99, printing: raw.printing || { customerSelectable: false, technologies: [] } },
+      design: { ...candidate.design, preview: candidate.design.preview || { images: [], texts: [], icons: [] }, previewByArea: candidate.design.previewByArea || {} },
+      selection: { items, defaultItem: source.defaultItem || base, activeItemIndex: Math.max(0, Math.min(items.length - 1, Number(source.activeItemIndex) || 0)) },
+      customerWarnings: Array.isArray(candidate.customerWarnings) ? candidate.customerWarnings : []
+    };
+  }
+  function getAssetBlob(designId, assetId) {
+    if (!window.indexedDB) return Promise.resolve(null);
+    return new Promise(resolve => {
+      const open = indexedDB.open("palprintsStudioAssets", 1);
+      open.onerror = open.onblocked = () => resolve(null);
+      open.onsuccess = () => {
+        try {
+          const request = open.result.transaction("assets").objectStore("assets").get(designId + ":" + assetId);
+          request.onsuccess = () => resolve(request.result?.blob || null); request.onerror = () => resolve(null);
+        } catch (error) { resolve(null); }
+      };
+    });
+  }
+  async function assetSource(designId, assetId) {
+    const blob = await getAssetBlob(designId, assetId);
+    if (blob) { const url = URL.createObjectURL(blob); objectUrls.push(url); return url; }
+    try { return localStorage.getItem(KEYS.asset + designId + ":" + assetId) || ""; } catch (error) { return ""; }
+  }
+  function printingMetadata(product) {
+    const metadata = product.printing || {};
+    const source = product.printingTechnologyOptions || product.printingTechnologies || metadata.technologies || [];
+    return {
+      customerSelectable: product.customerCanChoosePrintingTechnology === true || metadata.customerSelectable === true,
+      technologies: Array.isArray(source) ? source.map((item, index) => typeof item === "string" ? { id: item, name: item, additionalCost: null } : { id: validText(item.id, "tech-" + index), name: validText(item.name, validText(item.id, "تقنية " + (index + 1))), additionalCost: numeric(item.additionalCost ?? item.cost) }) : []
+    };
+  }
+  // The design studio's catalog has no database code; its categories map to the products the server can order.
+  const AUDIENCES = window.palPrintsAudiences || {};
+  const STUDIO_PRODUCT_CODES = { tshirts: "TSHIRT-CLASSIC", hoodies: "HOODIE-PREMIUM", mugs: "MUG-CERAMIC" };
+  async function buildStudioPayload(context) {
+    if (!context?.designId || !context?.productId) return null;
+    const selection = read(sessionStorage, KEYS.selection, null);
+    const documentState = read(localStorage, KEYS.design + context.designId, null);
+    const catalog = window.PALPRINTS_PRODUCT_CATALOG?.products || [];
+    const product = catalog.find(item => item.id === context.productId) || (selection?.editorProduct?.id === context.productId ? selection.editorProduct : null);
+    const draft = documentState?.drafts?.[context.productId];
+    if (!product || !draft) return null;
+    const graphics = new Map((window.PALPRINTS_STUDIO_GRAPHICS?.items || []).map(item => [item.id, item]));
+    const ids = [...new Set(Object.values(draft.areas || {}).flatMap(area => area?.objects || []).filter(item => item.kind === "image" && item.assetId).map(item => item.assetId))];
+    const sources = new Map();
+    await Promise.all(ids.map(async id => sources.set(id, await assetSource(context.designId, id))));
+    const rawAreas = product.editor?.printAreas || product.printAreas || [];
+    const previewByArea = {};
+    rawAreas.forEach(area => {
+      const preview = { images: [], texts: [], icons: [] };
+      (draft.areas?.[area.id]?.objects || []).forEach((model, index) => {
+        const common = { x: (Number(model.x) || 0) * 100, y: (Number(model.y) || 0) * 100, rotation: Number(model.angle) || 0, layerOrder: index + 1, flipX: Boolean(model.flipX), flipY: Boolean(model.flipY) };
+        if (model.kind === "image" && sources.get(model.assetId)) preview.images.push({ ...common, assetId: model.assetId, src: sources.get(model.assetId), alt: "صورة مرفوعة في التصميم", width: (Number(model.width) || .2) * 100, height: (Number(model.height) || .2) * 100 });
+        if (model.kind === "graphic") {
+          const graphic = graphics.get(model.graphicId);
+          if (graphic?.assetPath) preview.images.push({ ...common, src: graphic.assetPath, alt: graphic.nameAr || graphic.nameEn || "رسم من التصميم", width: (Number(model.width) || .2) * 100, height: (Number(model.height) || .2) * 100, tint: graphic.recolorable ? model.color || graphic.defaultColor : null });
+        }
+        if (model.kind === "text") preview.texts.push({ ...common, content: model.text || "", width: (Number(model.width) || .7) * (Number(model.scaleX) || 1) * 100, sizePercent: (Number(model.fontSize) || .1) * (Number(model.scaleY) || 1) * 100, fontFamily: model.fontFamily || "Cairo", color: model.fill || "#0b1f3a", fontWeight: model.fontWeight || "normal", fontStyle: model.fontStyle || "normal", textAlign: model.textAlign || "center", lineHeight: Number(model.lineHeight) || 1.2 });
+      });
+      previewByArea[area.id] = preview;
+    });
+    const colors = (product.colors || []).map(color => ({ ...color, areaMockups: color.areaMockups || {} }));
+    const sizes = product.sizes || [];
+    const colorId = colors.some(item => item.id === context.preview?.colorId) ? context.preview.colorId : (draft.colorId || colors[0]?.id);
+    const sizeId = sizes.some(item => item.id === context.preview?.sizeId) ? context.preview.sizeId : (draft.sizeId || sizes[0]?.id);
+    const artworkAreas = rawAreas.filter(area => (draft.areas?.[area.id]?.objects || []).length).map(area => area.id);
+    const selectedAreas = artworkAreas.length ? artworkAreas : [context.activeAreaId || rawAreas[0]?.id].filter(Boolean);
+    const printAreas = rawAreas.map(area => ({ id: area.id, name: area.name, role: area.role, image: area.mockup || area.image || product.thumbnail, fee: numeric(area.fee) ?? 0, placement: { top: Number(area.printZone?.topPct) || 0, left: Number(area.printZone?.leftPct) || 0, width: Number(area.printZone?.widthPct) || 100, height: Number(area.printZone?.heightPct) || 100 } }));
+    const basePrice = numeric(product.sellingPrice ?? product.price);
+    const pricingConfigured = basePrice !== null && selectedAreas.every(id => numeric(printAreas.find(area => area.id === id)?.fee) !== null);
+    const item = { colorId, sizeId, printAreaIds: selectedAreas };
+    const assetMap = new Map((documentState.assets || []).map(asset => [asset.assetId, asset]));
+    const warnedAssets = new Set(), qualityWarnings = [];
+    rawAreas.forEach(area => {
+      const zone = area.printZone || {};
+      if (!(Number(zone.widthCm) > 0 && Number(zone.heightCm) > 0)) return;
+      (draft.areas?.[area.id]?.objects || []).filter(model => model.kind === "image").forEach(model => {
+        const asset = assetMap.get(model.assetId);
+        if (!asset || asset.sourceType === "vector" || !asset.pixelWidth || !asset.pixelHeight || warnedAssets.has(asset.assetId)) return;
+        const widthCm = Math.abs(Number(model.width) || 0) * Number(zone.widthCm), heightCm = Math.abs(Number(model.height) || 0) * Number(zone.heightCm);
+        if (!widthCm || !heightCm) return;
+        const dpi = Math.min(asset.pixelWidth / (widthCm / 2.54), asset.pixelHeight / (heightCm / 2.54));
+        if (dpi < 150) { warnedAssets.add(asset.assetId); qualityWarnings.push({ message: "جودة الصورة «" + (asset.name || "المرفوعة") + "» منخفضة عند حجم الطباعة الحالي (نحو " + Math.round(dpi) + " DPI).", customerVisible: true, blocking: false }); }
+      });
+    });
+    return {
+      studioContext: true,
+      product: { id: product.id, code: product.code || STUDIO_PRODUCT_CODES[product.categoryId] || null, name: product.studioTitle || product.name, sellingPrice: basePrice, currency: product.currency || "ILS", colors, sizes, printAreas, pricingConfigured, quantityMax: numeric(product.orderLimits?.maxQuantity ?? product.maxQuantity), printing: printingMetadata(product) },
+      design: { id: context.designId, name: selection?.designName || "تصميم مخصص", designerName: selection?.designerName || "PALPRINTS", preview: previewByArea[context.activeAreaId] || previewByArea[rawAreas[0]?.id], previewByArea },
+      selection: { items: [item], defaultItem: { ...item, printAreaIds: item.printAreaIds.slice() }, activeItemIndex: 0 },
+      customerWarnings: qualityWarnings,
+      studioSave: { designId: context.designId, assetIds: ids, assets: documentState.assets || [], layout: { areas: draft.areas || {}, colorId, sizeId }, category: AUDIENCES[selection?.category] ? selection.category : null }
     };
   }
 
-  function readPayload() {
-    try {
-      const raw = sessionStorage.getItem(SESSION_KEY);
-      return normalizePayload(raw ? JSON.parse(raw) : null);
-    } catch (error) {
-      return createFallbackPayload();
-    }
-  }
-
-  const payload = readPayload();
+  const payload = await buildStudioPayload(workflow) || normalizeLegacy(read(sessionStorage, KEYS.preview, null));
+  const saved = read(sessionStorage, KEYS.review, {});
+  const savedMatches = saved.designId === payload.design.id && saved.productId === payload.product.id;
+  const persistedItems = role === "customer" && savedMatches && Array.isArray(saved.orderItems) && saved.orderItems.length
+    ? saved.orderItems.map(item => ({
+      colorId: payload.product.colors.some(color => color.id === item.colorId) ? item.colorId : payload.selection.items[0].colorId,
+      sizeId: payload.product.sizes.some(size => size.id === item.sizeId) ? item.sizeId : payload.selection.items[0].sizeId,
+      printAreaIds: payload.product.printAreas.filter(area => (item.printAreaIds || []).includes(area.id)).map(area => area.id)
+    })).filter(item => item.printAreaIds.length)
+    : null;
+  const configuredMaximum = numeric(payload.product.quantityMax);
+  const itemSource = persistedItems?.length ? persistedItems : payload.selection.items;
+  const initialItems = configuredMaximum > 0 ? itemSource.slice(0, Math.floor(configuredMaximum)) : itemSource;
+  const activeIndex = Math.max(0, Math.min(initialItems.length - 1, payload.selection.activeItemIndex || 0));
   const state = {
-    items: payload.selection.items.map(function (item) {
-      return { colorId: item.colorId, sizeId: item.sizeId, printAreaIds: new Set(item.printAreaIds) };
-    }),
-    defaultItem: {
-      colorId: payload.selection.defaultItem.colorId,
-      sizeId: payload.selection.defaultItem.sizeId,
-      printAreaIds: payload.selection.defaultItem.printAreaIds.slice()
-    },
-    activePieceIndex: payload.selection.activeItemIndex,
-    currentAreaId: payload.selection.items[payload.selection.activeItemIndex].printAreaIds[0],
-    zoom: 1,
-    fullscreenOpener: null,
-    toastTimer: null,
-    buttonTimer: null
+    tintToken: 0,
+    allowedSizeIds: null,
+    items: initialItems.map(item => ({ colorId: item.colorId, sizeId: item.sizeId, printAreaIds: new Set(item.printAreaIds) })),
+    defaultItem: { ...payload.selection.defaultItem, printAreaIds: payload.selection.defaultItem.printAreaIds.slice() }, activePieceIndex: activeIndex,
+    currentAreaId: workflow?.activeAreaId || payload.selection.items[activeIndex].printAreaIds[0] || payload.product.printAreas[0].id,
+    zoom: 1, toastTimer: null, fullscreenOpener: null,
+    allowedColorIds: new Set((savedMatches && Array.isArray(saved.allowedColorIds) ? saved.allowedColorIds : [payload.selection.items[0].colorId]).filter(id => payload.product.colors.some(color => color.id === id))),
+    pendingAllowedColorIds: new Set(), printingTechnologyId: savedMatches ? saved.printingTechnologyId || "" : ""
   };
-
-  function activePiece() {
-    return state.items[state.activePieceIndex];
+  const activePiece = () => state.items[state.activePieceIndex];
+  const currentColor = (piece = activePiece()) => payload.product.colors.find(color => color.id === piece.colorId) || payload.product.colors[0];
+  const currentArea = () => payload.product.printAreas.find(area => area.id === state.currentAreaId) || payload.product.printAreas[0];
+  const selectedAreas = (piece = activePiece()) => payload.product.printAreas.filter(area => piece.printAreaIds.has(area.id));
+  const currentPreview = () => payload.design.previewByArea?.[state.currentAreaId] || payload.design.preview || { images: [], texts: [], icons: [] };
+  const quantityMaximum = () => { const value = numeric(payload.product.quantityMax); return value && value > 0 ? Math.floor(value) : null; };
+  function imageFor(area, color = currentColor()) { return color?.areaMockups?.[area.id] || area.image || color?.image || ""; }
+  // The studio measures the print zone against the product picture itself, while the preview draws that picture "contain" inside a 1 : 1.1 box.
+  // The zone is converted to that box using the shown picture's real shape, so the artwork keeps the size and place the designer set.
+  const FRAME_HEIGHT = 1.1;
+  function framedZone(zone, ratio) {
+    const wide = !(ratio > 0) || ratio >= 1 / FRAME_HEIGHT;
+    const drawWidth = !(ratio > 0) ? 1 : wide ? 1 : FRAME_HEIGHT * ratio, drawHeight = !(ratio > 0) ? FRAME_HEIGHT : wide ? 1 / ratio : FRAME_HEIGHT;
+    const offsetX = (1 - drawWidth) / 2, offsetY = (FRAME_HEIGHT - drawHeight) / 2;
+    return { left: (offsetX + zone.left / 100 * drawWidth) * 100, top: (offsetY + zone.top / 100 * drawHeight) / FRAME_HEIGHT * 100, width: zone.width * drawWidth, height: zone.height * drawHeight / FRAME_HEIGHT };
   }
-
-  function currentColor(piece) {
-    const selectedPiece = piece || activePiece();
-    return payload.product.colors.find(function (color) { return color.id === selectedPiece.colorId; });
+  const ratioCache = new Map();
+  function pictureRatio(src) {
+    if (!src) return Promise.resolve(0);
+    if (!ratioCache.has(src)) ratioCache.set(src, new Promise(resolve => { const probe = new Image(); probe.onload = () => resolve(probe.naturalWidth / probe.naturalHeight || 0); probe.onerror = () => resolve(0); probe.src = src; }));
+    return ratioCache.get(src);
   }
-
-  function currentArea() {
-    return payload.product.printAreas.find(function (area) { return area.id === state.currentAreaId; }) || payload.product.printAreas[0];
-  }
-
-  function selectedAreas(piece) {
-    const selectedPiece = piece || activePiece();
-    return payload.product.printAreas.filter(function (area) { return selectedPiece.printAreaIds.has(area.id); });
-  }
-
   function formatMoney(value) {
-    return new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value) + " ₪";
+    if (numeric(value) === null) return "غير متاح";
+    const labels = { SAR: "ر.س", ILS: "₪", USD: "$", EUR: "€" };
+    return new Intl.NumberFormat("ar", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value)) + " " + (labels[payload.product.currency] || payload.product.currency || "");
   }
-
-  function itemPricing(piece) {
-    const areaFees = selectedAreas(piece).map(function (area) {
-      return { id: area.id, name: area.name, fee: area.fee };
-    });
-    const feesTotal = areaFees.reduce(function (total, area) { return total + area.fee; }, 0);
-    const unitPrice = payload.product.sellingPrice + feesTotal;
-    return { areaFees: areaFees, feesTotal: feesTotal, unitPrice: unitPrice, total: unitPrice };
-  }
-
   function pricing() {
-    const areaFees = payload.product.printAreas.map(function (area) {
-      const count = state.items.filter(function (piece) { return piece.printAreaIds.has(area.id); }).length;
-      return { id: area.id, name: area.name, fee: area.fee, count: count, total: area.fee * count };
-    }).filter(function (area) { return area.count > 0; });
-    const baseTotal = payload.product.sellingPrice * state.items.length;
-    const feesTotal = areaFees.reduce(function (total, area) { return total + area.total; }, 0);
-    return { areaFees: areaFees, baseTotal: baseTotal, feesTotal: feesTotal, total: baseTotal + feesTotal };
+    const base = numeric(payload.product.sellingPrice);
+    const techniqueRequired = payload.product.printing?.customerSelectable && payload.product.printing?.technologies?.length;
+    const technique = payload.product.printing?.technologies?.find(item => item.id === state.printingTechnologyId);
+    const techniqueCost = technique ? numeric(technique.additionalCost) : techniqueRequired ? null : 0;
+    const feesKnown = state.items.every(piece => selectedAreas(piece).every(area => numeric(area.fee) !== null));
+    const exact = base !== null && feesKnown && techniqueCost !== null && payload.product.pricingConfigured !== false;
+    const baseTotal = base === null ? null : base * state.items.length;
+    const areaFees = payload.product.printAreas.map(area => { const count = state.items.filter(piece => piece.printAreaIds.has(area.id)).length; const fee = numeric(area.fee); return { ...area, count, total: fee === null ? null : fee * count }; }).filter(area => area.count);
+    const printingTotal = exact ? areaFees.reduce((sum, area) => sum + area.total, 0) + techniqueCost * state.items.length : null;
+    return { exact, baseTotal, areaFees, total: exact ? baseTotal + printingTotal : null };
   }
-
-  function setText(element, text) {
-    if (element) element.textContent = text;
+  function persistReview() {
+    const value = { workflowMode: role, designId: payload.design.id, productId: payload.product.id, preview: { colorId: activePiece().colorId, sizeId: activePiece().sizeId }, orderItems: role === "customer" ? state.items.map(item => ({ colorId: item.colorId, sizeId: item.sizeId, printAreaIds: [...item.printAreaIds] })) : undefined, allowedColorIds: [...state.allowedColorIds], printingTechnologyId: state.printingTechnologyId, updatedAt: new Date().toISOString() };
+    try { sessionStorage.setItem(KEYS.review, JSON.stringify(value)); } catch (error) { /* Optional. */ }
   }
-
-  function designColor(layer) {
-    if (!layer.autoContrast) return layer.color;
-    const color = currentColor();
-    return color && DARK_TONES.has(color.toneClass) ? "#ffffff" : "#0b1f3a";
+  function applyRoleUi() {
+    const designer = role === "designer";
+    document.body.dataset.userRole = role;
+    elements.pageTitle.textContent = designer ? "معاينة وإعداد التصميم" : "راجع منتجك قبل الطلب";
+    elements.pageDescription.textContent = designer ? "عاين التصميم على ألوان المنتج وحدد الألوان المناسبة قبل إعداد النشر." : "راجع الشكل النهائي واختياراتك، ثم أضف المنتج إلى سلتك بثقة.";
+    elements.colorLabel.textContent = designer ? "لون المعاينة" : "اللون";
+    elements.customerSize.hidden = designer; elements.customerQuantity.hidden = designer; elements.customerAreas.hidden = designer;
+    elements.designerColors.hidden = !designer; elements.printingSection.hidden = designer; elements.purchaseRow.hidden = designer; elements.mobileBar.hidden = designer;
   }
-
   function renderArtwork(container) {
     container.replaceChildren();
-    payload.design.preview.images.forEach(function (item) {
-      const image = document.createElement("img");
-      image.className = "preview-design-item preview-design-image";
-      image.src = item.src;
-      image.alt = item.alt;
-      image.style.left = item.x + "%";
-      image.style.top = item.y + "%";
-      image.style.width = item.width + "%";
-      image.style.height = item.height + "%";
-      image.style.transform = "translate(-50%, -50%) rotate(" + item.rotation + "deg)";
-      image.style.zIndex = String(item.layerOrder);
-      container.appendChild(image);
+    const preview = currentPreview();
+    (preview.images || []).forEach(item => {
+      const image = document.createElement(item.tint ? "span" : "img"); image.className = "preview-design-item preview-design-image";
+      if (item.tint) { image.setAttribute("role", "img"); image.setAttribute("aria-label", item.alt || ""); image.style.backgroundColor = item.tint; image.style.maskImage = "url('" + item.src + "')"; image.style.webkitMaskImage = "url('" + item.src + "')"; image.style.maskSize = image.style.webkitMaskSize = "contain"; image.style.maskPosition = image.style.webkitMaskPosition = "center"; image.style.maskRepeat = image.style.webkitMaskRepeat = "no-repeat"; }
+      else { image.src = item.src; image.alt = item.alt || ""; }
+      Object.assign(image.style, { left: item.x + "%", top: item.y + "%", width: item.width + "%", height: item.height + "%", zIndex: String(item.layerOrder || 1), transform: "translate(-50%, -50%) rotate(" + (item.rotation || 0) + "deg) scale(" + (item.flipX ? -1 : 1) + "," + (item.flipY ? -1 : 1) + ")" }); container.appendChild(image);
     });
-
-    payload.design.preview.texts.forEach(function (item) {
-      const text = document.createElement("span");
-      text.className = "preview-design-item preview-design-text";
-      text.textContent = item.content;
-      text.style.left = item.x + "%";
-      text.style.top = item.y + "%";
-      text.style.width = item.width + "%";
-      text.style.fontSize = item.size + "px";
-      text.style.fontFamily = item.fontFamily + ", sans-serif";
-      text.style.color = designColor(item);
-      text.style.transform = "translate(-50%, -50%) rotate(" + item.rotation + "deg)";
-      text.style.zIndex = String(item.layerOrder);
-      container.appendChild(text);
+    (preview.texts || []).forEach(item => {
+      const text = document.createElement("span"); text.className = "preview-design-item preview-design-text"; text.textContent = item.content;
+      Object.assign(text.style, { left: item.x + "%", top: item.y + "%", width: item.width + "%", fontSize: item.sizePercent ? Math.max(8, container.clientHeight * item.sizePercent / 100) + "px" : (item.size || 24) + "px", fontFamily: (item.fontFamily || "Cairo") + ", sans-serif", color: item.color || "#0b1f3a", fontWeight: item.fontWeight, fontStyle: item.fontStyle, textAlign: item.textAlign, lineHeight: String(item.lineHeight || 1.2), zIndex: String(item.layerOrder || 1), transform: "translate(-50%, -50%) rotate(" + (item.rotation || 0) + "deg) scale(" + (item.flipX ? -1 : 1) + "," + (item.flipY ? -1 : 1) + ")" }); container.appendChild(text);
     });
-
-    payload.design.preview.icons.forEach(function (item) {
-      const icon = document.createElement("i");
-      icon.className = "bi bi-" + item.name + " preview-design-item preview-design-icon";
-      icon.setAttribute("aria-hidden", "true");
-      icon.style.left = item.x + "%";
-      icon.style.top = item.y + "%";
-      icon.style.fontSize = item.size + "px";
-      icon.style.color = designColor(item);
-      icon.style.transform = "translate(-50%, -50%) rotate(" + item.rotation + "deg)";
-      icon.style.zIndex = String(item.layerOrder);
-      container.appendChild(icon);
-    });
-
-    if (!container.children.length) {
-      const placeholder = document.createElement("span");
-      placeholder.className = "preview-design-placeholder";
-      placeholder.textContent = "التصميم غير متاح للمعاينة";
-      container.appendChild(placeholder);
-    }
+    if (!container.children.length) { const empty = document.createElement("span"); empty.className = "preview-design-placeholder"; empty.textContent = "لا توجد عناصر تصميم في هذه الجهة"; container.appendChild(empty); }
   }
-
-  function renderProductCanvas() {
-    const area = currentArea();
-    const color = currentColor();
-    const selected = activePiece().printAreaIds.has(area.id);
-    const source = area.image || (color && color.image);
-
-    elements.productImage.hidden = false;
-    elements.productImage.className = "preview-product-image " + (color ? color.toneClass : "");
-    elements.productImage.alt = payload.product.name + " — " + area.name;
-    elements.productImage.onload = function () {
-      elements.imagePlaceholder.hidden = true;
-      elements.productImage.hidden = false;
-      elements.designPlacement.hidden = !selected;
-    };
-    elements.productImage.onerror = function () {
-      elements.productImage.hidden = true;
-      elements.designPlacement.hidden = true;
-      elements.imagePlaceholder.hidden = false;
-    };
-    elements.productImage.src = source;
-
-    elements.designPlacement.style.top = area.placement.top + "%";
-    elements.designPlacement.style.left = area.placement.left + "%";
-    elements.designPlacement.style.width = area.placement.width + "%";
-    elements.designPlacement.style.height = area.placement.height + "%";
-    elements.designPlacement.hidden = !selected;
-    renderArtwork(elements.designArt);
-
-    elements.productCanvas.style.setProperty("--preview-zoom", String(state.zoom));
-    elements.currentViewBadge.classList.toggle("is-unselected", !selected);
-    setText(elements.currentViewBadge, area.name + " · " + (selected ? "محددة للطباعة" : "غير محددة للطباعة"));
+  // Tints the product picture with the color's hex from the database: a colored layer masked to the product shape sits under the picture.
+  const alphaProbe = new Map();
+  function tintHex(color) {
+    const hex = /^#[0-9a-f]{6}$/i.test(color?.value || "") ? color.value : null; if (!hex) return null;
+    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.95 ? null : hex; // white needs no tint
   }
-
+  function hasTransparentBackground(src) {
+    if (!src) return Promise.resolve(false);
+    if (!alphaProbe.has(src)) alphaProbe.set(src, new Promise(resolve => {
+      const probe = new Image(); probe.crossOrigin = "anonymous";
+      probe.onload = () => { try { const canvas = document.createElement("canvas"); canvas.width = canvas.height = 24; const context = canvas.getContext("2d"); context.drawImage(probe, 0, 0, 24, 24); const at = (x, y) => context.getImageData(x, y, 1, 1).data[3]; resolve([at(0, 0), at(23, 0), at(0, 23), at(23, 23)].every(alpha => alpha < 20)); } catch (error) { resolve(false); } };
+      probe.onerror = () => resolve(false); probe.src = src;
+    }));
+    return alphaProbe.get(src);
+  }
+  function applyTint(src, hex) {
+    const mask = "url('" + src + "')";
+    elements.tint.style.backgroundColor = hex; elements.tint.style.webkitMaskImage = elements.tint.style.maskImage = mask; elements.tint.hidden = false;
+    elements.image.className = "preview-product-image is-tinted"; // drops the old filter-based tone class
+  }
+  function clearTint() { elements.tint.hidden = true; elements.image.classList.remove("is-tinted"); }
+  function renderCanvas() {
+    const area = currentArea(), selected = activePiece().printAreaIds.has(area.id);
+    elements.image.hidden = false; elements.image.className = "preview-product-image " + (currentColor()?.toneClass || ""); elements.image.src = imageFor(area); elements.image.alt = payload.product.name + " — " + area.name;
+    clearTint(); const color = currentColor(), source = imageFor(area, color), token = ++state.tintToken;
+    // Colors that have their own mockup picture keep it; the rest are tinted with the color's real hex when the picture is a transparent cut-out.
+    if (tintHex(color) && !color.areaMockups?.[area.id]) hasTransparentBackground(source).then(ok => { if (ok && token === state.tintToken) applyTint(source, tintHex(color)); });
+    const placeZone = () => { const zone = framedZone(area.placement, elements.image.naturalWidth / elements.image.naturalHeight); Object.assign(elements.placement.style, { top: zone.top + "%", left: zone.left + "%", width: zone.width + "%", height: zone.height + "%" }); };
+    elements.image.onload = () => { placeZone(); elements.imagePlaceholder.hidden = true; elements.image.hidden = false; elements.placement.hidden = !selected; };
+    elements.image.onerror = () => { elements.image.hidden = true; elements.placement.hidden = true; elements.imagePlaceholder.hidden = false; };
+    if (elements.image.complete && elements.image.naturalWidth) placeZone();
+    elements.placement.hidden = !selected; renderArtwork(elements.art); elements.canvas.style.setProperty("--preview-zoom", state.zoom);
+    elements.viewBadge.textContent = area.name + (selected ? " · معاينة التصميم" : " · لا يوجد تصميم");
+  }
   function renderViewTabs() {
     elements.viewTabs.replaceChildren();
-    payload.product.printAreas.forEach(function (area) {
-      const button = document.createElement("button");
-      const image = document.createElement("img");
-      const label = document.createElement("span");
-      const color = currentColor();
-      const isCurrent = area.id === state.currentAreaId;
-      button.type = "button";
-      button.className = "view-tab" + (activePiece().printAreaIds.has(area.id) ? "" : " is-unselected");
-      button.dataset.areaId = area.id;
-      button.setAttribute("role", "tab");
-      button.setAttribute("aria-selected", String(isCurrent));
-      button.setAttribute("aria-label", "عرض " + area.name + (activePiece().printAreaIds.has(area.id) ? "، محددة للطباعة" : "، غير محددة للطباعة"));
-      image.src = area.image || (color && color.image);
-      image.alt = "";
-      image.className = color ? color.toneClass : "";
-      image.onerror = function () { image.hidden = true; };
-      label.textContent = area.name;
-      button.append(image, label);
-      elements.viewTabs.appendChild(button);
-    });
+    payload.product.printAreas.forEach(area => { const button = document.createElement("button"), image = document.createElement("img"), label = document.createElement("span"); button.type = "button"; button.className = "view-tab" + (activePiece().printAreaIds.has(area.id) ? "" : " is-unselected"); button.dataset.areaId = area.id; button.setAttribute("role", "tab"); button.setAttribute("aria-selected", String(area.id === state.currentAreaId)); image.src = imageFor(area); image.alt = ""; label.textContent = area.name; button.append(image, label); elements.viewTabs.appendChild(button); });
   }
-
   function renderColors() {
     elements.colorOptions.replaceChildren();
-    payload.product.colors.forEach(function (color) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "color-option" + (color.id === activePiece().colorId ? " is-selected" : "");
-      button.dataset.colorId = color.id;
-      button.style.setProperty("--color-value", color.value);
-      button.setAttribute("aria-label", "اللون " + color.name);
-      button.setAttribute("aria-pressed", String(color.id === activePiece().colorId));
-      button.title = color.name;
-      elements.colorOptions.appendChild(button);
-    });
-    const color = currentColor();
-    setText(elements.selectedColorName, color ? color.name : "غير محدد");
+    payload.product.colors.forEach(color => { const button = document.createElement("button"); button.type = "button"; button.className = "color-option" + (color.id === activePiece().colorId ? " is-selected" : ""); button.dataset.colorId = color.id; button.style.setProperty("--color-value", color.value); button.title = color.name; button.setAttribute("aria-label", "اللون " + color.name); button.setAttribute("aria-pressed", String(color.id === activePiece().colorId)); elements.colorOptions.appendChild(button); });
+    elements.colorName.textContent = currentColor()?.name || "غير محدد";
   }
-
   function renderSizes() {
-    elements.sizeOptions.replaceChildren();
-    payload.product.sizes.forEach(function (size) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "size-option" + (size.id === activePiece().sizeId ? " is-selected" : "");
-      button.dataset.sizeId = size.id;
-      button.textContent = size.name;
-      button.setAttribute("aria-pressed", String(size.id === activePiece().sizeId));
-      elements.sizeOptions.appendChild(button);
-    });
-    const size = payload.product.sizes.find(function (item) { return item.id === activePiece().sizeId; });
-    setText(elements.selectedSizeName, size ? size.name : "غير محدد");
+    elements.sizeOptions.replaceChildren(); payload.product.sizes.forEach(size => { const button = document.createElement("button"); button.type = "button"; button.className = "size-option" + (size.id === activePiece().sizeId ? " is-selected" : ""); button.dataset.sizeId = size.id; button.textContent = size.name; elements.sizeOptions.appendChild(button); }); elements.sizeName.textContent = payload.product.sizes.find(size => size.id === activePiece().sizeId)?.name || "غير محدد";
   }
-
-  function renderQuantity() {
-    setText(elements.quantityValue, String(state.items.length));
-    elements.decreaseQuantity.disabled = state.items.length <= 1;
-    elements.increaseQuantity.disabled = state.items.length >= 99;
+  function renderQuantity() { const max = quantityMaximum(); elements.quantity.textContent = state.items.length; elements.decrease.disabled = state.items.length <= 1; elements.increase.disabled = Boolean(max && state.items.length >= max); elements.quantityLimit.textContent = max ? "الحد الأقصى " + max + " قطعة" : "لا يوجد حد أقصى مهيأ"; }
+  function renderPieces() {
+    if (role === "designer") { elements.pieceSelector.hidden = true; return; }
+    elements.pieceSelector.hidden = state.items.length === 1; elements.pieceTabs.replaceChildren(); elements.activePieceLabel.textContent = "القطعة " + (state.activePieceIndex + 1) + " من " + state.items.length;
+    state.items.forEach((piece, index) => { const button = document.createElement("button"); button.type = "button"; button.className = "piece-tab"; button.dataset.pieceIndex = index; button.setAttribute("aria-selected", String(index === state.activePieceIndex)); button.textContent = "القطعة " + (index + 1); elements.pieceTabs.appendChild(button); });
   }
-
-  function renderPieceSelector() {
-    const multiple = state.items.length > 1;
-    elements.pieceSelector.hidden = !multiple;
-    elements.pieceTabs.replaceChildren();
-    setText(elements.activePieceLabel, "القطعة " + (state.activePieceIndex + 1) + " من " + state.items.length);
-    elements.pieceEditorPanel.setAttribute("aria-label", "خيارات القطعة " + (state.activePieceIndex + 1));
-
-    state.items.forEach(function (piece, index) {
-      const button = document.createElement("button");
-      const number = document.createElement("strong");
-      const details = document.createElement("small");
-      const colorDot = document.createElement("span");
-      const color = currentColor(piece);
-      const size = payload.product.sizes.find(function (item) { return item.id === piece.sizeId; });
-      const areas = selectedAreas(piece);
-      button.type = "button";
-      button.id = "pieceTab" + index;
-      button.className = "piece-tab";
-      button.dataset.pieceIndex = String(index);
-      button.setAttribute("role", "tab");
-      button.setAttribute("aria-selected", String(index === state.activePieceIndex));
-      button.setAttribute("aria-controls", "pieceEditorPanel");
-      button.tabIndex = index === state.activePieceIndex ? 0 : -1;
-      button.setAttribute("aria-label", "تخصيص القطعة " + (index + 1) + " من " + state.items.length);
-      colorDot.className = "piece-tab__color";
-      colorDot.style.setProperty("--piece-color", color ? color.value : "#ffffff");
-      colorDot.setAttribute("aria-hidden", "true");
-      number.textContent = "القطعة " + (index + 1);
-      details.textContent = (size ? size.name : "—") + " · " + areas.map(function (area) { return area.name; }).join(" + ");
-      button.append(colorDot, number, details);
-      elements.pieceTabs.appendChild(button);
-    });
-
-    if (multiple) elements.pieceEditorPanel.setAttribute("aria-labelledby", "pieceTab" + state.activePieceIndex);
-    else elements.pieceEditorPanel.removeAttribute("aria-labelledby");
+  function renderAreas() {
+    elements.areaOptions.replaceChildren();
+    payload.product.printAreas.forEach(area => { const button = document.createElement("button"), image = document.createElement("img"), body = document.createElement("span"), name = document.createElement("strong"), fee = document.createElement("small"); button.type = "button"; button.className = "print-area-option" + (activePiece().printAreaIds.has(area.id) ? " is-selected" : ""); button.dataset.areaId = area.id; image.src = imageFor(area); image.alt = ""; body.className = "print-area-option__body"; name.textContent = area.name; fee.textContent = numeric(area.fee) === null ? "التكلفة غير مهيأة" : "+" + formatMoney(area.fee); body.append(name, fee); button.append(image, body); elements.areaOptions.appendChild(button); });
   }
-
-  function renderPrintAreas() {
-    elements.printAreaOptions.replaceChildren();
-    payload.product.printAreas.forEach(function (area) {
-      const selected = activePiece().printAreaIds.has(area.id);
-      const button = document.createElement("button");
-      const image = document.createElement("img");
-      const body = document.createElement("span");
-      const name = document.createElement("strong");
-      const fee = document.createElement("small");
-      const color = currentColor();
-      button.type = "button";
-      button.className = "print-area-option" + (selected ? " is-selected" : "");
-      button.dataset.areaId = area.id;
-      button.setAttribute("aria-pressed", String(selected));
-      button.setAttribute("aria-label", (selected ? "إلغاء " : "اختيار ") + area.name + " برسوم " + formatMoney(area.fee));
-      image.src = area.image || (color && color.image);
-      image.alt = "";
-      image.className = color ? color.toneClass : "";
-      image.onerror = function () { image.hidden = true; };
-      body.className = "print-area-option__body";
-      name.textContent = area.name;
-      fee.textContent = "+" + formatMoney(area.fee);
-      body.append(name, fee);
-      button.append(image, body);
-      elements.printAreaOptions.appendChild(button);
-    });
+  function renderPrinting() {
+    const data = payload.product.printing || { customerSelectable: false, technologies: [] }; elements.printingSelect.replaceChildren();
+    if (!data.customerSelectable || !data.technologies.length) { elements.printingSelect.add(new Option("غير متاحة — لم تتم تهيئتها بعد", "")); elements.printingSelect.disabled = true; elements.printingNote.textContent = "لم تُضف بيانات تقنيات الطباعة المتاحة لهذا المنتج أو المطبعة بعد."; return; }
+    elements.printingSelect.disabled = false; elements.printingSelect.add(new Option("اختر تقنية الطباعة", "")); data.technologies.forEach(item => elements.printingSelect.add(new Option(item.name + (numeric(item.additionalCost) === null ? "" : " · +" + formatMoney(item.additionalCost)), item.id))); elements.printingSelect.value = data.technologies.some(item => item.id === state.printingTechnologyId) ? state.printingTechnologyId : ""; elements.printingNote.textContent = "اختر من التقنيات التي أتاحتها المطبعة لهذا المنتج.";
   }
-
-  function addPriceRow(label, value, className) {
-    const row = document.createElement("div");
-    const labelElement = document.createElement("span");
-    const valueElement = document.createElement("strong");
-    row.className = "price-line" + (className ? " " + className : "");
-    labelElement.textContent = label;
-    valueElement.textContent = value;
-    row.append(labelElement, valueElement);
-    elements.priceBreakdown.appendChild(row);
-  }
-
+  function addPriceRow(label, value) { const row = document.createElement("div"), span = document.createElement("span"), strong = document.createElement("strong"); row.className = "price-line"; span.textContent = label; strong.textContent = value; row.append(span, strong); elements.priceBreakdown.appendChild(row); }
   function renderPrice() {
-    const result = pricing();
-    elements.priceBreakdown.replaceChildren();
-    addPriceRow("سعر المنتج × " + state.items.length, formatMoney(result.baseTotal));
-    result.areaFees.forEach(function (area) {
-      addPriceRow("طباعة " + area.name + " × " + area.count, "+" + formatMoney(area.total));
+    const result = pricing(); elements.priceBreakdown.replaceChildren(); addPriceRow("سعر المنتج × " + state.items.length, result.baseTotal === null ? "غير متاح" : formatMoney(result.baseTotal)); result.areaFees.forEach(area => addPriceRow("طباعة " + area.name + " × " + area.count, area.total === null ? "غير مهيأة" : "+" + formatMoney(area.total))); if (!result.exact) addPriceRow("تكلفة الطباعة والإضافات", "غير متاحة حتى اكتمال بيانات المطبعة"); elements.total.textContent = result.exact ? formatMoney(result.total) : "غير متاح"; elements.mobileTotal.textContent = elements.total.textContent;
+  }
+  function renderWarnings() { const warnings = (payload.customerWarnings || []).filter(item => role === "designer" || item.customerVisible); elements.warnings.replaceChildren(); elements.warnings.hidden = !warnings.length; warnings.forEach(warning => { const li = document.createElement("li"); li.textContent = warning.message || warning.text; li.className = warning.blocking ? "is-blocking" : ""; elements.warnings.appendChild(li); }); }
+  function validationMessage() { if (role !== "customer") return ""; if (!activePiece()?.colorId || !activePiece()?.sizeId || !activePiece()?.printAreaIds.size) return "أكمل خيارات المنتج قبل المتابعة."; if (!pricing().exact) return "تعذر حساب سعر نهائي لأن تكلفة الطباعة لم تتم تهيئتها بعد."; if ((payload.customerWarnings || []).some(item => item.customerVisible && item.blocking)) return "عالج تحذير التصميم قبل الإضافة إلى السلة."; return ""; }
+  function renderValidation() { const message = validationMessage(); elements.validation.hidden = !message; elements.validation.textContent = message; elements.addToCart.disabled = Boolean(message); elements.mobileAdd.disabled = Boolean(message); }
+  function renderMeta() { elements.breadcrumbProductName.textContent = payload.product.name; elements.summaryTitle.textContent = payload.product.name; elements.designMeta.textContent = payload.design.name + " · تصميم: " + payload.design.designerName; elements.fullscreenTitle.textContent = "معاينة " + payload.design.name + " على " + payload.product.name; }
+  // Designer: the sizes that suit this design come from the audience chosen at the start (men/women, oversized, kids).
+  const audience = () => AUDIENCES[payload.studioSave?.category] || null;
+  function renderAllowedSizes() {
+    const section = $("designerSizeApproval"), group = audience();
+    if (!section) return;
+    section.hidden = role !== "designer" || !group;
+    if (section.hidden) return;
+    if (!state.allowedSizeIds) {
+      const saved = read(sessionStorage, "palprintsDesignerPublish", null);
+      const valid = new Set(group.sizes.map(size => size.id));
+      state.allowedSizeIds = new Set((saved?.designId === payload.studioSave.designId && Array.isArray(saved.allowedSizeIds) ? saved.allowedSizeIds : group.sizes.map(size => size.id)).filter(id => valid.has(id)));
+    }
+    $("audienceBadge").textContent = group.label;
+    const list = $("allowedSizeOptions");
+    list.replaceChildren();
+    group.sizes.forEach(size => {
+      const button = document.createElement("button");
+      button.type = "button"; button.className = "size-chip" + (state.allowedSizeIds.has(size.id) ? " is-selected" : "");
+      button.dataset.sizeId = size.id; button.textContent = size.name; button.setAttribute("aria-pressed", String(state.allowedSizeIds.has(size.id)));
+      list.appendChild(button);
     });
-    setText(elements.totalPrice, formatMoney(result.total));
-    setText(elements.mobileTotalPrice, formatMoney(result.total));
+    $("allowedSizesSummary").textContent = state.allowedSizeIds.size ? state.allowedSizeIds.size + " من " + group.sizes.length + " مقاسات مختارة" : "لم يتم اختيار مقاسات بعد";
   }
-
-  function visibleWarnings() {
-    return payload.customerWarnings.filter(function (warning) { return warning.customerVisible; });
+  $("allowedSizeOptions")?.addEventListener("click", event => {
+    const button = event.target.closest("[data-size-id]"); if (!button || !state.allowedSizeIds) return;
+    const id = button.dataset.sizeId; state.allowedSizeIds.has(id) ? state.allowedSizeIds.delete(id) : state.allowedSizeIds.add(id);
+    renderAllowedSizes();
+  });
+  function renderAllowedSummary() { const names = payload.product.colors.filter(color => state.allowedColorIds.has(color.id)).map(color => color.name); elements.allowedSummary.textContent = names.length ? names.join("، ") : "لم يتم تحديد ألوان بعد"; }
+  function renderAllowedOptions() {
+    elements.allowedOptions.replaceChildren();
+    payload.product.colors.forEach(color => { const label = document.createElement("label"), input = document.createElement("input"), swatch = document.createElement("span"), name = document.createElement("strong"); label.className = "allowed-color-option"; input.type = "checkbox"; input.value = color.id; input.checked = state.pendingAllowedColorIds.has(color.id); swatch.className = "allowed-color-option__swatch"; swatch.style.setProperty("--allowed-color", color.value); name.textContent = color.name; label.append(input, swatch, name); elements.allowedOptions.appendChild(label); });
   }
-
-  function renderWarnings() {
-    const warnings = visibleWarnings();
-    elements.customerWarnings.replaceChildren();
-    elements.customerWarnings.hidden = warnings.length === 0;
-    warnings.forEach(function (warning) {
-      const item = document.createElement("li");
-      const icon = document.createElement("i");
-      const text = document.createElement("span");
-      item.className = warning.blocking ? "is-blocking" : "";
-      icon.className = "bi " + (warning.blocking ? "bi-exclamation-octagon" : "bi-exclamation-triangle");
-      icon.setAttribute("aria-hidden", "true");
-      text.textContent = warning.message;
-      item.append(icon, text);
-      elements.customerWarnings.appendChild(item);
-    });
+  function sync() {
+    if (payload.studioContext) { persistReview(); return; }
+    payload.selection.items = state.items.map(piece => ({ colorId: piece.colorId, sizeId: piece.sizeId, printAreaIds: [...piece.printAreaIds] })); payload.selection.activeItemIndex = state.activePieceIndex; try { sessionStorage.setItem(KEYS.preview, JSON.stringify(payload)); } catch (error) { /* Optional. */ }
   }
-
-  function validationMessage() {
-    const invalidIndex = state.items.findIndex(function (piece) {
-      return !currentColor(piece) ||
-        !payload.product.sizes.some(function (size) { return size.id === piece.sizeId; }) ||
-        piece.printAreaIds.size === 0;
-    });
-    if (invalidIndex >= 0) return "راجع خيارات القطعة " + (invalidIndex + 1) + " قبل المتابعة.";
-    if (visibleWarnings().some(function (warning) { return warning.blocking; })) return "عالج التحذير الظاهر قبل الإضافة إلى السلة.";
-    return "";
-  }
-
-  function renderValidation() {
-    const message = validationMessage();
-    elements.summaryValidation.hidden = !message;
-    setText(elements.summaryValidation, message);
-    elements.addToCartButton.disabled = Boolean(message);
-    elements.mobileAddToCart.disabled = Boolean(message);
-  }
-
-  function renderZoom() {
-    elements.productCanvas.style.setProperty("--preview-zoom", String(state.zoom));
-    setText(elements.zoomValue, Math.round(state.zoom * 100) + "%");
-    elements.zoomOut.disabled = state.zoom <= 0.8;
-    elements.zoomIn.disabled = state.zoom >= 1.5;
-  }
-
-  function renderMeta() {
-    setText(elements.summaryTitle, payload.product.name);
-    setText(elements.designMeta, payload.design.name + " · تصميم: " + payload.design.designerName);
-    setText(elements.fullscreenTitle, "معاينة " + payload.design.name + " على " + payload.product.name);
-  }
-
-  function syncSession() {
-    const serializedItems = state.items.map(function (piece) {
-      return {
-        colorId: piece.colorId,
-        sizeId: piece.sizeId,
-        printAreaIds: selectedAreas(piece).map(function (area) { return area.id; })
-      };
-    });
-    const current = serializedItems[state.activePieceIndex];
-    payload.version = 2;
-    payload.selection = {
-      colorId: current.colorId,
-      sizeId: current.sizeId,
-      printAreaIds: current.printAreaIds.slice(),
-      quantity: serializedItems.length,
-      defaultItem: {
-        colorId: state.defaultItem.colorId,
-        sizeId: state.defaultItem.sizeId,
-        printAreaIds: state.defaultItem.printAreaIds.slice()
-      },
-      items: serializedItems,
-      activeItemIndex: state.activePieceIndex
+  function renderAll() { applyRoleUi(); renderMeta(); renderViewTabs(); renderCanvas(); renderColors(); renderSizes(); renderQuantity(); renderPieces(); renderAreas(); renderPrinting(); renderPrice(); renderWarnings(); renderAllowedSummary(); renderAllowedSizes(); renderValidation(); elements.zoomValue.textContent = Math.round(state.zoom * 100) + "%"; sync(); }
+  function showToast(message, error) { clearTimeout(state.toastTimer); elements.toast.className = "preview-toast is-visible " + (error ? "is-error" : "is-success"); elements.toastIcon.className = "bi " + (error ? "bi-exclamation-lg" : "bi-check2"); elements.toastMessage.textContent = message; state.toastTimer = setTimeout(() => elements.toast.classList.remove("is-visible"), 3000); }
+  // What the cart thumbnail needs to redraw the design exactly as previewed: the product picture (and its color tint),
+  // the print zone, and the artwork placed inside it.
+  async function cartMockup(piece, withUrls = false) {
+    const areas = selectedAreas(piece), area = areas.find(item => (payload.design.previewByArea?.[item.id]?.images?.length || payload.design.previewByArea?.[item.id]?.texts?.length)) || areas[0];
+    if (!area) return null;
+    const color = currentColor(piece), source = imageFor(area, color), path = value => { try { return new URL(value, document.baseURI).pathname; } catch (error) { return ""; } };
+    const hex = tintHex(color), tint = hex && !color.areaMockups?.[area.id] && await hasTransparentBackground(source) ? hex : null;
+    const preview = payload.design.previewByArea?.[area.id] || { images: [], texts: [] };
+    const box = item => ({ x: item.x, y: item.y, width: item.width, height: item.height, rotation: item.rotation || 0, flipX: Boolean(item.flipX), flipY: Boolean(item.flipY), layer: item.layerOrder || 1 });
+    return {
+      image: path(source), tint, areaName: area.name,
+      zone: framedZone(area.placement, await pictureRatio(source)),
+      images: (preview.images || []).map(item => ({ ...box(item), asset_id: item.assetId || null, src: item.assetId ? null : path(item.src), tint: item.tint || null, ...(withUrls ? { url: item.src } : {}) })),
+      texts: (preview.texts || []).map(item => ({ ...box(item), content: item.content, size_percent: item.sizePercent, font_family: item.fontFamily, color: item.color, font_weight: item.fontWeight, font_style: item.fontStyle, text_align: item.textAlign, line_height: item.lineHeight }))
     };
-    try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(payload)); } catch (error) { /* Preview still works without storage. */ }
   }
-
-  function renderAll() {
-    renderMeta();
-    renderViewTabs();
-    renderProductCanvas();
-    renderColors();
-    renderSizes();
-    renderQuantity();
-    renderPieceSelector();
-    renderPrintAreas();
-    renderPrice();
-    renderWarnings();
-    renderValidation();
-    renderZoom();
-    syncSession();
+  async function customDesignForm(groupList, pieces) {
+    const save = payload.studioSave, form = new FormData();
+    form.append("product_code", payload.product.code);
+    form.append("design_name", payload.design.name || "");
+    for (let index = 0; index < groupList.length; index += 1) groupList[index].mockup = await cartMockup(pieces[index]);
+    form.append("groups", JSON.stringify(groupList));
+    form.append("layout", JSON.stringify(save.layout));
+    const extensions = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/svg+xml": "svg" };
+    for (const id of save.assetIds) {
+      const blob = await getAssetBlob(save.designId, id); if (!blob) continue;
+      const record = save.assets.find(asset => asset.assetId === id), extension = extensions[blob.type] || "png";
+      const base = String(record?.name || id).replace(/\.[a-z0-9]+$/i, "").slice(0, 80) || "design";
+      form.append("files[]", blob, base + "." + extension); form.append("file_assets[]", id);
+    }
+    return form;
   }
-
-  function showToast(message, type) {
-    clearTimeout(state.toastTimer);
-    elements.toast.className = "preview-toast is-visible " + (type === "error" ? "is-error" : "is-success");
-    elements.toastIcon.className = "bi " + (type === "error" ? "bi-exclamation-lg" : "bi-check2");
-    setText(elements.toastMessage, message);
-    state.toastTimer = window.setTimeout(function () {
-      elements.toast.classList.remove("is-visible");
-    }, 3200);
-  }
-
-  function setAddButtonSuccess() {
-    clearTimeout(state.buttonTimer);
-    [elements.addToCartButton, elements.mobileAddToCart].forEach(function (button) {
-      button.classList.add("is-success");
-      button.dataset.originalLabel = button.textContent.trim();
-      button.replaceChildren();
-      const icon = document.createElement("i");
-      const text = document.createTextNode(" تمت الإضافة");
-      icon.className = "bi bi-check2";
-      icon.setAttribute("aria-hidden", "true");
-      button.append(icon, text);
-    });
-    state.buttonTimer = window.setTimeout(function () {
-      elements.addToCartButton.classList.remove("is-success");
-      elements.mobileAddToCart.classList.remove("is-success");
-      elements.addToCartButton.replaceChildren();
-      elements.mobileAddToCart.replaceChildren();
-      const desktopIcon = document.createElement("i");
-      desktopIcon.className = "bi bi-cart-plus";
-      desktopIcon.setAttribute("aria-hidden", "true");
-      elements.addToCartButton.append(desktopIcon, document.createTextNode(" إضافة إلى السلة"));
-      const mobileIcon = document.createElement("i");
-      mobileIcon.className = "bi bi-cart-plus";
-      mobileIcon.setAttribute("aria-hidden", "true");
-      elements.mobileAddToCart.append(mobileIcon, document.createTextNode(" إضافة إلى السلة"));
-    }, 1800);
-  }
-
+  // Laravel: the cart lives in the database, so "add to cart" posts to the server.
   function addToCart() {
-    const errorMessage = validationMessage();
-    if (errorMessage) {
-      showToast(errorMessage, "error");
-      return;
-    }
-
-    const endpoint = (window.palPrintsCustomerAssets || {}).cartCatalogUrl;
+    if (role !== "customer") return;
+    const message = validationMessage(); if (message) { showToast(message, true); return; }
+    const assets = window.palPrintsCustomerAssets || {};
+    const custom = Boolean(payload.studioSave);
+    const endpoint = custom ? assets.cartCustomDesignUrl : assets.cartCatalogUrl;
     const csrf = document.querySelector('meta[name="csrf-token"]');
-    if (!payload.product.code || !endpoint) {
-      showToast("تعذر تحديد المنتج. عد إلى صفحة المنتجات واختر المنتج من جديد.", "error");
-      return;
-    }
-
-    // Same choices (color + size + print areas) collapse into one line with a quantity.
+    if (!payload.product.code || !endpoint) { showToast("تعذر تحديد المنتج. عد إلى صفحة المنتجات واختر المنتج من جديد.", true); return; }
     const groups = new Map();
-    state.items.forEach(function (piece) {
-      const selectedIds = selectedAreas(piece).map(function (area) { return area.id; });
-      const key = JSON.stringify([piece.colorId, piece.sizeId, selectedIds]);
-      if (!groups.has(key)) groups.set(key, { piece: piece, quantity: 0 });
-      groups.get(key).quantity += 1;
+    state.items.forEach(piece => { const ids = [...piece.printAreaIds], key = JSON.stringify([piece.colorId, piece.sizeId, ids]), group = groups.get(key) || { piece, quantity: 0 }; group.quantity += 1; groups.set(key, group); });
+    const groupList = [...groups.values()].map(group => {
+      const color = currentColor(group.piece), size = payload.product.sizes.find(item => item.id === group.piece.sizeId);
+      return { color_id: group.piece.colorId, color_name: color ? color.name : group.piece.colorId, size_id: group.piece.sizeId, size_name: size ? size.name : group.piece.sizeId, quantity: group.quantity, print_areas: selectedAreas(group.piece).map(area => area.name) };
     });
-
-    const body = {
-      product_code: payload.product.code,
-      design_id: payload.design.id,
-      groups: Array.from(groups.values()).map(function (group) {
-        const color = currentColor(group.piece);
-        const size = payload.product.sizes.find(function (item) { return item.id === group.piece.sizeId; });
-        return {
-          color_id: group.piece.colorId,
-          color_name: color ? color.name : group.piece.colorId,
-          size_id: group.piece.sizeId,
-          size_name: size ? size.name : group.piece.sizeId,
-          quantity: group.quantity,
-          print_areas: selectedAreas(group.piece).map(function (area) { return area.name; })
-        };
-      })
-    };
-
-    [elements.addToCartButton, elements.mobileAddToCart].forEach(function (button) { button.disabled = true; });
-
-    fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "X-CSRF-TOKEN": csrf ? csrf.content : ""
-      },
-      body: JSON.stringify(body)
-    }).then(function (response) {
-      return response.json().catch(function () { return {}; }).then(function (data) {
-        if (!response.ok) {
-          const firstError = data.errors ? Object.values(data.errors)[0][0] : data.message;
-          throw new Error(firstError || "تعذرت إضافة المنتج إلى السلة. حاول مرة أخرى.");
-        }
+    const pieces = [...groups.values()].map(group => group.piece);
+    const body = { product_code: payload.product.code, design_id: payload.design.id, groups: groupList };
+    [elements.addToCart, elements.mobileAdd].forEach(button => { button.disabled = true; });
+    const headers = { "Accept": "application/json", "X-CSRF-TOKEN": csrf ? csrf.content : "" };
+    // A customer-made design is saved with its artwork files (multipart); a published design only sends ids (JSON).
+    const request = custom
+      ? customDesignForm(groupList, pieces).then(form => fetch(endpoint, { method: "POST", headers, body: form }))
+      : fetch(endpoint, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    request
+      .then(response => response.json().catch(() => ({})).then(data => {
+        if (!response.ok) { const firstError = data.errors ? Object.values(data.errors)[0][0] : data.message; throw new Error(firstError || "تعذرت إضافة المنتج إلى السلة. حاول مرة أخرى."); }
         return data;
-      });
-    }).then(function (data) {
-      setAddButtonSuccess();
-      window.setTimeout(function () { window.location.href = data.redirect; }, 600);
-    }).catch(function (error) {
-      renderValidation();
-      showToast(error.message, "error");
-    });
+      }))
+      .then(data => { showToast("تمت إضافة المنتج إلى السلة بنجاح.", false); setTimeout(() => { window.location.href = data.redirect; }, 600); })
+      .catch(error => { renderValidation(); showToast(error.message, true); });
   }
 
-  function renderFullscreen() {
-    const clone = elements.productCanvas.cloneNode(true);
-    clone.removeAttribute("id");
-    clone.querySelectorAll("[id]").forEach(function (node) { node.removeAttribute("id"); });
-    clone.style.setProperty("--preview-zoom", "1");
-    elements.fullscreenStage.replaceChildren(clone);
-  }
-
-  function selectPiece(index, focusTab) {
-    if (index < 0 || index >= state.items.length || index === state.activePieceIndex) return;
-    state.activePieceIndex = index;
-    state.currentAreaId = selectedAreas()[0].id;
-    renderAll();
-    if (focusTab) document.getElementById("pieceTab" + index)?.focus();
-  }
-
-  elements.pieceTabs.addEventListener("click", function (event) {
-    const button = event.target.closest("[data-piece-index]");
-    if (!button) return;
-    selectPiece(Number(button.dataset.pieceIndex), false);
+  elements.viewTabs.addEventListener("click", event => { const button = event.target.closest("[data-area-id]"); if (!button) return; state.currentAreaId = button.dataset.areaId; renderViewTabs(); renderCanvas(); persistReview(); });
+  elements.colorOptions.addEventListener("click", event => { const button = event.target.closest("[data-color-id]"); if (!button) return; activePiece().colorId = button.dataset.colorId; renderColors(); renderViewTabs(); renderAreas(); renderCanvas(); renderPieces(); persistReview(); });
+  elements.sizeOptions.addEventListener("click", event => { const button = event.target.closest("[data-size-id]"); if (!button) return; activePiece().sizeId = button.dataset.sizeId; renderSizes(); renderPieces(); renderValidation(); sync(); });
+  elements.pieceTabs.addEventListener("click", event => { const button = event.target.closest("[data-piece-index]"); if (!button) return; state.activePieceIndex = Number(button.dataset.pieceIndex); state.currentAreaId = [...activePiece().printAreaIds][0]; renderAll(); });
+  elements.areaOptions.addEventListener("click", event => { const button = event.target.closest("[data-area-id]"); if (!button || role !== "customer") return; const id = button.dataset.areaId; if (activePiece().printAreaIds.has(id) && activePiece().printAreaIds.size === 1) { showToast("يجب إبقاء منطقة طباعة واحدة على الأقل.", true); return; } activePiece().printAreaIds.has(id) ? activePiece().printAreaIds.delete(id) : activePiece().printAreaIds.add(id); state.currentAreaId = id; renderAll(); });
+  elements.decrease.addEventListener("click", () => { if (role !== "customer" || state.items.length <= 1) return; state.items.splice(state.activePieceIndex, 1); state.activePieceIndex = Math.min(state.activePieceIndex, state.items.length - 1); state.currentAreaId = [...activePiece().printAreaIds][0]; renderAll(); });
+  elements.increase.addEventListener("click", () => { const max = quantityMaximum(); if (role !== "customer" || (max && state.items.length >= max)) return; state.items.push({ colorId: state.defaultItem.colorId, sizeId: state.defaultItem.sizeId, printAreaIds: new Set(state.defaultItem.printAreaIds) }); state.activePieceIndex = state.items.length - 1; state.currentAreaId = [...activePiece().printAreaIds][0]; renderAll(); });
+  elements.printingSelect.addEventListener("change", () => { state.printingTechnologyId = elements.printingSelect.value; renderPrice(); renderValidation(); persistReview(); });
+  elements.zoomOut.addEventListener("click", () => { state.zoom = Math.max(.8, Math.round((state.zoom - .1) * 10) / 10); renderCanvas(); elements.zoomValue.textContent = Math.round(state.zoom * 100) + "%"; });
+  elements.zoomIn.addEventListener("click", () => { state.zoom = Math.min(1.5, Math.round((state.zoom + .1) * 10) / 10); renderCanvas(); elements.zoomValue.textContent = Math.round(state.zoom * 100) + "%"; });
+  elements.fit.addEventListener("click", () => { state.zoom = 1; renderCanvas(); elements.zoomValue.textContent = "100%"; });
+  elements.openFullscreen.addEventListener("click", () => { state.fullscreenOpener = document.activeElement; const clone = elements.canvas.cloneNode(true); clone.removeAttribute("id"); clone.querySelectorAll("[id]").forEach(node => node.removeAttribute("id")); clone.style.setProperty("--preview-zoom", "1"); elements.fullscreenStage.replaceChildren(clone); elements.fullscreen.showModal(); });
+  elements.closeFullscreen.addEventListener("click", () => elements.fullscreen.close()); elements.fullscreen.addEventListener("close", () => state.fullscreenOpener?.focus?.());
+  elements.openAllowed.addEventListener("click", () => { state.pendingAllowedColorIds = new Set(state.allowedColorIds); renderAllowedOptions(); elements.allowedDialog.showModal(); });
+  [elements.closeAllowed, elements.cancelAllowed].forEach(button => button.addEventListener("click", () => elements.allowedDialog.close()));
+  elements.allowedOptions.addEventListener("change", event => {
+    if (event.target.type !== "checkbox") return;
+    event.target.checked ? state.pendingAllowedColorIds.add(event.target.value) : state.pendingAllowedColorIds.delete(event.target.value);
+    activePiece().colorId = event.target.value;
+    renderColors(); renderViewTabs(); renderCanvas(); persistReview();
   });
-
-  elements.pieceTabs.addEventListener("keydown", function (event) {
-    if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
-    event.preventDefault();
-    let nextIndex = state.activePieceIndex;
-    if (event.key === "Home") nextIndex = 0;
-    else if (event.key === "End") nextIndex = state.items.length - 1;
-    else if (event.key === "ArrowRight") nextIndex = (state.activePieceIndex - 1 + state.items.length) % state.items.length;
-    else nextIndex = (state.activePieceIndex + 1) % state.items.length;
-    selectPiece(nextIndex, true);
-  });
-
-  elements.viewTabs.addEventListener("click", function (event) {
-    const button = event.target.closest("[data-area-id]");
-    if (!button) return;
-    state.currentAreaId = button.dataset.areaId;
-    renderViewTabs();
-    renderProductCanvas();
-  });
-
-  elements.colorOptions.addEventListener("click", function (event) {
-    const button = event.target.closest("[data-color-id]");
-    if (!button) return;
-    activePiece().colorId = button.dataset.colorId;
-    renderColors();
-    renderViewTabs();
-    renderPrintAreas();
-    renderProductCanvas();
-    renderPieceSelector();
-    syncSession();
-  });
-
-  elements.sizeOptions.addEventListener("click", function (event) {
-    const button = event.target.closest("[data-size-id]");
-    if (!button) return;
-    activePiece().sizeId = button.dataset.sizeId;
-    renderSizes();
-    renderPieceSelector();
-    renderValidation();
-    syncSession();
-  });
-
-  elements.printAreaOptions.addEventListener("click", function (event) {
-    const button = event.target.closest("[data-area-id]");
-    if (!button) return;
-    const id = button.dataset.areaId;
-    if (activePiece().printAreaIds.has(id) && activePiece().printAreaIds.size === 1) {
-      elements.printAreaError.hidden = false;
-      setText(elements.printAreaError, "يجب إبقاء منطقة طباعة واحدة على الأقل.");
-      showToast("يجب إبقاء منطقة طباعة واحدة على الأقل.", "error");
-      return;
+  elements.selectAll.addEventListener("click", () => { state.pendingAllowedColorIds = new Set(payload.product.colors.map(color => color.id)); renderAllowedOptions(); });
+  elements.clearAll.addEventListener("click", () => { state.pendingAllowedColorIds.clear(); renderAllowedOptions(); });
+  elements.confirmAllowed.addEventListener("click", () => { state.allowedColorIds = new Set(state.pendingAllowedColorIds); renderAllowedSummary(); renderAllowedSizes(); persistReview(); elements.allowedDialog.close(); showToast("تم حفظ ألوان المنتج المناسبة للتصميم.", false); });
+  elements.addToCart.addEventListener("click", addToCart); elements.mobileAdd.addEventListener("click", addToCart);
+  // Designer: keep the preview picture and the design's data for the publish-details step, then go there.
+  async function continueToPublish(button) {
+    const assets = window.palPrintsDesignerAssets || {};
+    if (!state.allowedColorIds.size) { showToast("حدد لونًا واحدًا على الأقل مناسبًا لهذا التصميم.", true); return; }
+    if (audience() && !state.allowedSizeIds?.size) { showToast("حدد مقاسًا واحدًا على الأقل مناسبًا لهذا التصميم.", true); return; }
+    if (!payload.studioSave || !payload.product.code) { showToast("تعذر تجهيز التصميم للنشر. عد إلى الاستوديو وحاول مرة أخرى.", true); return; }
+    button.disabled = true;
+    try {
+      const piece = activePiece(), mockup = await cartMockup(piece, true);
+      if (!mockup) throw new Error("no print area");
+      const preview = await window.PalPrintComposite.render(mockup);
+      mockup.images.forEach(item => { delete item.url; });
+      const save = payload.studioSave, color = currentColor(piece);
+      sessionStorage.setItem("palprintsDesignerPublish", JSON.stringify({
+        designId: save.designId, designName: payload.design.name, productCode: payload.product.code, productName: payload.product.name,
+        colorId: piece.colorId, colorName: color ? color.name : piece.colorId, sizeId: piece.sizeId,
+        allowedColorIds: [...state.allowedColorIds], category: payload.studioSave.category, allowedSizeIds: audience() ? [...state.allowedSizeIds] : [], mockup, preview, layout: save.layout, assetIds: save.assetIds, assets: save.assets
+      }));
+      window.location.href = assets.reviewUrl;
+    } catch (error) {
+      button.disabled = false;
+      showToast("تعذر تجهيز صورة المعاينة. حاول مرة أخرى.", true);
     }
-    elements.printAreaError.hidden = true;
-    state.currentAreaId = id;
-    if (activePiece().printAreaIds.has(id)) activePiece().printAreaIds.delete(id);
-    else activePiece().printAreaIds.add(id);
-    renderPrintAreas();
-    renderViewTabs();
-    renderProductCanvas();
-    renderPieceSelector();
-    renderPrice();
-    renderValidation();
-    syncSession();
-  });
-
-  elements.decreaseQuantity.addEventListener("click", function () {
-    if (state.items.length <= 1) return;
-    const pieceNumber = state.activePieceIndex + 1;
-    if (!window.confirm("هل تريد إزالة القطعة " + pieceNumber + "؟ ستفقد إعداداتها الخاصة.")) return;
-    state.items.splice(state.activePieceIndex, 1);
-    state.activePieceIndex = Math.min(state.activePieceIndex, state.items.length - 1);
-    state.currentAreaId = selectedAreas()[0].id;
-    renderAll();
-  });
-
-  elements.increaseQuantity.addEventListener("click", function () {
-    if (state.items.length >= 99) return;
-    state.items.push({
-      colorId: state.defaultItem.colorId,
-      sizeId: state.defaultItem.sizeId,
-      printAreaIds: new Set(state.defaultItem.printAreaIds)
-    });
-    state.activePieceIndex = state.items.length - 1;
-    state.currentAreaId = selectedAreas()[0].id;
-    renderAll();
-  });
-
-  elements.zoomOut.addEventListener("click", function () {
-    state.zoom = Math.max(0.8, Math.round((state.zoom - 0.1) * 10) / 10);
-    renderZoom();
-  });
-
-  elements.zoomIn.addEventListener("click", function () {
-    state.zoom = Math.min(1.5, Math.round((state.zoom + 0.1) * 10) / 10);
-    renderZoom();
-  });
-
-  elements.fitPreview.addEventListener("click", function () {
-    state.zoom = 1;
-    renderZoom();
-  });
-
-  elements.openFullscreen.addEventListener("click", function () {
-    state.fullscreenOpener = document.activeElement;
-    renderFullscreen();
-    if (typeof elements.fullscreenDialog.showModal === "function") elements.fullscreenDialog.showModal();
-    elements.closeFullscreen.focus();
-  });
-
-  elements.closeFullscreen.addEventListener("click", function () { elements.fullscreenDialog.close(); });
-  elements.fullscreenDialog.addEventListener("click", function (event) {
-    if (event.target !== elements.fullscreenDialog) return;
-    const rect = elements.fullscreenDialog.getBoundingClientRect();
-    const inside = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
-    if (!inside) elements.fullscreenDialog.close();
-  });
-  elements.fullscreenDialog.addEventListener("close", function () {
-    if (state.fullscreenOpener && typeof state.fullscreenOpener.focus === "function") state.fullscreenOpener.focus();
-  });
-
-  elements.addToCartButton.addEventListener("click", addToCart);
-  elements.mobileAddToCart.addEventListener("click", addToCart);
-
+  }
+  const designerContinue = $("designerContinueButton");
+  if (designerContinue) designerContinue.addEventListener("click", () => continueToPublish(designerContinue));
+  window.addEventListener("beforeunload", () => objectUrls.forEach(url => URL.revokeObjectURL(url)));
   renderAll();
-
-  function revealInitialPreview() {
-    window.clearTimeout(window.__previewBootFallback);
-    window.requestAnimationFrame(function () {
-      window.requestAnimationFrame(function () {
-        document.body.classList.remove("preview-booting");
-        document.getElementById("productPreviewMain").setAttribute("aria-busy", "false");
-      });
-    });
-  }
-
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(revealInitialPreview, revealInitialPreview);
-  } else {
-    revealInitialPreview();
-  }
-})();
+  const reveal = () => requestAnimationFrame(() => requestAnimationFrame(() => { document.body.classList.remove("preview-booting"); $("productPreviewMain")?.setAttribute("aria-busy", "false"); window.dispatchEvent(new Event("palprints:ready")); }));
+  document.fonts?.ready ? document.fonts.ready.then(reveal, reveal) : reveal();
+})(window, document);

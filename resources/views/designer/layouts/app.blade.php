@@ -19,7 +19,7 @@
                     localStorage.setItem(defaultsKey, 'true');
                 }
 
-                var language = localStorage.getItem('palprints-language') === 'en' ? 'en' : 'ar';
+                var language = 'ar'; // the site is Arabic only
                 var theme = localStorage.getItem('palprints-theme') === 'dark' ? 'dark' : 'light';
 
                 document.documentElement.lang = language;
@@ -70,5 +70,6 @@
     @stack('scripts')
     <script src="{{ $designerAsset('js/designer-shell.js') }}"></script>
     <script src="{{ asset('front/shared/interactions.js').'?v='.filemtime(public_path('front/shared/interactions.js')) }}"></script>
+@include('partials.page-loader')
 </body>
 </html>

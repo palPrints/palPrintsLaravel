@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\PrintProvider;
 
 use App\Http\Controllers\Controller;
+use App\Models\BranchProductOffering;
 use App\Models\PrintProvider;
+use App\Models\PrintProviderBranch;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,9 +22,14 @@ class ProfileController extends Controller
 {
     private const DAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
+    /** Extra services a print shop can offer (plus its own "other" entries); the products it prints are chosen from the catalog. */
+    private const SERVICE_OPTIONS = [
+        'rush' => 'طباعة مستعجلة',
+        'delivery' => 'التوصيل للعميل',
+    ];
+
     /** Required verification documents: print_providers column => label. */
     private const DOCUMENT_LABELS = [
-        'license_document' => 'رخصة المطبعة',
         'verification_document' => 'وثيقة التحقق',
         'id_document' => 'صورة الهوية',
     ];
@@ -59,6 +67,16 @@ class ProfileController extends Controller
                 'to' => '20:00',
             ], $provider->working_hours ?? []),
             'allDays' => self::DAYS,
+            'hasServices' => Schema::hasColumn('print_providers', 'services'),
+            'serviceOptions' => self::SERVICE_OPTIONS,
+            'selectedProductIds' => $provider->exists
+                ? BranchProductOffering::query()
+                    ->whereIn('print_provider_branch_id', PrintProviderBranch::where('print_provider_id', $provider->id)->select('id'))
+                    ->where(fn ($query) => $query->where('is_active', true)->orWhere('base_price', 0))
+                    ->pluck('product_id')->unique()->map(fn ($id) => (int) $id)->values()->all()
+                : [],
+            'productOptions' => Product::query()->where('is_active', true)->with('category:id,name')->orderBy('category_id')->orderBy('name')->get(['id', 'name', 'category_id', 'image']),
+            'hasContactEmail' => Schema::hasColumn('print_providers', 'contact_email'),
             'documentLabels' => self::DOCUMENT_LABELS,
             'documentFields' => array_keys(self::documentFields()),
             'approvalStatus' => $provider->approval_status ?? 'draft',
@@ -83,6 +101,48 @@ class ProfileController extends Controller
         return $messages;
     }
 
+    /**
+     * The products a shop says it prints are kept as its offerings. A product it ticks for the first time starts inactive with
+     * no price, so nothing reaches the site until the shop completes price, production time and capacity. One it already
+     * priced is switched back on when ticked and switched off (not deleted, orders keep pointing at it) when unticked.
+     *
+     * @param  array<int, int>  $productIds
+     */
+    private function syncChosenProducts(PrintProvider $provider, array $productIds): void
+    {
+        $listed = Product::query()->where('is_active', true)->pluck('id');   // what the form offers; other offerings are left alone
+        $wanted = $listed->intersect($productIds)->values();
+        if (! $provider->branches()->exists() && $wanted->isEmpty()) {
+            return;
+        }
+
+        $branch = $provider->primaryBranch();
+
+        $offerings = BranchProductOffering::query()
+            ->whereIn('print_provider_branch_id', PrintProviderBranch::where('print_provider_id', $provider->id)->select('id'))
+            ->get();
+
+        foreach ($offerings->whereIn('product_id', $listed) as $offering) {
+            $chosen = $wanted->contains($offering->product_id);
+            $configured = (float) $offering->base_price > 0;
+
+            if ($chosen && $configured && ! $offering->is_active) {
+                $offering->update(['is_active' => true]);
+            } elseif (! $chosen && $configured && $offering->is_active) {
+                $offering->update(['is_active' => false]);
+            } elseif (! $chosen && ! $configured && ! $offering->orderItems()->exists()) {
+                $offering->delete();
+            }
+        }
+
+        foreach ($wanted->diff($offerings->pluck('product_id')) as $productId) {
+            $branch->branchProductOfferings()->create([
+                'product_id' => $productId, 'base_price' => 0, 'currency' => 'ILS',
+                'production_time_min' => 0, 'production_time_max' => 0, 'daily_capacity' => 0, 'is_active' => false,
+            ]);
+        }
+    }
+
     public function update(Request $request): RedirectResponse
     {
         // A profile that is already with the admin for review cannot change underneath them.
@@ -95,6 +155,7 @@ class ProfileController extends Controller
         $request->merge([
             'contact_name' => trim((string) $request->input('contact_name')),
             'email' => Str::lower(trim((string) $request->input('email'))),
+            'contact_email' => Str::lower(trim((string) $request->input('contact_email'))) ?: null,
             'company_name' => trim((string) $request->input('company_name')),
         ]);
 
@@ -107,6 +168,15 @@ class ProfileController extends Controller
             'phone' => ['required', 'string', 'max:30'],
             'owner_phone' => ['required', 'string', 'max:30'],
             'whatsapp_number' => ['nullable', 'string', 'max:30'],
+            'products' => ['nullable', 'array'],
+            'products.*' => ['integer', Rule::exists('products', 'id')->where('is_active', true)],
+            'services' => ['nullable', 'array'],
+            'services.*' => ['string', Rule::in(array_keys(self::SERVICE_OPTIONS))],
+            'other_services' => ['nullable', 'string', 'max:500'],
+            // Only accepted once the contact_email column exists in the schema.
+            'contact_email' => Schema::hasColumn('print_providers', 'contact_email')
+                ? ['nullable', 'email', 'max:255']
+                : ['prohibited'],
             'address' => ['required', 'string', 'max:1000'],
             ...array_map(
                 fn () => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
@@ -161,7 +231,20 @@ class ProfileController extends Controller
                     $documents[$field] = $newPaths[$field] ?? $oldPaths[$field];
                 }
 
-                $user->printProvider()->updateOrCreate(['user_id' => $user->id], $documents + [
+                $contactEmail = Schema::hasColumn('print_providers', 'contact_email')
+                    ? ['contact_email' => $validated['contact_email'] ?? null]
+                    : [];
+
+                $services = Schema::hasColumn('print_providers', 'services')
+                    ? ['services' => [
+                        'selected' => array_values($validated['services'] ?? []),
+                        'other' => collect(preg_split('/[,،\n]+/u', (string) ($validated['other_services'] ?? '')))
+                            ->map(fn ($item) => Str::limit(trim((string) $item), 60, ''))
+                            ->filter()->unique()->take(10)->values()->all(),
+                    ]]
+                    : [];
+
+                $user->printProvider()->updateOrCreate(['user_id' => $user->id], $documents + $contactEmail + $services + [
                     'company_name' => $validated['company_name'],
                     'phone' => $validated['phone'],
                     'whatsapp_number' => $validated['whatsapp_number'] ?? null,
@@ -175,6 +258,8 @@ class ProfileController extends Controller
                     // The profile only counts as complete once every required document is on file.
                     'profile_completed_at' => count(array_filter($documents)) === count($documents) ? now() : null,
                 ]);
+
+                $this->syncChosenProducts($user->printProvider()->first(), array_map('intval', $validated['products'] ?? []));
             });
         } catch (Throwable $exception) {
             foreach ($newPaths as $path) {

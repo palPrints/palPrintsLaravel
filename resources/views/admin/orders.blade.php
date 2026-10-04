@@ -74,6 +74,9 @@
                                     data-phone="{{ $order['phone'] }}"
                                     data-printer-id="{{ $order['printerId'] }}"
                                     data-payment="{{ $order['payment'] }}"
+                                    data-payment-status="{{ $order['paymentStatus'] }}"
+                                    data-receipt-url="{{ $order['receiptUrl'] }}"
+                                    data-approve-payment-url="{{ $order['approvePaymentUrl'] }}"
                                     data-paid="{{ $order['paid'] ? '1' : '0' }}"
                                     data-notes="{{ $order['notes'] }}"
                                     data-update-url="{{ $order['updateUrl'] }}">
@@ -127,6 +130,14 @@
                 <div><dt>حالة الشحنة</dt><dd id="dialogShipment"></dd></div>
             </dl>
             <div class="dialog-note"><span>ملاحظات العميل</span><p id="dialogNotes"></p></div>
+            <div class="manual-payment-review" id="manualPaymentReview" hidden>
+                <div>
+                    <strong>مراجعة إشعار الدفع</strong>
+                    <small>افتح صورة الإشعار، ثم اعتمد الدفع إذا كان صحيحاً.</small>
+                </div>
+                <a id="paymentReceiptLink" class="dialog-secondary-button" href="#" target="_blank" rel="noopener">عرض الإشعار</a>
+                <button class="dialog-save-button" id="approvePaymentButton" type="button"><i class="bi bi-check2-circle"></i> اعتماد الدفع</button>
+            </div>
         </section>
 
         <section class="order-dialog-section order-management" aria-labelledby="orderManagementTitle">

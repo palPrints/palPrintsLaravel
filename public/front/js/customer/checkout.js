@@ -35,28 +35,64 @@
     return ok;
   }
 
+
+  function normalizePhone(input) {
+    if (!input) return "";
+    const digits = input.value.replace(/\D/g, "").slice(0, 10);
+    if (input.value !== digits) input.value = digits;
+    return digits;
+  }
+
+  function validPalestinianMobile(input) {
+    if (!input) return false;
+    const field = input.closest(".field");
+    const value = normalizePhone(input);
+    const ok = /^05[69][0-9]{7}$/.test(value);
+    field?.classList.toggle("invalid", !ok);
+    const error = field?.querySelector(".error");
+    if (error) error.textContent = ok ? "" : "أدخلي رقم هاتف صحيح يبدأ بـ 059 أو 056 ويتكون من 10 أرقام";
+    return ok;
+  }
   function validateRecipient() {
     const name = document.getElementById("recipientName");
     const phone = document.getElementById("phone");
-    return required(name, "أدخلي اسم المستلم") && required(phone, "أدخلي رقم الهاتف");
+    const nameOk = required(name, "أدخلي اسم المستلم");
+    const phoneOk = required(phone, "أدخلي رقم الهاتف") && validPalestinianMobile(phone);
+    return nameOk && phoneOk;
   }
-
   function usingNewAddress() {
     const newAddress = document.querySelector(".new-address");
     const selectedAddress = document.querySelector('input[name="address_id"]:checked');
     return !selectedAddress || (newAddress && !newAddress.hidden);
   }
 
+  function showNewAddressForm() {
+    const area = document.querySelector(".new-address");
+    if (!area) return;
+    area.hidden = false;
+    document.querySelectorAll('input[name="address_id"]').forEach((input) => { input.checked = false; });
+    document.querySelectorAll(".address-list .choice-card").forEach((card) => card.classList.remove("selected"));
+    area.querySelector("input")?.focus();
+  }
+
   function validateAddress() {
-    if (!usingNewAddress()) return true;
+    const selectedAddress = document.querySelector('input[name="address_id"]:checked');
+    const newAddress = document.querySelector(".new-address");
+
+    if (selectedAddress && (!newAddress || newAddress.hidden)) return true;
+
+    if (!selectedAddress && newAddress?.hidden) {
+      message("اضغطي على استخدام عنوان جديد أو اختاري عنواناً محفوظاً");
+      return false;
+    }
+
     const city = form.querySelector('[name="city"]');
     const street = form.querySelector('[name="street"]');
     return required(city, "أدخلي المدينة") && required(street, "أدخلي الشارع");
   }
-
   function requiresReceipt() {
     const payment = document.querySelector('[name="payment_method"]:checked')?.value || "palpay";
-    return payment === "palpay" || payment === "bank";
+    return payment === "palpay" || payment === "jawwal" || payment === "bank";
   }
 
   function syncReceiptField() {
@@ -97,8 +133,8 @@
   }
 
   function showStep(step) {
-    if (step === 2 && !validateRecipient()) return;
-    if (step === 3 && !validateAddress()) return;
+    if (step >= 2 && !validateRecipient()) return;
+    if (step >= 3 && !validateAddress()) return;
     if (step === 4) updateReview();
 
     current = step;
@@ -123,7 +159,7 @@
   steps.forEach((step) => {
     step.querySelector("button")?.addEventListener("click", () => {
       const value = Number(step.dataset.step);
-      if (value <= current) showStep(value);
+      showStep(value);
     });
   });
 
@@ -146,15 +182,12 @@
     });
   });
 
-  document.querySelector("[data-toggle-new-address]")?.addEventListener("click", () => {
-    const area = document.querySelector(".new-address");
-    if (!area) return;
-
-    area.hidden = false;
-    document.querySelectorAll('input[name="address_id"]').forEach((input) => { input.checked = false; });
-    document.querySelectorAll(".address-list .choice-card").forEach((card) => card.classList.remove("selected"));
-    area.querySelector("input")?.focus();
+  document.querySelectorAll("[data-toggle-new-address]").forEach((button) => {
+    button.addEventListener("click", showNewAddressForm);
   });
+
+  const phoneInput = document.getElementById("phone");
+  phoneInput?.addEventListener("input", () => normalizePhone(phoneInput));
 
   syncReceiptField();
 

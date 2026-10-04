@@ -139,3 +139,27 @@ body:not(.sidebar-collapsed) main.printshop-main{padding:27px 28px 50px}
 .form-actions{direction:rtl;justify-content:flex-end;gap:12px;padding:6px 0 24px}
 .form-actions .primary-btn,.form-actions .secondary-btn{margin:0;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
 @media(max-width:560px){.form-actions{flex-direction:row;flex-wrap:wrap}.form-actions .primary-btn,.form-actions .secondary-btn{flex:1;justify-content:center;width:auto}}
+
+/* Services offered: pick from the platform list. */
+.services-hint{margin:0 0 12px;color:var(--muted);font-size:13px}
+.service-options{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-bottom:14px}
+.service-option{display:flex;align-items:center;gap:9px;min-height:44px;padding:0 12px;color:var(--text);background:#fff;border:1px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:border-color .18s ease,background-color .18s ease}
+.service-option:hover{background:var(--blue-50);border-color:#bed9ff}
+.service-option:has(input:checked){color:#0a68eb;background:var(--blue-50);border-color:var(--blue)}
+.service-option input{width:16px;height:16px;accent-color:var(--blue)}
+.service-chips{flex-wrap:wrap}
+
+.services-group { margin: 14px 0 8px; color: var(--navy, #0b1f3a); font-size: 14px; font-weight: 800; }
+.services-group:first-of-type { margin-top: 4px; }
+
+/* Sections sit side by side, two to a row; an odd last card takes the full row so none is left alone. */
+.two-column,.three-column{grid-template-columns:repeat(2,minmax(0,1fr))}
+.profile-section-grid>.form-card:last-child:nth-child(odd){grid-column:1/-1}
+@media(max-width:850px){.two-column,.three-column{grid-template-columns:1fr}.profile-section-grid>.form-card:last-child:nth-child(odd){grid-column:auto}}
+
+/* Products and services read as an even grid of equal chips, so they line up with the cards beside them. */
+.service-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-content:start}
+.service-chips>span{display:flex;align-items:center;justify-content:center;min-height:46px;padding:8px 12px;text-align:center;overflow-wrap:anywhere}
+.is-static:not(.service-chips){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.is-static:not(.service-chips)>span{display:flex;align-items:center;justify-content:center;min-height:42px;padding:6px 10px}
+@media(max-width:560px){.service-chips{grid-template-columns:1fr}.is-static:not(.service-chips){grid-template-columns:repeat(2,minmax(0,1fr))}}

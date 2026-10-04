@@ -26,6 +26,12 @@ class CatalogController extends Controller
         'WEDDING-CARDS' => 'كروت أفراح بتصاميم فخمة تناسب المناسبات الخاصة.',
     ];
 
+    /** Product picker for the customer's own uploaded design (same catalog the designer picks from). */
+    public function chooseProduct(): View
+    {
+        return view('customer.chooseProduct', ['designerCatalog' => CatalogProductData::forDesigner()]);
+    }
+
     public function store(): View
     {
         $products = Product::query()
@@ -170,7 +176,7 @@ class CatalogController extends Controller
     private function productDesigns(string $productCode, string $view, string $fallbackImage): View
     {
         $product = Product::query()
-            ->with(['attributes.attribute', 'attributes.values.attributeValue'])
+            ->with(['attributes.attribute', 'attributes.values.attributeValue', 'branchProductOfferings.branchPrintAreas'])
             ->where('code', $productCode)
             ->where('is_active', true)
             ->first();
@@ -245,9 +251,15 @@ class CatalogController extends Controller
     private function publishedDesign(Design $design, string $fallbackImage, bool $isFavorite = false): array
     {
         $options = $design->selected_options ?? [];
+        $audience = CatalogProductData::AUDIENCES[$options['display_category'] ?? ''] ?? null;
+        $allowedSizes = $audience
+            ? collect($audience['sizes'])->filter(fn ($size) => in_array($size['id'], $options['allowed_size_ids'] ?? [], true))->values()->all()
+            : [];
 
         return [
             'id' => (string) $design->id,
+            'allowedColors' => array_values($options['allowed_color_ids'] ?? []),
+            'allowedSizes' => $allowedSizes,
             'category' => $options['display_category'] ?? 'adults',
             'title' => $design->title,
             'description' => $design->description ?: $design->product?->name,

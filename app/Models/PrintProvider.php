@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class PrintProvider extends Model
 {
@@ -15,8 +16,9 @@ class PrintProvider extends Model
         'address',
         'phone',
         'whatsapp_number',
+        'contact_email',
+        'services',
         'working_hours',
-        'license_document',
         'verification_document',
         'id_document',
         'approval_status',
@@ -34,6 +36,7 @@ class PrintProvider extends Model
 
     protected $casts = [
         'working_hours' => 'array',
+        'services' => 'array',
         'profile_completed_at' => 'datetime',
         'submitted_at' => 'datetime',
         'reviewed_at' => 'datetime',
@@ -56,6 +59,20 @@ class PrintProvider extends Model
     public function branches()
     {
         return $this->hasMany(PrintProviderBranch::class);
+    }
+
+    /** The shop's main branch (its offerings live there); created from the profile data when it has none yet. */
+    public function primaryBranch(): PrintProviderBranch
+    {
+        return $this->branches()->orderBy('id')->first() ?? PrintProviderBranch::create([
+            'print_provider_id' => $this->id,
+            'name' => $this->company_name,
+            'city' => Str::limit(trim(explode('،', str_replace(',', '،', (string) $this->address))[0]) ?: 'غير محدد', 100, ''),
+            'address' => $this->address,
+            'phone' => $this->phone,
+            'working_hours' => $this->working_hours,
+            'is_active' => true,
+        ]);
     }
 }
 

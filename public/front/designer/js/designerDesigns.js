@@ -45,43 +45,6 @@
       copyPreviewLink: "نسخ رابط المعاينة",
       linkCopied: "تم نسخ الرابط"
     },
-    en: {
-      documentTitle: "My Designs | PalPrints",
-      documentDescription: "Manage designer work and track its status on PalPrints",
-      skipToContent: "Skip to content",
-      designsSubtitle: "Manage your designs and track their status in one place.",
-      newDesign: "New design",
-      designTools: "Search and filter designs",
-      statusTabs: "Design status",
-      all: "All",
-      published: "Published",
-      underReview: "Under review",
-      drafts: "Drafts",
-      rejected: "Rejected",
-      filter: "Filter",
-      sortBy: "Sort designs",
-      newest: "Newest first",
-      oldest: "Oldest first",
-      byName: "By name",
-      searchLabel: "Search designs",
-      searchDesigns: "Search your designs...",
-      noMatchesTitle: "No designs match your search",
-      noMatches: "Try another search term or clear the current search.",
-      clearSearch: "Clear search",
-      showAll: "View all",
-      publishedStatus: "Published",
-      reviewStatus: "Under review",
-      draftStatus: "Draft",
-      rejectedStatus: "Rejected",
-      lastEdited: "Last edited",
-      designDate: "Uploaded",
-      unnamedDesign: "Untitled design",
-      editDesign: "Edit design",
-      previewDesign: "Preview design",
-      moreActions: "More actions",
-      copyPreviewLink: "Copy preview link",
-      linkCopied: "Link copied"
-    }
   };
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -98,9 +61,7 @@
   }
 
   function getLanguage() {
-    return document.documentElement.getAttribute("lang") === "en"
-      ? "en"
-      : "ar";
+    return "ar"; /* the site is Arabic only */
   }
 
   function translate(key) {
@@ -354,28 +315,6 @@
       '<i class="bi ' + action.icon + '" aria-hidden="true"></i>',
       "<span>" + escapeHtml(action.label) + "</span>",
       "</button>",
-      '<div class="design-more-control">',
-      '<button type="button" class="utility-btn design-more-button"',
-      ' data-more-toggle aria-controls="' + menuId + '"',
-      ' aria-expanded="false" aria-label="' +
-        escapeHtml(translate("moreActions")) + '">',
-      '<i class="bi bi-three-dots" aria-hidden="true"></i>',
-      "</button>",
-      '<div class="design-more-menu" id="' + menuId + '" hidden>',
-      '<button type="button" class="design-menu-option"',
-      ' data-design-action="preview"><i class="bi bi-eye"',
-      ' aria-hidden="true"></i><span>' +
-        escapeHtml(translate("previewDesign")) + "</span></button>",
-      '<button type="button" class="design-menu-option"',
-      ' data-design-action="edit"><i class="bi bi-pencil"',
-      ' aria-hidden="true"></i><span>' +
-        escapeHtml(translate("editDesign")) + "</span></button>",
-      '<button type="button" class="design-menu-option"',
-      ' data-design-action="copy"><i class="bi bi-link-45deg"',
-      ' aria-hidden="true"></i><span>' +
-        escapeHtml(translate("copyPreviewLink")) + "</span></button>",
-      "</div>",
-      "</div>",
       "</div>",
       "</div>",
       "</article>"
@@ -711,15 +650,19 @@
   function setupEvents() {
     setupTabs();
 
-    elements.search.addEventListener("input", function () {
-      query = elements.search.value.trim();
-      render();
-    });
+    if (elements.search) {
+      elements.search.addEventListener("input", function () {
+        query = elements.search.value.trim();
+        render();
+      });
+    }
 
     elements.clearSearch.addEventListener("click", function () {
       query = "";
-      elements.search.value = "";
-      elements.search.focus();
+      if (elements.search) {
+        elements.search.value = "";
+        elements.search.focus();
+      }
       render();
     });
 
@@ -831,18 +774,6 @@
       }
     });
 
-    const languageButton = document.getElementById(
-      "languageToggleButton"
-    );
-
-    if (languageButton) {
-      languageButton.addEventListener("click", function () {
-        window.requestAnimationFrame(function () {
-          applyPageTranslations();
-          render();
-        });
-      });
-    }
   }
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -863,9 +794,9 @@
     /* The top-bar search sends ?q= to this page. */
     const initialQuery = new URLSearchParams(window.location.search).get("q");
 
-    if (initialQuery && elements.search) {
+    if (initialQuery) {
       query = initialQuery.trim();
-      elements.search.value = query;
+      if (elements.search) elements.search.value = query;
     }
 
     updateCounts();

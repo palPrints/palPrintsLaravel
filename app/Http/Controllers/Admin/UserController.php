@@ -121,11 +121,22 @@ class UserController extends Controller
             return [];
         }
 
+        // The products each shop chose in its profile (its offerings), by provider.
+        $productNames = \App\Models\BranchProductOffering::query()
+            ->join('print_provider_branches', 'print_provider_branches.id', '=', 'branch_product_offerings.print_provider_branch_id')
+            ->join('products', 'products.id', '=', 'branch_product_offerings.product_id')
+            ->where(fn ($query) => $query->where('branch_product_offerings.is_active', true)->orWhere('branch_product_offerings.base_price', 0))
+            ->select('print_provider_branches.print_provider_id', 'products.name')
+            ->distinct()->orderBy('products.name')
+            ->get()
+            ->groupBy('print_provider_id')
+            ->map(fn ($rows) => $rows->pluck('name')->map(fn ($name) => e($name))->implode('، '));
+
         return User::role('print_provider')
             ->with(['printProvider', 'approvalRequests' => fn ($query) => $query->latest('id')->limit(1)])
             ->orderByDesc('created_at')
             ->get()
-            ->map(function (User $user) {
+            ->map(function (User $user) use ($productNames) {
                 /** @var PrintProvider|null $profile */
                 $profile = $user->printProvider;
                 $request = $user->approvalRequests->first();
@@ -137,6 +148,7 @@ class UserController extends Controller
                     'phone' => $profile?->phone ?? $user->phone ?? '—',
                     'whatsapp' => $profile?->whatsapp_number ?? '—',
                     'address' => $profile?->address ?? '—',
+                    'products' => $profile ? ($productNames[$profile->id] ?? '') : '',
                     'city' => '—',
                     'joined' => $user->created_at?->locale('ar')->translatedFormat('j F Y') ?? '—',
                     'metric' => (int) ($profile?->total_orders ?? 0),
@@ -146,8 +158,11 @@ class UserController extends Controller
                     'revenue' => '₪'.number_format((float) ($profile?->total_earnings ?? 0)),
                     'workingHours' => $this->workingHoursSummary($profile?->working_hours),
                     'operating' => $profile?->is_active ?? true,
-                    'licenseDocument' => $this->storageUrl($profile?->license_document),
                     'verificationDocument' => $this->storageUrl($profile?->verification_document),
+                    // The identity picture is only stored once the schema has the column.
+                    'idDocument' => $this->storageUrl($profile?->getAttribute('id_document')),
+                    'idDocumentAvailable' => Schema::hasColumn('print_providers', 'id_document'),
+                    'contactEmail' => $profile?->getAttribute('contact_email') ?: '',
                     'status' => $this->onboardingStatus($user, $profile?->approval_status),
                     'submittedAt' => $request?->submitted_at?->locale('ar')->translatedFormat('j F Y') ?? '—',
                     'approvedAt' => $profile?->approved_at?->locale('ar')->translatedFormat('j F Y') ?? '—',

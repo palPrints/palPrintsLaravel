@@ -17,6 +17,9 @@
     const hint = document.getElementById("orderManagementHint");
     const feedback = document.getElementById("orderDialogFeedback");
     const saveButton = document.getElementById("saveOrderChanges");
+    const manualPaymentReview = document.getElementById("manualPaymentReview");
+    const paymentReceiptLink = document.getElementById("paymentReceiptLink");
+    const approvePaymentButton = document.getElementById("approvePaymentButton");
     let activeFilter = "all";
     let activeRow = null;
 
@@ -100,9 +103,14 @@
 
       setText("dialogPhone", row.dataset.phone);
       setText("dialogPayment", row.dataset.payment);
-      setText("dialogPaid", row.dataset.paid === "1" ? "مدفوع" : "غير مدفوع");
+      setText("dialogPaid", row.dataset.paid === "1" ? "مدفوع" : (row.dataset.paymentStatus === "pending_review" ? "بانتظار مراجعة الدفع" : "غير مدفوع"));
       setText("dialogShipment", presentation[status].shipment);
       setText("dialogNotes", row.dataset.notes);
+
+      const canReviewPayment = row.dataset.paymentStatus === "pending_review" && row.dataset.receiptUrl && row.dataset.approvePaymentUrl;
+      if (manualPaymentReview) manualPaymentReview.hidden = !canReviewPayment;
+      if (paymentReceiptLink) paymentReceiptLink.href = row.dataset.receiptUrl || "#";
+      if (approvePaymentButton) approvePaymentButton.disabled = !canReviewPayment;
 
       statusSelect.value = status;
       printerSelect.value = row.dataset.printerId || "";
@@ -167,6 +175,47 @@
         });
     });
 
+
+    if (approvePaymentButton) {
+      approvePaymentButton.addEventListener("click", function () {
+        if (!activeRow || !activeRow.dataset.approvePaymentUrl) return;
+
+        approvePaymentButton.disabled = true;
+        window.fetch(activeRow.dataset.approvePaymentUrl, {
+          method: "POST",
+          headers: {
+            "Accept": "application/json",
+            "X-CSRF-TOKEN": csrf ? csrf.content : "",
+          },
+        })
+          .then(function (response) {
+            return response.json().then(function (data) { return { ok: response.ok, data: data }; });
+          })
+          .then(function (result) {
+            if (!result.ok) throw new Error(result.data.message || "تعذر اعتماد الدفع.");
+
+            activeRow.dataset.paid = "1";
+            activeRow.dataset.paymentStatus = "paid";
+            activeRow.dataset.approvePaymentUrl = "";
+            activeRow.dataset.status = "processing";
+
+            const next = presentation.processing;
+            const badge = activeRow.querySelector(".order-status");
+            badge.className = "order-status " + next.className;
+            badge.textContent = next.label;
+
+            setText("dialogPaid", "مدفوع");
+            setText("dialogShipment", next.shipment);
+            if (manualPaymentReview) manualPaymentReview.hidden = true;
+            feedback.textContent = result.data.message;
+            filterOrders();
+          })
+          .catch(function (error) {
+            feedback.textContent = error.message;
+            approvePaymentButton.disabled = false;
+          });
+      });
+    }
     dialog.querySelectorAll("[data-order-dialog-close]").forEach(function (button) {
       button.addEventListener("click", function () { dialog.close(); });
     });

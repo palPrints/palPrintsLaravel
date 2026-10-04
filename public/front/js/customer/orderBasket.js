@@ -1,36 +1,18 @@
-(function(){
+(function () {
   "use strict";
 
   const list = document.getElementById("basketItems");
   if (!list) return;
 
-  const CART_STORAGE_KEY = "palprints-basket-cart";
-  const assets = window.palPrintsCustomerAssets || {};
-  const count = document.getElementById("itemsCount");
-  const toast = document.querySelector(".toast");
-  const emptyBasketUrl = assets.emptyBasketUrl || "";
-  let toastTimer;
+  const csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
+  const toast = document.getElementById("basketToast") || document.querySelector(".toast");
+  const pageCount = document.getElementById("itemsCount");
+  const headerCount = document.getElementById("cartCount");
+  const cartButton = document.getElementById("cartButton");
+  let toastTimer = null;
 
-  // Self-sufficient cart read/write so this page never depends on
-  // storefront.js having finished running first — it uses window.PalPrintCart
-  // when available (to keep the header dropdown in sync) but falls back to
-  // talking to localStorage directly otherwise.
-  function readCart() {
-    if (window.PalPrintCart) return window.PalPrintCart.getItems();
-    try {
-      const saved = JSON.parse(localStorage.getItem(CART_STORAGE_KEY));
-      if (Array.isArray(saved)) return saved;
-    } catch (_) { /* Fall through to the seed below. */ }
-    return Array.isArray(assets.basketSeed) ? assets.basketSeed : [];
-  }
-
-  function saveCart(items) {
-    if (window.PalPrintCart) {
-      window.PalPrintCart.save(items);
-      return;
-    }
-    try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items)); }
-    catch (_) { /* Session-only fallback. */ }
+  function money(value) {
+    return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Number(value) || 0) + " ₪";
   }
 
   function message(text) {
@@ -40,66 +22,84 @@
     toast.classList.add("show");
     toastTimer = window.setTimeout(() => toast.classList.remove("show"), 1800);
   }
-  toggle.addEventListener("click",()=>setSidebar(!sidebar.classList.contains("is-open")));
-  closeButton.addEventListener("click",()=>setSidebar(false));
-  backdrop.addEventListener("click",()=>setSidebar(false));
-  sidebar.addEventListener("click",event=>{if(event.target.closest("a")&&mobileScreen.matches)setSidebar(false)});
-  mobileScreen.addEventListener("change",()=>setSidebar(false));
-  document.addEventListener("keydown",event=>{if(event.key==="Escape"&&sidebar.classList.contains("is-open")){setSidebar(false);toggle.focus()}});
 
-  const profileToggle=document.getElementById("profileMenuToggle");
-  const profileDropdown=document.getElementById("profileDropdown");
-  const notificationsToggle=document.getElementById("notificationsToggle");
-  const notificationsPanel=document.getElementById("notificationsPanel");
-  function closeMenus(){profileDropdown.hidden=true;notificationsPanel.hidden=true;profileToggle.setAttribute("aria-expanded","false");notificationsToggle.setAttribute("aria-expanded","false")}
-  profileToggle.addEventListener("click",event=>{event.stopPropagation();const open=profileDropdown.hidden;closeMenus();profileDropdown.hidden=!open;profileToggle.setAttribute("aria-expanded",String(open))});
-  notificationsToggle.addEventListener("click",event=>{event.stopPropagation();const open=notificationsPanel.hidden;closeMenus();notificationsPanel.hidden=!open;notificationsToggle.setAttribute("aria-expanded",String(open))});
-  document.addEventListener("click",event=>{if(!event.target.closest(".profile-menu,.notifications-menu"))closeMenus()});
-  function logout(){if(window.confirm("هل تريد تسجيل الخروج من حسابك؟"))window.location.href="login.html"}
-  document.getElementById("storeSidebarLogout")?.addEventListener("click",logout);
-  document.querySelector(".profile-dropdown__logout")?.addEventListener("click",logout);
-
-  function message(text){clearTimeout(toastTimer);toast.textContent=text;toast.classList.add("show");toastTimer=setTimeout(()=>toast.classList.remove("show"),1800)}
-  function syncCount(){
-    const total=items.querySelectorAll(".basket-item").length;
-    count.textContent=total;
-    cartBadge.textContent=total;
-    cartBadge.hidden=total===0;
-    return total;
+  function quantity(row) {
+    return Math.max(1, Math.min(99, Number(row.querySelector("[data-quantity-output]")?.textContent) || 1));
   }
 
-  function render() {
-    const items = readCart();
-    list.innerHTML = items.map(itemTemplate).join("");
-    if (count) count.textContent = items.length;
-    return items;
-  }
-
-  list.addEventListener("click", (event) => {
-    const article = event.target.closest(".basket-item");
-    if (!article) return;
-
-    const items = readCart();
-    const index = items.findIndex((item) => item.id === article.dataset.id);
-    if (index === -1) return;
-
-    if (event.target.closest(".remove-item")) {
-      items.splice(index, 1);
-      saveCart(items);
-      render();
-      message("تم حذف المنتج من السلة");
-      if(!remaining)setTimeout(()=>{window.location.href="emptyBasket.html"},350);
-      return;
+  function setHeaderCount(count) {
+    if (!headerCount) return;
+    headerCount.textContent = String(count);
+    headerCount.hidden = count <= 0;
+    if (cartButton) {
+      cartButton.setAttribute("aria-label", count ? "سلة التسوق، " + count + " منتجات" : "سلة التسوق، فارغة");
     }
+  }
 
-    const action = event.target.closest("[data-action]");
-    if (!action) return;
+  function syncRow(row, nextQuantity, totals) {
+    const safeQuantity = Math.max(1, Math.min(99, Number(nextQuantity) || 1));
+    const unitPrice = Number(totals?.unit_price ?? row.dataset.unitPrice) || 0;
+    const totalPrice = Number(totals?.total_price ?? unitPrice * safeQuantity) || 0;
 
-    items[index].quantity = action.dataset.action === "increase"
-      ? items[index].quantity + 1
-      : Math.max(1, items[index].quantity - 1);
-    saveCart(items);
-    render();
+    const output = row.querySelector("[data-quantity-output]");
+    const decrease = row.querySelector('[data-quantity-action="decrease"]');
+    const increase = row.querySelector('[data-quantity-action="increase"]');
+    const lineTotal = row.querySelector("[data-line-total]");
+    const unitSummary = row.querySelector("[data-unit-summary]");
+    const inputs = row.querySelectorAll("[data-quantity-input]");
+
+    if (output) output.textContent = String(safeQuantity);
+    if (decrease) decrease.disabled = safeQuantity <= 1;
+    if (increase) increase.disabled = safeQuantity >= 99;
+    if (lineTotal) lineTotal.textContent = money(totalPrice);
+    if (unitSummary) unitSummary.textContent = money(unitPrice) + " × " + safeQuantity;
+
+    inputs.forEach((input) => {
+      const form = input.closest("form");
+      const action = form?.querySelector("[data-quantity-action]")?.dataset.quantityAction;
+      input.value = String(action === "decrease" ? Math.max(1, safeQuantity - 1) : Math.min(99, safeQuantity + 1));
+    });
+  }
+
+  list.addEventListener("submit", function (event) {
+    const form = event.target.closest("[data-quantity-form]");
+    if (!form) return;
+
+    event.preventDefault();
+
+    const row = form.closest("[data-id]");
+    const button = event.submitter || form.querySelector("[data-quantity-action]");
+    if (!row || !button || button.disabled) return;
+
+    const current = quantity(row);
+    const next = button.dataset.quantityAction === "decrease" ? Math.max(1, current - 1) : Math.min(99, current + 1);
+    if (next === current) return;
+
+    syncRow(row, next);
+    button.disabled = true;
+
+    window.fetch(form.action, {
+      method: "PATCH",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "X-CSRF-TOKEN": csrf,
+      },
+      body: JSON.stringify({ quantity: next }),
+    })
+      .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+      .then((result) => {
+        if (!result.ok) throw new Error(result.data.message || "تعذر تحديث الكمية.");
+        syncRow(row, result.data.item.quantity, result.data.item);
+        if (pageCount && result.data.cart?.items_count !== undefined) pageCount.textContent = result.data.cart.items_count;
+        if (result.data.cart?.quantity_count !== undefined) setHeaderCount(result.data.cart.quantity_count);
+      })
+      .catch((error) => {
+        syncRow(row, current);
+        message(error.message || "تعذر تحديث الكمية.");
+      })
+      .finally(() => {
+        syncRow(row, quantity(row));
+      });
   });
-  document.querySelector(".notifications-clear")?.addEventListener("click",()=>{document.querySelector(".notifications-list").replaceChildren();document.querySelector(".notifications-empty").hidden=false;notificationsPanel.hidden=true;notificationsToggle.setAttribute("aria-expanded","false");message("تم مسح الإشعارات")});
 })();

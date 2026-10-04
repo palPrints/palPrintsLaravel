@@ -48,7 +48,7 @@ class CheckoutController extends Controller
     {
         $validated = $request->validate([
             'recipient_name' => ['required', 'string', 'max:120'],
-            'phone' => ['required', 'string', 'max:30'],
+            'phone' => ['required', 'string', 'regex:/^05[69][0-9]{7}$/'],
             'address_id' => [
                 'nullable',
                 'integer',
@@ -60,7 +60,7 @@ class CheckoutController extends Controller
             'building' => ['nullable', 'string', 'max:120'],
             'apartment' => ['nullable', 'string', 'max:120'],
             'payment_method' => ['required', 'string', 'in:palpay,jawwal,bank'],
-            'payment_receipt' => ['required_if:payment_method,palpay,bank', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'payment_receipt' => ['required_if:payment_method,palpay,jawwal,bank', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 

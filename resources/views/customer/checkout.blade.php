@@ -48,7 +48,7 @@
                         </label>
                         <label class="field">
                             <span>رقم الهاتف <b>*</b></span>
-                            <span class="input-wrap"><i class="bi bi-telephone"></i><input id="phone" name="phone" type="tel" value="{{ old('phone', $customer->phone) }}" autocomplete="tel" required></span>
+                            <span class="input-wrap"><i class="bi bi-telephone"></i><input id="phone" name="phone" type="tel" inputmode="numeric" maxlength="10" pattern="05[69][0-9]{7}" value="{{ old('phone', $customer->phone) }}" autocomplete="tel" required></span>
                             <small class="error"></small>
                         </label>
                     </div>
@@ -57,7 +57,6 @@
 
                 <div class="step-panel" data-panel="2">
                     <div class="card-heading"><i class="bi bi-geo-alt"></i><div><h2>عنوان التوصيل</h2><p>اختر عنواناً محفوظاً أو أدخل عنواناً جديداً.</p></div></div>
-
                     @if($addresses->isNotEmpty())
                         <h3 class="section-label">العناوين المحفوظة</h3>
                         <div class="address-list">
@@ -76,9 +75,10 @@
                         <button class="add-address" type="button" data-toggle-new-address><i class="bi bi-plus-lg"></i> استخدام عنوان جديد</button>
                     @else
                         <p class="info-line"><i class="bi bi-info-circle-fill"></i> لا يوجد عنوان محفوظ بعد. أدخل عنوان التوصيل لهذا الطلب.</p>
+                        <button class="add-address" type="button" data-toggle-new-address><i class="bi bi-plus-lg"></i> استخدام عنوان جديد</button>
                     @endif
 
-                    <div class="new-address" @if($addresses->isNotEmpty() && ! old('city')) hidden @endif>
+                    <div class="new-address" hidden>
                         <div class="form-grid">
                             <label class="field"><span>المدينة <b>*</b></span><span class="input-wrap"><i class="bi bi-buildings"></i><input name="city" type="text" value="{{ old('city') }}"></span><small class="error"></small></label>
                             <label class="field"><span>المنطقة</span><span class="input-wrap"><i class="bi bi-map"></i><input name="region" type="text" value="{{ old('region') }}"></span></label>
@@ -97,25 +97,13 @@
                         <label class="payment-card"><input type="radio" name="payment_method" value="jawwal"><span class="radio"></span><span class="payment-logo-frame payment-logo-frame--jawwal"><img class="payment-logo" src="{{ asset('front/assets/images/customer/payment-methods/jawwal-pay.png') }}" alt="Jawwal Pay"></span><span><strong>جوال Pay</strong><small>الدفع عبر محفظة جوال Pay</small></span></label>
                         <label class="payment-card"><input type="radio" name="payment_method" value="bank"><span class="radio"></span><span class="payment-logo-frame payment-logo-frame--bank"><img class="payment-logo" src="{{ asset('front/assets/images/customer/payment-methods/bank-of-palestine.png') }}" alt="Bank of Palestine"></span><span><strong>بنك فلسطين</strong><small>الدفع عبر تطبيق بنك فلسطين</small></span></label>
                     </div>
-                    <div class="payment-fields palpay-fields" data-payment-fields="palpay">
-                        <h3>بيانات الدفع عبر PalPay <i class="bi bi-phone"></i></h3>
-                        <div class="form-grid"><label class="field"><span>رقم الجوال <b>*</b></span><span class="input-wrap"><i class="bi bi-telephone"></i><input id="payPhone" type="tel" placeholder="59 123 4567"></span></label><label class="field"><span>المبلغ المراد دفعه</span><span class="input-wrap"><i class="bi bi-cash-coin"></i><input value="{{ number_format($totalAmount, 2) }} ₪" readonly></span></label></div>
-                        <p class="info-line"><i class="bi bi-info-circle-fill"></i> سيصلك إشعار على محفظة PalPay لتأكيد عملية الدفع.</p>
-                    </div>
-                    <div class="payment-fields jawwal-fields" data-payment-fields="jawwal" hidden>
-                        <h3>بيانات الدفع عبر جوال Pay <i class="bi bi-phone"></i></h3>
-                        <div class="form-grid"><label class="field"><span>رقم محفظة جوال Pay <b>*</b></span><span class="input-wrap"><i class="bi bi-telephone"></i><input id="jawwalPhone" type="tel" inputmode="tel" placeholder="59 123 4567"></span></label><label class="field"><span>المبلغ المراد دفعه</span><span class="input-wrap"><i class="bi bi-cash-coin"></i><input value="{{ number_format($totalAmount, 2) }} ₪" readonly></span></label></div>
-                        <p class="info-line"><i class="bi bi-info-circle-fill"></i> سيتم إرسال رمز التحقق إلى رقم جوالك المسجل في جوال Pay.</p>
-                    </div>
-                    <div class="payment-fields bank-fields" data-payment-fields="bank" hidden>
-                        <h3>بيانات الدفع عبر بنك فلسطين <i class="bi bi-bank"></i></h3>
-                        <div class="form-grid"><label class="field"><span>رقم الحساب أو العميل <b>*</b></span><span class="input-wrap"><i class="bi bi-person-vcard"></i><input id="bankAccount" type="text" inputmode="numeric" placeholder="أدخل رقم الحساب أو العميل"></span></label><label class="field"><span>رقم الجوال المسجل <b>*</b></span><span class="input-wrap"><i class="bi bi-telephone"></i><input id="bankPhone" type="tel" inputmode="tel" placeholder="59 123 4567"></span></label></div>
-                        <p class="info-line"><i class="bi bi-info-circle-fill"></i> سيتم إرسال طلب تأكيد الدفع إلى تطبيق بنك فلسطين.</p>
+                    <div class="payment-fields manual-payment-instructions">
+                        <p>لإتمام طلبك، يُرجى تحويل المبلغ المطلوب إلى الرقم الموضح أدناه.<br>بعد إتمام التحويل، يُرجى إرفاق صورة إشعار الدفع لتأكيد العملية.</p>
                     </div>
                     <label class="field payment-receipt-field" data-payment-receipt>
                         <span>&#1589;&#1608;&#1585;&#1577; &#1573;&#1588;&#1593;&#1575;&#1585; &#1575;&#1604;&#1583;&#1601;&#1593; <b>*</b></span>
                         <span class="input-wrap"><i class="bi bi-image"></i><input id="paymentReceipt" name="payment_receipt" type="file" accept="image/png,image/jpeg,image/webp"></span>
-                        <small>&#1576;&#1593;&#1583; &#1573;&#1578;&#1605;&#1575;&#1605; &#1575;&#1604;&#1578;&#1581;&#1608;&#1610;&#1604; &#1593;&#1576;&#1585; PalPay &#1571;&#1608; &#1576;&#1606;&#1603; &#1601;&#1604;&#1587;&#1591;&#1610;&#1606;&#1548; &#1575;&#1585;&#1601;&#1593;&#1610; &#1589;&#1608;&#1585;&#1577; &#1608;&#1575;&#1590;&#1581;&#1577; &#1605;&#1606; &#1573;&#1588;&#1593;&#1575;&#1585; &#1575;&#1604;&#1583;&#1601;&#1593; &#1581;&#1578;&#1609; &#1610;&#1578;&#1605; &#1578;&#1571;&#1603;&#1610;&#1583; &#1575;&#1604;&#1591;&#1604;&#1576;.</small>
+                        <small>&#1576;&#1593;&#1583; &#1573;&#1578;&#1605;&#1575;&#1605; &#1575;&#1604;&#1578;&#1581;&#1608;&#1610;&#1604; &#1593;&#1576;&#1585; PalPay &#1571;&#1608; &#1580;&#1608;&#1575;&#1604; Pay &#1571;&#1608; &#1576;&#1606;&#1603; &#1601;&#1604;&#1587;&#1591;&#1610;&#1606;&#1548; &#1575;&#1585;&#1601;&#1593;&#1610; &#1589;&#1608;&#1585;&#1577; &#1608;&#1575;&#1590;&#1581;&#1577; &#1605;&#1606; &#1573;&#1588;&#1593;&#1575;&#1585; &#1575;&#1604;&#1583;&#1601;&#1593; &#1581;&#1578;&#1609; &#1610;&#1578;&#1605; &#1578;&#1571;&#1603;&#1610;&#1583; &#1575;&#1604;&#1591;&#1604;&#1576;.</small>
                         <small class="error"></small>
                     </label>
                     <p class="secure-note"><i class="bi bi-lock"></i> جميع معاملات الدفع آمنة ومشفرة.</p>
