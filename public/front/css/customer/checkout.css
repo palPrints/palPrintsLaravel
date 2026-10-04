@@ -91,3 +91,13 @@ body.storefront-page.checkout-page::after{display:none}
   font-weight: 700;
   line-height: 1.9;
 }
+
+/* The field box is .input-wrap; the inner <input> must not draw a second box. */
+.checkout-page .new-address .input-wrap input,
+.checkout-page .new-address .input-wrap input:hover,
+.checkout-page .new-address .input-wrap input:focus {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
