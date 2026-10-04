@@ -33,7 +33,7 @@
           alt="مصمم يعمل بالقلم على جهاز لوحي"
         />
         <div class="home-hero__content">
-          <h1 id="home-hero-title">من الإبداع إلى منتج جاهز بين يديك</h1>
+          <h1 id="home-hero-title">أول منصة فلسطينية للطباعة حسب الطلب</h1>
           <p>مساحة متكاملة لاكتشاف المنتجات والتصاميم، عرض الإبداعات، وتقديم خدمات الطباعة ضمن تجربة واحدة.</p>
           <a class="home-hero__cta" href="{{ $toRole('customer', 'customer.store') }}">
             <span>استكشف PALPRINTS</span>
@@ -160,6 +160,52 @@
             <button type="button" class="products-carousel__arrow products-carousel__arrow--next" aria-label="التالي">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="paper-print" id="paper-printing" aria-labelledby="paper-print-title">
+        <div class="paper-print__inner">
+          <div class="paper-print__content">
+            <p class="paper-print__eyebrow">طباعة الورق</p>
+            <h2 id="paper-print-title">ارفع ملفاتك… واستلمها مطبوعة</h2>
+            <p class="paper-print__text">من المحاضرات والتقارير إلى العروض والمستندات، ارفع ملفك واختر الحجم واللون وعدد الأوجه والتغليف، ونطبعه لك بجودة واضحة من دون ما تروح على أي مكتبة.</p>
+
+            <ul class="paper-print__chips" aria-label="خيارات طباعة الورق">
+              <li>PDF · Word · PowerPoint</li>
+              <li>ملون أو أبيض وأسود</li>
+              <li>وجه واحد أو وجهين</li>
+              <li>A4 · A5</li>
+              <li>تغليف حسب الطلب</li>
+            </ul>
+
+            <ol class="paper-print__steps" aria-label="خطوات طباعة الورق">
+              <li><span>1</span>ارفع ملفك</li>
+              <li><span>2</span>اختر الخيارات</li>
+              <li><span>3</span>استلمه مطبوعًا</li>
+            </ol>
+
+            <a class="paper-print__button" href="{{ $toRole('customer', 'customer.paperPrinting') }}">
+              <span>اطبع ملفاتك الآن</span>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12H4m6-6-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </a>
+          </div>
+
+          <div class="paper-print__visual" aria-hidden="true">
+            <svg viewBox="0 0 320 300" fill="none">
+              <rect class="paper-print__sheet paper-print__sheet--back" x="76" y="26" width="170" height="226" rx="12" />
+              <rect class="paper-print__sheet paper-print__sheet--mid" x="58" y="38" width="170" height="226" rx="12" />
+              <g class="paper-print__sheet-front">
+                <rect x="40" y="50" width="170" height="226" rx="12" />
+                <rect class="paper-print__accent" x="60" y="72" width="70" height="12" rx="6" />
+                <path class="paper-print__line" d="M60 108h130M60 128h130M60 148h104M60 168h130M60 188h86" />
+                <rect class="paper-print__accent paper-print__accent--soft" x="60" y="208" width="130" height="46" rx="8" />
+              </g>
+              <g class="paper-print__badge">
+                <circle cx="240" cy="236" r="34" />
+                <path d="M226 236l10 10 20-22" />
+              </g>
+            </svg>
           </div>
         </div>
       </section>
