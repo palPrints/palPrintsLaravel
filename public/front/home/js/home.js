@@ -54,6 +54,10 @@
       items: ".about-us__eyebrow, .about-us__content > h2, .about-us__text, .about-card, .about-us__button",
     },
     {
+      element: document.querySelector(".paper-print"),
+      items: ".paper-print__content > *, .paper-print__visual",
+    },
+    {
       element: document.querySelector(".what-to-print"),
       items: ".what-to-print__header, .products-carousel",
     },

@@ -63,6 +63,15 @@ body.loading-page {
 .loading-product--bag { animation-delay: -1.6s; }
 .loading-product--mug { animation-delay: -3.2s; }
 
+.loading-brand {
+  margin: 0 0 12px;
+  color: var(--pp-navy-900);
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
 .loading-title {
   margin: 0;
   font-size: 1.75rem;
