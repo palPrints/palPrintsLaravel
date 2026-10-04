@@ -838,7 +838,13 @@
     const logout = document.querySelector(".profile-dropdown__logout");
     if (!logout) return;
     logout.addEventListener("click", () => {
-      if (window.confirm("هل تريد تسجيل الخروج من حسابك؟")) window.location.href = "login.html";
+      PalAlert.confirm({
+        title: "تسجيل الخروج",
+        text: "هل تريد تسجيل الخروج من حسابك؟",
+        confirmText: "نعم، سجّل الخروج",
+        icon: "question",
+        danger: false,
+      }).then((ok) => { if (ok) window.location.href = "login.html"; });
     });
   }
 

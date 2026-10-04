@@ -143,7 +143,7 @@
                             <td><a class="printshop-view-button" href="{{ route('print-provider.requests') }}"><i class="bi bi-eye" aria-hidden="true"></i> عرض</a></td>
                         </tr>
                     @empty
-                        <tr>
+                        <tr class="printshop-empty-search">
                             <td colspan="5">
                                 <i class="bi bi-inbox" aria-hidden="true"></i>
                                 <strong>لا توجد طلبات بعد</strong>

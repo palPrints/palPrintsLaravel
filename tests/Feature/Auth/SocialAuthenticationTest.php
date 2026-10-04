@@ -34,6 +34,24 @@ test('social registration redirect stores the selected role and terms intent', f
     ]);
 });
 
+test('register page offers google sign up and shows social errors', function () {
+    $this->get(route('register'))
+        ->assertOk()
+        ->assertSee('id="googleRegister"', false)
+        ->assertSee('source=register', false);
+
+    Socialite::fake('google', SocialiteUser::fake([
+        'id' => 'google-no-role',
+        'email' => 'norole@example.com',
+        'verified_email' => true,
+    ]));
+
+    $this->followingRedirects()
+        ->withSession(['social_auth' => ['source' => 'register', 'account_type' => null]])
+        ->get(route('social.callback', ['provider' => 'google']))
+        ->assertSee(trans('auth.social.role_session_expired', [], 'ar'));
+});
+
 test('google registration creates a linked draft designer account', function () {
     $this->seed(RoleAndPermissionSeeder::class);
 

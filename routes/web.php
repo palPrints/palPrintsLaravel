@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DesignController as AdminDesignController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Admin\PaymentNoticeController as AdminPaymentNoticeController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Designer\DashboardController as DesignerDashboardContro
 use App\Http\Controllers\Designer\DesignController;
 use App\Http\Controllers\Designer\EarningsController;
 use App\Http\Controllers\Designer\NotificationController as DesignerNotificationController;
+use App\Http\Controllers\PrintProvider\NotificationController as PrintProviderNotificationController;
 use App\Http\Controllers\Designer\ProfileController as DesignerProfileController;
 use App\Http\Controllers\Designer\SettingsController as DesignerSettingsController;
 use App\Http\Controllers\Designer\SupportController as DesignerSupportController;
@@ -107,6 +109,11 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/orders/{order}/payment-receipt', [AdminOrderController::class, 'paymentReceipt'])->name('orders.payment-receipt');
         Route::post('/orders/{order}/payment/approve', [AdminOrderController::class, 'approvePayment'])->name('orders.payment.approve');
 
+        Route::get('/payment-notices', [AdminPaymentNoticeController::class, 'index'])->name('payment-notices');
+        Route::post('/payment-notices/{payment}/approve', [AdminPaymentNoticeController::class, 'approve'])->name('payment-notices.approve');
+        Route::post('/payment-notices/{payment}/reject', [AdminPaymentNoticeController::class, 'reject'])->name('payment-notices.reject');
+        Route::get('/payment-notices/{payment}/receipt', [AdminPaymentNoticeController::class, 'receipt'])->name('payment-notices.receipt');
+
         Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments');
         Route::post('/payments/withdrawals/{withdrawal}/review', [AdminPaymentController::class, 'review'])->name('payments.withdrawals.review');
 
@@ -140,7 +147,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/print-files/{printFile}/preview', [CustomerCartController::class, 'printFilePreview'])->name('print-files.preview');
         Route::patch('/cart/{cartItem}', [CustomerCartController::class, 'update'])->name('cart.update');
         Route::delete('/cart/{cartItem}', [CustomerCartController::class, 'destroy'])->name('cart.destroy');
-        Route::view('/basket/empty', 'customer.basket-empty')->name('basket.empty');
+        Route::redirect('/basket/empty', '/customer/basket')->name('basket.empty');
         Route::get('/checkout', [CustomerCheckoutController::class, 'show'])->name('checkout');
         Route::post('/checkout', [CustomerCheckoutController::class, 'store'])->name('checkout.store');
         Route::get('/orders', [CustomerOrdersController::class, 'index'])->name('orders');
@@ -179,6 +186,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::patch('/settings/account', [PrintProviderSettingsController::class, 'updateAccount'])->name('settings.account');
         Route::get('/support', [PrintProviderSupportController::class, 'show'])->name('support');
         Route::post('/support', [PrintProviderSupportController::class, 'store'])->name('support.store');
+        Route::get('/notifications', [PrintProviderNotificationController::class, 'index'])->name('notifications');
+        Route::post('/notifications/read-all', [PrintProviderNotificationController::class, 'readAll'])->name('notifications.read-all');
+        Route::post('/notifications/{notification}/read', [PrintProviderNotificationController::class, 'read'])->name('notifications.read');
     });
     Route::middleware('role:designer')->prefix('designer')->name('designer.')->group(function () {
         Route::middleware('account.approved')->group(function () {

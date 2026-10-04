@@ -22,7 +22,7 @@ class SettingsController extends Controller
             'user' => $user,
             'profile' => $profile,
             'approvalStatus' => $user->approvalStatus(),
-            'profileComplete' => $profile?->profile_completed_at !== null,
+            'profileComplete' => $profile?->profile_completed_at !== null && $profile->isComplete(),
             'hasPortfolio' => filled($profile?->portfolio_url),
             'adminNote' => $profile?->admin_notes ?: $profile?->rejection_reason,
         ]);
@@ -33,20 +33,20 @@ class SettingsController extends Controller
         $request->merge([
             'name' => trim((string) $request->input('name')),
             'email' => Str::lower(trim((string) $request->input('email'))),
-            'phone' => trim((string) $request->input('phone')) ?: null,
+            'phone' => preg_replace('/[\s-]+/', '', (string) $request->input('phone')) ?: null,
         ]);
 
         $validated = $request->validateWithBag('updateAccount', [
             'name' => ['required', 'string', 'min:3', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique(User::class, 'email')->ignore($request->user())],
-            'phone' => ['nullable', 'string', 'max:30'],
+            'phone' => ['nullable', 'string', 'regex:/^05[69]\d{7}$/'],
         ], [
             'name.required' => 'أدخل الاسم الكامل.',
             'name.min' => 'يجب أن يتكوّن الاسم من 3 أحرف على الأقل.',
             'email.required' => 'أدخل البريد الإلكتروني.',
             'email.email' => 'أدخل بريدًا إلكترونيًا صحيحًا.',
             'email.unique' => 'هذا البريد الإلكتروني مستخدم بالفعل.',
-            'phone.max' => 'يجب ألا يتجاوز رقم الهاتف 30 حرفًا.',
+            'phone.regex' => 'يجب أن يبدأ رقم الهاتف بـ 059 أو 056 ويتكوّن من 10 أرقام.',
         ]);
 
         $user = $request->user();

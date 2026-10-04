@@ -67,6 +67,7 @@
     </div>
 
     <script src="{{ $designerAsset('js/profile-core.js') }}"></script>
+    @include('partials.pp-alert')
     @stack('scripts')
     <script src="{{ $designerAsset('js/designer-shell.js') }}"></script>
     <script src="{{ asset('front/shared/interactions.js').'?v='.filemtime(public_path('front/shared/interactions.js')) }}"></script>

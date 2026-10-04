@@ -419,14 +419,14 @@
               const doc = selection && JSON.parse(localStorage.getItem(DESIGN_PREFIX + selection.designId) || "null");
               const productId = doc && doc.activeProductId;
               const draft = doc && doc.drafts && doc.drafts[productId];
-              if (!draft) { window.alert("تعذر حفظ التصميم. حاول مرة أخرى."); return; }
+              if (!draft) { PalAlert.alert("تعذر حفظ التصميم. حاول مرة أخرى.", { icon: "error" }); return; }
               sessionStorage.setItem("palprintsStudioWorkflowContext", JSON.stringify({
                 schemaVersion: 1, workflowMode: @json($workflowMode ?? 'customer'), source: "design-studio", designId: selection.designId,
                 productId: productId, activeAreaId: draft.activeAreaId,
                 preview: { colorId: draft.colorId || null, sizeId: draft.sizeId || null }, updatedAt: new Date().toISOString()
               }));
               window.location.href = @json($previewUrl ?? route('customer.productPreview'));
-            } catch (error) { window.alert("تعذر فتح المعاينة. حاول مرة أخرى."); }
+            } catch (error) { PalAlert.alert("تعذر فتح المعاينة. حاول مرة أخرى.", { icon: "error" }); }
           }, 400);
         });
       }

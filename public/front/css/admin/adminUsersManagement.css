@@ -74,6 +74,8 @@
 .designer-portfolio strong { font-size: 12px; }
 .designer-contact { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 14px 0 0; }
 .designer-contact div { padding: 12px 14px; background: #fff; border: 1px solid #dce5ef; border-radius: 9px; }
+.designer-contact div:has(> .designer-bio-text) { grid-column: 1 / -1; }
+.designer-contact .designer-bio-text { white-space: pre-line; line-height: 1.7; }
 .designer-contact dt { color: var(--pp-navy-400); font-size: 10px; }
 .designer-contact dd { margin: 5px 0 0; overflow-wrap: anywhere; color: var(--pp-navy-800); font-size: 11px; font-weight: 800; }
 .designer-disable { position: absolute; bottom: 13px; left: 26px; min-height: 37px; padding: 7px 15px; color: #d92d20; background: #fff4f3; border: 1px solid #f5c8c4; border-radius: 7px; font: 800 11px/1.4 "Cairo", sans-serif; cursor: pointer; }

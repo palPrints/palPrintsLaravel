@@ -54,6 +54,17 @@
       return name.trim().charAt(0);
     }
 
+    /* Everything users typed is shown through innerHTML below, so it must be escaped first. */
+    function esc(value) {
+      return String(value == null ? "" : value).replace(/[&<>"']/g, function (char) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+      });
+    }
+
+    function safeLink(url) {
+      return /^https?:\/\//i.test(String(url || "")) ? url : "";
+    }
+
     function renderFilters() {
       const users = userTypes[activeUserType].users;
       const filters = [
@@ -87,12 +98,12 @@
         const isDesignerExpanded = designerIndex >= 0 && designerIndex === expandedDesignerIndex;
         const isPrintShopExpanded = printShopIndex >= 0 && printShopIndex === expandedPrintShopIndex;
         const isExpanded = isDesignerExpanded || isPrintShopExpanded;
-        const customerAttributes = customerIndex >= 0 ? ' is-clickable" data-customer-index="' + customerIndex + '" role="button" tabindex="0" aria-label="عرض تفاصيل ' + user.name : '';
+        const customerAttributes = customerIndex >= 0 ? ' is-clickable" data-customer-index="' + customerIndex + '" role="button" tabindex="0" aria-label="عرض تفاصيل ' + esc(user.name) : '';
         const arrowAttributes = designerIndex >= 0 ? ' data-designer-index="' + designerIndex + '"' : printShopIndex >= 0 ? ' data-print-shop-index="' + printShopIndex + '"' : '';
-        const arrow = arrowAttributes ? '<button class="user-arrow-button" type="button"' + arrowAttributes + ' aria-expanded="' + String(isExpanded) + '" aria-label="' + (isExpanded ? 'إخفاء تفاصيل ' : 'عرض تفاصيل ') + user.name + '"><i class="bi bi-chevron-' + (isExpanded ? 'up' : 'left') + '" aria-hidden="true"></i></button>' : '<i class="bi bi-chevron-left user-arrow" aria-hidden="true"></i>';
+        const arrow = arrowAttributes ? '<button class="user-arrow-button" type="button"' + arrowAttributes + ' aria-expanded="' + String(isExpanded) + '" aria-label="' + (isExpanded ? 'إخفاء تفاصيل ' : 'عرض تفاصيل ') + esc(user.name) + '"><i class="bi bi-chevron-' + (isExpanded ? 'up' : 'left') + '" aria-hidden="true"></i></button>' : '<i class="bi bi-chevron-left user-arrow" aria-hidden="true"></i>';
         const row = '<article class="user-row' + customerAttributes + '">' +
-          '<span class="user-avatar" aria-hidden="true">' + getInitials(user.name) + '</span>' +
-          '<div class="user-main"><strong>' + user.name + '</strong><small dir="ltr">' + user.email + '</small></div>' +
+          '<span class="user-avatar" aria-hidden="true">' + esc(getInitials(user.name)) + '</span>' +
+          '<div class="user-main"><strong>' + esc(user.name) + '</strong><small dir="ltr">' + esc(user.email) + '</small></div>' +
           '<div class="user-meta"><i class="bi ' + type.metricIcon + '" aria-hidden="true"></i><span>' + user.metric + ' ' + type.metricLabel + '</span><span class="user-status is-' + user.status + '">' + statusLabels[user.status] + '</span></div>' +
           arrow +
         '</article>';
@@ -106,23 +117,30 @@
     function renderDesignerExpansion(designer, index) {
       const infoVisible = activeDesignerTab === "info";
       const canReview = designer.status === "pending" && designer.reviewUrl;
-      return '<section class="designer-expansion" aria-label="تفاصيل ' + designer.name + '">' +
+      const portfolioUrl = safeLink(designer.portfolio);
+      const portfolioRow = portfolioUrl
+        ? '<a class="designer-portfolio" href="' + esc(portfolioUrl) + '" target="_blank" rel="noopener noreferrer"><span><i class="bi bi-bezier2" aria-hidden="true"></i>رابط الأعمال</span><strong dir="ltr">' + esc(designer.portfolio) + '</strong></a>'
+        : '<div class="designer-portfolio"><span><i class="bi bi-bezier2" aria-hidden="true"></i>رابط الأعمال</span><strong dir="ltr">' + esc(designer.portfolio || '—') + '</strong></div>';
+      const avatarUrl = safeLink(designer.avatar);
+      return '<section class="designer-expansion" aria-label="تفاصيل ' + esc(designer.name) + '">' +
         '<div class="designer-tabs" role="tablist"><button class="' + (infoVisible ? 'active' : '') + '" type="button" data-designer-tab="info" data-designer-tab-index="' + index + '">البيانات</button><button class="' + (!infoVisible ? 'active' : '') + '" type="button" data-designer-tab="designs" data-designer-tab-index="' + index + '">التصاميم</button></div>' +
         '<div class="designer-info-panel"' + (infoVisible ? '' : ' hidden') + '>' +
-          '<div class="designer-stats"><div><strong>' + designer.metric + '</strong><span>التصاميم</span></div><div><strong>' + designer.sales + '</strong><span>المبيعات</span></div><div><strong dir="ltr">' + designer.revenue + '</strong><span>الأرباح</span></div><div><strong>' + designer.city + '</strong><span>المدينة</span></div></div>' +
-          '<a class="designer-portfolio" href="https://' + designer.portfolio + '" target="_blank" rel="noopener"><span><i class="bi bi-bezier2" aria-hidden="true"></i>رابط الأعمال</span><strong dir="ltr">' + designer.portfolio + '</strong></a>' +
-          (designer.avatar ? '<a class="designer-portfolio" href="' + designer.avatar + '" target="_blank" rel="noopener"><span><i class="bi bi-person-badge" aria-hidden="true"></i>الصورة الشخصية</span><strong>عرض الصورة</strong></a>' : '') +
+          '<div class="designer-stats"><div><strong>' + designer.metric + '</strong><span>التصاميم</span></div><div><strong>' + designer.sales + '</strong><span>المبيعات</span></div><div><strong dir="ltr">' + designer.revenue + '</strong><span>الأرباح</span></div><div><strong>' + esc(designer.experience || '—') + '</strong><span>سنوات الخبرة</span></div></div>' +
+          portfolioRow +
+          (avatarUrl ? '<a class="designer-portfolio" href="' + esc(avatarUrl) + '" target="_blank" rel="noopener noreferrer"><span><i class="bi bi-person-badge" aria-hidden="true"></i>الصورة الشخصية</span><strong>عرض الصورة</strong></a>' : '') +
           '<dl class="designer-contact">' +
-            '<div><dt>الاسم المعروض</dt><dd>' + (designer.displayName || '—') + '</dd></div>' +
-            '<div><dt>البريد الإلكتروني</dt><dd dir="ltr">' + designer.email + '</dd></div>' +
-            '<div><dt>رقم الهاتف</dt><dd dir="ltr">' + designer.phone + '</dd></div>' +
-            '<div><dt>تاريخ الانضمام</dt><dd>' + designer.joined + '</dd></div>' +
-            '<div><dt>نبذة تعريفية</dt><dd>' + (designer.bio || '—') + '</dd></div>' +
-            '<div><dt>المهارات</dt><dd>' + (designer.skills || '—') + '</dd></div>' +
-            '<div><dt>تاريخ تقديم الطلب</dt><dd>' + (designer.submittedAt || '—') + '</dd></div>' +
-            '<div><dt>تاريخ الاعتماد</dt><dd>' + (designer.status === 'active' ? designer.approvedAt : '—') + '</dd></div>' +
+            '<div><dt>الاسم المعروض</dt><dd>' + esc(designer.displayName || '—') + '</dd></div>' +
+            '<div><dt>المسمى المهني</dt><dd>' + esc(designer.jobTitle || '—') + '</dd></div>' +
+            '<div><dt>سنوات الخبرة</dt><dd>' + esc(designer.experience || '—') + '</dd></div>' +
+            '<div><dt>البريد الإلكتروني</dt><dd dir="ltr">' + esc(designer.email) + '</dd></div>' +
+            '<div><dt>رقم الهاتف</dt><dd dir="ltr">' + esc(designer.phone) + '</dd></div>' +
+            '<div><dt>تاريخ الانضمام</dt><dd>' + esc(designer.joined) + '</dd></div>' +
+            '<div><dt>نبذة تعريفية</dt><dd class="designer-bio-text">' + esc(designer.bio || '—') + '</dd></div>' +
+            '<div><dt>المهارات</dt><dd>' + esc(designer.skills || '—') + '</dd></div>' +
+            '<div><dt>تاريخ تقديم الطلب</dt><dd>' + esc(designer.submittedAt || '—') + '</dd></div>' +
+            '<div><dt>تاريخ الاعتماد</dt><dd>' + (designer.status === 'active' ? esc(designer.approvedAt) : '—') + '</dd></div>' +
           '</dl>' +
-          (designer.adminNotes ? '<div class="designer-portfolio"><span><i class="bi bi-chat-left-text" aria-hidden="true"></i>ملاحظات الإدارة</span><strong>' + designer.adminNotes + '</strong></div>' : '') +
+          (designer.adminNotes ? '<div class="designer-portfolio"><span><i class="bi bi-chat-left-text" aria-hidden="true"></i>ملاحظات الإدارة</span><strong>' + esc(designer.adminNotes) + '</strong></div>' : '') +
           (canReview
             ? '<div class="designer-approval-actions">' +
                 '<button class="designer-approve-button" type="button" data-approve-designer="' + index + '">قبول الطلب</button>' +
@@ -139,12 +157,12 @@
         return '<i class="bi bi-palette" aria-hidden="true"></i><strong>لا توجد تصاميم</strong><span>لم يقم هذا المصمم برفع أي تصميم بعد</span>';
       }
       return '<ul class="design-mini-list">' + designs.map(function (design) {
-        const thumb = design.image ? '<img src="' + design.image + '" alt="" loading="lazy">' : '<i class="bi bi-image" aria-hidden="true"></i>';
+        const thumb = design.image ? '<img src="' + esc(design.image) + '" alt="" loading="lazy">' : '<i class="bi bi-image" aria-hidden="true"></i>';
         return '<li class="design-mini-item">' +
           '<span class="design-mini-thumb">' + thumb + '</span>' +
           '<div class="design-mini-body">' +
-            '<strong>' + design.title + '</strong>' +
-            '<div class="design-mini-meta"><span class="user-status ' + design.statusClass + '">' + design.statusLabel + '</span></div>' +
+            '<strong>' + esc(design.title) + '</strong>' +
+            '<div class="design-mini-meta"><span class="user-status ' + esc(design.statusClass) + '">' + esc(design.statusLabel) + '</span></div>' +
           '</div>' +
         '</li>';
       }).join('') + '</ul>';
@@ -155,7 +173,7 @@
       return '<li class="print-shop-document-row">' +
         '<span><i class="bi ' + icon + '" aria-hidden="true"></i>' + label + '</span>' +
         (uploaded
-          ? '<a href="' + url + '" target="_blank" rel="noopener">عرض الملف</a>'
+          ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">عرض الملف</a>'
           : '<strong class="is-missing">غير مرفوعة</strong>') +
       '</li>';
     }
@@ -170,27 +188,28 @@
             ? renderDocumentRow('bi-person-vcard', 'صورة الهوية', shop.idDocument)
             : '<li class="print-shop-document-row"><span><i class="bi bi-person-vcard" aria-hidden="true"></i>صورة الهوية</span><strong class="is-missing">غير متاحة بعد</strong></li>') +
         '</ul>';
-      return '<section class="designer-expansion print-shop-expansion" aria-label="تفاصيل ' + shop.name + '">' +
+      return '<section class="designer-expansion print-shop-expansion" aria-label="تفاصيل ' + esc(shop.name) + '">' +
         '<div class="designer-tabs" role="tablist"><button class="' + (infoVisible ? 'active' : '') + '" type="button" data-print-shop-tab="info" data-print-shop-tab-index="' + index + '">البيانات</button><button class="' + (!infoVisible ? 'active' : '') + '" type="button" data-print-shop-tab="jobs" data-print-shop-tab-index="' + index + '">وظائف الطباعة</button></div>' +
         '<div class="designer-info-panel"' + (infoVisible ? '' : ' hidden') + '>' +
-          '<div class="designer-stats print-shop-stats"><div><strong>' + shop.metric + '</strong><span>الوظائف المنجزة</span></div><div><strong>' + shop.activeJobs + '</strong><span>الوظائف النشطة</span></div><div><strong>' + shop.delivery + '</strong><span>متوسط التسليم</span></div><div><strong>' + shop.city + '</strong><span>المدينة</span></div></div>' +
+          '<div class="designer-stats print-shop-stats"><div><strong>' + shop.metric + '</strong><span>الوظائف المنجزة</span></div><div><strong>' + shop.activeJobs + '</strong><span>الوظائف النشطة</span></div><div><strong>' + esc(shop.delivery) + '</strong><span>متوسط التسليم</span></div><div><strong>' + esc(shop.city) + '</strong><span>المدينة</span></div></div>' +
           '<div class="print-shop-revenue"><span><i class="bi bi-wallet2" aria-hidden="true"></i>إجمالي الإيرادات</span><strong dir="ltr">' + shop.revenue + '</strong></div>' +
           documents +
           '<dl class="designer-contact">' +
-            '<div><dt>اسم المسؤول</dt><dd>' + (shop.contactName || '—') + '</dd></div>' +
-            '<div><dt>البريد الإلكتروني</dt><dd dir="ltr">' + shop.email + '</dd></div>' +
-            '<div><dt>بريد المسؤول</dt><dd dir="ltr">' + (shop.contactEmail || '—') + '</dd></div>' +
-            '<div><dt>رقم الهاتف</dt><dd dir="ltr">' + shop.phone + '</dd></div>' +
-            '<div><dt>واتساب</dt><dd dir="ltr">' + (shop.whatsapp || '—') + '</dd></div>' +
-            '<div><dt>العنوان</dt><dd>' + (shop.address || '—') + '</dd></div>' +
+            '<div><dt>اسم المسؤول</dt><dd>' + esc(shop.contactName || '—') + '</dd></div>' +
+            '<div><dt>البريد الإلكتروني</dt><dd dir="ltr">' + esc(shop.email) + '</dd></div>' +
+            '<div><dt>بريد المسؤول</dt><dd dir="ltr">' + esc(shop.contactEmail || '—') + '</dd></div>' +
+            '<div><dt>رقم الهاتف</dt><dd dir="ltr">' + esc(shop.phone) + '</dd></div>' +
+            '<div><dt>واتساب</dt><dd dir="ltr">' + esc(shop.whatsapp || '—') + '</dd></div>' +
+            '<div><dt>العنوان</dt><dd>' + esc(shop.address || '—') + '</dd></div>' +
+            /* shop.products is already escaped by the controller. */
             '<div><dt>المنتجات التي تطبعها</dt><dd>' + (shop.products || '—') + '</dd></div>' +
-            '<div><dt>ساعات العمل</dt><dd>' + (shop.workingHours || '—') + '</dd></div>' +
-            '<div><dt>تاريخ الانضمام</dt><dd>' + shop.joined + '</dd></div>' +
-            '<div><dt>تاريخ تقديم الطلب</dt><dd>' + (shop.submittedAt || '—') + '</dd></div>' +
-            '<div><dt>تاريخ الاعتماد</dt><dd>' + (shop.status === 'active' ? shop.approvedAt : '—') + '</dd></div>' +
+            '<div><dt>ساعات العمل</dt><dd>' + esc(shop.workingHours || '—') + '</dd></div>' +
+            '<div><dt>تاريخ الانضمام</dt><dd>' + esc(shop.joined) + '</dd></div>' +
+            '<div><dt>تاريخ تقديم الطلب</dt><dd>' + esc(shop.submittedAt || '—') + '</dd></div>' +
+            '<div><dt>تاريخ الاعتماد</dt><dd>' + (shop.status === 'active' ? esc(shop.approvedAt) : '—') + '</dd></div>' +
             '<div><dt>الحالة التشغيلية</dt><dd>' + (shop.operating ? 'يستقبل طلبات حاليًا' : 'متوقف مؤقتًا') + '</dd></div>' +
           '</dl>' +
-          (shop.adminNotes ? '<div class="designer-portfolio"><span><i class="bi bi-chat-left-text" aria-hidden="true"></i>ملاحظات الإدارة</span><strong>' + shop.adminNotes + '</strong></div>' : '') +
+          (shop.adminNotes ? '<div class="designer-portfolio"><span><i class="bi bi-chat-left-text" aria-hidden="true"></i>ملاحظات الإدارة</span><strong>' + esc(shop.adminNotes) + '</strong></div>' : '') +
           (canReview
             ? '<div class="designer-approval-actions">' +
                 '<button class="designer-approve-button" type="button" data-approve-print-shop="' + index + '">قبول الطلب</button>' +
