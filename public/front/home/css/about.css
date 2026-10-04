@@ -1,0 +1,239 @@
+/* PalPrints about page — a single text card, loaded after home.css (reuses its tokens, header and footer). */
+
+.about-main {
+  padding: clamp(2rem, 6vw, 4rem) clamp(var(--sp-3), 4vw, var(--sp-8));
+  background: var(--pp-surface);
+}
+
+.about-card-page {
+  width: min(1200px, 100%);
+  margin-inline: auto;
+  padding: clamp(1.5rem, 5vw, 4rem);
+  color: var(--pp-text-body);
+  background: var(--pp-surface);
+  border: 1px solid rgba(var(--pp-blue-rgb), 0.35);
+  border-radius: 28px;
+  box-shadow:
+    0 0 0 4px rgba(var(--pp-blue-rgb), 0.12),
+    0 0 22px rgba(var(--pp-blue-rgb), 0.38),
+    0 0 48px rgba(var(--pp-blue-rgb), 0.24);
+}
+
+.about-block + .about-block {
+  margin-top: var(--sp-6);
+}
+
+.about-block h1,
+.about-block h2 {
+  margin: 0 0 var(--sp-3);
+  color: var(--pp-primary-hover);
+  font-size: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.about-block h3 {
+  margin: var(--sp-4) 0 var(--sp-1);
+  color: var(--pp-text-strong);
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.about-block p {
+  margin: 0 0 var(--sp-3);
+  font-size: 1.0625rem;
+  line-height: 1.95;
+}
+
+.about-block p:last-child {
+  margin-bottom: 0;
+}
+
+/* Bulleted list */
+.about-list {
+  margin: 0;
+  padding-inline-start: 1.5rem;
+  list-style: disc;
+}
+
+.about-list li {
+  font-size: 1.0625rem;
+  line-height: 1.95;
+}
+
+.about-list li::marker {
+  color: var(--pp-primary);
+}
+
+/* Numbered steps */
+.about-steps-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: about-step;
+}
+
+.about-steps-list li {
+  counter-increment: about-step;
+}
+
+.about-steps-list h3 {
+  margin-top: var(--sp-3);
+}
+
+.about-steps-list h3::before {
+  content: counter(about-step) ". ";
+  color: var(--pp-primary-hover);
+}
+
+.about-steps-list p {
+  margin: 0;
+}
+
+/* Closing */
+.about-block--closing {
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--pp-border);
+}
+
+.about-block--closing h3 {
+  margin-top: 0;
+  font-size: 1.25rem;
+}
+
+.about-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin: var(--sp-4) 0;
+}
+
+.about-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0.7rem 1.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--pp-radius);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.about-button:hover {
+  transform: translateY(-2px);
+}
+
+.about-button:focus-visible,
+.about-help a:focus-visible {
+  outline: 2px solid var(--pp-focus-ring);
+  outline-offset: 2px;
+}
+
+.about-button--primary {
+  color: #fff;
+  background: var(--pp-blue-600);
+  box-shadow: var(--pp-shadow-primary);
+}
+
+.about-button--primary:hover {
+  background: var(--pp-blue-700);
+}
+
+.about-button--outline {
+  color: var(--pp-primary-hover);
+  background: transparent;
+  border-color: rgba(var(--pp-blue-rgb), 0.45);
+}
+
+.about-button--outline:hover {
+  background: rgba(var(--pp-blue-rgb), 0.08);
+}
+
+.about-help a {
+  color: var(--pp-primary-hover);
+  font-weight: 800;
+}
+
+@media (max-width: 600px) {
+  .about-main {
+    padding-inline: var(--sp-3);
+  }
+
+  .about-card-page {
+    border-radius: var(--pp-radius-lg);
+  }
+
+  .about-block p,
+  .about-list li {
+    font-size: 1rem;
+  }
+
+  .about-actions .about-button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-button {
+    transition: none;
+  }
+
+  .about-button:hover {
+    transform: none;
+  }
+}
+
+/* Inline links and FAQ */
+.about-link {
+  color: var(--pp-primary-hover);
+  font-weight: 800;
+}
+
+.about-faq details {
+  border-bottom: 1px solid var(--pp-border);
+}
+
+.about-faq summary {
+  position: relative;
+  padding: var(--sp-4) 0;
+  padding-inline-end: 2rem;
+  color: var(--pp-text-strong);
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.6;
+  list-style: none;
+  cursor: pointer;
+}
+
+.about-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.about-faq summary::after {
+  content: "+";
+  position: absolute;
+  inset-inline-end: 0;
+  top: 50%;
+  translate: 0 -50%;
+  color: var(--pp-primary);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.about-faq details[open] summary::after {
+  content: "−";
+}
+
+.about-faq summary:focus-visible {
+  outline: 2px solid var(--pp-focus-ring);
+  outline-offset: 2px;
+}
+
+.about-faq details p {
+  margin: 0 0 var(--sp-4);
+}

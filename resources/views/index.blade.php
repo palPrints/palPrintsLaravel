@@ -13,24 +13,7 @@
     <script src="{{ asset('front/shared/theme-dark.js') }}?v={{ filemtime(public_path('front/shared/theme-dark.js')) }}"></script>
   </head>
   <body class="home-page">
-    <header class="home-admin-header">
-      <a class="home-admin-header__logo" href="{{ route('home') }}" aria-label="الصفحة الرئيسية">
-        <img src="{{ asset('front/home/images/palprints-wordmark-transparent.png') }}" alt="PalPrints" />
-      </a>
-      <nav class="home-admin-header__nav" id="homeNavigation" aria-label="التنقل الرئيسي">
-        <a class="is-active" href="{{ route('home') }}">الرئيسية</a>
-        <a href="#what-to-print">المنتجات</a>
-        <a href="#how-it-works">كيف نعمل</a>
-        <a href="#about-palprints">عن المنصة</a>
-      </nav>
-      <nav class="home-admin-header__actions" aria-label="إجراءات الحساب">
-        <a class="home-admin-header__button home-admin-header__button--start" href="{{ $toRole('customer', 'customer.store') }}">ابدأ الآن</a>
-        <a class="home-admin-header__button home-admin-header__button--login" href="{{ route('login') }}">تسجيل الدخول</a>
-        <button class="home-admin-header__menu" type="button" aria-label="فتح قائمة التنقل" aria-controls="homeNavigation" aria-expanded="false">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
-        </button>
-      </nav>
-    </header>
+    @include('partials.home-header', ['active' => 'home'])
 
     <main>
       <section class="home-hero" aria-labelledby="home-hero-title">
@@ -270,7 +253,7 @@
                 <p>تستقبل طلبات جاهزة للتنفيذ وتحوّل الأفكار إلى منتجات مطبوعة بجودة واحترافية.</p>
               </li>
             </ul>
-            <a class="about-us__button" href="#how-it-works">
+            <a class="about-us__button" href="{{ route('about') }}">
               <span>تعرّف على PalPrints</span>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12H4m6-6-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </a>
@@ -279,73 +262,7 @@
       </section>
     </main>
 
-    <footer class="home-footer" aria-label="تذييل الموقع">
-      <div class="home-footer__inner">
-        <div class="home-footer__content">
-          <section class="home-footer__brand" aria-label="عن PALPRINTS">
-            <a class="home-footer__wordmark" href="{{ route('home') }}" aria-label="PALPRINTS - الصفحة الرئيسية">
-              <img src="{{ asset('front/home/images/palprints-wordmark-approved.png') }}" alt="PALPRINTS" />
-            </a>
-            <p>منصة فلسطينية للطباعة عند الطلب، تجمع المصممين والمطابع والعملاء بشراكات التوصيل في مكان واحد.</p>
-            <div class="home-footer__highlights" aria-label="مميزات PALPRINTS">
-              <span>طباعة حسب الطلب</span>
-              <span>دعم المصممين المحليين</span>
-              <span>توصيل إلى بابك</span>
-            </div>
-          </section>
-
-          <nav class="home-footer__nav" aria-label="روابط تذييل الموقع">
-            <section class="home-footer__column">
-              <h2>تسوّق</h2>
-              <ul>
-                <li><a href="{{ $toRole('customer', 'customer.store') }}">كل التصاميم</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.store') }}">تيشيرتات وهوديز</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.mugs') }}">أكواب وهدايا</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.store') }}">الطباعة علينا</a></li>
-              </ul>
-            </section>
-
-            <section class="home-footer__column">
-              <h2>انضم إلينا</h2>
-              <ul>
-                <li><a href="{{ route('register') }}">سجّل كمصمم</a></li>
-                <li><a href="{{ route('register') }}">سجّل مطبعتك</a></li>
-                <li><a href="{{ route('login') }}">شركاء التوصيل</a></li>
-              </ul>
-            </section>
-
-            <section class="home-footer__column">
-              <h2>المساعدة</h2>
-              <ul>
-                <li><a href="{{ $toRole('customer', 'customer.orders') }}">تتبّع طلبي</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.support') }}">سياسة الاسترجاع</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.support') }}">الأسئلة الشائعة</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.support') }}">تواصل معنا</a></li>
-              </ul>
-            </section>
-
-            <section class="home-footer__column">
-              <h2>معلومات</h2>
-              <ul>
-                <li><a href="{{ $toRole('customer', 'customer.support') }}">سياسة الخصوصية</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.support') }}">الشروط والأحكام</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.support') }}">الشحن والتوصيل</a></li>
-              </ul>
-            </section>
-          </nav>
-        </div>
-
-        <div class="home-footer__bottom">
-          <p>بالإبداع شراكة دائمة · © 2026 PALPRINTS</p>
-          <div class="home-footer__payments" aria-label="وسائل الدفع المتاحة" dir="ltr">
-            <span>VISA</span>
-            <span>Mastercard</span>
-            <span>PalPay</span>
-            <span>Jawwal Pay</span>
-          </div>
-        </div>
-      </div>
-    </footer>
+    @include('partials.home-footer')
 
     <script src="{{ asset('front/home/js/home.js') }}?v={{ filemtime(public_path('front/home/js/home.js')) }}"></script>
   @include('partials.page-loader')

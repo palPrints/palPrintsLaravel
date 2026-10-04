@@ -9,7 +9,8 @@
 </head>
 <body>
   @php
-    $role = old('account_type', 'customer');
+    $requestedRole = request('account_type');
+    $role = old('account_type', in_array($requestedRole, ['customer', 'designer', 'print_provider'], true) ? $requestedRole : 'customer');
     $err = fn (string $key) => $errors->first($key);
   @endphp
 
