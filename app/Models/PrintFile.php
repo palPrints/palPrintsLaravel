@@ -24,6 +24,8 @@ class PrintFile extends Model
         'order_item_id',
         'original_name',
         'stored_path',
+        'preview_path',
+        'preview_disk',
         'disk',
         'mime_type',
         'extension',

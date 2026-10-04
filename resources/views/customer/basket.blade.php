@@ -5,6 +5,7 @@
     it would have thrown immediately), so this page uses plain server-rendered
     forms for quantity/remove instead, same pattern as the orders page's
     cancel button. The "ترند فلسطين" trending strip below is still a static
+    
     marketing strip (not cart data), left as-is.
 --}}
 @extends('customer.layouts.app')
@@ -48,27 +49,15 @@
             <h2 class="sr-only" id="basketTitle">منتجات السلة</h2>
             <div class="basket-items" id="basketItems">
                 @foreach($items as $item)
-                    <article class="basket-item" data-id="{{ $item['id'] }}">
+                    <article class="basket-item" data-id="{{ $item['id'] }}" data-unit-price="{{ $item['unit_price'] }}">
                         <div class="product-info">
-                            <div class="product-media" @if(!empty($item['design_overlay'])) style="position:relative" @endif>
-                                @if(!empty($item['mockup']))
-                                    @include('customer.partials.cart-mockup', ['mockup' => $item['mockup'], 'alt' => $item['product_name']])
-                                @else
-                                <img src="{{ $item['product_image'] }}" alt="{{ $item['product_name'] }}">
-                                @if(!empty($item['design_overlay']))
-                                    <img class="design-overlay" src="{{ $item['design_overlay'] }}" alt="التصميم" style="position:absolute;inset:50% auto auto 50%;width:38%;height:auto;max-height:46%;transform:translate(-50%,-50%);object-fit:contain">
-                                @endif
-                                @endif
-                            </div>
+                            <div class="product-media"><img src="{{ $item['product_image'] }}" alt="{{ $item['product_name'] }}"></div>
                             <div>
                                 <h3>{{ $item['product_name'] }}</h3>
-                                @if(!empty($item['options']))
+                                @if(!empty($item['option_tags']) || !empty($item['options']['print_areas']) || !empty($item['options']['files']))
                                     <div class="tags">
-                                        @if(!empty($item['product_label']))<span>{{ $item['product_label'] }}</span>@endif
-                                        @foreach($item['options'] as $key => $value)
-                                            @if(! in_array($key, ['files', 'design_name', 'layout', 'branch_product_offering_id', 'print_provider_branch_id'], true) && is_scalar($value))
-                                                <span>{{ $value }}</span>
-                                            @endif
+                                        @foreach($item['option_tags'] ?? [] as $tag)
+                                            <span>{{ $tag }}</span>
                                         @endforeach
                                         @if(!empty($item['options']['print_areas']) && is_array($item['options']['print_areas']))
                                             <span><i class="bi bi-printer"></i> طباعة: {{ implode(' + ', $item['options']['print_areas']) }}</span>
@@ -81,28 +70,25 @@
                             </div>
                         </div>
                         <div class="item-price">
-                            <strong dir="ltr">{{ number_format($item['total_price'], 0) }} ₪</strong>
-                            <span dir="ltr">{{ number_format($item['unit_price'], 0) }} ₪ × {{ $item['quantity'] }}</span>
+                            <strong dir="ltr" data-line-total>{{ number_format($item['total_price'], 0) }} ₪</strong>
+                            <span dir="ltr" data-unit-summary>{{ number_format($item['unit_price'], 0) }} ₪ × {{ $item['quantity'] }}</span>
                         </div>
                         <div class="quantity">
-                            <form method="POST" action="{{ route('customer.cart.update', $item['id']) }}" style="display:contents">
+                            <form method="POST" action="{{ route('customer.cart.update', $item['id']) }}" style="display:contents" data-quantity-form>
                                 @csrf
                                 @method('PATCH')
-                                <input type="hidden" name="quantity" value="{{ max(1, $item['quantity'] - 1) }}">
-                                <button type="submit" aria-label="إنقاص الكمية" @if($item['quantity'] <= 1) disabled @endif>−</button>
+                                <input type="hidden" name="quantity" value="{{ max(1, $item['quantity'] - 1) }}" data-quantity-input>
+                                <button type="submit" data-quantity-action="decrease" aria-label="إنقاص الكمية" @if($item['quantity'] <= 1) disabled @endif>−</button>
                             </form>
-                            <output>{{ $item['quantity'] }}</output>
-                            <form method="POST" action="{{ route('customer.cart.update', $item['id']) }}" style="display:contents">
+                            <output data-quantity-output>{{ $item['quantity'] }}</output>
+                            <form method="POST" action="{{ route('customer.cart.update', $item['id']) }}" style="display:contents" data-quantity-form>
                                 @csrf
                                 @method('PATCH')
-                                <input type="hidden" name="quantity" value="{{ $item['quantity'] + 1 }}">
-                                <button type="submit" aria-label="زيادة الكمية">+</button>
+                                <input type="hidden" name="quantity" value="{{ $item['quantity'] + 1 }}" data-quantity-input>
+                                <button type="submit" data-quantity-action="increase" aria-label="زيادة الكمية">+</button>
                             </form>
                         </div>
-                        <form method="POST" action="{{ route('customer.cart.destroy', $item['id']) }}" style="display:contents"
-                              data-confirm-title="حذف المنتج من السلة"
-                              data-confirm-message="هل تريد حذف :name من السلة؟"
-                              data-confirm-name="{{ $item['product_name'] }}">
+                        <form method="POST" action="{{ route('customer.cart.destroy', $item['id']) }}" style="display:contents">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="remove-item" aria-label="حذف المنتج"><i class="bi bi-trash3"></i></button>
@@ -117,6 +103,8 @@
         </section>
     @endif
 
+    <div class="toast" id="basketToast" role="status" aria-live="polite"></div>
+
     <section class="trending" aria-labelledby="trendingTitle">
         <div class="section-heading"><div><h2 id="trendingTitle">ترند فلسطين</h2><p>منتجات مستوحاة من فلسطين، الأكثر رواجًا بين عملائنا</p></div></div>
         <div class="product-grid">
@@ -127,3 +115,7 @@
         </div>
     </section>
 @endsection
+
+@push('scripts')
+    <script src="{{ asset('front/js/customer/orderBasket.js') }}?v={{ filemtime(public_path('front/js/customer/orderBasket.js')) }}"></script>
+@endpush

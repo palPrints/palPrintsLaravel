@@ -116,6 +116,8 @@
         window.palPrintsCustomerAssets = window.palPrintsCustomerAssets || {};
         window.palPrintsCustomerAssets.stickersImagesBase = @json(asset('front/assets/images/customer/stickers'));
         window.palPrintsCustomerAssets.stickerIconFallback = @json(asset('front/assets/images/customer/icons8-sticker-48.png'));
+        window.palPrintsCustomerAssets.publishedDesigns = @json($publishedDesigns ?? []);
+        window.palPrintsCustomerAssets.productOptions = @json($productOptions ?? ['colors' => [], 'sizes' => []]);
     </script>
     <script src="{{ asset('front/js/customer/stickers.js') }}?v={{ filemtime(public_path('front/js/customer/stickers.js')) }}"></script>
 @endpush

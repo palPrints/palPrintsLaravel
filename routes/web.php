@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\SupportController as AdminSupportController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Customer\CartController as CustomerCartController;
 use App\Http\Controllers\Customer\CatalogController as CustomerCatalogController;
+use App\Http\Controllers\Customer\CheckoutController as CustomerCheckoutController;
+use App\Http\Controllers\Customer\FavoriteController as CustomerFavoriteController;
 use App\Http\Controllers\Customer\NotificationController as CustomerNotificationController;
 use App\Http\Controllers\Customer\OrdersController as CustomerOrdersController;
 use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
@@ -46,6 +48,13 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('index');
 })->name('home');
+
+Route::view('/about', 'about')->name('about');
+Route::view('/faq', 'pages.faq')->name('faq');
+Route::view('/contact', 'pages.contact')->name('contact');
+Route::view('/returns', 'pages.returns')->name('returns');
+Route::view('/shipping', 'pages.shipping')->name('shipping');
+Route::view('/delivery-partners', 'pages.delivery-partners')->name('delivery-partners');
 
 Route::view('/terms', 'legal.placeholder', [
     'title' => 'الشروط والأحكام',
@@ -95,6 +104,8 @@ Route::middleware(['auth', 'active'])->group(function () {
 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders');
         Route::patch('/orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
+        Route::get('/orders/{order}/payment-receipt', [AdminOrderController::class, 'paymentReceipt'])->name('orders.payment-receipt');
+        Route::post('/orders/{order}/payment/approve', [AdminOrderController::class, 'approvePayment'])->name('orders.payment.approve');
 
         Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments');
         Route::post('/payments/withdrawals/{withdrawal}/review', [AdminPaymentController::class, 'review'])->name('payments.withdrawals.review');
@@ -119,9 +130,10 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/hoodies', [CustomerCatalogController::class, 'hoodies'])->name('hoodies');
         Route::get('/mugs', [CustomerCatalogController::class, 'mugs'])->name('mugs');
         Route::get('/tshirts', [CustomerCatalogController::class, 'tshirts'])->name('tshirts');
-        Route::view('/stickers', 'customer.stickers')->name('stickers');
+        Route::get('/stickers', [CustomerCatalogController::class, 'stickers'])->name('stickers');
         Route::get('/paper-printing', [CustomerCatalogController::class, 'paperPrinting'])->name('paperPrinting');
         Route::get('/basket', [CustomerCartController::class, 'index'])->name('basket');
+        Route::get('/print-files/{printFile}/preview', [CustomerCartController::class, 'previewPrintFile'])->name('print-files.preview');
         Route::post('/cart/catalog', [CustomerCartController::class, 'storeCatalog'])->name('cart.store-catalog');
         Route::post('/cart/custom-design', [CustomerCartController::class, 'storeCustomDesign'])->name('cart.store-custom-design');
         Route::post('/cart/paper',[CustomerCartController::class, 'storePaper'])->name('cart.store-paper');
@@ -129,12 +141,14 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::patch('/cart/{cartItem}', [CustomerCartController::class, 'update'])->name('cart.update');
         Route::delete('/cart/{cartItem}', [CustomerCartController::class, 'destroy'])->name('cart.destroy');
         Route::view('/basket/empty', 'customer.basket-empty')->name('basket.empty');
-        Route::view('/checkout', 'customer.checkout')->name('checkout');
+        Route::get('/checkout', [CustomerCheckoutController::class, 'show'])->name('checkout');
+        Route::post('/checkout', [CustomerCheckoutController::class, 'store'])->name('checkout.store');
         Route::get('/orders', [CustomerOrdersController::class, 'index'])->name('orders');
         Route::post('/orders/{order}/cancel', [CustomerOrdersController::class, 'cancel'])->name('orders.cancel');
         Route::get('/profile', [CustomerProfileController::class, 'edit'])->name('profile');
         Route::patch('/profile', [CustomerProfileController::class, 'update'])->name('profile.update');
-        Route::view('/favorites', 'customer.favorites')->name('favorites');
+        Route::get('/favorites', [CustomerFavoriteController::class, 'index'])->name('favorites');
+        Route::post('/designs/{design}/favorite', [CustomerFavoriteController::class, 'toggle'])->name('designs.favorite');
         Route::get('/settings', [CustomerSettingsController::class, 'edit'])->name('settings');
         Route::get('/support', [CustomerSupportController::class, 'edit'])->name('support');
         Route::get('/notifications', [CustomerNotificationController::class, 'index'])->name('notifications');

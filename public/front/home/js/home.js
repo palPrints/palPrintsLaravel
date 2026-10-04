@@ -32,14 +32,30 @@
   const prevBtn = document.querySelector(".products-carousel__arrow--prev");
   const nextBtn = document.querySelector(".products-carousel__arrow--next");
 
-  const scrollByCards = (direction) => {
+  const cardStep = () => {
     const card = track.querySelector(".product-card");
-    const step = card ? card.getBoundingClientRect().width + 20 : 220;
-    track.scrollBy({ left: direction * step * 2, behavior: "smooth" });
+    if (!card) return 220;
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+    return card.getBoundingClientRect().width + gap;
+  };
+
+  // One product per click: the first card leaves and the next one enters.
+  const scrollByCards = (direction) => {
+    track.scrollBy({ left: direction * cardStep(), behavior: "smooth" });
+  };
+
+  const updateArrows = () => {
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    const left = Math.abs(track.scrollLeft);
+    if (prevBtn) prevBtn.disabled = left <= 1;
+    if (nextBtn) nextBtn.disabled = left >= maxScroll - 1;
   };
 
   prevBtn?.addEventListener("click", () => scrollByCards(-1));
   nextBtn?.addEventListener("click", () => scrollByCards(1));
+  track.addEventListener("scroll", updateArrows, { passive: true });
+  window.addEventListener("resize", updateArrows);
+  updateArrows();
 })();
 
 (() => {
@@ -52,6 +68,10 @@
     {
       element: document.querySelector(".about-us"),
       items: ".about-us__eyebrow, .about-us__content > h2, .about-us__text, .about-card, .about-us__button",
+    },
+    {
+      element: document.querySelector(".paper-print"),
+      items: ".paper-print__content > *, .paper-print__visual",
     },
     {
       element: document.querySelector(".what-to-print"),
