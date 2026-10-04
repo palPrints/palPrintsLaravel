@@ -7,13 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Auth\MustVerifyEmail as VerifiesEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasRoles, Notifiable;
+    // Email verification is on request only: the trait gives the methods; the MustVerifyEmail interface is left out on purpose,
+    // because it would also send the mail at every registration.
+    use HasFactory, HasRoles, Notifiable, VerifiesEmail;
 
     protected $fillable = [
         'name',
@@ -186,8 +189,18 @@ class User extends Authenticatable
 
     public function hasCompletedRoleProfile(): bool
     {
-        return ! $this->supportsOnboarding()
-            || $this->roleProfile()?->profile_completed_at !== null;
+        if (! $this->supportsOnboarding()) {
+            return true;
+        }
+
+        $profile = $this->roleProfile();
+
+        if ($profile?->profile_completed_at === null) {
+            return false;
+        }
+
+        // The stored flag alone is not trusted: the saved designer data must still be complete.
+        return ! $profile instanceof DesignerProfile || $profile->isComplete();
     }
 
     public function hasApprovedBusinessAccount(): bool

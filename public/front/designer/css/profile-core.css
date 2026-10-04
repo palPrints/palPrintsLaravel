@@ -2611,7 +2611,7 @@ html[dir="rtl"] .profile-switch input:checked + .profile-switch-track::after {
   z-index: 2000;
 
   inset-inline-end: 20px;
-  bottom: 20px;
+  top: 86px;
 
   max-width: min(360px, calc(100vw - 40px));
 
@@ -2633,7 +2633,7 @@ html[dir="rtl"] .profile-switch input:checked + .profile-switch-track::after {
   font-weight: 700;
 
   opacity: 0;
-  transform: translateY(14px);
+  transform: translateY(-14px);
   pointer-events: none;
 
   transition:

@@ -535,7 +535,7 @@ main {
 .toast {
   position: fixed;
   z-index: 50;
-  inset-block-end: var(--sp-5);
+  inset-block-start: 86px;
   left: var(--sp-5);
   display: flex;
   align-items: center;
@@ -701,3 +701,21 @@ main {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
 }
+
+/* A field the server or the page rejected: red frame (also while focused). */
+.pp-input.is-invalid, .pp-textarea.is-invalid,
+.pp-input.is-invalid:hover, .pp-input.is-invalid:focus,
+.pp-textarea.is-invalid:hover, .pp-textarea.is-invalid:focus {
+  border-color: var(--pp-danger);
+  background: #fff8f8;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, .12);
+}
+.pp-error[hidden] { display: none; }
+
+/* Email status: the badge and, when not verified, a small pill button right next to it. */
+.email-status { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-2); margin-block-start: var(--sp-2); }
+.email-status .badge-success, .email-status .badge-warning { margin: 0; }
+.email-status__form { margin: 0; }
+.email-status__button { display: inline-flex; align-items: center; gap: .35rem; min-height: 30px; padding: 0 14px; color: var(--pp-primary); background: #fff; border: 1px solid var(--pp-primary-border); border-radius: var(--pp-radius-pill); font: 700 .8125rem inherit; font-family: inherit; cursor: pointer; transition: background-color .18s ease, color .18s ease, transform .18s ease; }
+.email-status__button:hover { color: #fff; background: var(--pp-primary); border-color: var(--pp-primary); }
+.email-status__button:active { transform: scale(.97); }

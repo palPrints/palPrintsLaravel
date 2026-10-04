@@ -513,10 +513,18 @@
         translate("logoutConfirm") ||
         "هل تريد تسجيل الخروج من حسابك؟";
 
-      if (window.confirm(message)) {
-        window.location.href =
-          button.getAttribute("data-href") || "login.html";
-      }
+      PalAlert.confirm({
+        title: "تسجيل الخروج",
+        text: message,
+        confirmText: "نعم، سجّل الخروج",
+        icon: "question",
+        danger: false,
+      }).then(function (ok) {
+        if (ok) {
+          window.location.href =
+            button.getAttribute("data-href") || "login.html";
+        }
+      });
     });
   }
 

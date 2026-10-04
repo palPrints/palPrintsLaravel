@@ -14,6 +14,7 @@ class OrdersController extends Controller
     /** Database `orders.status` => [label, CSS class, icon] shown on the page. */
     private const STATES = [
         'pending' => ['قيد الانتظار', 'status-review', 'bi-hourglass-split'],
+        'awaiting_payment_review' => ['بانتظار مراجعة الدفع', 'status-review', 'bi-clock-history'],
         'confirmed' => ['قيد التنفيذ', 'status-progress', 'bi-gear'],
         'processing' => ['قيد التنفيذ', 'status-progress', 'bi-gear'],
         'in_production' => ['قيد التنفيذ', 'status-progress', 'bi-gear'],

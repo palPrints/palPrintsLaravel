@@ -1,0 +1,27 @@
+/* SweetAlert2 dressed in the PalPrints look (see pp-alert.js). */
+/* Above every header, sidebar and drawer of the site (the highest in use is 5001), so the dim layer covers the whole screen. */
+.swal2-container { z-index: 100000; direction: rtl; font-family: "Cairo", system-ui, sans-serif; }
+.swal2-container.swal2-backdrop-show { background: rgb(11 31 58 / 45%); backdrop-filter: blur(2px); }
+
+.pp-swal { width: min(420px, calc(100vw - 32px)); padding: 28px 24px 22px; border-radius: 18px; box-shadow: 0 24px 60px rgb(11 31 58 / 24%); font-family: inherit; }
+.pp-swal .swal2-icon { margin: 0 auto 14px; transform: scale(.82); }
+.pp-swal__title { margin: 0; padding: 0; color: #0b1f3a; font-size: 1.25rem; font-weight: 800; }
+.pp-swal__text { margin: 8px 0 0; color: #5b6b82; font-size: .98rem; line-height: 1.8; }
+.pp-swal__text strong { color: #0b1f3a; }
+.pp-swal__actions { gap: 10px; margin-top: 22px; width: 100%; }
+.pp-swal__input { margin: 16px 0 0; font-family: inherit; border-radius: 10px; box-shadow: none; }
+.pp-swal__input:focus { border-color: #1677ff; box-shadow: 0 0 0 3px rgb(22 119 255 / 16%); }
+
+.pp-swal__btn { flex: 1 1 0; min-width: 110px; min-height: 46px; padding: 0 18px; border: 1px solid transparent; border-radius: 12px; font: inherit; font-size: .98rem; font-weight: 700; cursor: pointer; transition: background-color .18s ease, transform .18s ease, box-shadow .18s ease; }
+.pp-swal__btn:active { transform: scale(.97); }
+.pp-swal__btn:focus-visible { outline: 3px solid rgb(22 119 255 / 35%); outline-offset: 2px; }
+.pp-swal__btn--primary { color: #fff; background: #1677ff; box-shadow: 0 8px 18px rgb(22 119 255 / 22%); }
+.pp-swal__btn--primary:hover { background: #0d67e7; }
+.pp-swal__btn--danger { color: #fff; background: #e5484d; box-shadow: 0 8px 18px rgb(229 72 77 / 22%); }
+.pp-swal__btn--danger:hover { background: #cf3338; }
+.pp-swal__btn--ghost { color: #0b1f3a; background: #eef3fb; }
+.pp-swal__btn--ghost:hover { background: #e1eaf7; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-swal__btn { transition: none; }
+}

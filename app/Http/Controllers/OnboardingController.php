@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\ApprovalRequest;
 use App\Models\AuditLog;
+use App\Models\DesignerProfile;
 use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -20,6 +22,12 @@ class OnboardingController extends Controller
         abort_unless($user->supportsOnboarding(), 403);
 
         $profile = $user->roleProfile();
+
+        if ($profile instanceof DesignerProfile && $missing = $profile->missingRequiredFields()) {
+            throw ValidationException::withMessages([
+                'profile' => 'أكمل البيانات التالية واحفظها قبل إرسال طلب الاعتماد: '.implode('، ', $missing).'.',
+            ]);
+        }
 
         if (! $profile || ! $user->hasCompletedRoleProfile()) {
             throw ValidationException::withMessages([
@@ -61,6 +69,22 @@ class OnboardingController extends Controller
                 'message' => 'استلمنا طلبك، وستتم مراجعته من الإدارة.',
                 'link' => route('account.status'),
             ]);
+
+            $roleLabel = match ($user->primaryRole()) {
+                'designer' => 'مصمم',
+                'print_provider' => 'مطبعة',
+                default => 'حساب',
+            };
+
+            User::role('admin')->where('is_active', true)->get()->each(
+                fn (User $admin) => Notification::create([
+                    'user_id' => $admin->id,
+                    'type' => 'approval.pending',
+                    'title' => 'طلب اعتماد جديد من '.$roleLabel.': '.$user->name,
+                    'message' => 'أرسل '.$user->name.' ('.$roleLabel.') طلب اعتماد بانتظار المراجعة. رقم الطلب: '.$approvalRequest->request_number,
+                    'link' => route('admin.users'),
+                ])
+            );
 
             AuditLog::create([
                 'user_id' => $user->id,

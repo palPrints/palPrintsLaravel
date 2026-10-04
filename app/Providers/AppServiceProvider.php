@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Design;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
@@ -25,6 +27,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        VerifyEmail::toMailUsing(fn (object $notifiable, string $url) => (new MailMessage)
+            ->subject('توثيق بريدك الإلكتروني في PalPrints')
+            ->greeting('مرحبًا '.$notifiable->name)
+            ->line('اضغطي على الزر التالي لتوثيق بريدك الإلكتروني وإكمال توثيق حسابك.')
+            ->action('توثيق البريد الإلكتروني', $url)
+            ->line('الرابط صالح لمدة 60 دقيقة. إذا لم تطلبي التوثيق فتجاهلي هذه الرسالة.'));
+
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
@@ -43,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
             $view->with([
                 'adminUnreadCount' => $user?->userNotifications()->where('is_read', false)->count() ?? 0,
                 'adminNotifications' => $user
-                    ? $user->userNotifications()->latest()->limit(3)->get()
+                    ? $user->userNotifications()->where('is_read', false)->latest()->limit(3)->get()
                     : collect(),
             ]);
         });
@@ -54,7 +63,18 @@ class AppServiceProvider extends ServiceProvider
             $view->with([
                 'designerUnreadCount' => $user?->userNotifications()->where('is_read', false)->count() ?? 0,
                 'designerLatestNotifications' => $user
-                    ? $user->userNotifications()->latest()->limit(3)->get()
+                    ? $user->userNotifications()->where('is_read', false)->latest()->limit(3)->get()
+                    : collect(),
+            ]);
+        });
+
+        View::composer('printProvider.partials.topbar', function ($view): void {
+            $user = Auth::user();
+
+            $view->with([
+                'providerUnreadCount' => $user?->userNotifications()->where('is_read', false)->count() ?? 0,
+                'providerLatestNotifications' => $user
+                    ? $user->userNotifications()->where('is_read', false)->latest()->limit(5)->get()
                     : collect(),
             ]);
         });
@@ -73,7 +93,7 @@ class AppServiceProvider extends ServiceProvider
             $view->with([
                 'customerUnreadCount' => $user?->userNotifications()->where('is_read', false)->count() ?? 0,
                 'customerLatestNotifications' => $user
-                    ? $user->userNotifications()->latest()->limit(5)->get()
+                    ? $user->userNotifications()->where('is_read', false)->latest()->limit(5)->get()
                     : collect(),
                 'customerCartItems' => $cartItems,
                 'customerCartCount' => $cartItems->sum('quantity'),

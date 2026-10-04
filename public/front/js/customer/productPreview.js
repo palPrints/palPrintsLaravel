@@ -161,7 +161,7 @@
     });
     return {
       studioContext: true,
-      product: { id: product.id, code: product.code || STUDIO_PRODUCT_CODES[product.categoryId] || null, name: product.studioTitle || product.name, sellingPrice: basePrice, currency: product.currency || "ILS", colors, sizes, printAreas, pricingConfigured, quantityMax: numeric(product.orderLimits?.maxQuantity ?? product.maxQuantity), printing: printingMetadata(product) },
+      product: { id: product.id, code: product.code || STUDIO_PRODUCT_CODES[product.categoryId] || null, name: window.palPrintsPreviewCatalog?.names?.[String(product.code || STUDIO_PRODUCT_CODES[product.categoryId] || "").toUpperCase()] || product.studioTitle || product.name, sellingPrice: basePrice, currency: product.currency || "ILS", colors, sizes, printAreas, pricingConfigured, quantityMax: numeric(product.orderLimits?.maxQuantity ?? product.maxQuantity), printing: printingMetadata(product) },
       design: { id: context.designId, name: selection?.designName || "تصميم مخصص", designerName: selection?.designerName || "PALPRINTS", preview: previewByArea[context.activeAreaId] || previewByArea[rawAreas[0]?.id], previewByArea },
       selection: { items: [item], defaultItem: { ...item, printAreaIds: item.printAreaIds.slice() }, activeItemIndex: 0 },
       customerWarnings: qualityWarnings,
@@ -200,6 +200,13 @@
   const currentPreview = () => payload.design.previewByArea?.[state.currentAreaId] || payload.design.preview || { images: [], texts: [], icons: [] };
   const quantityMaximum = () => { const value = numeric(payload.product.quantityMax); return value && value > 0 ? Math.floor(value) : null; };
   function imageFor(area, color = currentColor()) { return color?.areaMockups?.[area.id] || area.image || color?.image || ""; }
+  // A thumbnail of one print area. Like the big picture, a transparent cut-out (no own mockup for this color) is tinted with the color's real hex.
+  function areaThumb(area) {
+    const wrap = document.createElement("div"), image = document.createElement("img"), color = currentColor(), source = imageFor(area, color), hex = tintHex(color);
+    wrap.className = "area-thumb"; image.src = source; image.alt = ""; wrap.appendChild(image);
+    if (hex && !color.areaMockups?.[area.id]) hasTransparentBackground(source).then(ok => { if (!ok) return; const tint = document.createElement("i"); tint.className = "area-thumb__tint"; tint.style.backgroundColor = hex; tint.style.webkitMaskImage = tint.style.maskImage = "url('" + source + "')"; wrap.prepend(tint); wrap.classList.add("is-tinted"); });
+    return wrap;
+  }
   // The studio measures the print zone against the product picture itself, while the preview draws that picture "contain" inside a 1 : 1.1 box.
   // The zone is converted to that box using the shown picture's real shape, so the artwork keeps the size and place the designer set.
   const FRAME_HEIGHT = 1.1;
@@ -297,7 +304,7 @@
   }
   function renderViewTabs() {
     elements.viewTabs.replaceChildren();
-    payload.product.printAreas.forEach(area => { const button = document.createElement("button"), image = document.createElement("img"), label = document.createElement("span"); button.type = "button"; button.className = "view-tab" + (activePiece().printAreaIds.has(area.id) ? "" : " is-unselected"); button.dataset.areaId = area.id; button.setAttribute("role", "tab"); button.setAttribute("aria-selected", String(area.id === state.currentAreaId)); image.src = imageFor(area); image.alt = ""; label.textContent = area.name; button.append(image, label); elements.viewTabs.appendChild(button); });
+    payload.product.printAreas.forEach(area => { const button = document.createElement("button"), image = document.createElement("img"), label = document.createElement("span"); button.type = "button"; button.className = "view-tab" + (activePiece().printAreaIds.has(area.id) ? "" : " is-unselected"); button.dataset.areaId = area.id; button.setAttribute("role", "tab"); button.setAttribute("aria-selected", String(area.id === state.currentAreaId)); image.src = imageFor(area); image.alt = ""; label.textContent = area.name; button.append(areaThumb(area), label); elements.viewTabs.appendChild(button); });
   }
   function renderColors() {
     elements.colorOptions.replaceChildren();
@@ -315,7 +322,7 @@
   }
   function renderAreas() {
     elements.areaOptions.replaceChildren();
-    payload.product.printAreas.forEach(area => { const button = document.createElement("button"), image = document.createElement("img"), body = document.createElement("span"), name = document.createElement("strong"), fee = document.createElement("small"); button.type = "button"; button.className = "print-area-option" + (activePiece().printAreaIds.has(area.id) ? " is-selected" : ""); button.dataset.areaId = area.id; image.src = imageFor(area); image.alt = ""; body.className = "print-area-option__body"; name.textContent = area.name; fee.textContent = numeric(area.fee) === null ? "التكلفة غير مهيأة" : "+" + formatMoney(area.fee); body.append(name, fee); button.append(image, body); elements.areaOptions.appendChild(button); });
+    payload.product.printAreas.forEach(area => { const button = document.createElement("button"), image = document.createElement("img"), body = document.createElement("span"), name = document.createElement("strong"), fee = document.createElement("small"); button.type = "button"; button.className = "print-area-option" + (activePiece().printAreaIds.has(area.id) ? " is-selected" : ""); button.dataset.areaId = area.id; image.src = imageFor(area); image.alt = ""; body.className = "print-area-option__body"; name.textContent = area.name; fee.textContent = numeric(area.fee) === null ? "التكلفة غير مهيأة" : "+" + formatMoney(area.fee); body.append(name, fee); button.append(areaThumb(area), body); elements.areaOptions.appendChild(button); });
   }
   function renderPrinting() {
     const data = payload.product.printing || { customerSelectable: false, technologies: [] }; elements.printingSelect.replaceChildren();
@@ -329,7 +336,7 @@
   function renderWarnings() { const warnings = (payload.customerWarnings || []).filter(item => role === "designer" || item.customerVisible); elements.warnings.replaceChildren(); elements.warnings.hidden = !warnings.length; warnings.forEach(warning => { const li = document.createElement("li"); li.textContent = warning.message || warning.text; li.className = warning.blocking ? "is-blocking" : ""; elements.warnings.appendChild(li); }); }
   function validationMessage() { if (role !== "customer") return ""; if (!activePiece()?.colorId || !activePiece()?.sizeId || !activePiece()?.printAreaIds.size) return "أكمل خيارات المنتج قبل المتابعة."; if (!pricing().exact) return "تعذر حساب سعر نهائي لأن تكلفة الطباعة لم تتم تهيئتها بعد."; if ((payload.customerWarnings || []).some(item => item.customerVisible && item.blocking)) return "عالج تحذير التصميم قبل الإضافة إلى السلة."; return ""; }
   function renderValidation() { const message = validationMessage(); elements.validation.hidden = !message; elements.validation.textContent = message; elements.addToCart.disabled = Boolean(message); elements.mobileAdd.disabled = Boolean(message); }
-  function renderMeta() { elements.breadcrumbProductName.textContent = payload.product.name; elements.summaryTitle.textContent = payload.product.name; elements.designMeta.textContent = payload.design.name + " · تصميم: " + payload.design.designerName; elements.fullscreenTitle.textContent = "معاينة " + payload.design.name + " على " + payload.product.name; }
+  function renderMeta() { elements.breadcrumbProductName.textContent = payload.product.name; const links = window.palPrintsPreviewCatalog; if (links) elements.breadcrumbProductName.href = links.links?.[String(payload.product.code || "").toUpperCase()] || links.productsUrl; elements.summaryTitle.textContent = payload.product.name; elements.designMeta.textContent = payload.design.name + " · تصميم: " + payload.design.designerName; elements.fullscreenTitle.textContent = "معاينة " + payload.design.name + " على " + payload.product.name; }
   // Designer: the sizes that suit this design come from the audience chosen at the start (men/women, oversized, kids).
   const audience = () => AUDIENCES[payload.studioSave?.category] || null;
   function renderAllowedSizes() {

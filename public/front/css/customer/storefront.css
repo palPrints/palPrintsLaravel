@@ -1100,10 +1100,11 @@ html[data-bs-theme="dark"] body.storefront-page::before {
 
 .store-notification-toast {
   position: fixed;
-  inset-inline-end: 22px;
-  inset-block-end: 22px;
+  inset-inline-start: 50%;
+  inset-block-start: 92px; /* under the header */
   z-index: 4000;
-  max-width: min(360px, calc(100vw - 32px));
+  width: max-content;
+  max-width: min(420px, calc(100vw - 32px));
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1114,14 +1115,17 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   box-shadow: 0 14px 35px rgb(11 31 58 / 24%);
   font: 600 .86rem Cairo, sans-serif;
   opacity: 0;
-  transform: translateY(14px);
+  transform: translate(-50%, -14px);
   transition: opacity 220ms ease, transform 280ms cubic-bezier(.16, 1, .3, 1);
 }
 
 .store-notification-toast.is-visible {
   opacity: 1;
-  transform: none;
+  transform: translate(-50%, 0);
 }
+
+[dir="rtl"] .store-notification-toast { transform: translate(50%, -14px); }
+[dir="rtl"] .store-notification-toast.is-visible { transform: translate(50%, 0); }
 
 .store-notification-toast i {
   color: #fb7185;

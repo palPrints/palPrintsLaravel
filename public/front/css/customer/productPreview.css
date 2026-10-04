@@ -758,6 +758,7 @@ body.preview-booting .product-preview-main::after {
   cursor: pointer;
 }
 
+.size-option.is-selected,
 .size-option[aria-pressed="true"] {
   color: #fff;
   background: var(--preview-blue);
@@ -840,12 +841,14 @@ body.preview-booting .product-preview-main::after {
 .print-area-option strong { color: var(--preview-navy); font-size: 11px; }
 .print-area-option small { color: var(--preview-muted); font-size: 10px; direction: ltr; text-align: right; }
 
+.print-area-option.is-selected,
 .print-area-option[aria-pressed="true"] {
   color: var(--preview-blue-hover);
   background: var(--preview-blue-soft);
   border-color: var(--preview-blue);
 }
 
+.print-area-option.is-selected::after,
 .print-area-option[aria-pressed="true"]::after {
   content: "\F26A";
   position: absolute;
@@ -1432,3 +1435,19 @@ body[data-user-role="designer"] .preview-mobile-bar { display: none !important; 
 }
 
 .preview-product-image.is-tinted { mix-blend-mode: multiply; }
+
+/* Print-area thumbnails: the tint sits under the multiplied picture, same as the big preview. */
+.area-thumb { position: relative; display: inline-grid; place-items: center; isolation: isolate; line-height: 0; }
+.area-thumb img { position: relative; }
+.area-thumb.is-tinted img { mix-blend-mode: multiply; }
+.area-thumb__tint {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  pointer-events: none;
+}
