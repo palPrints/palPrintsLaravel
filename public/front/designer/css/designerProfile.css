@@ -410,12 +410,12 @@ html[data-bs-theme="dark"] .designer-profile-page { background: #0b1020; }
 
 @media (max-width: 680px) {
   .designer-profile-page .designer-printshop-topbar {
-    grid-template-columns: 88px 44px 1fr;
+    grid-template-columns: 88px 44px minmax(0, 1fr) auto;
+    gap: 8px;
     padding-inline-start: 12px;
   }
   .designer-profile-page .designer-printshop-brand,
   .designer-profile-page .designer-printshop-brand img { width: 88px; }
-  .designer-profile-page .designer-printshop-actions { display: none; }
   .designer-profile-page .designer-printshop-search { height: 38px; }
 }
 
@@ -943,22 +943,55 @@ html[data-bs-theme="dark"] .designer-skill-chip {
     padding: 18px 15px;
   }
 
-  .designer-page-heading {
-    align-items: flex-start;
-    flex-wrap: wrap;
+  /* icon, smaller title and the edit button share one row; the description runs full width below */
+  .designer-profile-page .designer-page-heading {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px 8px;
   }
 
-  .designer-heading-action {
-    width: 100%;
+  .designer-profile-page .designer-page-heading > div {
+    display: contents;
+  }
+
+  .designer-profile-page .designer-heading-icon {
+    grid-column: 1;
+    grid-row: 1;
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    font-size: 17px;
+  }
+
+  .designer-profile-page .designer-page-heading h1 {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+
+  .designer-profile-page .designer-page-heading p {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin: 0;
+  }
+
+  .designer-profile-page .designer-heading-action {
+    grid-column: 3;
+    grid-row: 1;
+    width: auto;
+    min-height: 38px;
     margin-inline-start: 0;
+    padding: 0 0.6rem;
+    gap: 5px;
+    font-size: 0.72rem;
   }
 
+  /* two fields side by side, like desktop; full-width items keep spanning both columns */
   .designer-details-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .designer-detail-full {
-    grid-column: auto;
+    column-gap: 14px;
   }
 
   .designer-portfolio-view {
@@ -967,9 +1000,10 @@ html[data-bs-theme="dark"] .designer-skill-chip {
   }
 
   .designer-fields {
-    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
   }
 
+  /* every field takes half a row, so they pair up instead of leaving one alone */
   .designer-full-field {
     grid-column: auto;
   }

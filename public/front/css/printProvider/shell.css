@@ -149,3 +149,34 @@ body.sidebar-collapsed .wallet-shell{margin-right:0}
   body.sidebar-collapsed .wallet-sidebar #printProviderLogoutForm{display:flex;justify-content:center;margin-top:auto}
   body.sidebar-collapsed .wallet-sidebar .logout{width:48px;margin:0 0 18px;padding:0;justify-content:center}
 }
+
+/* Earnings page on phones: compact heading, summary cards side by side. */
+@media(max-width:760px){
+  .wallet-overview .page-heading{gap:10px;margin-bottom:16px}
+  .wallet-overview .heading-icon{width:36px;height:36px;flex:0 0 36px;font-size:17px}
+  .wallet-overview .page-heading>div{flex:1 1 0;min-width:0}
+  .wallet-overview .page-heading h1{font-size:18px;line-height:1.35}
+  .wallet-overview .page-heading p{font-size:11px;line-height:1.6}
+  .wallet-overview .summary-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .wallet-overview .summary-card.pending{grid-column:auto}
+  .wallet-overview .summary-card{min-height:0;padding:10px 8px;flex-direction:column;align-items:flex-start;gap:8px;border-radius:12px}
+  .wallet-overview .summary-card:hover{transform:none}
+  .wallet-overview .summary-card .card-icon{width:28px;height:28px;border-radius:8px;font-size:14px}
+  .wallet-overview .summary-card>div{min-width:0;width:100%}
+  .wallet-overview .summary-card h2{margin:0 0 8px;font-size:10px;line-height:1.4}
+  .wallet-overview .summary-card strong{font-size:14px}
+  .wallet-overview .summary-card small{margin-top:6px;font-size:9px;line-height:1.4}
+}
+
+/* Earnings controls on tablets/phones: period pills and the withdraw button share one row. */
+@media(max-width:950px){
+  .wallet-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:8px;row-gap:9px}
+  .wallet-controls .period-filter,.wallet-controls .withdraw-action{display:contents}
+  .wallet-controls .period-filter h2{grid-column:1/-1;grid-row:1;margin:0}
+  .wallet-controls .period-options{grid-column:1;grid-row:2;display:flex;flex-wrap:nowrap;min-width:0;overflow-x:auto;padding-block:2px;scrollbar-width:none}
+  .wallet-controls .period-options::-webkit-scrollbar{display:none}
+  .wallet-controls .period-options button{flex:0 0 auto;white-space:nowrap}
+  .wallet-controls .withdraw-action button{grid-column:2;grid-row:2;width:auto;white-space:nowrap;padding:9px 14px;font-size:13px}
+  .wallet-controls .period-filter p{grid-column:1/-1;grid-row:3;margin:0}
+  .wallet-controls .withdraw-action small{grid-column:1/-1;grid-row:4;margin:0}
+}

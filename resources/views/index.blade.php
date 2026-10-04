@@ -8,26 +8,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PALPRINTS</title>
-    <link rel="stylesheet" href="{{ asset('front/home/css/home.css') }}?v={{ filemtime(public_path('front/home/css/home.css')) }}" />
+    <link rel="stylesheet" href="{{ asset('front/home/css/home.css') }}?v={{ hash_file('sha256', public_path('front/home/css/home.css')) }}" />
     <link rel="stylesheet" href="{{ asset('front/shared/theme-dark.css') }}?v={{ filemtime(public_path('front/shared/theme-dark.css')) }}" />
     <script src="{{ asset('front/shared/theme-dark.js') }}?v={{ filemtime(public_path('front/shared/theme-dark.js')) }}"></script>
   </head>
   <body class="home-page">
-    <header class="home-admin-header">
-      <a class="home-admin-header__logo" href="{{ route('home') }}" aria-label="الصفحة الرئيسية">
-        <img src="{{ asset('front/home/images/palprints-wordmark-transparent.png') }}" alt="PalPrints" />
-      </a>
-      <nav class="home-admin-header__nav" aria-label="التنقل الرئيسي">
-        <a class="is-active" href="{{ route('home') }}">الرئيسية</a>
-        <a href="#what-to-print">المنتجات</a>
-        <a href="#how-it-works">كيف نعمل</a>
-        <a href="#about-palprints">عن المنصة</a>
-      </nav>
-      <nav class="home-admin-header__actions" aria-label="إجراءات الحساب">
-        <a class="home-admin-header__button home-admin-header__button--start" href="{{ $toRole('customer', 'customer.store') }}">ابدأ الآن</a>
-        <a class="home-admin-header__button home-admin-header__button--login" href="{{ route('login') }}">تسجيل الدخول</a>
-      </nav>
-    </header>
+    @include('partials.home-header', ['active' => 'home'])
 
     <main>
       <section class="home-hero" aria-labelledby="home-hero-title">
@@ -47,7 +33,7 @@
           alt="مصمم يعمل بالقلم على جهاز لوحي"
         />
         <div class="home-hero__content">
-          <h1 id="home-hero-title">من الإبداع إلى منتج جاهز بين يديك</h1>
+          <h1 id="home-hero-title">أول منصة فلسطينية للطباعة حسب الطلب</h1>
           <p>مساحة متكاملة لاكتشاف المنتجات والتصاميم، عرض الإبداعات، وتقديم خدمات الطباعة ضمن تجربة واحدة.</p>
           <a class="home-hero__cta" href="{{ $toRole('customer', 'customer.store') }}">
             <span>استكشف PALPRINTS</span>
@@ -178,6 +164,52 @@
         </div>
       </section>
 
+      <section class="paper-print" id="paper-printing" aria-labelledby="paper-print-title">
+        <div class="paper-print__inner">
+          <div class="paper-print__content">
+            <p class="paper-print__eyebrow">طباعة الورق</p>
+            <h2 id="paper-print-title">ارفع ملفاتك… واستلمها مطبوعة</h2>
+            <p class="paper-print__text">من المحاضرات والتقارير إلى العروض والمستندات، ارفع ملفك واختر الحجم واللون وعدد الأوجه والتغليف، ونطبعه لك بجودة واضحة من دون ما تروح على أي مكتبة.</p>
+
+            <ul class="paper-print__chips" aria-label="خيارات طباعة الورق">
+              <li>PDF · Word · PowerPoint</li>
+              <li>ملون أو أبيض وأسود</li>
+              <li>وجه واحد أو وجهين</li>
+              <li>A4 · A5</li>
+              <li>تغليف حسب الطلب</li>
+            </ul>
+
+            <ol class="paper-print__steps" aria-label="خطوات طباعة الورق">
+              <li><span>1</span>ارفع ملفك</li>
+              <li><span>2</span>اختر الخيارات</li>
+              <li><span>3</span>استلمه مطبوعًا</li>
+            </ol>
+
+            <a class="paper-print__button" href="{{ $toRole('customer', 'customer.paperPrinting') }}">
+              <span>اطبع ملفاتك الآن</span>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12H4m6-6-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </a>
+          </div>
+
+          <div class="paper-print__visual" aria-hidden="true">
+            <svg viewBox="0 0 320 300" fill="none">
+              <rect class="paper-print__sheet paper-print__sheet--back" x="76" y="26" width="170" height="226" rx="12" />
+              <rect class="paper-print__sheet paper-print__sheet--mid" x="58" y="38" width="170" height="226" rx="12" />
+              <g class="paper-print__sheet-front">
+                <rect x="40" y="50" width="170" height="226" rx="12" />
+                <rect class="paper-print__accent" x="60" y="72" width="70" height="12" rx="6" />
+                <path class="paper-print__line" d="M60 108h130M60 128h130M60 148h104M60 168h130M60 188h86" />
+                <rect class="paper-print__accent paper-print__accent--soft" x="60" y="208" width="130" height="46" rx="8" />
+              </g>
+              <g class="paper-print__badge">
+                <circle cx="240" cy="236" r="34" />
+                <path d="M226 236l10 10 20-22" />
+              </g>
+            </svg>
+          </div>
+        </div>
+      </section>
+
       <section class="partner-cta" id="how-it-works" aria-label="كيف تعمل PALPRINTS">
         <div class="partner-cta__inner">
           <h2 class="partner-cta__video-title">شاهد كيف تعمل PALPRINTS</h2>
@@ -211,7 +243,15 @@
             </div>
 
             <div class="partner-card__photo" aria-hidden="true">
-              <img src="{{ asset('front/home/images/designer-partner-cutout.png') }}" alt="" loading="lazy" />
+              <img
+                src="{{ asset('front/home/images/designer-partner-hijab.png') }}"
+                srcset="{{ asset('front/home/images/designer-partner-hijab-640.png') }} 640w, {{ asset('front/home/images/designer-partner-hijab.png') }} 1024w"
+                sizes="(max-width: 760px) 50vw, 410px"
+                width="1024"
+                height="1535"
+                alt=""
+                loading="lazy"
+              />
             </div>
           </article>
 
@@ -259,7 +299,7 @@
                 <p>تستقبل طلبات جاهزة للتنفيذ وتحوّل الأفكار إلى منتجات مطبوعة بجودة واحترافية.</p>
               </li>
             </ul>
-            <a class="about-us__button" href="#how-it-works">
+            <a class="about-us__button" href="{{ route('about') }}">
               <span>تعرّف على PalPrints</span>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12H4m6-6-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </a>
@@ -268,73 +308,7 @@
       </section>
     </main>
 
-    <footer class="home-footer" aria-label="تذييل الموقع">
-      <div class="home-footer__inner">
-        <div class="home-footer__content">
-          <section class="home-footer__brand" aria-label="عن PALPRINTS">
-            <a class="home-footer__wordmark" href="{{ route('home') }}" aria-label="PALPRINTS - الصفحة الرئيسية">
-              <img src="{{ asset('front/home/images/palprints-wordmark-approved.png') }}" alt="PALPRINTS" />
-            </a>
-            <p>منصة فلسطينية للطباعة عند الطلب، تجمع المصممين والمطابع والعملاء بشراكات التوصيل في مكان واحد.</p>
-            <div class="home-footer__highlights" aria-label="مميزات PALPRINTS">
-              <span>طباعة حسب الطلب</span>
-              <span>دعم المصممين المحليين</span>
-              <span>توصيل إلى بابك</span>
-            </div>
-          </section>
-
-          <nav class="home-footer__nav" aria-label="روابط تذييل الموقع">
-            <section class="home-footer__column">
-              <h2>تسوّق</h2>
-              <ul>
-                <li><a href="{{ $toRole('customer', 'customer.store') }}">كل التصاميم</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.store') }}">تيشيرتات وهوديز</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.mugs') }}">أكواب وهدايا</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.store') }}">الطباعة علينا</a></li>
-              </ul>
-            </section>
-
-            <section class="home-footer__column">
-              <h2>انضم إلينا</h2>
-              <ul>
-                <li><a href="{{ route('register') }}">سجّل كمصمم</a></li>
-                <li><a href="{{ route('register') }}">سجّل مطبعتك</a></li>
-                <li><a href="{{ route('login') }}">شركاء التوصيل</a></li>
-              </ul>
-            </section>
-
-            <section class="home-footer__column">
-              <h2>المساعدة</h2>
-              <ul>
-                <li><a href="{{ $toRole('customer', 'customer.orders') }}">تتبّع طلبي</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.support') }}">سياسة الاسترجاع</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.support') }}">الأسئلة الشائعة</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.support') }}">تواصل معنا</a></li>
-              </ul>
-            </section>
-
-            <section class="home-footer__column">
-              <h2>معلومات</h2>
-              <ul>
-                <li><a href="{{ $toRole('customer', 'customer.support') }}">سياسة الخصوصية</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.support') }}">الشروط والأحكام</a></li>
-                <li><a href="{{ $toRole('customer', 'customer.support') }}">الشحن والتوصيل</a></li>
-              </ul>
-            </section>
-          </nav>
-        </div>
-
-        <div class="home-footer__bottom">
-          <p>بالإبداع شراكة دائمة · © 2026 PALPRINTS</p>
-          <div class="home-footer__payments" aria-label="وسائل الدفع المتاحة" dir="ltr">
-            <span>VISA</span>
-            <span>Mastercard</span>
-            <span>PalPay</span>
-            <span>Jawwal Pay</span>
-          </div>
-        </div>
-      </div>
-    </footer>
+    @include('partials.home-footer')
 
     <script src="{{ asset('front/home/js/home.js') }}?v={{ filemtime(public_path('front/home/js/home.js')) }}"></script>
   @include('partials.page-loader')

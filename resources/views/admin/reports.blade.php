@@ -9,6 +9,7 @@
 @section('content')
 <main class="admin-main admin-reports-main" id="adminReportsMain">
     <section class="reports-overview" aria-labelledby="reportsTitle">
+        @include('admin.partials.breadcrumb', ['label' => 'التقارير والإحصائيات'])
         <div class="reports-heading-row">
             <h1 id="reportsTitle">التقارير والإحصائيات</h1>
         </div>

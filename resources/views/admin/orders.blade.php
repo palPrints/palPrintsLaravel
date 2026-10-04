@@ -21,6 +21,7 @@
 @section('content')
 <main id="adminMain">
     <section class="orders-overview" aria-labelledby="ordersTitle">
+        @include('admin.partials.breadcrumb', ['label' => 'إدارة الطلبات'])
         <h1 id="ordersTitle">إدارة الطلبات</h1>
 
         <div class="orders-summary" aria-label="ملخص الطلبات">

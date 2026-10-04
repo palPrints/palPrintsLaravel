@@ -14,8 +14,8 @@
 --}}
 @extends('customer.layouts.app')
 
-@section('title', 'الدعم الفني')
-@section('meta-description', 'مركز الدعم الفني لعملاء PalPrints')
+@section('title', 'مركز المساعدة')
+@section('meta-description', 'مركز المساعدة لعملاء PalPrints')
 @section('body-class', 'storefront-page support-page')
 
 @push('styles')
@@ -27,11 +27,11 @@
         <div class="pp-breadcrumb">
             <a href="{{ route('customer.store') }}">الرئيسية</a>
             <i class="bi bi-chevron-left" aria-hidden="true"></i>
-            <span>الدعم الفني</span>
+            <span>مركز المساعدة</span>
         </div>
         <header class="pp-page-heading">
             <span class="pp-heading-icon"><i class="bi bi-headphones" aria-hidden="true"></i></span>
-            <div><h1 id="pageTitle">مركز الدعم الفني</h1><p>نساعدك في حل المشكلات ومتابعة طلبات الدعم من مكان واحد.</p></div>
+            <div><h1 id="pageTitle">مركز المساعدة</h1><p>نساعدك في حل المشكلات ومتابعة طلبات الدعم من مكان واحد.</p></div>
             <span class="pp-role-badge"><i class="bi bi-person-badge"></i><span>حساب عميل</span></span>
         </header>
 

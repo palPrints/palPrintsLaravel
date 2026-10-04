@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="لوحة تحكم المطابع في منصة PalPrints">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('palprints-theme') === 'dark') {
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                }
+            } catch (error) { /* storage unavailable: keep the light theme */ }
+        })();
+    </script>
     <title>@yield('title', 'لوحة التحكم') | PalPrints</title>
 
     <link rel="icon" type="image/png" href="{{ asset('front/assets/images/palprints-logo.png') }}">
@@ -15,6 +24,7 @@
     @stack('styles')
     <link rel="stylesheet" href="{{ asset('front/css/printProvider/shell.css') }}?v={{ filemtime(public_path('front/css/printProvider/shell.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/css/printProvider/dashboard.css') }}?v={{ filemtime(public_path('front/css/printProvider/dashboard.css')) }}">
+    <link rel="stylesheet" href="{{ asset('front/css/printProvider/dark.css') }}?v={{ filemtime(public_path('front/css/printProvider/dark.css')) }}">
 </head>
 <body class="printshop-dashboard-page sidebar-collapsed @yield('bodyClass')">
     <a class="skip-link" href="#printshopDashboardMain">تخطي إلى المحتوى</a>

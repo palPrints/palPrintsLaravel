@@ -130,3 +130,6 @@ html[data-bs-theme="dark"] .settings-requirement-status.is-warning { color:#fcd4
 @media (max-width:900px) { .settings-tabs { grid-template-columns:repeat(6,minmax(120px,1fr)); } }
 @media (max-width:800px) { .settings-main { padding:20px 16px 42px; } .settings-field-grid,.settings-field-grid.is-single { grid-template-columns:1fr; } .settings-panel { min-height:0; } }
 @media (max-width:560px) { .settings-heading { align-items:flex-start; flex-wrap:wrap; } .settings-role-badge { width:100%; justify-content:center; margin-inline-start:0; } .settings-panel { padding:18px 15px; } .settings-form-actions,.settings-danger-zone { align-items:stretch; flex-direction:column; } .settings-form-actions .profile-button,.settings-danger-zone .profile-button { width:100%; } }
+
+/* Mobile (phones): every tab stays visible, icon above the label. */
+@media (max-width:768px) { .settings-tabs { grid-template-columns:none; grid-auto-flow:column; grid-auto-columns:minmax(84px,1fr); } .settings-tab { min-height:58px; flex-direction:column; gap:3px; padding:8px 6px; font-size:12px; } .settings-tab::after { inset-inline:10px; } }

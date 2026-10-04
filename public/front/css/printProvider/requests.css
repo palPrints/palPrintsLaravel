@@ -908,9 +908,12 @@ body:not(.sidebar-collapsed) main {
   body.sidebar-open .sidebar { transform: none; }
   body:not(.sidebar-collapsed) main { max-width: 1320px; padding-right: 28px; }
   .request-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .orders-toolbar { align-items: flex-start; flex-direction: column; }
-  .status-tabs { width: 100%; overflow-x: auto; padding-bottom: 3px; }
-  .status-tabs button { flex: 0 0 auto; }
+  .orders-toolbar { gap: 10px; }
+  .status-tabs { flex: 1 1 0; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .status-tabs::-webkit-scrollbar { display: none; }
+  .status-tabs button { flex: 0 0 auto; white-space: nowrap; }
+  .filter-wrap { flex: 0 0 auto; }
+  .filter-button { min-width: 0; padding-inline: 12px; }
 
   .backdrop {
     position: fixed;
@@ -936,10 +939,19 @@ body:not(.sidebar-collapsed) main {
   body:not(.sidebar-collapsed) main { padding: 88px 16px 40px; }
   .breadcrumb { margin-bottom: 22px; }
   .page-heading { align-items: flex-start; margin-bottom: 24px; }
-  .page-heading h1 { font-size: 22px; }
-  .page-heading p { font-size: 12px; line-height: 1.8; }
-  .request-stats { grid-template-columns: 1fr; }
-  .stat-card { min-height: 155px; }
+  .page-heading { gap: 10px; }
+  .heading-icon { width: 40px; height: 40px; flex-basis: 40px; font-size: 18px; }
+  .page-heading h1 { font-size: 18px; }
+  .page-heading p { margin-top: 4px; font-size: 11px; line-height: 1.7; }
+  .request-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .stat-card { min-height: 0; padding: 10px 8px; border-radius: 12px; }
+  .stat-card:hover { transform: none; }
+  .stat-card-head { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .stat-icon { order: -1; width: 28px; height: 28px; border-radius: 8px; font-size: 14px; }
+  .stat-label { font-size: 10px; line-height: 1.4; }
+  .stat-number { margin-top: 6px; font-size: 22px; }
+  .stat-card p { margin-top: 6px; font-size: 0; line-height: 1; }
+  .stat-card p b { display: block; margin: 0; font-size: 10px; }
   .orders-panel { margin-top: 20px; }
   .order-dialog-content { grid-template-columns: 1fr; }
   .order-products { grid-column: auto; }

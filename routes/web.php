@@ -32,6 +32,8 @@ use App\Http\Controllers\PrintProvider\DashboardController as PrintProviderDashb
 use App\Http\Controllers\PrintProvider\EarningsController as PrintProviderEarningsController;
 use App\Http\Controllers\PrintProvider\ProfileController as PrintProviderProfileController;
 use App\Http\Controllers\PrintProvider\ServicesController as PrintProviderServicesController;
+use App\Http\Controllers\PrintProvider\SettingsController as PrintProviderSettingsController;
+use App\Http\Controllers\PrintProvider\SupportController as PrintProviderSupportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleDashboardController;
 use App\Http\Controllers\OnboardingController;
@@ -46,6 +48,13 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('index');
 })->name('home');
+
+Route::view('/about', 'about')->name('about');
+Route::view('/faq', 'pages.faq')->name('faq');
+Route::view('/contact', 'pages.contact')->name('contact');
+Route::view('/returns', 'pages.returns')->name('returns');
+Route::view('/shipping', 'pages.shipping')->name('shipping');
+Route::view('/delivery-partners', 'pages.delivery-partners')->name('delivery-partners');
 
 Route::view('/terms', 'legal.placeholder', [
     'title' => 'الشروط والأحكام',
@@ -164,6 +173,12 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/', [PrintProviderServicesController::class, 'index']);
         Route::put('/products/{product}', [PrintProviderServicesController::class, 'save'])->name('.save');
         Route::patch('/products/{product}/toggle', [PrintProviderServicesController::class, 'toggle'])->name('.toggle');
+    });
+    Route::middleware('role:print_provider')->prefix('print-provider')->name('print-provider.')->group(function () {
+        Route::get('/settings', [PrintProviderSettingsController::class, 'show'])->name('settings');
+        Route::patch('/settings/account', [PrintProviderSettingsController::class, 'updateAccount'])->name('settings.account');
+        Route::get('/support', [PrintProviderSupportController::class, 'show'])->name('support');
+        Route::post('/support', [PrintProviderSupportController::class, 'store'])->name('support.store');
     });
     Route::middleware('role:designer')->prefix('designer')->name('designer.')->group(function () {
         Route::middleware('account.approved')->group(function () {

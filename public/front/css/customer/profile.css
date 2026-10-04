@@ -685,7 +685,9 @@ main {
   .avatar { width: 88px; height: 88px; font-size: 1.75rem; }
   .avatar-camera { width: 44px; height: 44px; }
   .profile-view, .profile-form { padding: var(--sp-4) var(--sp-3); }
-  .field-grid { grid-template-columns: 1fr; }
+  /* two fields side by side, like desktop */
+  .field-grid, .field-grid.one-column { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3); }
+  .field .pp-value { overflow-wrap: anywhere; font-size: .9375rem; }
   .form-actions { flex-direction: column; }
   .form-actions .btn-brand, .form-actions .btn-brand-outline { width: 100%; min-width: 0; }
   .footer { padding: var(--sp-5) var(--sp-4); }

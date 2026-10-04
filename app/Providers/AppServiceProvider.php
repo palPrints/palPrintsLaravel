@@ -80,6 +80,13 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
+        // Role-aware link helper for the public info pages (footer, FAQ, contact...), same one the home page defines inline.
+        View::composer('pages.*', function ($view): void {
+            $viewer = Auth::user();
+
+            $view->with('toRole', fn (string $role, string $route) => $viewer && ! $viewer->hasRole($role) ? route('dashboard') : route($route));
+        });
+
         // Links used by resources/views/errors/*. Wrapped so a broken session/route never turns an error page into a second error.
         View::composer(['errors.*', 'errors::*'], function ($view): void {
             $homeUrl = url('/');

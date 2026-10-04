@@ -1,0 +1,164 @@
+/* Print provider settings and support pages: same look as the designer pages, on the print shell. */
+.print-account-page { --acct-primary: #1677ff; --acct-hover: #0a68eb; --acct-soft: #eff6ff; --acct-text: #0b1f3a; --acct-body: #2c405c; --acct-muted: #5b7394; --acct-border: #dfe8f3; --acct-field: #f7fafd; }
+.print-account-page main { max-width: 1160px; }
+.print-account-page .page-heading { margin-bottom: 24px; }
+.print-account-page .page-heading.support-heading h1 { font-size: 19px; }
+.print-account-page .acct-role-badge { margin-inline-start: auto; display: inline-flex; align-items: center; gap: 7px; padding: 7px 11px; color: #0f58be; background: #eff6ff; border: 1px solid #bed9ff; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.print-account-page .acct-flash { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; padding: 11px 14px; color: #15803d; background: #ecfdf3; border: 1px solid #b7ebcb; border-radius: 10px; font-size: 13px; font-weight: 600; }
+.print-account-page .acct-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+
+.print-account-page .acct-tabs { position: sticky; z-index: 20; top: 64px; display: grid; grid-template-columns: repeat(6, minmax(120px, 1fr)); overflow-x: auto; background: #f6f9fd; scrollbar-width: thin; }
+.print-account-page .acct-tab { position: relative; min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 12px; color: var(--acct-body); background: transparent; border: 0; border-inline-end: 1px solid var(--acct-border); border-radius: 0; font: 700 13px/1.4 Cairo, sans-serif; white-space: nowrap; cursor: pointer; transition: color .18s ease; }
+.print-account-page .acct-tab:last-child { border-inline-end: 0; }
+.print-account-page .acct-tab::after { position: absolute; inset-inline: 18px; bottom: 0; height: 3px; content: ""; background: transparent; border-radius: 999px 999px 0 0; transition: background-color .18s ease; }
+.print-account-page .acct-tab i { width: 20px; color: var(--acct-muted); font-size: 17px; text-align: center; }
+.print-account-page .acct-tab.active, .print-account-page .acct-tab.active i { color: var(--acct-primary); }
+.print-account-page .acct-tab.active::after { background: var(--acct-primary); }
+.print-account-page .acct-tab.is-danger:not(.active), .print-account-page .acct-tab.is-danger:not(.active) i { color: #dc2626; }
+.print-account-page .acct-tab.is-danger.active, .print-account-page .acct-tab.is-danger.active i { color: #dc2626; }
+.print-account-page .acct-tab.is-danger.active::after { background: #dc2626; }
+
+.print-account-page .acct-panel { min-height: 360px; padding: 18px 20px; background: #fff; border: 1px solid var(--acct-border); border-radius: 16px; box-shadow: 0 1px 2px rgb(11 31 58 / 6%); }
+.print-account-page .acct-panel[hidden] { display: none; }
+.print-account-page .acct-section-head { display: flex; align-items: center; gap: 10px; padding-bottom: 11px; margin-bottom: 12px; border-bottom: 1px solid var(--acct-border); }
+.print-account-page .acct-section-head > span { width: 36px; height: 36px; flex: 0 0 36px; display: grid; place-items: center; color: var(--acct-primary); background: var(--acct-soft); border-radius: 10px; font-size: 16px; }
+.print-account-page .acct-section-head > span.is-danger { color: #dc2626; background: #fef2f2; }
+.print-account-page .acct-section-head h2 { margin: 0; color: var(--acct-text); font-size: 16px; }
+.print-account-page .acct-section-head p { margin: 2px 0 0; color: var(--acct-muted); font-size: 11px; }
+
+.print-account-page .acct-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px 14px; }
+.print-account-page .acct-grid.is-triple { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.print-account-page .acct-field { display: grid; gap: 4px; min-width: 0; }
+.print-account-page .acct-field.is-wide { grid-column: 1 / -1; }
+.print-account-page .acct-field > span:first-child { color: var(--acct-text); font-size: 12px; font-weight: 600; }
+.print-account-page .acct-field small { display: block; margin-top: 2px; color: var(--acct-muted); font-size: 10px; font-weight: 400; }
+.print-account-page .acct-field-error { display: none !important; color: #dc2626 !important; }
+.print-account-page .acct-field.has-error .acct-field-error { display: block !important; }
+.print-account-page .acct-field.has-error .acct-input { border-color: #dc2626; }
+.print-account-page .acct-input { min-height: 38px; display: flex; align-items: center; gap: 8px; padding-inline: 10px; background: var(--acct-field); border: 1px solid var(--acct-border); border-radius: 8px; }
+.print-account-page .acct-input:hover { border-color: #91bfff; }
+.print-account-page .acct-input:focus-within { border-color: var(--acct-primary); box-shadow: 0 0 0 3px rgb(22 119 255 / 18%); }
+.print-account-page .acct-input.is-textarea { align-items: flex-start; padding-block: 7px; }
+.print-account-page .acct-input > i { color: var(--acct-primary); }
+.print-account-page .acct-input input, .print-account-page .acct-input select, .print-account-page .acct-input textarea { flex: 1; min-width: 0; padding: 7px 0; color: var(--acct-body); background: transparent; border: 0; outline: 0; font: 500 12px/1.6 Cairo, sans-serif; }
+.print-account-page .acct-input textarea { min-height: 76px; padding: 0; resize: vertical; }
+
+.print-account-page .acct-errors { display: flex; gap: 10px; margin-bottom: 12px; padding: 11px 14px; color: #b42318; background: #fef3f2; border: 1px solid #fecdca; border-radius: 10px; font-size: 12px; }
+.print-account-page .acct-errors i { margin-top: 2px; font-size: 16px; }
+.print-account-page .acct-errors ul { margin: 0; padding-inline-start: 18px; font-weight: 600; }
+
+.print-account-page .acct-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 11px; margin-top: 11px; border-top: 1px solid var(--acct-border); }
+.print-account-page .acct-button { min-height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 7px 18px; border: 1px solid transparent; border-radius: 10px; font: 700 12px/1.4 Cairo, sans-serif; text-decoration: none; cursor: pointer; }
+.print-account-page .acct-button.is-primary { color: #fff; background: var(--acct-primary); border-color: var(--acct-primary); box-shadow: 0 6px 16px rgb(22 119 255 / 20%); }
+.print-account-page .acct-button.is-primary:hover { background: var(--acct-hover); border-color: var(--acct-hover); }
+.print-account-page .acct-button.is-ghost { color: var(--acct-body); background: var(--acct-field); border-color: var(--acct-border); }
+.print-account-page .acct-button.is-outline { color: var(--acct-primary); background: #fff; border-color: #bed9ff; }
+.print-account-page .acct-button.is-danger { color: #fff; background: #dc2626; border-color: #dc2626; }
+
+.print-account-page .acct-options { display: grid; }
+.print-account-page .acct-option { min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 2px; border-bottom: 1px solid var(--acct-border); }
+.print-account-page .acct-option:first-child { padding-top: 2px; }
+.print-account-page .acct-option strong { display: block; color: var(--acct-text); font-size: 12.5px; }
+.print-account-page .acct-option small { display: block; margin-top: 2px; color: var(--acct-muted); font-size: 10.5px; }
+.print-account-page .acct-switch { position: relative; flex: 0 0 auto; width: 40px; height: 22px; cursor: pointer; }
+.print-account-page .acct-switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.print-account-page .acct-switch-track { display: block; width: 100%; height: 100%; background: #a5b1c2; border-radius: 99px; transition: background-color .18s ease; }
+.print-account-page .acct-switch-track::after { position: absolute; top: 3px; inset-inline-start: 3px; width: 16px; height: 16px; content: ""; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgb(11 31 58 / 25%); transition: transform .18s ease; }
+.print-account-page .acct-switch input:checked + .acct-switch-track { background: var(--acct-primary); }
+.print-account-page .acct-switch input:checked + .acct-switch-track::after { transform: translateX(-18px); }
+.print-account-page .acct-switch input:focus-visible + .acct-switch-track { outline: 2px solid var(--acct-primary); outline-offset: 2px; }
+
+.print-account-page .acct-requirements { display: grid; }
+.print-account-page .acct-requirement { display: flex; align-items: center; gap: 12px; padding: 13px 2px; border-bottom: 1px solid var(--acct-border); }
+.print-account-page .acct-requirement > i { width: 28px; height: 28px; flex: 0 0 28px; display: grid; place-items: center; color: var(--acct-primary); font-size: 17px; }
+.print-account-page .acct-requirement > div { min-width: 0; flex: 1; }
+.print-account-page .acct-requirement strong { display: block; color: var(--acct-text); font-size: 13px; }
+.print-account-page .acct-requirement p { margin: 3px 0 0; color: var(--acct-muted); font-size: 11px; }
+.print-account-page .acct-status { flex: 0 0 auto; padding: 4px 9px; color: #15803d; background: #dcfce7; border-radius: 999px; font-size: 10px; font-weight: 800; }
+.print-account-page .acct-status.is-warning { color: #92400e; background: #fef3c7; }
+.print-account-page .acct-note { display: flex; gap: 10px; margin-top: 12px; padding: 14px; color: var(--acct-body); background: #fff6ed; border: 1px solid #ffe9d5; border-inline-start: 3px solid #ff7a00; border-radius: 8px; font-size: 12px; line-height: 1.8; }
+.print-account-page .acct-note i { color: #f07606; }
+
+.print-account-page .acct-danger { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 15px 2px; border-bottom: 1px solid var(--acct-border); }
+.print-account-page .acct-danger strong { color: #b91c1c; font-size: 14px; }
+.print-account-page .acct-danger p { margin: 5px 0 0; color: var(--acct-muted); font-size: 12px; }
+
+.print-account-page .acct-dialog { width: min(440px, calc(100vw - 24px)); padding: 0; border: 0; border-radius: 16px; box-shadow: 0 24px 60px rgb(11 31 58 / 28%); }
+.print-account-page .acct-dialog::backdrop { background: rgb(11 31 58 / 45%); }
+.print-account-page .acct-dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 16px 18px 0; }
+.print-account-page .acct-dialog-head h2 { margin: 0; color: #b91c1c; font-size: 17px; }
+.print-account-page .acct-dialog-head p { margin: 3px 0 0; color: var(--acct-muted); font-size: 12px; }
+.print-account-page .acct-close { width: 34px; height: 34px; display: grid; place-items: center; color: var(--acct-muted); background: var(--acct-field); border: 0; border-radius: 9px; cursor: pointer; }
+.print-account-page .acct-dialog-body { display: grid; gap: 12px; padding: 16px 18px; }
+.print-account-page .acct-dialog-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 0 18px 16px; }
+
+/* Support */
+.print-account-page .acct-channels { display: grid; grid-template-columns: repeat(3, 1fr); margin: 16px 0; }
+.print-account-page .acct-channel { position: relative; min-height: 76px; display: flex; align-items: center; gap: 11px; padding: 12px 22px; color: var(--acct-text); background: transparent; border: 0; font: inherit; text-align: start; text-decoration: none; cursor: pointer; }
+.print-account-page .acct-channel + .acct-channel::before { position: absolute; inset-block: 14px; inset-inline-start: 0; width: 1px; content: ""; background: var(--acct-border); }
+.print-account-page .acct-channel > i { color: var(--acct-primary); font-size: 22px; }
+.print-account-page .acct-channel > span { min-width: 0; flex: 1; display: grid; gap: 2px; }
+.print-account-page .acct-channel strong { font-size: 13px; }
+.print-account-page .acct-channel small { color: var(--acct-muted); font-size: 10px; }
+.print-account-page .acct-channel > b { color: var(--acct-primary); font-size: 10px; white-space: nowrap; }
+.print-account-page .acct-support-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .75fr); gap: 16px; align-items: start; }
+.print-account-page .acct-side { display: grid; gap: 16px; }
+.print-account-page .acct-support-grid .acct-panel { min-height: 0; }
+.print-account-page .acct-upload { grid-column: 1 / -1; min-height: 54px; position: relative; display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px dashed #b9cee8; border-radius: 9px; cursor: pointer; }
+.print-account-page .acct-upload > i { color: var(--acct-primary); font-size: 18px; }
+.print-account-page .acct-upload > span { flex: 1; display: grid; }
+.print-account-page .acct-upload strong { color: var(--acct-text); font-size: 11px; }
+.print-account-page .acct-upload small { color: var(--acct-muted); font-size: 9px; }
+.print-account-page .acct-upload input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.print-account-page .acct-upload > b { max-width: 40%; overflow: hidden; color: var(--acct-primary); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.print-account-page .acct-ticket { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 1px; border-bottom: 1px solid var(--acct-border); }
+.print-account-page .acct-ticket:last-child { border-bottom: 0; }
+.print-account-page .acct-ticket div { display: grid; gap: 2px; }
+.print-account-page .acct-ticket strong { color: var(--acct-text); font-size: 11px; direction: ltr; text-align: right; }
+.print-account-page .acct-ticket small { color: var(--acct-muted); font-size: 9.5px; }
+.print-account-page .acct-ticket > span { padding: 4px 8px; color: #15803d; background: #dcfce7; border-radius: 999px; font-size: 9px; font-weight: 700; }
+.print-account-page .acct-ticket > span.is-open { color: #995300; background: #fff0bf; }
+.print-account-page .acct-faq details { border-bottom: 1px solid var(--acct-border); }
+.print-account-page .acct-faq details:last-child { border-bottom: 0; }
+.print-account-page .acct-faq summary { position: relative; padding: 11px 1px 11px 24px; color: var(--acct-text); font-size: 11px; font-weight: 700; cursor: pointer; list-style: none; }
+.print-account-page .acct-faq summary::-webkit-details-marker { display: none; }
+.print-account-page .acct-faq summary::after { position: absolute; inset-inline-end: 2px; content: "+"; color: var(--acct-primary); font-size: 17px; font-weight: 500; }
+.print-account-page .acct-faq details[open] summary::after { content: "−"; }
+.print-account-page .acct-faq details p { margin: 0; padding: 0 1px 11px; color: var(--acct-muted); font-size: 10px; line-height: 1.8; }
+.print-account-page .acct-empty { margin: 10px 0 0; color: var(--acct-muted); font-size: 11px; text-align: center; }
+
+.print-account-page.reduce-motion *, .print-account-page.reduce-motion *::before, .print-account-page.reduce-motion *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+
+@media (max-width: 900px) { .print-account-page .acct-support-grid { grid-template-columns: 1fr; } }
+@media (max-width: 800px) {
+  .print-account-page .acct-grid, .print-account-page .acct-grid.is-triple { grid-template-columns: 1fr; }
+  .print-account-page .acct-panel { min-height: 0; }
+}
+@media (max-width: 768px) {
+  /* Phones: every tab stays visible, icon above the label. */
+  .print-account-page .acct-tabs { top: 60px; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(84px, 1fr); }
+  .print-account-page .acct-tab { min-height: 58px; flex-direction: column; gap: 3px; padding: 8px 6px; font-size: 12px; }
+  .print-account-page .acct-tab::after { inset-inline: 10px; }
+}
+@media (max-width: 760px) {
+  .print-account-page .acct-channels { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .print-account-page .acct-channel { min-height: 0; flex-direction: column; justify-content: center; gap: 6px; padding: 12px 6px; text-align: center; }
+  .print-account-page .acct-channel > span { flex: 0 0 auto; justify-items: center; }
+  .print-account-page .acct-channel strong { font-size: 12px; }
+  .print-account-page .acct-channel small { font-size: 9.5px; overflow-wrap: anywhere; }
+}
+@media (max-width: 560px) {
+  /* Title row: icon, title and role badge; the description spans the full width below. */
+  .print-account-page .page-heading { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px 10px; margin-bottom: 16px; }
+  .print-account-page .page-heading > div { display: contents; }
+  .print-account-page .heading-icon { grid-column: 1; grid-row: 1; width: 36px; height: 36px; font-size: 17px; }
+  .print-account-page .page-heading h1 { grid-column: 2; grid-row: 1; font-size: 18px; line-height: 1.35; }
+  .print-account-page .page-heading p { grid-column: 1 / -1; grid-row: 2; margin: 0; font-size: 12px; line-height: 1.7; }
+  .print-account-page .acct-role-badge { grid-column: 3; grid-row: 1; margin: 0; padding: 6px 10px; font-size: 11px; }
+  .print-account-page .acct-panel { padding: 18px 15px; }
+  .print-account-page .acct-actions, .print-account-page .acct-danger { align-items: stretch; flex-direction: column; }
+  .print-account-page .acct-actions .acct-button, .print-account-page .acct-danger .acct-button { width: 100%; }
+  .print-account-page .acct-support-grid .acct-panel { padding: 16px 14px; }
+  .print-account-page .acct-requirement { flex-wrap: wrap; }
+}
+@media (max-width: 560px) { .print-account-page .page-heading.support-heading h1 { font-size: 17px; } }

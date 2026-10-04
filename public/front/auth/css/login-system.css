@@ -90,11 +90,8 @@ a { color: inherit; }
 
 @media (max-width: 820px) {
   .auth-layout { display: flex; flex-direction: column; }
-  .auth-visual { order: 1; height: 24dvh; min-height: 140px; flex: 0 0 24dvh; }
-  .auth-visual__content { top:10px; right:12px; bottom:auto; left:12px; width:auto; }
-  .auth-visual__content h2 { font-size: 22px; }
-  .auth-visual__content p { display: none; }
-  .auth-panel { order: 2; height: 76dvh; padding: 42px 18px 10px; }
+  .auth-visual { display: none; }
+  .auth-panel { height: 100dvh; padding: 42px 18px 10px; overflow-y: auto; align-items: safe center; }
   .auth-wordmark { top: 7px; left: 18px; }
   .auth-wordmark img { width: 108px; height: 31px; }
   .auth-heading { margin-bottom: 9px; }
@@ -104,8 +101,6 @@ a { color: inherit; }
 }
 
 @media (max-width: 430px) {
-  .auth-visual { height: 20dvh; min-height: 112px; flex-basis: 20dvh; }
-  .auth-panel { height: 80dvh; }
   .input-control, .submit-button { min-height: 43px; }
   .form-field + .form-field { margin-top: 3px; }
   .field-error { min-height: 13px; }

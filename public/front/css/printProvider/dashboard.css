@@ -1086,10 +1086,26 @@ img {
     flex: 1;
   }
 
-  .printshop-page-heading,
   .printshop-profile-alert {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  /* Title and "add product" button stay on one row. */
+  .printshop-page-heading {
+    gap: 12px;
+  }
+
+  .printshop-page-heading h1 {
+    font-size: 19px;
+  }
+
+  .printshop-page-heading .printshop-primary-button {
+    flex: none;
+    align-self: center;
+    min-height: 38px;
+    padding-inline: 12px;
+    font-size: 12px;
   }
 
   .printshop-primary-button,
@@ -1118,15 +1134,6 @@ img {
 
   .printshop-topbar__actions {
     gap: 1px;
-  }
-
-  .printshop-stats {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .printshop-stat-card {
-    min-height: 104px;
   }
 
   .printshop-panel__header,
@@ -1175,4 +1182,75 @@ img {
 .printshop-status.is-cancelled {
   color: #b91c1c;
   background: #fee2e2;
+}
+
+/* Phones: all four stat cards in one row, narrow, centred, stacked (icon, label, number, note). */
+@media (max-width: 760px) {
+  .printshop-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .printshop-stat-card { min-height: 0; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; text-align: center; }
+  .printshop-stat-card__icon { width: 30px; height: 30px; flex: none; font-size: 15px; }
+  .printshop-stat-card__content { width: 100%; flex: none; }
+  .printshop-stat-card h2 { min-height: 0; margin-bottom: 4px; font-size: clamp(8.5px, 2.5vw, 11.5px); line-height: 1.4; white-space: normal; overflow: visible; text-overflow: clip; }
+  .printshop-stat-card strong { margin-bottom: 2px; font-size: clamp(14px, 4.4vw, 20px); overflow-wrap: anywhere; }
+  .printshop-stat-card p { font-size: clamp(8px, 2.2vw, 10px); line-height: 1.4; white-space: normal; }
+}
+
+/* ===== Print-provider header + drawer on phones (same fix as the admin shell) =====
+   Logo (not clipped), menu toggle, search icon, then account + bell — they used to be
+   hidden at <=620px, leaving the left half of the header empty. */
+@media (max-width: 760px) {
+  .printshop-dashboard-page .topbar {
+    height: 60px;
+    grid-template-columns: auto 44px minmax(0, 1fr) auto;
+    gap: 4px;
+    padding-inline: 12px;
+  }
+
+  .printshop-dashboard-page .header-logo {
+    width: auto;
+    height: 60px;
+    overflow: visible;
+    justify-content: flex-start;
+    border: 0;
+  }
+
+  .printshop-dashboard-page .header-logo img {
+    width: 92px;
+  }
+
+  .printshop-dashboard-page .search-box {
+    display: flex;
+    grid-column: 3;
+  }
+
+  .printshop-dashboard-page .header-actions {
+    display: flex;
+    grid-column: 4;
+    gap: 0;
+  }
+
+  .printshop-dashboard-page .header-actions .icon-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .printshop-dashboard-page .wallet-sidebar {
+    top: 60px;
+    height: calc(100dvh - 60px);
+    width: min(var(--sidebar), 84vw);
+  }
+
+  .printshop-dashboard-page .notification-dropdown,
+  .printshop-dashboard-page .account-dropdown {
+    position: fixed;
+    top: 66px;
+    inset-inline: 12px;
+    width: auto;
+    max-width: none;
+  }
+
+  .printshop-dashboard-page .account-dropdown {
+    inset-inline: 12px auto;
+    width: min(240px, calc(100vw - 24px));
+  }
 }

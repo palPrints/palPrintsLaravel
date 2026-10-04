@@ -55,5 +55,7 @@ html[data-bs-theme="dark"] .support-upload { border-color:#385071; }
 html[data-bs-theme="dark"] .support-ticket > span { color:#86efac; background:#123b2b; }
 html[data-bs-theme="dark"] .support-ticket > span.is-open { color:#fcd48a; background:#493416; }
 @media (max-width:900px) { .support-grid { grid-template-columns:1fr; } }
-@media (max-width:760px) { .support-main { padding:20px 16px 42px; } .support-channels { grid-template-columns:1fr; } .support-channel { padding-inline:10px; } .support-channel + .support-channel::before { inset-block:0 auto; inset-inline:10px; width:auto; height:1px; } }
+@media (max-width:760px) { .support-main { padding:20px 16px 42px; } .support-channels { grid-template-columns:repeat(3,minmax(0,1fr)); } .support-channel { min-height:0; flex-direction:column; justify-content:center; gap:6px; padding:12px 6px; text-align:center; } .support-channel > span { flex:0 0 auto; justify-items:center; } .support-channel strong { font-size:12px; } .support-channel small { font-size:9.5px; overflow-wrap:anywhere; } .support-channel > b { font-size:10px; } }
 @media (max-width:560px) { .support-heading { align-items:flex-start; flex-wrap:wrap; } .support-heading .settings-role-badge { width:100%; justify-content:center; margin-inline-start:0; } .support-form-grid { grid-template-columns:1fr; } .support-form-grid .is-wide { grid-column:auto; } .support-panel { padding:16px 14px; } }
+.support-page .support-heading h1 { font-size:19px; }
+@media (max-width:560px) { .support-page .support-heading h1 { font-size:17px; } }

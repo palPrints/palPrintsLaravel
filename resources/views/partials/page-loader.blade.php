@@ -29,6 +29,8 @@
         </svg>
       </div>
 
+      <p class="loading-brand" dir="ltr" aria-hidden="true">PalPrints</p>
+
       <p class="loading-title">جارٍ التحميل...</p>
   </div>
 </div>

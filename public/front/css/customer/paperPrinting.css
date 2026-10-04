@@ -2052,8 +2052,8 @@ html[dir="ltr"] .stage-actions .bi-arrow-right {
   }
 
   .paper-main {
-    width: 100%;
-    max-width: 100vw;
+    width: auto;
+    max-width: none;
     padding-bottom: 112px;
   }
 
@@ -2327,6 +2327,24 @@ html[dir="ltr"] .stage-actions .bi-arrow-right {
     align-items: flex-start;
   }
 
+  /* icon + name on the first line, badge and buttons wrap to the second */
+  .customization-item {
+    flex-wrap: wrap;
+  }
+
+  .customization-item .file-info {
+    flex: 1 1 calc(100% - 56px);
+  }
+
+  .customization-item .override-badge {
+    margin-inline-end: auto;
+  }
+
+  .customization-item > .paper-button {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
   .option-groups {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -2409,7 +2427,7 @@ html[dir="ltr"] .stage-actions .bi-arrow-right {
 
 @media (max-width: 479.98px) {
   .paper-main {
-    padding-inline: 12px;
+    padding-inline: 0;
   }
 
   .paper-title-row {
