@@ -887,7 +887,9 @@ body.home-page {
   flex: 1;
   gap: var(--cards-gap, 20px);
   min-width: 0;
-  padding: 4px 4px 12px;
+  /* room above/below so the hover lift and shadow aren't clipped by the scroll container */
+  padding: 12px 4px 28px;
+  margin-block: -8px -16px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: 4px;
@@ -1475,7 +1477,8 @@ body.home-page {
   .products-carousel__track {
     gap: 10px;
     width: 100%;
-    padding: 4px 2px 14px;
+    padding: 12px 2px 24px;
+    margin-block: -8px -10px;
     scroll-padding-inline: 2px;
     touch-action: pan-x;
   }
