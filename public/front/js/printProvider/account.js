@@ -47,14 +47,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  const reduceMotion = document.getElementById("reduceMotionToggle");
-
-  if (reduceMotion) {
-    reduceMotion.addEventListener("change", function () {
-      document.body.classList.toggle("reduce-motion", reduceMotion.checked);
-    });
-  }
-
   const chatButton = document.getElementById("startChatButton");
 
   if (chatButton) {

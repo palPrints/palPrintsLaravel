@@ -21,6 +21,7 @@ class ShippingController extends Controller
         'confirmed' => ['pending', 'بانتظار الاستلام', 'is-pending'],
         'processing' => ['pending', 'بانتظار الاستلام', 'is-pending'],
         'in_production' => ['pending', 'بانتظار الاستلام', 'is-pending'],
+        'ready' => ['pending', 'بانتظار الاستلام', 'is-pending'],
         'shipped' => ['transit', 'في الطريق', 'is-transit'],
         'delivered' => ['delivered', 'تم التوصيل', 'is-delivered'],
         'completed' => ['delivered', 'تم التوصيل', 'is-delivered'],

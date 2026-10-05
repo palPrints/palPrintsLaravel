@@ -180,3 +180,5 @@ body.sidebar-collapsed .wallet-shell{margin-right:0}
   .wallet-controls .period-filter p{grid-column:1/-1;grid-row:3;margin:0}
   .wallet-controls .withdraw-action small{grid-column:1/-1;grid-row:4;margin:0}
 }
+
+.empty-row{height:110px;color:#7087a0;text-align:center!important;font-size:13px}.empty-row i{display:block;margin-bottom:6px;color:#a9bdd3;font-size:30px}

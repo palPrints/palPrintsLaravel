@@ -2449,10 +2449,3 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   transform: scale(1.08) !important;
 }
 
-/* Manual opt-in from the settings page's "تقليل الحركات" toggle (localStorage-backed, per-browser, applied site-wide via the shared layout's bootstrap script). */
-body.pp-reduce-motion, body.pp-reduce-motion * , body.pp-reduce-motion *::before, body.pp-reduce-motion *::after {
-  animation-duration: .001ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: .001ms !important;
-  scroll-behavior: auto !important;
-}

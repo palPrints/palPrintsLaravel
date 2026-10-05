@@ -23,8 +23,8 @@
             <p>حدّث بياناتك لتجربة تسوق أسهل.</p>
         </div>
 
-        @if(session('status') === 'verification-link-sent' || session('verification_sent'))
-            <div class="alert-success page-alert">أرسلنا رابط التوثيق إلى بريدك الإلكتروني ({{ $customer->email }}). افتحي الرسالة واضغطي على الرابط. إذا لم تجديها، افحصي مجلد الرسائل غير المرغوبة (Spam).</div>
+        @if(session('verification_sent'))
+            <div class="alert-success page-alert">أرسلنا رمز التوثيق إلى بريدك الإلكتروني ({{ $customer->email }}). <a href="{{ route('verification.notice') }}">أدخلي الرمز هنا</a> لإتمام التوثيق. إذا لم تجديه، افحصي مجلد الرسائل غير المرغوبة (Spam).</div>
         @elseif(session('status') === 'email-verified')
             <div class="alert-success page-alert">تم توثيق بريدك الإلكتروني بنجاح.</div>
         @endif

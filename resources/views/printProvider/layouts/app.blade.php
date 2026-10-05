@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="{{ asset('front/css/printProvider/shell.css') }}?v={{ filemtime(public_path('front/css/printProvider/shell.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/css/printProvider/dashboard.css') }}?v={{ filemtime(public_path('front/css/printProvider/dashboard.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/css/printProvider/dark.css') }}?v={{ filemtime(public_path('front/css/printProvider/dark.css')) }}">
+    <link rel="stylesheet" href="{{ asset('front/shared/table-pagination.css') }}?v={{ filemtime(public_path('front/shared/table-pagination.css')) }}">
 </head>
 <body class="printshop-dashboard-page sidebar-collapsed @yield('bodyClass')">
     <a class="skip-link" href="#printshopDashboardMain">تخطي إلى المحتوى</a>
@@ -45,6 +46,7 @@
 
     <script src="{{ asset('front/js/printProvider/dashboard.js') }}"></script>
     @include('partials.pp-alert')
+    <script src="{{ asset('front/shared/table-pagination.js') }}?v={{ filemtime(public_path('front/shared/table-pagination.js')) }}"></script>
     @stack('scripts')
 @include('partials.page-loader')
 </body>

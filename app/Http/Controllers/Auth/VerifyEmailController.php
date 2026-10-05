@@ -3,26 +3,36 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Support\EmailVerificationCode;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class VerifyEmailController extends Controller
 {
-    /**
-     * Mark the authenticated user's email address as verified.
-     */
-    public function __invoke(EmailVerificationRequest $request): RedirectResponse
+    /** Marks the signed-in user's email as verified when the code mailed to them is entered. */
+    public function __invoke(Request $request): RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+        $user = $request->user();
+
+        if (! $user->hasVerifiedEmail()) {
+            $validated = $request->validate([
+                'code' => ['required', 'digits:6'],
+            ], [
+                'code.required' => 'أدخل رمز التوثيق المرسل إلى بريدك الإلكتروني.',
+                'code.digits' => 'رمز التوثيق مكوّن من 6 أرقام.',
+            ]);
+
+            if (! EmailVerificationCode::verify($user, $validated['code'])) {
+                return back()->withErrors(['code' => 'رمز التوثيق غير صحيح أو منتهي. اطلب رمزًا جديدًا.']);
+            }
+
+            if ($user->markEmailAsVerified()) {
+                event(new Verified($user));
+            }
         }
 
-        if ($request->user()->markEmailAsVerified()) {
-            event(new Verified($request->user()));
-        }
-
-        if ($request->user()->hasRole('customer')) {
+        if ($user->hasRole('customer')) {
             return redirect()->route('customer.profile')->with('status', 'email-verified');
         }
 

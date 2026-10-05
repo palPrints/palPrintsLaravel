@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="{{ $adminAsset('shared/icons/bootstrap-icons.min.css') }}">
     <link rel="stylesheet" href="{{ $adminAsset('css/admin/admin-shell.css') }}">
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('front/shared/table-pagination.css') }}?v={{ filemtime(public_path('front/shared/table-pagination.css')) }}">
 </head>
 <body class="admin-dashboard-page @yield('body-class') sidebar-collapsed">
     <a class="skip-link" href="#@yield('main-id', 'adminMain')">تخطي إلى المحتوى</a>
@@ -35,6 +36,7 @@
 
     <script src="{{ $adminAsset('js/admin/admin-shell.js') }}"></script>
     @include('partials.pp-alert')
+    <script src="{{ asset('front/shared/table-pagination.js') }}?v={{ filemtime(public_path('front/shared/table-pagination.js')) }}"></script>
     @stack('scripts')
 @include('partials.page-loader')
 </body>

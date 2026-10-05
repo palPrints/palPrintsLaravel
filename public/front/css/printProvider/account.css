@@ -127,7 +127,6 @@
 .print-account-page .acct-faq details p { margin: 0; padding: 0 1px 11px; color: var(--acct-muted); font-size: 10px; line-height: 1.8; }
 .print-account-page .acct-empty { margin: 10px 0 0; color: var(--acct-muted); font-size: 11px; text-align: center; }
 
-.print-account-page.reduce-motion *, .print-account-page.reduce-motion *::before, .print-account-page.reduce-motion *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
 
 @media (max-width: 900px) { .print-account-page .acct-support-grid { grid-template-columns: 1fr; } }
 @media (max-width: 800px) {
@@ -162,3 +161,7 @@
   .print-account-page .acct-requirement { flex-wrap: wrap; }
 }
 @media (max-width: 560px) { .print-account-page .page-heading.support-heading h1 { font-size: 17px; } }
+
+.email-verify-form { margin: 0; flex: 0 0 auto; }
+.email-verify-button { padding: 6px 12px; border: 1px solid #1677ff; border-radius: 999px; color: #1677ff; background: #fff; font: 700 11px inherit; font-family: inherit; cursor: pointer; white-space: nowrap; }
+.email-verify-button:hover { color: #fff; background: #1677ff; }
