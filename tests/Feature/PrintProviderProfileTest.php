@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 
@@ -18,13 +20,18 @@ test('print provider profile shows stored data instead of demo values', function
         ->assertDontSee('مطبعة الألوان الحديثة');
 });
 
-test('print provider can update the shop profile and becomes ready for review', function () {
+test('print provider can update the shop profile and becomes ready for review once the documents are uploaded', function () {
+    Storage::fake('public');
+
     $this->actingAs($this->owner)
         ->patch(route('print-provider.profile.update'), [
             'company_name' => 'مطبعة الأمل',
             'contact_name' => 'Shop Owner',
             'email' => $this->owner->email,
             'phone' => '0599123456',
+            'owner_phone' => '0599000111',
+            'verification_document' => UploadedFile::fake()->create('license.pdf', 50, 'application/pdf'),
+            'id_document' => UploadedFile::fake()->create('id.pdf', 50, 'application/pdf'),
             'address' => 'غزة، الرمال',
             'available' => '1',
             'days' => ['الأحد', 'الإثنين'],

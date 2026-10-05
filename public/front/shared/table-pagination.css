@@ -1,0 +1,36 @@
+/* Numbered pager under every table (see table-pagination.js). */
+tr.pp-page-hidden { display: none !important; }
+
+.pp-pager {
+  direction: rtl;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 12px;
+}
+
+.pp-pager[hidden] { display: none; }
+
+.pp-pager button {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid #cbdbea;
+  border-radius: 8px;
+  color: #15385f;
+  background: #fff;
+  font: 700 13px/1 inherit;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.pp-pager button:hover:not(:disabled):not(.active) { color: #1677ff; border-color: #9ec6f5; background: #f2f8ff; }
+.pp-pager button.active { color: #fff; border-color: #1677ff; background: #1677ff; }
+.pp-pager button:disabled { opacity: 0.45; cursor: default; }
+.pp-pager button:focus-visible { outline: 2px solid #1677ff; outline-offset: 2px; }
+
+html[data-bs-theme="dark"] .pp-pager button { border-color: #334a5f; color: #bfd5ed; background: #141b2b; }
+html[data-bs-theme="dark"] .pp-pager button:hover:not(:disabled):not(.active) { border-color: #365170; background: #1b2740; }
+html[data-bs-theme="dark"] .pp-pager button.active { color: #fff; border-color: #1677ff; background: #1677ff; }

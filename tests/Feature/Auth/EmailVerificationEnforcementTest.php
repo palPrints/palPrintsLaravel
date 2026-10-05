@@ -2,9 +2,8 @@
 
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
-use Illuminate\Auth\Notifications\VerifyEmail;
+use App\Notifications\EmailVerificationCodeNotification;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\URL;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
 
@@ -39,7 +38,7 @@ test('registering sends a verification email and does not log the user in', func
 
     $this->assertGuest();
     expect($user->hasVerifiedEmail())->toBeFalse();
-    Notification::assertSentTo($user, VerifyEmail::class);
+    Notification::assertSentTo($user, EmailVerificationCodeNotification::class);
 });
 
 test('unverified accounts of every role are sent to the verification page', function (string $role, string $route) {
@@ -72,7 +71,7 @@ test('unverified users can ask for a new verification email', function () {
 
     $this->actingAs($user)->post(route('verification.send'));
 
-    Notification::assertSentTo($user, VerifyEmail::class);
+    Notification::assertSentTo($user, EmailVerificationCodeNotification::class);
 });
 
 test('verified users are not stopped by the verification gate', function () {
@@ -84,7 +83,9 @@ test('verified users are not stopped by the verification gate', function () {
         ->assertRedirect(route('customer.store', absolute: false));
 });
 
-test('full flow: register, get blocked, click the email link, then get in', function () {
+test('full flow: register, get blocked, enter the emailed code, then get in', function () {
+    Notification::fake();
+
     $this->post('/register', [
         'name' => 'Flow User',
         'email' => 'flow@example.com',
@@ -100,52 +101,19 @@ test('full flow: register, get blocked, click the email link, then get in', func
     $this->get(route('dashboard'))->assertRedirect(route('verification.notice'));
 
     $user = User::where('email', 'flow@example.com')->firstOrFail();
-    $link = URL::temporarySignedRoute('verification.verify', now()->addMinutes(60), [
-        'id' => $user->id,
-        'hash' => sha1($user->email),
-    ]);
+    $user->sendEmailVerificationNotification();
+    $code = null;
+    Notification::assertSentTo($user, EmailVerificationCodeNotification::class, function ($notification) use ($user, &$code) {
+        preg_match('/\*\*(\d{6})\*\*/', implode(' ', $notification->toMail($user)->introLines), $found);
+        $code = $found[1];
 
-    $this->get($link);
+        return true;
+    });
+
+    $this->post(route('verification.verify'), ['code' => $code]);
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
 
     $this->get(route('dashboard'))->assertRedirect(route('customer.store', absolute: false));
-});
-
-test('a tampered verification link does not verify the account', function () {
-    $user = unverifiedUserWithRole('customer');
-
-    $link = URL::temporarySignedRoute('verification.verify', now()->addMinutes(60), [
-        'id' => $user->id,
-        'hash' => sha1('someone-else@example.com'),
-    ]);
-
-    $this->actingAs($user)->get($link)->assertForbidden();
-    expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
-});
-
-test('an expired verification link does not verify the account', function () {
-    $user = unverifiedUserWithRole('customer');
-
-    $link = URL::temporarySignedRoute('verification.verify', now()->subMinute(), [
-        'id' => $user->id,
-        'hash' => sha1($user->email),
-    ]);
-
-    $this->actingAs($user)->get($link)->assertForbidden();
-    expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
-});
-
-test('one user cannot verify another users email', function () {
-    $victim = unverifiedUserWithRole('customer');
-    $attacker = unverifiedUserWithRole('customer');
-
-    $link = URL::temporarySignedRoute('verification.verify', now()->addMinutes(60), [
-        'id' => $victim->id,
-        'hash' => sha1($victim->email),
-    ]);
-
-    $this->actingAs($attacker)->get($link)->assertForbidden();
-    expect($victim->fresh()->hasVerifiedEmail())->toBeFalse();
 });
 
 test('a google registered account lands inside the app without a verification step', function () {

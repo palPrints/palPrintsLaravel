@@ -30,6 +30,8 @@ class OrderController extends Controller
         'confirmed' => ['processing', 'قيد التنفيذ', 'is-processing', 'قيد التجهيز'],
         'processing' => ['processing', 'قيد التنفيذ', 'is-processing', 'قيد التجهيز'],
         'in_production' => ['processing', 'قيد التنفيذ', 'is-processing', 'قيد التجهيز'],
+        'ready' => ['processing', 'جاهز للتسليم', 'is-processing', 'جاهز للاستلام'],
+        'rejected' => ['cancelled', 'مرفوض من المطبعة', 'is-cancelled', 'أُلغيت الشحنة'],
         'shipped' => ['shipped', 'تم الشحن', 'is-shipped', 'في الطريق إلى العميل'],
         'delivered' => ['completed', 'مكتمل', 'is-completed', 'تم التسليم'],
         'completed' => ['completed', 'مكتمل', 'is-completed', 'تم التسليم'],

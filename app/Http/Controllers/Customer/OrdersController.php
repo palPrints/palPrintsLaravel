@@ -18,6 +18,8 @@ class OrdersController extends Controller
         'confirmed' => ['قيد التنفيذ', 'status-progress', 'bi-gear'],
         'processing' => ['قيد التنفيذ', 'status-progress', 'bi-gear'],
         'in_production' => ['قيد التنفيذ', 'status-progress', 'bi-gear'],
+        'ready' => ['جاهز للتسليم', 'status-shipping', 'bi-box-seam'],
+        'rejected' => ['اعتذرت المطبعة', 'status-cancelled', 'bi-x-circle'],
         'shipped' => ['قيد التوصيل', 'status-shipping', 'bi-truck'],
         'delivered' => ['تم التنفيذ', 'status-done', 'bi-check-circle'],
         'completed' => ['تم التنفيذ', 'status-done', 'bi-check-circle'],
@@ -25,7 +27,7 @@ class OrdersController extends Controller
     ];
 
     /** Statuses that move an order from "current" to "previous". */
-    private const FINAL_STATUSES = ['delivered', 'completed', 'cancelled'];
+    private const FINAL_STATUSES = ['delivered', 'completed', 'cancelled', 'rejected'];
 
     /** Only orders still in these statuses (not yet in production) can be cancelled by the customer. */
     private const CANCELLABLE_STATUSES = ['pending'];

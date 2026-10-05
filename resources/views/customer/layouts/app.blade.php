@@ -14,13 +14,10 @@
     <link rel="stylesheet" href="{{ asset('front/shared/interactions.css') }}?v={{ filemtime(public_path('front/shared/interactions.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/css/shared/site-footer.css') }}?v={{ hash_file('sha256', public_path('front/css/shared/site-footer.css')) }}">
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('front/shared/table-pagination.css') }}?v={{ filemtime(public_path('front/shared/table-pagination.css')) }}">
 </head>
 <body class="@yield('body-class', 'storefront-page')" data-authenticated="{{ auth()->check() ? 'true' : 'false' }}">
     <script>
-        // Toggled from the settings page's "تقليل الحركات" switch; applied here so it takes effect on every page.
-        if (localStorage.getItem('palprints-reduce-motion') === '1') {
-            document.body.classList.add('pp-reduce-motion');
-        }
         // Toggled from the settings page's "الوضع الليلي" switch. Scoped to settings-page only
         // (not a global data-bs-theme flip) so it can't collide with the separate, page-specific
         // dark-mode CSS already baked into storefront/catalog pages.
@@ -49,6 +46,7 @@
     <script src="{{ asset('front/js/customer/storefront.js') }}?v={{ filemtime(public_path('front/js/customer/storefront.js')) }}"></script>
     <script src="{{ asset('front/shared/interactions.js') }}?v={{ filemtime(public_path('front/shared/interactions.js')) }}"></script>
     @include('partials.pp-alert')
+    <script src="{{ asset('front/shared/table-pagination.js') }}?v={{ filemtime(public_path('front/shared/table-pagination.js')) }}"></script>
     @stack('scripts')
 @include('partials.page-loader', ['wait' => View::hasSection('page-loader-wait')])
 </body>

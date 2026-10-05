@@ -69,10 +69,6 @@ document.addEventListener("DOMContentLoaded", function () {
     Core.applyTheme(themeToggle.checked ? "dark" : "light");
   });
 
-  document.getElementById("reduceMotionToggle").addEventListener("change", function (event) {
-    document.body.classList.toggle("reduce-motion", event.target.checked);
-  });
-
   /* Delete account. The server still requires the current password. */
   const deleteDialog = document.getElementById("deleteAccountDialog");
   const deleteButton = document.getElementById("deleteAccountButton");

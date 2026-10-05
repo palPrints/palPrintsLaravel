@@ -45,6 +45,7 @@
     @stack('styles')
     <link rel="stylesheet" href="{{ $designerAsset('css/designer-laravel.css') }}">
     <link rel="stylesheet" href="{{ asset('front/shared/interactions.css').'?v='.filemtime(public_path('front/shared/interactions.css')) }}">
+    <link rel="stylesheet" href="{{ asset('front/shared/table-pagination.css') }}?v={{ filemtime(public_path('front/shared/table-pagination.css')) }}">
 </head>
 <body class="profile-page designer-profile-page @yield('body-class')">
     <a href="#designerMain" class="profile-skip-link" data-i18n="skipToContent">تخطي إلى المحتوى</a>
@@ -68,6 +69,7 @@
 
     <script src="{{ $designerAsset('js/profile-core.js') }}"></script>
     @include('partials.pp-alert')
+    <script src="{{ asset('front/shared/table-pagination.js') }}?v={{ filemtime(public_path('front/shared/table-pagination.js')) }}"></script>
     @stack('scripts')
     <script src="{{ $designerAsset('js/designer-shell.js') }}"></script>
     <script src="{{ asset('front/shared/interactions.js').'?v='.filemtime(public_path('front/shared/interactions.js')) }}"></script>

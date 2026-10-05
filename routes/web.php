@@ -27,6 +27,7 @@ use App\Http\Controllers\Designer\DesignController;
 use App\Http\Controllers\Designer\EarningsController;
 use App\Http\Controllers\Designer\NotificationController as DesignerNotificationController;
 use App\Http\Controllers\PrintProvider\NotificationController as PrintProviderNotificationController;
+use App\Http\Controllers\PrintProvider\OrdersController as PrintProviderOrdersController;
 use App\Http\Controllers\Designer\ProfileController as DesignerProfileController;
 use App\Http\Controllers\Designer\SettingsController as DesignerSettingsController;
 use App\Http\Controllers\Designer\SupportController as DesignerSupportController;
@@ -170,8 +171,13 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->middleware('role:print_provider')->name('print-provider.profile');
     Route::patch('/print-provider/profile', [PrintProviderProfileController::class, 'update'])
         ->middleware('role:print_provider')->name('print-provider.profile.update');
-    Route::view('/print-provider/requests', 'printProvider.requests')
-        ->middleware(['role:print_provider', 'account.approved'])->name('print-provider.requests');
+    Route::middleware(['role:print_provider', 'account.approved'])->prefix('print-provider/requests')->name('print-provider.requests')->group(function () {
+        Route::get('/', [PrintProviderOrdersController::class, 'index']);
+        Route::post('/{order}/accept', [PrintProviderOrdersController::class, 'accept'])->name('.accept');
+        Route::post('/{order}/reject', [PrintProviderOrdersController::class, 'reject'])->name('.reject');
+        Route::post('/{order}/ready', [PrintProviderOrdersController::class, 'ready'])->name('.ready');
+        Route::get('/{order}/files/{printFile}', [PrintProviderOrdersController::class, 'downloadFile'])->name('.files');
+    });
     Route::get('/print-provider/earnings', PrintProviderEarningsController::class)
         ->middleware(['role:print_provider', 'account.approved'])->name('print-provider.earnings');
     Route::post('/print-provider/earnings/withdraw', [PrintProviderEarningsController::class, 'withdraw'])

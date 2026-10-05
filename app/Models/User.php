@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Support\EmailVerificationCode;
 use Illuminate\Auth\MustVerifyEmail as VerifiesEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -17,6 +18,12 @@ class User extends Authenticatable
     // Email verification is on request only: the trait gives the methods; the MustVerifyEmail interface is left out on purpose,
     // because it would also send the mail at every registration.
     use HasFactory, HasRoles, Notifiable, VerifiesEmail;
+
+    /** Verification works with a mailed code, not a link. */
+    public function sendEmailVerificationNotification(): void
+    {
+        EmailVerificationCode::send($this);
+    }
 
     protected $fillable = [
         'name',

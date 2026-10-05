@@ -50,17 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  const reduceMotionToggle = document.getElementById("reduceMotionToggle");
-  if (reduceMotionToggle) {
-    const stored = localStorage.getItem("palprints-reduce-motion") === "1";
-    reduceMotionToggle.checked = stored;
-    document.body.classList.toggle("pp-reduce-motion", stored);
-    reduceMotionToggle.addEventListener("change", () => {
-      document.body.classList.toggle("pp-reduce-motion", reduceMotionToggle.checked);
-      localStorage.setItem("palprints-reduce-motion", reduceMotionToggle.checked ? "1" : "0");
-    });
-  }
-
   const deleteDialog = document.getElementById("deleteAccountDialog");
   const deleteButton = document.getElementById("deleteAccountButton");
   if (deleteDialog && deleteButton) {

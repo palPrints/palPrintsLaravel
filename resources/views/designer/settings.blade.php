@@ -105,6 +105,7 @@
                             <label class="profile-field"><span>كلمة المرور الحالية</span><span class="profile-input-shell"><i class="bi bi-lock"></i><input name="current_password" type="password" autocomplete="current-password" required></span></label>
                             <label class="profile-field"><span>كلمة المرور الجديدة</span><span class="profile-input-shell"><i class="bi bi-key"></i><input name="password" type="password" minlength="8" autocomplete="new-password" required></span><small>8 أحرف على الأقل.</small></label>
                             <label class="profile-field"><span>تأكيد كلمة المرور</span><span class="profile-input-shell"><i class="bi bi-key-fill"></i><input name="password_confirmation" type="password" minlength="8" autocomplete="new-password" required></span><small class="profile-field-error" id="passwordMatchError">كلمتا المرور غير متطابقتين.</small></label>
+                            @include('partials.password-code-field', ['field' => 'profile-field', 'shell' => 'profile-input-shell'])
                         </div>
                         <footer class="settings-form-actions"><button type="submit" class="profile-button is-primary"><i class="bi bi-shield-check"></i>تحديث الأمان</button></footer>
                     </form>
@@ -123,7 +124,7 @@
                     <header class="settings-section-head"><span><i class="bi bi-patch-check"></i></span><div><h2>اعتماد حساب المصمم</h2><p>تابع تفعيل البريد وحالة مراجعة حساب المصمم.</p></div></header>
                     <div class="settings-role-content">
                         @foreach ($requirements as $item)
-                            <div class="settings-requirement"><i class="bi {{ $item['icon'] }}"></i><div><strong>{{ $item['title'] }}</strong><p>{{ $item['text'] }}</p></div><span @class(['settings-requirement-status', 'is-warning' => $item['warning']])>{{ $item['label'] }}</span></div>
+                            <div class="settings-requirement"><i class="bi {{ $item['icon'] }}"></i><div><strong>{{ $item['title'] }}</strong><p>{{ $item['text'] }}</p></div><span @class(['settings-requirement-status', 'is-warning' => $item['warning']])>{{ $item['label'] }}</span>@if ($item['icon'] === 'bi-envelope-check' && $item['warning'])<form method="POST" action="{{ route('verification.send') }}" class="email-verify-form">@csrf<button type="submit" class="email-verify-button"><i class="bi bi-send" aria-hidden="true"></i> أرسل رمز التوثيق</button></form>@endif</div>
                         @endforeach
                         @if ($adminNote && $needsChanges)
                             <div class="settings-role-note"><i class="bi bi-chat-left-text"></i><span>ملاحظات الإدارة: {{ $adminNote }}</span></div>
@@ -137,7 +138,6 @@
                     <header class="settings-section-head"><span><i class="bi bi-sliders"></i></span><div><h2>تفضيلات العرض</h2><p>خصص طريقة ظهور واستخدام المنصة.</p></div></header>
                     <div class="settings-options-list">
                         <div class="settings-option"><div><strong>الوضع الداكن</strong><small>استخدام الألوان الداكنة في واجهة الحساب.</small></div><label class="profile-switch"><input type="checkbox" id="settingsThemeToggle"><span class="profile-switch-track"></span></label></div>
-                        <div class="settings-option"><div><strong>تقليل الحركات</strong><small>تقليل مؤثرات الانتقال والحركة.</small></div><label class="profile-switch"><input type="checkbox" id="reduceMotionToggle"><span class="profile-switch-track"></span></label></div>
                     </div>
                 </section>
 
