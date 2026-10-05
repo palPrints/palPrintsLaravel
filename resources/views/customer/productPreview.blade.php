@@ -4,6 +4,12 @@
     Laravel differ: links are routes, the role comes from the logged-in user,
     and "add to cart" posts to the database-backed cart.
 --}}
+@php
+    $isCustomer = auth()->user()?->hasRole('customer');
+    $productsUrl = $isCustomer ? route('customer.store').'#products' : route('designer.designs.create');
+    $productNames = collect(\App\Support\CatalogProductData::forDesigner()['products'])->mapWithKeys(fn ($product) => [strtoupper((string) $product['code']) => $product['name']])->all();
+    $productLinks = $isCustomer ? ['TSHIRT-CLASSIC' => route('customer.tshirts'), 'HOODIE-PREMIUM' => route('customer.hoodies'), 'MUG-CERAMIC' => route('customer.mugs'), 'STICKER-CUSTOM' => route('customer.stickers')] : [];
+@endphp
 @extends('customer.layouts.app')
 
 @section('title', 'معاينة المنتج')
@@ -29,8 +35,8 @@
       <header class="preview-page-heading">
         <ol class="preview-breadcrumb" aria-label="مسار التنقل">
           <li><a href="{{ route('home') }}">الرئيسية</a></li>
-          <li><a href="{{ route('customer.store') }}#products">المنتجات</a></li>
-          <li><a href="{{ route('customer.hoodies') }}" id="breadcrumbProductName">المنتج</a></li>
+          <li><a href="{{ $productsUrl }}" id="breadcrumbProducts">المنتجات</a></li>
+          <li><a href="{{ $productsUrl }}" id="breadcrumbProductName">المنتج</a></li>
           <li aria-current="page"><span>معاينة المنتج</span></li>
         </ol>
         <div class="preview-title-row">
@@ -215,6 +221,14 @@
         window.palPrintsCustomerAssets = window.palPrintsCustomerAssets || {};
         window.palPrintsCustomerAssets.cartCatalogUrl = @json(route('customer.cart.store-catalog'));
         window.palPrintsCustomerAssets.cartCustomDesignUrl = @json(route('customer.cart.store-custom-design'));
+    </script>
+    <script>
+        // Real (database) product names and the catalog page of each product, for the title and the breadcrumb.
+        window.palPrintsPreviewCatalog = {
+            names: @json($productNames),
+            links: @json($productLinks),
+            productsUrl: @json($productsUrl),
+        };
     </script>
     <script src="{{ asset('front/studio/assets/js/pages/design-studio-product-catalog.js') }}"></script>
     <script src="{{ asset('front/studio/assets/js/pages/design-studio-graphics.js') }}"></script>

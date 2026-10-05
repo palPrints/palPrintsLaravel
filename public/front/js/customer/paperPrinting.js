@@ -218,7 +218,18 @@ document.addEventListener("DOMContentLoaded", function () {
     if (index < 0) return;
     const file = state.files[index];
     const impactful = state.completedStep > 0 || file.override || state.grouping;
-    if (impactful && !window.confirm(t("deleteConfirm"))) return;
+    if (!impactful) { performRemove(id); return; }
+    PalAlert.confirm({
+      title: "حذف الملف",
+      text: t("deleteConfirm"),
+      confirmText: "نعم، احذف",
+    }).then(function (ok) { if (ok) performRemove(id); });
+  }
+
+  function performRemove(id) {
+    const index = state.files.findIndex(function (file) { return file.id === id; });
+    if (index < 0) return;
+    const file = state.files[index];
     state.files.splice(index, 1);
     state.fileOrder = state.fileOrder.filter(function (fileId) { return fileId !== id; });
     delete state.separateBindings[id];
@@ -648,10 +659,16 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   el.applyAll.addEventListener("click", function () {
-    if (!window.confirm(t("applyAllConfirm"))) return;
-    state.files.forEach(function (file) { file.override = null; });
-    if (state.completedStep >= 2) state.completedStep = 1;
-    renderAll(); showToast(t("overridesCleared"));
+    PalAlert.confirm({
+      title: "تطبيق الإعداد على كل الملفات",
+      text: t("applyAllConfirm"),
+      confirmText: "نعم، طبّق",
+    }).then(function (ok) {
+      if (!ok) return;
+      state.files.forEach(function (file) { file.override = null; });
+      if (state.completedStep >= 2) state.completedStep = 1;
+      renderAll(); showToast(t("overridesCleared"));
+    });
   });
 
   $("#groupingChoice").addEventListener("click", function (event) {

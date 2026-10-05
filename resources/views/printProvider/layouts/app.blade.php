@@ -44,6 +44,7 @@
     <div class="printshop-toast" id="dashboardToast" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <script src="{{ asset('front/js/printProvider/dashboard.js') }}"></script>
+    @include('partials.pp-alert')
     @stack('scripts')
 @include('partials.page-loader')
 </body>

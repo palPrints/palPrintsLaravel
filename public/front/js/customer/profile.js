@@ -60,3 +60,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 2600);
   }
 });
+
+/* Phone: red frame and a message as soon as the number cannot be accepted (059 / 056 followed by 7 digits). */
+document.addEventListener("DOMContentLoaded", () => {
+  const phone = document.getElementById("phone");
+  if (!phone) return;
+
+  const message = document.createElement("span");
+  message.className = "pp-error";
+  message.id = "phoneClientError";
+  message.hidden = true;
+  phone.insertAdjacentElement("afterend", message);
+  phone.setAttribute("aria-describedby", "phoneClientError");
+
+  const check = () => {
+    const value = phone.value.replace(/[\s-]+/g, "");
+    let problem = "";
+
+    if (value !== "") {
+      if (/\D/.test(value)) problem = "رقم الهاتف يجب أن يحتوي على أرقام فقط.";
+      else if (!/^05[69]/.test(value)) problem = "يجب أن يبدأ رقم الهاتف بـ 059 أو 056.";
+      else if (value.length < 10) problem = "رقم الهاتف يجب أن يتكوّن من 10 أرقام.";
+    }
+
+    phone.classList.toggle("is-invalid", problem !== "");
+    phone.setAttribute("aria-invalid", problem !== "" ? "true" : "false");
+    message.textContent = problem;
+    message.hidden = problem === "";
+    phone.setCustomValidity(problem);
+  };
+
+  phone.addEventListener("input", check);
+  phone.addEventListener("blur", check);
+  check();
+});

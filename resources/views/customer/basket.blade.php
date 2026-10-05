@@ -12,15 +12,21 @@
 
 @section('title', 'سلة التسوق')
 @section('meta-description', 'سلة التسوق في متجر PalPrints')
-@section('body-class', 'storefront-page order-basket-page')
-@section('main-class', 'basket-main')
-@section('main-id', 'basketMain')
+@section('body-class', 'storefront-page order-basket-page'.($items->isEmpty() ? ' empty-basket-page' : ''))
+@section('main-class', $items->isEmpty() ? 'empty-basket-main' : 'basket-main')
+@section('main-id', $items->isEmpty() ? 'emptyBasketMain' : 'basketMain')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('front/css/customer/orderBasket.css') }}?v={{ filemtime(public_path('front/css/customer/orderBasket.css')) }}">
+    @if($items->isEmpty())
+        <link rel="stylesheet" href="{{ asset('front/css/customer/emptyBasket.css') }}?v={{ filemtime(public_path('front/css/customer/emptyBasket.css')) }}">
+    @endif
 @endpush
 
 @section('content')
+    @if($items->isEmpty())
+        @include('customer.partials.basket-empty')
+    @else
     <div class="page-heading">
         <div class="breadcrumbs">
             <a href="{{ route('home') }}">الرئيسية</a>
@@ -37,14 +43,6 @@
         <div class="alert-success page-alert">تم حذف المنتج من السلة.</div>
     @endif
 
-    @if($items->isEmpty())
-        <section class="basket-card basket-empty-state">
-            <span class="basket-empty-state__icon"><i class="bi bi-cart-x"></i></span>
-            <h2>سلتك فارغة حاليًا</h2>
-            <p>تصفحي المتجر وضيفي منتجات لتبدئي طلبك.</p>
-            <a class="primary-action" href="{{ route('customer.store') }}">تصفح المتجر <i class="bi bi-arrow-left"></i></a>
-        </section>
-    @else
         <section class="basket-card" aria-labelledby="basketTitle">
             <h2 class="sr-only" id="basketTitle">منتجات السلة</h2>
             <div class="basket-items" id="basketItems">
@@ -88,7 +86,7 @@
                                 <button type="submit" data-quantity-action="increase" aria-label="زيادة الكمية">+</button>
                             </form>
                         </div>
-                        <form method="POST" action="{{ route('customer.cart.destroy', $item['id']) }}" style="display:contents">
+                        <form method="POST" action="{{ route('customer.cart.destroy', $item['id']) }}" style="display:contents" data-confirm-title="حذف المنتج" data-confirm-message="هل تريد حذف هذا المنتج من السلة؟" data-confirm-action="نعم، احذف">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="remove-item" aria-label="حذف المنتج"><i class="bi bi-trash3"></i></button>

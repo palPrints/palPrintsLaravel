@@ -108,7 +108,7 @@
                                 <p class="notifications-empty"><i class="bi bi-bell-slash" aria-hidden="true"></i>لا توجد إشعارات جديدة</p>
                             @endforelse
                         </div>
-                        @if($customerLatestNotifications->isNotEmpty())
+                        @if(true)
                             <div class="notifications-panel__footer">
                                 <a href="{{ route('customer.notifications') }}">رؤية جميع الإشعارات</a>
                             </div>

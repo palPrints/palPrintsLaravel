@@ -87,7 +87,7 @@
                         <div class="settings-field-grid">
                             <label class="profile-field"><span>الاسم الكامل</span><span class="profile-input-shell"><i class="bi bi-person"></i><input name="name" type="text" value="{{ old('name', $profile?->full_name ?: $user->name) }}" minlength="3" maxlength="255" required></span></label>
                             <label class="profile-field"><span>البريد الإلكتروني</span><span class="profile-input-shell"><i class="bi bi-envelope"></i><input name="email" type="email" value="{{ old('email', $user->email) }}" dir="ltr" maxlength="255" required></span></label>
-                            <label class="profile-field"><span>رقم الهاتف</span><span class="profile-input-shell"><i class="bi bi-telephone"></i><input name="phone" type="tel" value="{{ old('phone', $user->phone) }}" dir="ltr" maxlength="30"></span></label>
+                            <label class="profile-field"><span>رقم الهاتف</span><span class="profile-input-shell"><i class="bi bi-telephone"></i><input name="phone" type="tel" inputmode="numeric" value="{{ old('phone', $user->phone) }}" dir="ltr" maxlength="10" pattern="05[69][0-9]{7}" title="يجب أن يبدأ رقم الهاتف بـ 059 أو 056 ويتكوّن من 10 أرقام." placeholder="059xxxxxxx"></span></label>
                         </div>
                         <footer class="settings-form-actions"><button type="reset" class="profile-button is-ghost">تراجع</button><button type="submit" class="profile-button is-primary"><i class="bi bi-check2"></i>حفظ التغييرات</button></footer>
                     </form>

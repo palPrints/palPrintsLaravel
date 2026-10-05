@@ -139,7 +139,7 @@ class ProfileController extends Controller
             $branch->branchProductOfferings()->create([
                 'product_id' => $productId, 'base_price' => 0, 'currency' => 'ILS',
                 'production_time_min' => 0, 'production_time_max' => 0, 'daily_capacity' => 0, 'is_active' => false,
-            ]);
+            ])->ensurePrintAreas();
         }
     }
 

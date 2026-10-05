@@ -102,7 +102,7 @@
                     </div>
                     <label class="field payment-receipt-field" data-payment-receipt>
                         <span>&#1589;&#1608;&#1585;&#1577; &#1573;&#1588;&#1593;&#1575;&#1585; &#1575;&#1604;&#1583;&#1601;&#1593; <b>*</b></span>
-                        <span class="input-wrap"><i class="bi bi-image"></i><input id="paymentReceipt" name="payment_receipt" type="file" accept="image/png,image/jpeg,image/webp"></span>
+                        <span class="input-wrap receipt-drop"><img class="receipt-thumb" alt="" hidden><i class="bi bi-cloud-arrow-up"></i><span class="receipt-text"><strong data-receipt-name>اضغطي لاختيار صورة الإشعار</strong><small>PNG أو JPG أو WEBP</small></span><input id="paymentReceipt" name="payment_receipt" type="file" accept="image/png,image/jpeg,image/webp"></span>
                         <small>&#1576;&#1593;&#1583; &#1573;&#1578;&#1605;&#1575;&#1605; &#1575;&#1604;&#1578;&#1581;&#1608;&#1610;&#1604; &#1593;&#1576;&#1585; PalPay &#1571;&#1608; &#1580;&#1608;&#1575;&#1604; Pay &#1571;&#1608; &#1576;&#1606;&#1603; &#1601;&#1604;&#1587;&#1591;&#1610;&#1606;&#1548; &#1575;&#1585;&#1601;&#1593;&#1610; &#1589;&#1608;&#1585;&#1577; &#1608;&#1575;&#1590;&#1581;&#1577; &#1605;&#1606; &#1573;&#1588;&#1593;&#1575;&#1585; &#1575;&#1604;&#1583;&#1601;&#1593; &#1581;&#1578;&#1609; &#1610;&#1578;&#1605; &#1578;&#1571;&#1603;&#1610;&#1583; &#1575;&#1604;&#1591;&#1604;&#1576;.</small>
                         <small class="error"></small>
                     </label>
@@ -110,7 +110,7 @@
                     <div class="button-row"><button class="secondary-btn" type="button" data-back="2"><i class="bi bi-arrow-right"></i> العودة إلى العنوان</button><button class="primary-btn" type="button" data-next="4">متابعة إلى مراجعة الطلب <i class="bi bi-arrow-left"></i></button></div>
                 </div>
                 <div class="step-panel" data-panel="4">
-                    <div class="card-heading review-heading"><i class="bi bi-clipboard-check"></i><div><h2>مراجعة الطلب</h2><p>بعد التأكيد سيتم إنشاء order و order_items وربط print_files بالطلب.</p></div></div>
+                    <div class="card-heading review-heading"><i class="bi bi-clipboard-check"></i><div><h2>مراجعة الطلب</h2><p>راجع بياناتك قبل التأكيد. يمكنك تعديل أي خطوة قبل إتمام الطلب.</p></div></div>
                     <div class="review-list">
                         <div><i class="bi bi-person"></i><span><strong>بيانات المستلم</strong><small id="reviewCustomer">{{ $customer->name }}<br>{{ $customer->phone }}</small></span><button type="button" data-back="1">تعديل</button></div>
                         <div><i class="bi bi-geo-alt"></i><span><strong>عنوان التوصيل</strong><small id="reviewAddress">سيتم استخدام العنوان المختار</small></span><button type="button" data-back="2">تعديل</button></div>
@@ -132,17 +132,23 @@
                         <div>
                             <h3>{{ $item['product_name'] }}</h3>
                             <strong>{{ number_format($item['total_price'], 2) }} ₪</strong>
-                            <p>
-                                @foreach($item['option_tags'] ?? [] as $tag)
-                                    {{ $tag }}<br>
-                                @endforeach
-                                @if(!empty($item['options']['files']))
-                                    الملفات: {{ count($item['options']['files']) }} ملف<br>
-                                    @foreach($item['options']['files'] as $file)
-                                        {{ $file['name'] }}@if(!empty($file['page_count'])) - {{ $file['page_count'] }} صفحة@endif<br>
+                            @if(!empty($item['option_tags']))
+                                <ul class="summary-tags">
+                                    @foreach($item['option_tags'] as $tag)
+                                        <li>{{ $tag }}</li>
                                     @endforeach
-                                @endif
-                            </p>
+                                </ul>
+                            @endif
+                            @if(!empty($item['options']['files']))
+                                <details class="summary-files">
+                                    <summary>عرض الملفات ({{ count($item['options']['files']) }})</summary>
+                                    <ul>
+                                        @foreach($item['options']['files'] as $file)
+                                            <li><span>{{ $file['name'] }}</span>@if(!empty($file['page_count']))<small>{{ $file['page_count'] }} صفحة</small>@endif</li>
+                                        @endforeach
+                                    </ul>
+                                </details>
+                            @endif
                         </div>
                         <b>×{{ $item['quantity'] }}</b>
                     </article>

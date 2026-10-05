@@ -161,7 +161,16 @@
 
     if (logoutForm) {
       logoutForm.addEventListener("submit", function (event) {
-        if (!window.confirm("هل تريد تسجيل الخروج من لوحة الإدارة؟")) event.preventDefault();
+        event.preventDefault();
+        PalAlert.confirm({
+          title: "تسجيل الخروج",
+          text: "هل تريد تسجيل الخروج من لوحة الإدارة؟",
+          confirmText: "نعم، سجّل الخروج",
+          icon: "question",
+          danger: false,
+        }).then(function (ok) {
+          if (ok) HTMLFormElement.prototype.submit.call(logoutForm);
+        });
       });
     }
 

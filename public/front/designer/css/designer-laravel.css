@@ -138,6 +138,10 @@
   margin-top: 18px;
 }
 
+.designer-submit-review[hidden] {
+  display: none;
+}
+
 html[data-bs-theme="dark"] .designer-form-errors { color: #fda29b; background: rgb(240 68 56 / 12%); border-color: rgb(240 68 56 / 30%); }
 html[data-bs-theme="dark"] .designer-field-error { color: #fda29b; }
 html[data-bs-theme="dark"] .designer-review-notice.is-approved { background: rgb(22 163 74 / 12%); border-color: rgb(22 163 74 / 30%); }

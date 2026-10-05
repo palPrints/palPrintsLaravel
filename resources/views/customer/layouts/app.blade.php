@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="{{ asset('front/css/customer/storefront.css') }}?v={{ filemtime(public_path('front/css/customer/storefront.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/shared/interactions.css') }}?v={{ filemtime(public_path('front/shared/interactions.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/css/shared/site-footer.css') }}?v={{ hash_file('sha256', public_path('front/css/shared/site-footer.css')) }}">
-    <link rel="stylesheet" href="{{ asset('front/shared/confirm-dialog.css') }}?v={{ filemtime(public_path('front/shared/confirm-dialog.css')) }}">
     @stack('styles')
 </head>
 <body class="@yield('body-class', 'storefront-page')" data-authenticated="{{ auth()->check() ? 'true' : 'false' }}">
@@ -49,7 +48,7 @@
     </script>
     <script src="{{ asset('front/js/customer/storefront.js') }}?v={{ filemtime(public_path('front/js/customer/storefront.js')) }}"></script>
     <script src="{{ asset('front/shared/interactions.js') }}?v={{ filemtime(public_path('front/shared/interactions.js')) }}"></script>
-    <script src="{{ asset('front/shared/confirm-dialog.js') }}?v={{ filemtime(public_path('front/shared/confirm-dialog.js')) }}"></script>
+    @include('partials.pp-alert')
     @stack('scripts')
 @include('partials.page-loader', ['wait' => View::hasSection('page-loader-wait')])
 </body>

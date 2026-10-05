@@ -23,7 +23,15 @@
             <p>حدّث بياناتك لتجربة تسوق أسهل.</p>
         </div>
 
-        <div class="alert-info page-alert">أكملي رقم هاتفك وعنوان التوصيل لتسريع تجهيز طلباتك القادمة.</div>
+        @if(session('status') === 'verification-link-sent' || session('verification_sent'))
+            <div class="alert-success page-alert">أرسلنا رابط التوثيق إلى بريدك الإلكتروني ({{ $customer->email }}). افتحي الرسالة واضغطي على الرابط. إذا لم تجديها، افحصي مجلد الرسائل غير المرغوبة (Spam).</div>
+        @elseif(session('status') === 'email-verified')
+            <div class="alert-success page-alert">تم توثيق بريدك الإلكتروني بنجاح.</div>
+        @endif
+
+        @if(blank($customer->phone))
+            <div class="alert-info page-alert">أكملي رقم هاتفك لتسريع تجهيز طلباتك القادمة.</div>
+        @endif
 
         @php
             $nameParts = preg_split('/\s+/', trim($customer->name)) ?: [];
@@ -46,11 +54,17 @@
                     <h2 id="displayName">{{ $customer->name }}</h2>
                     <p>عميل PalPrints</p>
                     <span>أهلاً بك في ملفك الشخصي.</span>
-                    @if($customer->email_verified_at)
-                        <span class="badge-success"><i class="bi bi-patch-check-fill"></i> البريد الإلكتروني موثّق</span>
-                    @else
-                        <span class="badge-warning"><i class="bi bi-exclamation-circle-fill"></i> البريد الإلكتروني غير موثّق</span>
-                    @endif
+                    <div class="email-status">
+                        @if($customer->email_verified_at)
+                            <span class="badge-success"><i class="bi bi-patch-check-fill"></i> البريد الإلكتروني موثّق</span>
+                        @else
+                            <span class="badge-warning"><i class="bi bi-exclamation-circle-fill"></i> البريد الإلكتروني غير موثّق</span>
+                            <form method="POST" action="{{ route('verification.send') }}" class="email-status__form">
+                                @csrf
+                                <button type="submit" class="email-status__button"><i class="bi bi-envelope-check" aria-hidden="true"></i> وثّقيه الآن</button>
+                            </form>
+                        @endif
+                    </div>
                 </div>
             </div>
         </section>
@@ -108,7 +122,7 @@
                     </div>
                     <div class="field">
                         <label class="pp-label" for="phone">رقم الهاتف</label>
-                        <input id="phone" class="pp-input" name="phone" type="tel" value="{{ old('phone', $customer->phone) }}" placeholder="أدخل رقم الهاتف">
+                        <input id="phone" class="pp-input{{ $errors->has('phone') ? ' is-invalid' : '' }}" name="phone" type="tel" inputmode="numeric" maxlength="10" pattern="05[69][0-9]{7}" title="يجب أن يبدأ رقم الهاتف بـ 059 أو 056 ويتكوّن من 10 أرقام." value="{{ old('phone', $customer->phone) }}" placeholder="059xxxxxxx">
                         @error('phone') <span class="pp-error">{{ $message }}</span> @enderror
                     </div>
                     <div class="field"><label class="pp-label" for="city">المدينة</label><input id="city" class="pp-input" name="city" type="text" value="غزة"></div>

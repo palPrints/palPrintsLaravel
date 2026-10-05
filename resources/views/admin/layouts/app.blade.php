@@ -34,6 +34,7 @@
     <div class="admin-toast" id="adminToast" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <script src="{{ $adminAsset('js/admin/admin-shell.js') }}"></script>
+    @include('partials.pp-alert')
     @stack('scripts')
 @include('partials.page-loader')
 </body>

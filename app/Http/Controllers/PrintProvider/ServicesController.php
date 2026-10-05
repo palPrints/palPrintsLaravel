@@ -134,6 +134,7 @@ class ServicesController extends Controller
                 );
             }
 
+            $offering->ensurePrintAreas();
             $this->saveBasePrice($offering, (float) $data['price']);
             $this->savePrinting($offering, $product, collect($data['areas']), collect($data['methods']));
         });
@@ -305,8 +306,9 @@ class ServicesController extends Controller
                         // A shop that never chose options starts with everything ticked.
                         'colors' => $hasRows ? $chosen->pluck('color')->unique()->values()->all() : $colors->pluck('id')->all(),
                         'sizes' => $hasRows ? $chosen->pluck('size')->unique()->values()->all() : $sizes->pluck('id')->all(),
-                        'areas' => $offering->branchPrintAreas->isEmpty()
-                            ? $this->areaOptions($product)->map(fn (array $option) => ['code' => $option['code'], 'widthCm' => $option['widthCm'], 'heightCm' => $option['heightCm']])->all()
+                        // Nothing ticked yet (the rows exist but are all off): start with every area ticked.
+                        'areas' => $offering->branchPrintAreas->where('is_active', true)->isEmpty()
+                            ?$this->areaOptions($product)->map(fn (array $option) => ['code' => $option['code'], 'widthCm' => $option['widthCm'], 'heightCm' => $option['heightCm']])->all()
                             : $offering->branchPrintAreas->where('is_active', true)
                                 ->map(fn ($area) => ['code' => $area->code, 'widthCm' => round($area->max_width_mm / 10, 1), 'heightCm' => round($area->max_height_mm / 10, 1)])
                                 ->values()->all(),

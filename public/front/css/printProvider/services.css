@@ -90,12 +90,12 @@
 .print-services-page .services-dialog-footer .services-button--primary { flex: 1; }
 .print-services-page .services-dialog-footer .services-button--secondary { min-width: 120px; }
 .print-services-page .services-form-error, .print-services-page .services-storage-warning { padding: 10px 12px; font-size: 12px; border-radius: 8px; color: #b25500; background: #fff6ed; }
-.print-services-page .services-toast { position: fixed; z-index: 3000; top: 86px; left: 50%; display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100% - 32px); padding: 12px 18px; transform: translate(-50%, -14px); opacity: 0; pointer-events: none; border-radius: 12px; color: #14532d; background: #f0fdf4; border: 1px solid #86efac; box-shadow: 0 12px 28px rgb(22 101 52 / 18%); font-size: 14px; font-weight: 700; visibility: hidden; transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s; }
+.print-services-page .services-toast { position: fixed; z-index: 3000; top: 86px; left: 24px; display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100% - 32px); padding: 12px 18px; transform: translate(0, -14px); opacity: 0; pointer-events: none; border-radius: 12px; color: #14532d; background: #f0fdf4; border: 1px solid #86efac; box-shadow: 0 12px 28px rgb(22 101 52 / 18%); font-size: 14px; font-weight: 700; visibility: hidden; transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s; }
 .print-services-page .services-toast:empty { display: none; }
 .print-services-page .services-toast::before { content: "\2713"; display: grid; place-items: center; flex: none; width: 24px; height: 24px; color: #fff; font-size: 14px; background: #16a34a; border-radius: 50%; }
 .print-services-page .services-toast.is-error { color: #92400e; background: #fffbeb; border-color: #fcd34d; box-shadow: 0 12px 28px rgb(146 64 14 / 18%); }
 .print-services-page .services-toast.is-error::before { content: "!"; background: #d97706; font-weight: 800; }
-.print-services-page .services-toast.is-visible { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition-delay: 0s; }
+.print-services-page .services-toast.is-visible { opacity: 1; visibility: visible; transform: translate(0, 0); transition-delay: 0s; }
 /* Small compositions use the project's original product photography. */
 .print-services-page .services-brand { position: absolute; width: 34%; height: auto; top: 48%; left: 33%; }
 .print-services-page .services-art--mug .services-brand { top: 52%; left: 27%; width: 29%; }

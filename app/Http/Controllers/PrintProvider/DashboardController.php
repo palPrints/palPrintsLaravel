@@ -39,7 +39,8 @@ class DashboardController extends Controller
         $branchIds = $provider?->branches()->pluck('id') ?? collect();
 
         // Orders that contain at least one item routed to one of this provider's branches.
-        $orders = fn () => Order::query()->whereHas(
+        // Orders whose payment notice the admin has not approved yet (or rejected) never reach the shop.
+        $orders = fn () => Order::query()->whereNotIn('payment_status', ['pending', 'pending_review', 'failed'])->whereHas(
             'items',
             fn ($items) => $items->whereIn('print_provider_branch_id', $branchIds)
         );

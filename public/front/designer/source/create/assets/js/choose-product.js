@@ -417,7 +417,7 @@ function startDesign() {
     if (!validation.valid) {
         elements.selectionMessage.textContent = validation.message;
         announce(validation.message);
-        window.alert(validation.message);
+        PalAlert.alert(validation.message, { icon: "warning" });
         return;
     }
 
