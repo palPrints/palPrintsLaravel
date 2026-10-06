@@ -158,6 +158,8 @@ test('admin can add, update, pause and delete a product', function () {
         'code' => 'HOODIE-9',
         'category_id' => $category->id,
         'image' => UploadedFile::fake()->create('hoodie.png', 20, 'image/png'),
+        'colors' => json_encode([['name' => 'أسود', 'hex' => '#111111']]),
+        'sizes' => 'M, L',
     ])->assertCreated();
 
     $product = Product::where('code', 'HOODIE-9')->firstOrFail();
@@ -186,6 +188,8 @@ test('product code must be unique and an image is required for new products', fu
         'name' => 'منتج',
         'code' => 'DUP-1',
         'category_id' => $existing->category_id,
+        'colors' => json_encode([['name' => 'أسود', 'hex' => '#111111']]),
+        'sizes' => 'M, L',
     ])->assertStatus(422)->assertJsonValidationErrors(['code', 'image']);
 });
 

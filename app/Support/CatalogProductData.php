@@ -170,6 +170,22 @@ class CatalogProductData
             ->all();
     }
 
+    /**
+     * A colour value as the admin form shows it: Arabic name and #rrggbb.
+     *
+     * @return array{name: string, hex: string}
+     */
+    public static function describeColor(AttributeValue $value): array
+    {
+        $decoded = self::decodeValue($value);
+        $code = self::normalizeCode($value->code);
+
+        return [
+            'name' => $decoded['hex'] === null ? (self::COLOR_NAMES[$code] ?? $decoded['name']) : $decoded['name'],
+            'hex' => $decoded['hex'] ?? self::swatch($code),
+        ];
+    }
+
     public static function swatch(string $code): string
     {
         return self::SWATCHES[$code] ?? '#888888';

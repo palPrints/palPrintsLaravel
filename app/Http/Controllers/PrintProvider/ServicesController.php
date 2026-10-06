@@ -363,7 +363,7 @@ class ServicesController extends Controller
 
                 return $color && $size ? [
                     'id' => $variant->id,
-                    'color' => $color->code, 'colorLabel' => $color->value,
+                    'color' => $color->code, 'colorLabel' => CatalogProductData::describeColor($color)['name'], 'colorHex' => CatalogProductData::describeColor($color)['hex'],
                     'size' => $size->code, 'sizeLabel' => $size->value,
                 ] : null;
             })
@@ -379,7 +379,7 @@ class ServicesController extends Controller
             ->map(fn (array $variant) => array_filter([
                 'id' => $variant[$axis],
                 'label' => $variant[$axis.'Label'],
-                'value' => $axis === 'color' ? CatalogProductData::swatch($variant[$axis]) : null,
+                'value' => $axis === 'color' ? $variant['colorHex'] : null,
             ]))
             ->values();
     }
