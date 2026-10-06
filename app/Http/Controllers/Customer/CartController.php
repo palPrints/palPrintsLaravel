@@ -71,6 +71,13 @@ class CartController extends Controller
                 'quantity' => $item->quantity,
                 'unit_price' => (float) $item->unit_price,
                 'total_price' => (float) $item->unit_price * $item->quantity,
+                // What the customer picked, shown under the product name.
+                'option_tags' => $item->product?->code === 'PAPER-PRINT'
+                    ? $this->paperOptionTags($options)
+                    : array_values(array_filter([
+                        ! empty($options['color']) ? 'اللون: '.$options['color'] : null,
+                        ! empty($options['size']) ? 'المقاس: '.$options['size'] : null,
+                    ])),
                 'options' => $options,
             ];
         });
@@ -221,6 +228,7 @@ class CartController extends Controller
                 'color' => $group['color_name'] ?? $group['color_id'],
                 'size' => $group['size_name'] ?? $group['size_id'],
                 'print_areas' => $group['print_areas'] ?? [],
+                'print_area_names' => $router->areaNames($product, $group['print_areas'] ?? []),
             ]);
 
             $item = CartItem::firstOrNew([
@@ -323,6 +331,7 @@ class CartController extends Controller
                     'color' => $group['color_name'] ?? $group['color_id'],
                     'size' => $group['size_name'] ?? $group['size_id'],
                     'print_areas' => $group['print_areas'] ?? [],
+                    'print_area_names' => $router->areaNames($product, $group['print_areas'] ?? []),
                     'design_name' => $validated['design_name'] ?? null,
                     'layout' => $layout,
                     'branch_product_offering_id' => $offering->id,

@@ -58,7 +58,7 @@
                                             <span>{{ $tag }}</span>
                                         @endforeach
                                         @if(!empty($item['options']['print_areas']) && is_array($item['options']['print_areas']))
-                                            <span><i class="bi bi-printer"></i> طباعة: {{ implode(' + ', $item['options']['print_areas']) }}</span>
+                                            <span><i class="bi bi-printer"></i> طباعة: {{ implode(' + ', $item['options']['print_area_names'] ?? $item['options']['print_areas']) }}</span>
                                         @endif
                                         @if(!empty($item['options']['files']))
                                             <span><i class="bi bi-file-earmark-pdf"></i> {{ count($item['options']['files']) }} ملف</span>

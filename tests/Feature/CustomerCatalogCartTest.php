@@ -24,11 +24,15 @@ function publishedDesignFor(string $code, float $price = 30): Design
 
 function catalogGroup(string $color, string $size, int $quantity = 1): array
 {
-    return ['color_id' => $color, 'color_name' => $color, 'size_id' => $size, 'size_name' => $size, 'quantity' => $quantity, 'print_areas' => ['الأمام']];
+    return ['color_id' => $color, 'color_name' => $color, 'size_id' => $size, 'size_name' => $size, 'quantity' => $quantity, 'print_areas' => ['front']];
 }
 
 beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
+    // The demo seeder only builds a shop's branches when an approved print shop already exists.
+    $owner = User::factory()->create();
+    $owner->assignRole('print_provider');
+    $owner->printProvider()->create(['company_name' => 'مطبعة تجريبية', 'approval_status' => 'approved', 'is_active' => true]);
     $this->seed(CatalogDemoSeeder::class);
     $this->customer = User::factory()->create();
     $this->customer->assignRole('customer');
@@ -50,7 +54,7 @@ test('t-shirt is added with the exact variant and the server-side price', functi
         ->and((float) $item->unit_price)->toBe(30.0)
         ->and($item->design_id)->toBe($design->id);
 
-    $this->actingAs($this->customer)->get(route('customer.basket'))->assertOk()->assertSee('black')->assertSee('طباعة: الأمام');
+    $this->actingAs($this->customer)->get(route('customer.basket'))->assertOk()->assertSee('black')->assertSee('طباعة: Front Chest');
 });
 
 test('unknown color and missing size fall back to a real variant but keep the choice', function () {
@@ -133,6 +137,44 @@ test('product without a published design is rejected', function () {
         'product_code' => 'MUG-CERAMIC',
         'design_id' => 1,
         'groups' => [catalogGroup('default', 'standard')],
+    ])->assertUnprocessable()->assertJsonValidationErrors('product_code');
+
+    expect(CartItem::count())->toBe(0);
+});
+
+test('the cart stores area codes and shows the names from the shops, not what the browser sent', function () {
+    $design = publishedDesignFor('TSHIRT-CLASSIC');
+
+    $this->actingAs($this->customer)->postJson(route('customer.cart.store-catalog'), [
+        'product_code' => 'TSHIRT-CLASSIC',
+        'design_id' => $design->id,
+        'groups' => [['color_id' => 'black', 'color_name' => 'black', 'size_id' => 'm', 'size_name' => 'm', 'quantity' => 1, 'print_areas' => ['front']]],
+    ])->assertOk();
+
+    $options = CartItem::sole()->selected_options;
+    expect($options['print_areas'])->toBe(['front'])
+        ->and($options['print_area_names'])->toBe(['Front Chest']);
+});
+
+test('a line saved with the area name instead of its code still finds a shop', function () {
+    $design = publishedDesignFor('TSHIRT-CLASSIC');
+
+    $this->actingAs($this->customer)->postJson(route('customer.cart.store-catalog'), [
+        'product_code' => 'TSHIRT-CLASSIC',
+        'design_id' => $design->id,
+        'groups' => [['color_id' => 'black', 'color_name' => 'black', 'size_id' => 'm', 'size_name' => 'm', 'quantity' => 1, 'print_areas' => ['Front Chest']]],
+    ])->assertOk();
+
+    expect(CartItem::sole()->selected_options['print_area_names'])->toBe(['Front Chest']);
+});
+
+test('an area no shop offers is still refused', function () {
+    $design = publishedDesignFor('TSHIRT-CLASSIC');
+
+    $this->actingAs($this->customer)->postJson(route('customer.cart.store-catalog'), [
+        'product_code' => 'TSHIRT-CLASSIC',
+        'design_id' => $design->id,
+        'groups' => [['color_id' => 'black', 'color_name' => 'black', 'size_id' => 'm', 'size_name' => 'm', 'quantity' => 1, 'print_areas' => ['sleeve']]],
     ])->assertUnprocessable()->assertJsonValidationErrors('product_code');
 
     expect(CartItem::count())->toBe(0);

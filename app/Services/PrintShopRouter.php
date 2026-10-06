@@ -39,6 +39,8 @@ class PrintShopRouter
     public function need(Product $product, Collection $variantIds, array $studioAreas, ?array $layout, int $quantity = 1): array
     {
         $areas = collect($studioAreas)->unique()->map(function (string $studioId) use ($product, $layout) {
+            // Lines saved before the cart stored area codes hold the Arabic name ("الأمام"): read it back as its code.
+            $studioId = $this->areaLookup($product)['byName'][$studioId] ?? $studioId;
             $code = $this->databaseArea($product, $studioId);
             $size = $this->designSizeCm($layout, $studioId, $code, $product);
 
@@ -205,6 +207,43 @@ class PrintShopRouter
     public function databaseArea(Product $product, string $studioAreaId): string
     {
         return self::DATABASE_AREA[strtoupper($product->code)][$studioAreaId] ?? $studioAreaId;
+    }
+
+    /**
+     * The Arabic names of the print areas ("front" => "الأمام") for display in the cart and on the shop's orders page.
+     * They come from the shops' own area records, never from what the browser sent.
+     *
+     * @param  array<int, string>  $areas  area codes (or, for old lines, names)
+     * @return array<int, string>
+     */
+    public function areaNames(Product $product, array $areas): array
+    {
+        $lookup = $this->areaLookup($product);
+
+        return collect($areas)->unique()->map(function (string $area) use ($product, $lookup) {
+            $code = $this->databaseArea($product, $lookup['byName'][$area] ?? $area);
+
+            return $lookup['byCode'][$code] ?? $area;
+        })->values()->all();
+    }
+
+    /** @var array<int, array{byName: array<string, string>, byCode: array<string, string>}> */
+    private array $areaLookups = [];
+
+    /** Area names and codes of a product, from its shops' print areas. */
+    private function areaLookup(Product $product): array
+    {
+        return $this->areaLookups[$product->id] ??= (function () use ($product) {
+            $areas = BranchPrintArea::query()
+                ->whereHas('branchProductOffering', fn ($offerings) => $offerings->where('product_id', $product->id))
+                ->orderBy('id')
+                ->get(['code', 'name']);
+
+            return [
+                'byName' => $areas->pluck('code', 'name')->all(),
+                'byCode' => $areas->unique('code')->pluck('name', 'code')->all(),
+            ];
+        })();
     }
 
     /** Fraction of the zone width an object covers (text is scaled as a whole). */

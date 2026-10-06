@@ -228,7 +228,7 @@ class OrdersController extends Controller
             ])
             ->values();
 
-        $areas = $options->get('print_areas');
+        $areas = $options->get('print_area_names') ?: $options->get('print_areas');
         if (is_array($areas) && $areas !== []) {
             $details->push(['label' => 'مناطق الطباعة', 'value' => implode('، ', array_map('strval', $areas))]);
         }

@@ -421,7 +421,7 @@
     state.items.forEach(piece => { const ids = [...piece.printAreaIds], key = JSON.stringify([piece.colorId, piece.sizeId, ids]), group = groups.get(key) || { piece, quantity: 0 }; group.quantity += 1; groups.set(key, group); });
     const groupList = [...groups.values()].map(group => {
       const color = currentColor(group.piece), size = payload.product.sizes.find(item => item.id === group.piece.sizeId);
-      return { color_id: group.piece.colorId, color_name: color ? color.name : group.piece.colorId, size_id: group.piece.sizeId, size_name: size ? size.name : group.piece.sizeId, quantity: group.quantity, print_areas: selectedAreas(group.piece).map(area => area.name) };
+      return { color_id: group.piece.colorId, color_name: color ? color.name : group.piece.colorId, size_id: group.piece.sizeId, size_name: size ? size.name : group.piece.sizeId, quantity: group.quantity, print_areas: selectedAreas(group.piece).map(area => area.id) };
     });
     const pieces = [...groups.values()].map(group => group.piece);
     const body = { product_code: payload.product.code, design_id: payload.design.id, groups: groupList };
