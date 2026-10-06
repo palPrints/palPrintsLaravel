@@ -235,6 +235,7 @@ class CatalogProductData
     private static function attributeValues(Product $product): array
     {
         $result = [];
+        $offered = self::offeredValueIds($product);
 
         foreach ($product->attributes as $productAttribute) {
             $code = $productAttribute->attribute?->code;
@@ -242,14 +243,51 @@ class CatalogProductData
                 continue;
             }
 
-            $result[$code] = $productAttribute->values
+            $values = $productAttribute->values
                 ->where('is_active', true)
                 ->pluck('attributeValue')
-                ->filter()
-                ->values();
+                ->filter();
+
+            // Colours and sizes are what the print shops offer, not everything the platform has defined for the product.
+            if ($offered !== null && in_array($code, ['color', 'size'], true)) {
+                $values = $values->filter(fn (AttributeValue $value) => $offered->contains($value->id));
+            }
+
+            $result[$code] = $values->values();
         }
 
         return $result;
+    }
+
+    /**
+     * The attribute values (colours, sizes...) that at least one live shop offers for the product: an available
+     * variant of an active offering of an approved, active shop. Null when no shop offers the product at all, so
+     * the product keeps showing everything it has.
+     *
+     * @return Collection<int, int>|null
+     */
+    private static function offeredValueIds(Product $product): ?Collection
+    {
+        $product->loadMissing('branchProductOfferings.printProviderBranch.printProvider', 'branchProductOfferings.branchOfferingVariants.variant.values.productAttributeValue');
+
+        $offerings = $product->branchProductOfferings->filter(function (BranchProductOffering $offering) {
+            $branch = $offering->printProviderBranch;
+            $provider = $branch?->printProvider;
+
+            return $offering->is_active && $branch?->is_active && $provider?->is_active && $provider->approval_status === 'approved';
+        });
+
+        if ($offerings->isEmpty()) {
+            return null;
+        }
+
+        return $offerings
+            ->flatMap(fn (BranchProductOffering $offering) => $offering->branchOfferingVariants->where('is_available', true))
+            ->filter(fn ($offered) => $offered->variant?->is_active)
+            ->flatMap(fn ($offered) => $offered->variant->values->map(fn ($value) => $value->productAttributeValue?->attribute_value_id))
+            ->filter()
+            ->unique()
+            ->values();
     }
 
     /**
