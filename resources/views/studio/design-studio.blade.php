@@ -370,14 +370,17 @@
       async function openUploadedDesign(seed) {
         const catalog = (window.PALPRINTS_PRODUCT_CATALOG || {}).products || [];
         const product = catalog.find(function (item) { return item.categoryId === seed.kind; });
+        if (!product) return;
+        // The customer may arrive from "choose product" with nothing uploaded yet: the studio then opens an empty
+        // design on the chosen product, and the image is added inside the studio.
         const blob = await readPendingUpload();
-        if (!product || !blob) return;
 
         const designId = "customer-" + seed.designId;
         const colorId = product.colors.some(function (c) { return c.id === String(seed.colorId || "").toLowerCase(); }) ? String(seed.colorId).toLowerCase() : product.defaultColor;
         const sizeId = product.sizes.some(function (s) { return s.id === studioSizeId(seed.sizeId); }) ? studioSizeId(seed.sizeId) : product.sizes[0].id;
         const areaId = product.editor.printAreas.some(function (a) { return a.id === studioAreaId(seed.areaId); }) ? studioAreaId(seed.areaId) : product.editor.defaultAreaId;
         sessionStorage.setItem(SELECTION_KEY, JSON.stringify({ productId: product.id, editorProduct: product, colorId: colorId, sizeId: sizeId, printAreaIds: [areaId], designId: designId }));
+        if (!blob) return;
 
         const size = await imageSize(blob);
         const assetId = "asset-" + Date.now();
