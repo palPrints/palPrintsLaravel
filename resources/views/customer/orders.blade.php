@@ -58,7 +58,7 @@
                             @forelse($currentOrders as $order)
                                 <tr>
                                     <td data-label="رقم الطلب"><span class="order-number">#{{ $order['number'] }}</span></td>
-                                    <td data-label="المنتج"><div class="product-cell"><img src="{{ $order['thumbnail'] }}" alt="{{ $order['title'] }}"><div><strong>{{ $order['title'] }}</strong><span>{{ $order['subtitle'] }}</span></div></div></td>
+                                    <td data-label="المنتج"><div class="product-cell">@if(!empty($order['mockup']))<span class="product-thumb">@include('customer.partials.cart-mockup', ['mockup' => $order['mockup'], 'alt' => $order['title']])</span>@else<img src="{{ $order['thumbnail'] }}" alt="{{ $order['title'] }}">@endif<div><strong>{{ $order['title'] }}</strong><span>{{ $order['subtitle'] }}</span></div></div></td>
                                     <td data-label="تاريخ الطلب"><time datetime="{{ $order['date_iso'] }}">{{ $order['date_human'] }}</time></td>
                                     <td data-label="الإجمالي"><strong class="price">{{ $order['total'] }}</strong></td>
                                     <td data-label="حالة الطلب"><span class="status {{ $order['status_class'] }}"><i class="bi {{ $order['status_icon'] }}"></i>{{ $order['status_label'] }}</span></td>
@@ -91,7 +91,7 @@
                             @forelse($previousOrders as $order)
                                 <tr>
                                     <td data-label="رقم الطلب"><span class="order-number">#{{ $order['number'] }}</span></td>
-                                    <td data-label="المنتج"><div class="product-cell"><img src="{{ $order['thumbnail'] }}" alt="{{ $order['title'] }}"><div><strong>{{ $order['title'] }}</strong><span>{{ $order['subtitle'] }}</span></div></div></td>
+                                    <td data-label="المنتج"><div class="product-cell">@if(!empty($order['mockup']))<span class="product-thumb">@include('customer.partials.cart-mockup', ['mockup' => $order['mockup'], 'alt' => $order['title']])</span>@else<img src="{{ $order['thumbnail'] }}" alt="{{ $order['title'] }}">@endif<div><strong>{{ $order['title'] }}</strong><span>{{ $order['subtitle'] }}</span></div></div></td>
                                     <td data-label="تاريخ الطلب"><time datetime="{{ $order['date_iso'] }}">{{ $order['date_human'] }}</time></td>
                                     <td data-label="الإجمالي"><strong class="price">{{ $order['total'] }}</strong></td>
                                     <td data-label="حالة الطلب"><span class="status {{ $order['status_class'] }}"><i class="bi {{ $order['status_icon'] }}"></i>{{ $order['status_label'] }}</span></td>

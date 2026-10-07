@@ -1,4 +1,4 @@
-﻿{{--
+{{--
     Redraws a customer-made design the way the preview showed it: the product picture (tinted with the chosen color
     when it has no picture of its own), the print zone, and the artwork placed inside it. Positions are percentages
     of the same 1 : 1.1 box the preview uses, so the thumbnail matches it. All values are sanitized when saved
