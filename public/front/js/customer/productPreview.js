@@ -41,26 +41,10 @@
   const numeric = value => Number.isFinite(Number(value)) ? Number(value) : null;
   const validText = (value, fallback) => typeof value === "string" && value.trim() ? value.trim().slice(0, 120) : fallback;
 
-  function fallbackPayload() {
-    return {
-      studioContext: false,
-      product: {
-        id: "hoodie-classic", name: "هودي رجال / نساء", sellingPrice: 20, currency: "ILS", pricingConfigured: true, quantityMax: 99,
-        colors: [{ id: "cream", name: "كريمي", value: "#eee6d6", image: "assets/images/hoodie.png" }, { id: "black", name: "أسود", value: "#151719", image: "assets/images/hoodie.png" }, { id: "pink", name: "وردي", value: "#d9a6a9", image: "assets/images/hoodie.png" }],
-        sizes: ["S", "M", "L", "XL", "XXL"].map(name => ({ id: name.toLowerCase(), name })),
-        printAreas: [{ id: "front", name: "الأمام", image: "assets/images/hoodie.png", fee: 5, placement: { top: 25, left: 29, width: 42, height: 42 } }, { id: "back", name: "الخلف", image: "assets/images/hoodie-back-clean.png", fee: 5, placement: { top: 26, left: 30, width: 40, height: 42 } }],
-        printing: { customerSelectable: false, technologies: [] }
-      },
-      design: { id: "salam", name: "سلام دائم", designerName: "Omar K", preview: { images: [], texts: [{ content: "سلام", color: "#fff", x: 50, y: 60, width: 80, sizePercent: 18, layerOrder: 1 }], icons: [] }, previewByArea: {} },
-      selection: { items: [{ colorId: "black", sizeId: "m", printAreaIds: ["front"] }], defaultItem: { colorId: "black", sizeId: "m", printAreaIds: ["front"] }, activeItemIndex: 0 }, customerWarnings: []
-    };
-  }
+  // The choice a store page saves in the browser for the preview: it needs the product and design with colours, sizes and print areas.
+  const isUsablePreview = candidate => Boolean(candidate?.product && candidate?.design && ["colors", "sizes", "printAreas"].every(key => Array.isArray(candidate.product[key]) && candidate.product[key].length));
   function normalizeLegacy(candidate) {
-    if (!candidate?.product || !candidate?.design) return fallbackPayload();
-    const fallback = fallbackPayload(), raw = candidate.product, source = candidate.selection || {};
-    const colors = Array.isArray(raw.colors) && raw.colors.length ? raw.colors : fallback.product.colors;
-    const sizes = Array.isArray(raw.sizes) && raw.sizes.length ? raw.sizes : fallback.product.sizes;
-    const areas = Array.isArray(raw.printAreas) && raw.printAreas.length ? raw.printAreas : fallback.product.printAreas;
+    const raw = candidate.product, source = candidate.selection || {}, colors = raw.colors, sizes = raw.sizes, areas = raw.printAreas;
     const colorId = colors.some(item => item.id === source.colorId) ? source.colorId : colors[0].id;
     const sizeId = sizes.some(item => item.id === source.sizeId) ? source.sizeId : sizes[0].id;
     const ids = areas.filter(area => (source.printAreaIds || []).includes(area.id)).map(area => area.id);
@@ -212,7 +196,11 @@
     };
   }
 
-  const payload = upgradePublishedPayload(await buildStudioPayload(workflow) || normalizeLegacy(read(sessionStorage, KEYS.preview, null)));
+  const studioPayload = await buildStudioPayload(workflow), savedPreview = studioPayload ? null : read(sessionStorage, KEYS.preview, null);
+  // Opened with no design to review (the address typed in, or the browser's saved choice is gone): there is nothing to preview,
+  // so go back to the products instead of showing a made-up product.
+  if (!studioPayload && !isUsablePreview(savedPreview)) { window.location.replace(window.palPrintsPreviewCatalog?.productsUrl || "/"); return; }
+  const payload = upgradePublishedPayload(studioPayload || normalizeLegacy(savedPreview));
   const saved = read(sessionStorage, KEYS.review, {});
   const savedMatches = saved.designId === payload.design.id && saved.productId === payload.product.id;
   const persistedItems = role === "customer" && savedMatches && Array.isArray(saved.orderItems) && saved.orderItems.length
