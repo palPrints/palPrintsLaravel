@@ -36,7 +36,8 @@ main { padding-block: var(--sp-5) var(--sp-6); }
 .order-number { color: var(--pp-blue-700); font-weight: 700; direction: ltr; display: inline-block; }
 .order-number:hover { text-decoration: underline; }
 .product-cell { display: flex; align-items: center; gap: var(--sp-3); min-width: 0; }
-.product-cell img { width: 46px; height: 46px; flex: none; object-fit: contain; background: var(--pp-navy-50); border: 1px solid var(--pp-border); border-radius: var(--pp-radius-sm); }
+.product-cell .product-thumb { display: flex; justify-content: center; width: 46px; height: 46px; flex: none; overflow: hidden; background: var(--pp-navy-50); border: 1px solid var(--pp-border); border-radius: var(--pp-radius-sm); }
+.product-cell > img { width: 46px; height: 46px; flex: none; object-fit: contain; background: var(--pp-navy-50); border: 1px solid var(--pp-border); border-radius: var(--pp-radius-sm); }
 .product-cell div { min-width: 0; }
 .product-cell strong { display: block; overflow: hidden; color: var(--pp-text-strong); text-overflow: ellipsis; white-space: nowrap; font-size: .82rem; }
 .product-cell span { display: block; color: var(--pp-text-muted); font-size: .68rem; white-space: nowrap; }
@@ -84,7 +85,8 @@ main { padding-block: var(--sp-5) var(--sp-6); }
 .details-modal h2 span { color: var(--pp-primary); direction: ltr; display: inline-block; }
 .details-modal__items { display: grid; gap: var(--sp-3); }
 .details-modal__item { display: grid; grid-template-columns: 56px 1fr auto; align-items: center; gap: var(--sp-3); }
-.details-modal__item img { width: 56px; height: 56px; object-fit: contain; background: var(--pp-navy-50); border: 1px solid var(--pp-border); border-radius: var(--pp-radius-sm); }
+.details-modal__item .details-modal__thumb { display: flex; justify-content: center; width: 56px; height: 56px; overflow: hidden; background: var(--pp-navy-50); border: 1px solid var(--pp-border); border-radius: var(--pp-radius-sm); }
+.details-modal__item > img { width: 56px; height: 56px; object-fit: contain; background: var(--pp-navy-50); border: 1px solid var(--pp-border); border-radius: var(--pp-radius-sm); }
 .details-modal__item strong { display: block; color: var(--pp-text-strong); font-size: .85rem; }
 .details-modal__item small { display: block; margin-block-start: 2px; color: var(--pp-text-muted); font-size: .72rem; }
 .details-modal__item b { color: var(--pp-text-strong); font-size: .82rem; white-space: nowrap; }

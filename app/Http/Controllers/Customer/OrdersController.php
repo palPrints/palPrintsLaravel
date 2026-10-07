@@ -86,10 +86,15 @@ class OrdersController extends Controller
             'address' => $this->formatAddress($order->shipping_address_snapshot),
             'payment' => $order->payment_method ?: 'غير محدد',
             'thumbnail' => $firstItem ? asset($firstItem->product?->image ?: 'front/assets/images/customer/products/1.png') : asset('front/assets/images/customer/products/1.png'),
+            'mockup' => $firstItem?->selected_options['mockup'] ?? null,
             'title' => $firstItem?->product?->name ?? 'منتج',
             'subtitle' => $items->count() > 1 ? 'ومنتج آخر' : ($firstItem?->product?->description ?: ''),
             'items' => $items->map(fn ($item) => [
                 'image' => asset($item->product?->image ?: 'front/assets/images/customer/products/1.png'),
+                // The product with the customer's design on it, ready to show in the details window (null for paper printing).
+                'thumb' => ($mockup = $item->selected_options['mockup'] ?? null)
+                    ? view('customer.partials.cart-mockup', ['mockup' => $mockup, 'alt' => $item->product?->name ?? 'منتج'])->render()
+                    : null,
                 'title' => $item->product?->name ?? 'منتج',
                 'desc' => $item->product?->description ?: '',
                 'qty' => $item->quantity,

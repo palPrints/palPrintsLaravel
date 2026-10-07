@@ -128,7 +128,13 @@
             <div class="summary-products">
                 @foreach($items as $item)
                     <article>
-                        <img src="{{ $item['product_image'] }}" alt="{{ $item['product_name'] }}">
+                        @if(!empty($item['mockup']))
+                            <div style="width:72px;height:76px;display:flex;justify-content:center">
+                                @include('customer.partials.cart-mockup', ['mockup' => $item['mockup'], 'alt' => $item['product_name']])
+                            </div>
+                        @else
+                            <img src="{{ $item['product_image'] }}" alt="{{ $item['product_name'] }}">
+                        @endif
                         <div>
                             <h3>{{ $item['product_name'] }}</h3>
                             <strong>{{ number_format($item['total_price'], 2) }} ₪</strong>

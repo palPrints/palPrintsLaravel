@@ -49,7 +49,13 @@
                 @foreach($items as $item)
                     <article class="basket-item" data-id="{{ $item['id'] }}" data-unit-price="{{ $item['unit_price'] }}">
                         <div class="product-info">
-                            <div class="product-media"><img src="{{ $item['product_image'] }}" alt="{{ $item['product_name'] }}"></div>
+                            <div class="product-media">
+                                @if(!empty($item['mockup']))
+                                    @include('customer.partials.cart-mockup', ['mockup' => $item['mockup'], 'alt' => $item['product_name']])
+                                @else
+                                    <img src="{{ $item['product_image'] }}" alt="{{ $item['product_name'] }}">
+                                @endif
+                            </div>
                             <div>
                                 <h3>{{ $item['product_name'] }}</h3>
                                 @if(!empty($item['option_tags']) || !empty($item['options']['print_areas']) || !empty($item['options']['files']))

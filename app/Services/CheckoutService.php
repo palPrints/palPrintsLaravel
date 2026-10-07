@@ -134,13 +134,17 @@ class CheckoutService
     {
         $options = $cartItem->selected_options ?? [];
 
-        if ($cartItem->design_id !== null || $cartItem->product?->code !== 'PAPER-PRINT') {
+        // This type holds paper printing and the customer's own studio designs (a product with their artwork on it).
+        // Only paper printing must come with uploaded files: a studio design may be made of text and clip art alone.
+        $isPaper = $cartItem->product?->code === 'PAPER-PRINT';
+
+        if ($cartItem->design_id !== null || ! $cartItem->product) {
             throw ValidationException::withMessages([
                 'cart' => 'عنصر طباعة الورق في السلة غير صحيح.',
             ]);
         }
 
-        if ($cartItem->printFiles->isEmpty()) {
+        if ($isPaper && $cartItem->printFiles->isEmpty()) {
             throw ValidationException::withMessages([
                 'files' => 'لا توجد ملفات مرتبطة بعنصر طباعة الورق.',
             ]);
