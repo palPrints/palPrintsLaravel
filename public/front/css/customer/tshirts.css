@@ -64,9 +64,9 @@ html[data-bs-theme="dark"] body.tshirts-page::before {
 /* On hover the design zooms in slightly and the card gets a blue frame. */
 .tshirts-page .product-card:hover .product-card__media > img,
 .tshirts-page .product-card:focus-within .product-card__media > img,
-.tshirts-page .product-card.is-image-hovered .product-card__media > img { transform: scale(1.08) !important; }
+.tshirts-page .product-card.is-image-hovered .product-card__media > img { transform: scale(1.16) !important; }
 .tshirts-page .product-card:hover,
-.tshirts-page .product-card:focus-within { border-color: var(--store-primary); box-shadow: 0 0 0 1px var(--store-primary), 0 12px 28px rgb(22 119 255 / 16%); }
+.tshirts-page .product-card:focus-within { border-color: var(--store-primary-border); box-shadow: 0 12px 28px rgb(22 119 255 / 10%); }
 .tshirts-page .product-card__body { align-items: stretch; padding: 14px; text-align: start; }
 .tshirts-page .product-card__body h3 { font-size: 1.04rem; cursor: default; }
 .tshirts-page .product-card__body p { margin: 2px 0 10px; font-size: .86rem; }
