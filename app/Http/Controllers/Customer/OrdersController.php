@@ -91,6 +91,10 @@ class OrdersController extends Controller
             'subtitle' => $items->count() > 1 ? 'ومنتج آخر' : ($firstItem?->product?->description ?: ''),
             'items' => $items->map(fn ($item) => [
                 'image' => asset($item->product?->image ?: 'front/assets/images/customer/products/1.png'),
+                // The product with the customer's design on it, ready to show in the details window (null for paper printing).
+                'thumb' => ($mockup = $item->selected_options['mockup'] ?? null)
+                    ? view('customer.partials.cart-mockup', ['mockup' => $mockup, 'alt' => $item->product?->name ?? 'منتج'])->render()
+                    : null,
                 'title' => $item->product?->name ?? 'منتج',
                 'desc' => $item->product?->description ?: '',
                 'qty' => $item->quantity,

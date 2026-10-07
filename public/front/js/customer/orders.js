@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function itemRow(item) {
-    return `<div class="details-modal__item"><img src="${item.image}" alt="${item.title}"><div><strong>${item.title}</strong><small>${item.desc} · الكمية: ${item.qty}</small></div><b>${item.price}</b></div>`;
+    return `<div class="details-modal__item">${item.thumb ? `<span class="details-modal__thumb">${item.thumb}</span>` : `<img src="${item.image}" alt="${item.title}">`}<div><strong>${item.title}</strong><small>${item.desc} · الكمية: ${item.qty}</small></div><b>${item.price}</b></div>`;
   }
 
   if (detailsModal) {
