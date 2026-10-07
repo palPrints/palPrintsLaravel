@@ -39,7 +39,7 @@ class PrintShopRouter
      */
     public function need(Product $product, Collection $variantIds, array $studioAreas, ?array $layout, int $quantity = 1): array
     {
-        $areas = collect($studioAreas)->unique()->map(function (string $studioId) use ($product, $layout) {
+        $areas = collect($studioAreas)->map(fn (string $area) => $this->studioAreaId($product, $area))->unique()->map(function (string $studioId) use ($product, $layout) {
             $code = $this->databaseArea($product, $studioId);
             $size = $this->designSizeCm($layout, $studioId, $code, $product);
 
@@ -281,6 +281,25 @@ class PrintShopRouter
         }
 
         return ['width' => round($maxX - $minX, 2), 'height' => round($maxY - $minY, 2)];
+    }
+
+    /**
+     * The studio's id for a print area given either as an id ("front") or as the name the customer saw ("أمامي").
+     * The cart keeps the names (the basket and the shop's order page show them), so they are turned back into ids here.
+     */
+    private function studioAreaId(Product $product, string $area): string
+    {
+        $area = trim($area);
+        $definitions = collect(CatalogProductData::areaDefinitions($product->code));
+        $area = ['الأمام' => 'أمامي', 'الخلف' => 'خلفي'][$area] ?? $area; // the studio's own names for front and back
+        $match = $definitions->first(fn (array $definition) => $definition['code'] === $area || $definition['name'] === $area);
+
+        if (! $match) {
+            return $area;
+        }
+
+        // The database names the mug's single area "wrap"; the studio calls it "front".
+        return array_search($match['code'], self::DATABASE_AREA[strtoupper($product->code)] ?? [], true) ?: $match['code'];
     }
 
     public function databaseArea(Product $product, string $studioAreaId): string
