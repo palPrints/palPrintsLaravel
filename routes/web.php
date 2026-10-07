@@ -158,6 +158,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::patch('/profile', [CustomerProfileController::class, 'update'])->name('profile.update');
         Route::get('/favorites', [CustomerFavoriteController::class, 'index'])->name('favorites');
         Route::post('/designs/{design}/favorite', [CustomerFavoriteController::class, 'toggle'])->name('designs.favorite');
+        Route::get('/designs/{design}/assets/{assetId}', [CustomerCatalogController::class, 'designAsset'])->name('designs.asset');
         Route::get('/settings', [CustomerSettingsController::class, 'edit'])->name('settings');
         Route::get('/support', [CustomerSupportController::class, 'edit'])->name('support');
         Route::get('/notifications', [CustomerNotificationController::class, 'index'])->name('notifications');

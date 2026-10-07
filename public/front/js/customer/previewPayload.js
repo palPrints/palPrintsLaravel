@@ -66,7 +66,10 @@
         id: product.id,
         name: config.designName,
         designerName: product.designer,
-        preview: { images: [], texts: [], icons: [] }
+        preview: { images: [], texts: [], icons: [] },
+        // What the designer placed on each area (drawn by the preview page) and the links to their uploaded pictures.
+        layout: product.layout && Object.keys(product.layout).length ? product.layout : null,
+        assets: product.assets || {}
       },
       selection: {
         colorId: colorId,
