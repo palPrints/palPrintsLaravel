@@ -7,7 +7,13 @@
 @php
     $isCustomer = auth()->user()?->hasRole('customer');
     $productsUrl = $isCustomer ? route('customer.store').'#products' : route('designer.designs.create');
-    $productNames = collect(\App\Support\CatalogProductData::forDesigner()['products'])->mapWithKeys(fn ($product) => [strtoupper((string) $product['code']) => $product['name']])->all();
+    $designerProducts = collect(\App\Support\CatalogProductData::forDesigner()['products']);
+    $productNames = $designerProducts->mapWithKeys(fn ($product) => [strtoupper((string) $product['code']) => $product['name']])->all();
+    // The colours and sizes a print shop can really make now; the copy the studio saved in the browser can be older.
+    $productAvailable = $designerProducts->mapWithKeys(fn ($product) => [strtoupper((string) $product['code']) => [
+        'colors' => collect($product['colors'])->pluck('id')->map(fn ($id) => strtolower((string) $id))->all(),
+        'sizes' => collect($product['sizes'])->pluck('id')->map(fn ($id) => strtolower((string) $id))->all(),
+    ]])->all();
     $productLinks = $isCustomer ? ['TSHIRT-CLASSIC' => route('customer.tshirts'), 'HOODIE-PREMIUM' => route('customer.hoodies'), 'MUG-CERAMIC' => route('customer.mugs'), 'STICKER-CUSTOM' => route('customer.stickers')] : [];
 @endphp
 @extends('customer.layouts.app')
@@ -226,6 +232,7 @@
         // Real (database) product names and the catalog page of each product, for the title and the breadcrumb.
         window.palPrintsPreviewCatalog = {
             names: @json($productNames),
+            available: @json($productAvailable),
             links: @json($productLinks),
             productsUrl: @json($productsUrl),
         };

@@ -133,7 +133,45 @@
     ["left", "top", "width", "height"].forEach(key => elements.printZone.style.setProperty(`--zone-${key}`, `${zone[`${key}Pct`]}%`));
     elements.printZone.classList.toggle("has-format-conflict", zone.physicalFitStatus === "conflict-review-required");
   }
-  function resolveMockup(area, color) { return color?.areaMockups?.[area.id] || (["front", "primary"].includes(area.role) && color?.image) || area.mockup || app.product.thumbnail || color?.image || ""; }
+  function rawMockup(area, color) { return color?.areaMockups?.[area.id] || (["front", "primary"].includes(area.role) && color?.image) || area.mockup || app.product.thumbnail || color?.image || ""; }
+  // Colours added from the admin have no photo of their own: they carry a `tint` hex and are painted
+  // onto the white garment photo (multiply keeps the folds and shadows, the original alpha keeps the shape).
+  const tintedMockups = new Map();
+  const tintKey = (url, hex) => `${hex}|${url}`;
+  // The colour to paint an area with: a new colour is painted everywhere; a colour with photos is painted only where it has
+  // none (the sleeves have a white photo only), unless the colour is white.
+  function tintFor(area, color) {
+    if (!color) return null;
+    if (color.tint) return color.tint;
+    const ownPhoto = color.areaMockups?.[area.id] || (["front", "primary"].includes(area.role) && color.image);
+    const match = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color.value || "");
+    if (ownPhoto || !match) return null;
+    const light = (0.299 * parseInt(match[1], 16) + 0.587 * parseInt(match[2], 16) + 0.114 * parseInt(match[3], 16)) / 255;
+    return light > 0.95 ? null : color.value;
+  }
+  function resolveMockup(area, color) {
+    const url = rawMockup(area, color), tint = tintFor(area, color);
+    return tint ? tintedMockups.get(tintKey(url, tint)) || url : url;
+  }
+  async function prepareMockup(area, color) {
+    const url = rawMockup(area, color), tint = tintFor(area, color);
+    if (!tint || !url || tintedMockups.has(tintKey(url, tint))) return;
+    try {
+      // A colour that has photos is painted with the colour those photos show, so the sleeves match the front and back.
+      let paint = tint;
+      const white = app.product.colors.find(item => item.id === "white");
+      if (!color.tint && color.image && white?.image && window.PALPRINTS_PHOTO_TINT) paint = (await window.PALPRINTS_PHOTO_TINT(color.image, white.image)) || tint;
+      const source = await new Promise((resolve, reject) => {
+        const image = new Image(); image.onload = () => resolve(image); image.onerror = reject; image.src = url;
+      });
+      const canvas = document.createElement("canvas"); canvas.width = source.naturalWidth; canvas.height = source.naturalHeight;
+      const context = canvas.getContext("2d");
+      context.drawImage(source, 0, 0);
+      context.globalCompositeOperation = "multiply"; context.fillStyle = paint; context.fillRect(0, 0, canvas.width, canvas.height);
+      context.globalCompositeOperation = "destination-in"; context.drawImage(source, 0, 0);
+      tintedMockups.set(tintKey(url, tint), canvas.toDataURL("image/png"));
+    } catch (error) { /* keep the untinted photo if the image cannot be read */ }
+  }
   function zonesDiffer(a, b) { return ["leftPct", "topPct", "widthPct", "heightPct", "widthCm", "heightCm"].some(key => Number(a?.[key]) !== Number(b?.[key])); }
 
   function validateProduct(product) {
@@ -642,6 +680,7 @@
   }
   async function loadMockup(area, color) {
     elements.stage.classList.add("is-loading"); elements.stage.setAttribute("aria-busy", "true"); app.geometryReady = false;
+    await prepareMockup(area, color);
     const mockup = resolveMockup(area, color);
     elements.productMockup.src = mockup; elements.productMockup.alt = `${app.product.studioTitle || app.product.name} — ${area.name}`;
     const zone = resolveZone(area, app.size); applyZoneToOverlay(zone);
@@ -951,7 +990,11 @@
   }
   function activeGraphic() { const object = app.canvas?.getActiveObject(); return object?.studioKind === "graphic" ? object : null; }
   async function addGraphicToCanvas(record) {
-    if (!app.canvas || !app.geometryReady || !APPROVED_GRAPHICS.has(record.id)) return;
+    if (!app.canvas || !app.geometryReady || !APPROVED_GRAPHICS.has(record.id)) {
+      console.warn("Graphic not added", { canvas: Boolean(app.canvas), geometryReady: app.geometryReady, approved: APPROVED_GRAPHICS.has(record.id), id: record.id });
+      showNotice(!APPROVED_GRAPHICS.has(record.id) ? "هذا الرسم غير معتمد حاليًا." : "مساحة التصميم لم تجهز بعد، حاول مرة أخرى بعد لحظة.", "error");
+      return;
+    }
     const areaId = app.area.id, areaToken = app.areaSwitchToken;
     const model = { id: uid("object"), kind: "graphic", graphicId: record.id, color: record.recolorable ? record.defaultColor : null,
       x: 0.5, y: 0.5, width: 0.3, height: 0.4, angle: 0, flipX: false, flipY: false };

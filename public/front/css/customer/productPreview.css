@@ -1090,30 +1090,31 @@ body.preview-booting .product-preview-main::after {
 .preview-toast {
   position: fixed;
   z-index: 2200;
-  left: 50%;
-  top: 86px;
-  min-width: min(360px, calc(100vw - 30px));
-  max-width: calc(100vw - 30px);
+  left: 20px;
+  top: 92px;
+  width: min(360px, calc(100vw - 30px));
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 10px 13px;
+  gap: 10px;
+  padding: 11px 14px;
   color: #fff;
   background: var(--preview-navy);
-  border-radius: var(--preview-radius);
+  border-radius: 12px;
   box-shadow: 0 12px 28px rgb(11 31 58 / 24%);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
+  line-height: 1.6;
   opacity: 0;
   pointer-events: none;
-  transform: translate(-50%, -14px);
+  transform: translateX(-16px);
   transition: opacity .2s ease, transform .2s ease;
 }
 
-.preview-toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
-.preview-toast.is-error { color: #92400e; background: #fffbeb; border: 1px solid #fcd34d; box-shadow: 0 12px 28px rgb(146 64 14 / 18%); font-size: 13.5px; }
+.preview-toast.is-visible { opacity: 1; transform: translateX(0); }
+.preview-toast.is-error { color: #92400e; background: #fffbeb; border: 1px solid #fcd34d; border-inline-start: 4px solid #d97706; box-shadow: 0 12px 28px rgb(146 64 14 / 18%); }
 .preview-toast.is-error .preview-toast-icon { color: #fff; background: #d97706; }
-.preview-toast-icon { width: 25px; height: 25px; display: grid; place-items: center; color: var(--preview-navy); background: #fff; border-radius: 50%; }
+.preview-toast-icon { flex: none; width: 26px; height: 26px; display: grid; place-items: center; color: var(--preview-navy); background: #fff; border-radius: 50%; font-size: 14px; line-height: 1; }
+.preview-toast-icon .bi { display: block; line-height: 1; }
 
 .fullscreen-preview-dialog {
   width: min(940px, calc(100vw - 32px));
@@ -1356,7 +1357,7 @@ body[data-user-role="designer"] .preview-mobile-bar { display: none !important; 
   .preview-mobile-bar .preview-button { min-height: 50px; padding-inline: 10px; }
   .preview-bottom-buttons > #addToCartButton { display: none; }
   .piece-tab { min-width: 106px; }
-  .preview-toast { top: 76px; }
+  .preview-toast { top: 76px; left: 15px; }
   .fullscreen-stage { min-height: calc(100dvh - 82px); }
   .fullscreen-stage .product-canvas { width: min(96vw, 650px); }
 }

@@ -12,20 +12,35 @@
             </a>
             <p>من فكرة إلى واقع.<br>صنع بكل حب لكم.</p>
         </div>
-        <div class="site-footer__column">
-            <h2>المتجر</h2>
-            <a href="{{ route('customer.store') }}#products">كل المنتجات</a>
-            <a href="{{ route('customer.store') }}#products">التصنيفات</a>
-            <a href="{{ route('customer.store') }}#products">الإكسسوارات</a>
-            <a href="{{ route('customer.store') }}#products">الأكثر مبيعًا</a>
-        </div>
-        <div class="site-footer__column">
-            <h2>حسابك</h2>
-            <a href="{{ route('customer.profile') }}">الملف الشخصي</a>
-            <a href="{{ route('customer.orders') }}">طلباتي</a>
-            <a href="{{ route('customer.favorites') }}">المفضلة</a>
-            <a href="#">سلة المشتريات</a>
-        </div>
+        @if (auth()->user()?->hasRole('designer'))
+            <div class="site-footer__column">
+                <h2>التصميم</h2>
+                <a href="{{ route('designer.designs.create') }}">رفع تصميم جديد</a>
+                <a href="{{ route('designer.designs.index') }}">تصاميمي</a>
+                <a href="{{ route('designer.earnings') }}">الأرباح</a>
+            </div>
+            <div class="site-footer__column">
+                <h2>حسابك</h2>
+                <a href="{{ route('designer.dashboard') }}">لوحة التحكم</a>
+                <a href="{{ route('designer.profile') }}">الملف الشخصي</a>
+                <a href="{{ route('designer.settings') }}">الإعدادات</a>
+            </div>
+        @else
+            <div class="site-footer__column">
+                <h2>المتجر</h2>
+                <a href="{{ route('customer.store') }}#products">كل المنتجات</a>
+                <a href="{{ route('customer.store') }}#products">التصنيفات</a>
+                <a href="{{ route('customer.store') }}#products">الإكسسوارات</a>
+                <a href="{{ route('customer.store') }}#products">الأكثر مبيعًا</a>
+            </div>
+            <div class="site-footer__column">
+                <h2>حسابك</h2>
+                <a href="{{ route('customer.profile') }}">الملف الشخصي</a>
+                <a href="{{ route('customer.orders') }}">طلباتي</a>
+                <a href="{{ route('customer.favorites') }}">المفضلة</a>
+                <a href="#">سلة المشتريات</a>
+            </div>
+        @endif
         <div class="site-footer__column">
             <h2>المساعدة</h2>
             <a href="#">الدعم الفني</a>

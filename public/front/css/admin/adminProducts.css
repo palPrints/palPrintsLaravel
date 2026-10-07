@@ -323,3 +323,16 @@ select:focus-visible {
 .danger-button { color: #fff; background: var(--danger); border: 0; border-radius: 10px; font-weight: 700; cursor: pointer; transition: background-color .16s ease, transform .16s ease; }
 .danger-button:hover { background: #b91c1c; transform: translateY(-1px); }
 .danger-button:disabled { opacity: .6; cursor: wait; }
+
+/* Colours and sizes of the product (admin add / edit dialog) */
+.form-body .options-field { display: grid; gap: 8px; }
+.form-body .options-field small { color: #758ca5; font-size: 11px; font-weight: 500; }
+.color-rows { display: grid; gap: 8px; }
+.color-row { display: grid; grid-template-columns: 46px minmax(0, 1fr) 36px; gap: 8px; align-items: center; }
+.form-body .color-row input[type="color"] { padding: 3px; min-height: 42px; cursor: pointer; }
+.form-body .color-row input[type="color"]:disabled { cursor: default; opacity: 1; }
+.form-body .color-row input[readonly] { background: #f6f9fd; }
+.remove-color { height: 36px; border: 1px solid var(--border); border-radius: 8px; color: #758ca5; background: #fff; cursor: pointer; }
+.remove-color:hover { color: #dc2626; border-color: #fecaca; background: #fef2f2; }
+.add-color-button { justify-self: start; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px dashed #9ec6f5; border-radius: 8px; color: var(--blue); background: var(--blue-50); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.add-color-button:hover { background: #e5f0ff; }

@@ -103,5 +103,32 @@
     })
   ];
 
+  // The garment photos show a colour lit and shaded, so its swatch hex (#172238) is darker than the photo looks. To paint a
+  // side that has no photo of that colour (the sleeves) so that it matches the sides that do, take the colour from the
+  // photos themselves: the average of the coloured front photo divided by the average of the white front photo, per channel.
+  const photoTints = new Map();
+  const averageColor = url => new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      try {
+        const canvas = document.createElement("canvas"); canvas.width = canvas.height = 96;
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        context.drawImage(image, 0, 0, 96, 96);
+        const data = context.getImageData(0, 0, 96, 96).data;
+        let r = 0, g = 0, b = 0, count = 0;
+        for (let i = 0; i < data.length; i += 4) { if (data[i + 3] > 200) { r += data[i]; g += data[i + 1]; b += data[i + 2]; count += 1; } }
+        count ? resolve([r / count, g / count, b / count]) : reject(new Error("empty"));
+      } catch (error) { reject(error); }
+    };
+    image.onerror = reject; image.src = url;
+  });
+  const photoTint = (colorUrl, whiteUrl) => {
+    const key = `${colorUrl}|${whiteUrl}`;
+    if (!photoTints.has(key)) photoTints.set(key, Promise.all([averageColor(colorUrl), averageColor(whiteUrl)]).then(([c, w]) =>
+      "#" + c.map((value, i) => Math.max(0, Math.min(255, Math.round(value / w[i] * 255))).toString(16).padStart(2, "0")).join("")).catch(() => null));
+    return photoTints.get(key);
+  };
+
+  window.PALPRINTS_PHOTO_TINT = photoTint;
   window.PALPRINTS_PRODUCT_CATALOG = Object.freeze({ products: Object.freeze(products) });
 })(window);

@@ -13,6 +13,17 @@
         <h1 id="noticesTitle">إشعارات الدفع</h1>
         <p class="notices-lead">إشعارات التحويل البنكي والمحافظ التي يرفعها العملاء. لا يصل أي طلب إلى المطبعة إلا بعد موافقتك واختيارك للمطبعة.</p>
 
+        <details class="notices-how">
+            <summary><i class="bi bi-lightbulb" aria-hidden="true"></i> على أي أساس تُقترح المطابع؟</summary>
+            <p>نقترح فقط المطابع المفعّلة والمعتمدة التي تقدر تنفّذ <strong>كل</strong> بنود الطلب: تقدّم المنتج، وتوفّر اللون والمقاس المطلوبين، وتقدّم مناطق الطباعة المختارة (وحجم التصميم يناسب أقصى حجم تطبعه)، وعندها طريقة طباعة مفعّلة. ثم نرتّبها:</p>
+            <ol>
+                <li><strong>مدينة العميل أولًا:</strong> المطبعة في نفس مدينة عنوان الشحن.</li>
+                <li><strong>الأقل تكلفة:</strong> التكلفة التقديرية = سعر المنتج عند المطبعة + سعر الطباعة لكل منطقة حسب حجم التصميم.</li>
+                <li><strong>الأسرع تنفيذًا:</strong> أقل مدة تحضير.</li>
+            </ol>
+            <p>تظهر أفضل ثلاث مطابع، ويمكنك اختيار مطبعة أخرى يدويًا.</p>
+        </details>
+
         @if (session('notice_status'))
             <p class="notices-flash is-success" role="status"><i class="bi bi-check-circle" aria-hidden="true"></i> {{ session('notice_status') }}</p>
         @endif
@@ -58,27 +69,60 @@
                     </div>
                 </div>
 
+                @php($shops = $notice['shops'])
                 <div class="notice-actions">
-                    <form method="POST" action="{{ $notice['approveUrl'] }}" class="notice-form">
+                    <form method="POST" action="{{ $notice['approveUrl'] }}" class="notice-form notice-form--approve">
                         @csrf
-                        <label>
-                            المطبعة التي سيُوجَّه إليها الطلب
-                            <select name="branch_id" required @disabled(empty($notice['shops']))>
-                                @if (empty($notice['shops']))
-                                    <option value="">لا توجد مطبعة تقدّم كل منتجات الطلب</option>
+                        <fieldset class="shop-picker">
+                            <legend class="notice-form__title"><i class="bi bi-printer" aria-hidden="true"></i> المطبعة التي سيُوجَّه إليها الطلب</legend>
+
+                            @if (empty($shops['top']) && empty($shops['others']))
+                                <p class="shop-empty"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> لا توجد مطبعة تقدّم كل منتجات الطلب.</p>
+                            @else
+                                @if (empty($shops['top']))
+                                    <p class="shop-empty"><i class="bi bi-info-circle" aria-hidden="true"></i> لا توجد مطبعة تطابق كل مواصفات الطلب (اللون أو المقاس أو مناطق الطباعة). يمكنك اختيار مطبعة يدويًا من القائمة.</p>
                                 @else
-                                    <option value="">اختر المطبعة</option>
-                                    @foreach ($notice['shops'] as $shop)
-                                        <option value="{{ $shop['id'] }}" @selected($shop['suggested'])>{{ $shop['label'] }}{{ $shop['suggested'] ? ' — مقترحة' : '' }}</option>
-                                    @endforeach
+                                    <p class="shop-hint">أفضل {{ count($shops['top']) === 1 ? 'مطبعة' : count($shops['top']).' مطابع' }} تقدر تنفّذ الطلب بكل مواصفاته:</p>
+                                    <div class="shop-options">
+                                        @foreach ($shops['top'] as $shop)
+                                            <label class="shop-option{{ $shop['rank'] === 1 ? ' is-best' : '' }}">
+                                                <input type="radio" name="branch_id" value="{{ $shop['id'] }}" @checked($shop['rank'] === 1)>
+                                                <span class="shop-option__body">
+                                                    <span class="shop-option__name">{{ $shop['name'] }}</span>
+                                                    <span class="shop-option__meta">
+                                                        @if ($shop['city'])<span><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ $shop['city'] }}</span>@endif
+                                                        <span><i class="bi bi-cash-coin" aria-hidden="true"></i> <bdi>{{ number_format($shop['estimate'], 2) }} ₪</bdi></span>
+                                                        @if ($shop['days'] > 0)<span><i class="bi bi-clock" aria-hidden="true"></i> حتى {{ $shop['days'] }} يوم</span>@endif
+                                                    </span>
+                                                    @if ($shop['reasons'])
+                                                        <span class="shop-option__reasons">@foreach ($shop['reasons'] as $reason)<em>{{ $reason }}</em>@endforeach</span>
+                                                    @endif
+                                                </span>
+                                                <span class="shop-option__rank">{{ $shop['rank'] === 1 ? 'الأفضل' : '#'.$shop['rank'] }}</span>
+                                            </label>
+                                        @endforeach
+                                    </div>
                                 @endif
-                            </select>
-                        </label>
-                        <button class="notice-approve" type="submit" @disabled(empty($notice['shops']))><i class="bi bi-check2-circle" aria-hidden="true"></i> موافقة وتوجيه</button>
+
+                                @if (! empty($shops['others']))
+                                    <details class="shop-others"@if (empty($shops['top'])) open @endif>
+                                        <summary>{{ empty($shops['top']) ? 'اختيار مطبعة يدويًا' : 'مطابع أخرى (لا تطابق كل المواصفات)' }}</summary>
+                                        <select name="{{ empty($shops['top']) ? 'branch_id' : 'branch_id_other' }}" @if (empty($shops['top'])) required @endif aria-label="مطبعة أخرى">
+                                            <option value="">اختر المطبعة</option>
+                                            @foreach ($shops['others'] as $shop)
+                                                <option value="{{ $shop['id'] }}">{{ $shop['label'] }}</option>
+                                            @endforeach
+                                        </select>
+                                    </details>
+                                @endif
+                            @endif
+                        </fieldset>
+                        <button class="notice-approve" type="submit" @disabled(empty($shops['top']) && empty($shops['others']))><i class="bi bi-check2-circle" aria-hidden="true"></i> موافقة وتوجيه</button>
                     </form>
 
-                    <form method="POST" action="{{ $notice['rejectUrl'] }}" class="notice-form">
+                    <form method="POST" action="{{ $notice['rejectUrl'] }}" class="notice-form notice-form--reject">
                         @csrf
+                        <div class="notice-form__title is-danger"><i class="bi bi-x-octagon" aria-hidden="true"></i> رفض الطلب</div>
                         <label>
                             سبب الرفض (يصل للعميل)
                             <input type="text" name="reason" maxlength="500" required placeholder="مثال: المبلغ في الإشعار لا يطابق قيمة الطلب">
@@ -134,3 +178,19 @@
     </section>
 </main>
 @endsection
+
+@push('scripts')
+    <script>
+        /* One choice per order: picking a shop from the "other shops" list replaces the ticked card, and ticking a card clears the list. */
+        document.querySelectorAll('.notice-form--approve').forEach(function (form) {
+            const other = form.querySelector('select[name="branch_id_other"]');
+            if (!other) return;
+            other.addEventListener('change', function () {
+                if (other.value) form.querySelectorAll('input[name="branch_id"]').forEach(function (radio) { radio.checked = false; });
+            });
+            form.querySelectorAll('input[name="branch_id"]').forEach(function (radio) {
+                radio.addEventListener('change', function () { other.value = ''; });
+            });
+        });
+    </script>
+@endpush

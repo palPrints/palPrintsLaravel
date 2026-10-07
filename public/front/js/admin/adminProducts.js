@@ -167,11 +167,60 @@
       });
     });
 
+    /* ---------- Colours of the product ---------- */
+    const colorRows = document.getElementById("colorRows");
+    const sizesInput = document.getElementById("productSizesInput");
+
+    /* A colour that already exists keeps its name (its code is sent back); a new one is named here. */
+    function addColorRow(color) {
+      const row = document.createElement("div");
+      const picker = document.createElement("input");
+      const name = document.createElement("input");
+      const remove = document.createElement("button");
+
+      row.className = "color-row";
+      row.dataset.code = color && color.code ? color.code : "";
+      picker.type = "color";
+      picker.value = color && color.hex ? color.hex : "#000000";
+      picker.setAttribute("aria-label", "رمز اللون");
+      name.type = "text";
+      name.maxLength = 40;
+      name.placeholder = "اسم اللون، مثل: أحمر";
+      name.value = color && color.name ? color.name : "";
+      if (row.dataset.code) {
+        name.readOnly = true;
+        picker.disabled = true;
+      }
+      remove.type = "button";
+      remove.className = "remove-color";
+      remove.setAttribute("aria-label", "إزالة اللون");
+      remove.innerHTML = '<i class="bi bi-x-lg"></i>';
+      remove.addEventListener("click", function () {
+        if (colorRows.children.length > 1) row.remove();
+        else toast("يجب أن يبقى للمنتج لون واحد على الأقل.");
+      });
+
+      row.append(picker, name, remove);
+      colorRows.appendChild(row);
+      return row;
+    }
+
+    function collectColors() {
+      return Array.from(colorRows.children).map(function (row) {
+        return { code: row.dataset.code || null, name: row.querySelector('input[type="text"]').value.trim(), hex: row.querySelector('input[type="color"]').value };
+      });
+    }
+
+    document.getElementById("addColorButton").addEventListener("click", function () {
+      addColorRow().querySelector('input[type="text"]').focus();
+    });
+
     /* ---------- Add / edit dialog ---------- */
     function openDialog(card) {
       editingCard = card || null;
       form.reset();
       resetImageField();
+      colorRows.replaceChildren();
       dialogTitle.textContent = card ? "تعديل المنتج" : "إضافة منتج";
 
       if (card) {
@@ -179,8 +228,14 @@
         codeInput.value = card.dataset.productId;
         categoryInput.value = card.dataset.categoryId || "";
         descriptionInput.value = card.dataset.description || "";
+        sizesInput.value = card.dataset.sizes || "";
         if (card.dataset.image) previewImage(card.dataset.image, "الصورة الحالية (اختر صورة لتغييرها)");
+        let colors = [];
+        try { colors = JSON.parse(card.dataset.colors || "[]"); } catch (error) { colors = []; }
+        colors.forEach(addColorRow);
       }
+
+      if (!colorRows.children.length) addColorRow();
 
       dialog.showModal();
       nameInput.focus();
@@ -204,7 +259,14 @@
         return;
       }
 
+      const colors = collectColors();
+      if (colors.some(function (color) { return !color.name; })) {
+        toast("اكتب اسم كل لون.");
+        return;
+      }
+
       const data = new FormData(form);
+      data.append("colors", JSON.stringify(colors));
       const submit = form.querySelector('[type="submit"]');
       let url = form.dataset.storeUrl;
 

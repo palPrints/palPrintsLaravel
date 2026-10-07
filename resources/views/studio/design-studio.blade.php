@@ -292,6 +292,15 @@
           if (!src) return;
           const dbColorIds = (db.colors || []).map(function (color) { return String(color.id).toLowerCase(); });
           let colors = src.colors.filter(function (color) { return dbColorIds.includes(color.id); });
+          // Colours the admin added have no photo: tint the white garment (t-shirts and hoodies only).
+          const white = src.colors.find(function (color) { return color.id === "white"; });
+          if (white && (src.categoryId === "tshirts" || src.categoryId === "hoodies")) {
+            colors = (db.colors || []).map(function (color) {
+              const id = String(color.id).toLowerCase();
+              const known = src.colors.find(function (item) { return item.id === id; });
+              return known || { id: id, name: color.name, value: color.value, image: white.image, areaMockups: white.areaMockups, tint: color.value };
+            });
+          }
           if (!colors.length) colors = src.colors;
           let sizes = (db.sizes || []).map(function (size) { const id = studioSizeId(size.id); return { id: id, name: id === "standard" ? "قياسي" : id }; });
           if (!sizes.length) sizes = src.sizes;
@@ -370,13 +379,18 @@
       async function openUploadedDesign(seed) {
         const catalog = (window.PALPRINTS_PRODUCT_CATALOG || {}).products || [];
         const product = catalog.find(function (item) { return item.categoryId === seed.kind; });
+        if (!product) return;
         const blob = await readPendingUpload();
-        if (!product || !blob) return;
 
         const designId = "customer-" + seed.designId;
         const colorId = product.colors.some(function (c) { return c.id === String(seed.colorId || "").toLowerCase(); }) ? String(seed.colorId).toLowerCase() : product.defaultColor;
         const sizeId = product.sizes.some(function (s) { return s.id === studioSizeId(seed.sizeId); }) ? studioSizeId(seed.sizeId) : product.sizes[0].id;
         const areaId = product.editor.printAreas.some(function (a) { return a.id === studioAreaId(seed.areaId); }) ? studioAreaId(seed.areaId) : product.editor.defaultAreaId;
+        // No uploaded picture to place: still open the studio on the product the customer chose.
+        if (!blob) {
+          sessionStorage.setItem(SELECTION_KEY, JSON.stringify({ productId: product.id, editorProduct: product, colorId: colorId, sizeId: sizeId, printAreaIds: [areaId] }));
+          return;
+        }
         sessionStorage.setItem(SELECTION_KEY, JSON.stringify({ productId: product.id, editorProduct: product, colorId: colorId, sizeId: sizeId, printAreaIds: [areaId], designId: designId }));
 
         const size = await imageSize(blob);

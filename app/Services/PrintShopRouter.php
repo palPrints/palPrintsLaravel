@@ -6,6 +6,7 @@ use App\Models\Address;
 use App\Models\BranchPrintArea;
 use App\Models\BranchProductOffering;
 use App\Models\CartItem;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
 use App\Support\CatalogProductData;
@@ -50,6 +51,20 @@ class PrintShopRouter
 
     /** The same need, read back from a line already in the cart. */
     public function needFromCartItem(CartItem $item): array
+    {
+        $options = (array) $item->selected_options;
+
+        return $this->need(
+            $item->product,
+            collect($item->variant_id ? [$item->variant_id] : []),
+            array_values((array) ($options['print_areas'] ?? [])),
+            is_array($options['layout'] ?? null) ? $options['layout'] : null,
+            (int) $item->quantity,
+        );
+    }
+
+    /** The same need, read back from a line of a placed order. */
+    public function needFromOrderItem(OrderItem $item): array
     {
         $options = (array) $item->selected_options;
 
@@ -151,6 +166,72 @@ class PrintShopRouter
                 fn ($a, $b) => $a['branchId'] <=> $b['branchId'],
             ])
             ->values();
+    }
+
+    /**
+     * Why no shop can make a single-product order, in words for the customer (the reason of the closest shop), or null
+     * when it is not one product or no reason is found.
+     *
+     * @param  Collection<int, array>  $needs
+     */
+    public function explain(Collection $needs): ?string
+    {
+        if ($needs->pluck('product.id')->unique()->count() !== 1) {
+            return null;
+        }
+
+        $offerings = BranchProductOffering::query()
+            ->with([
+                'branchOfferingVariants',
+                'branchPrintAreas' => fn ($query) => $query->where('is_active', true),
+                'branchPrintAreas.branchPrintCapabilities' => fn ($query) => $query->where('is_active', true),
+            ])
+            ->where('product_id', $needs->first()['product']->id)
+            ->where('is_active', true)
+            ->get();
+
+        // Prefer the reason that is about the design (area, size) over a missing colour or size: it is the closest to working.
+        $reasons = $needs
+            ->flatMap(fn (array $need) => $offerings->map(fn (BranchProductOffering $offering) => $this->blocker($offering, $need)))
+            ->filter()
+            ->values();
+
+        return $reasons->first(fn (array $reason) => $reason['rank'] > 1)['text'] ?? $reasons->first()['text'] ?? null;
+    }
+
+    /** @return array{rank: int, text: string}|null why this offering cannot make the line; null when it can */
+    private function blocker(BranchProductOffering $offering, array $need): ?array
+    {
+        $available = $offering->branchOfferingVariants->where('is_available', true)->pluck('variant_id');
+
+        if (! $need['variantIds']->every(fn ($id) => $available->contains($id))) {
+            return ['rank' => 1, 'text' => 'اللون أو المقاس الذي اخترته غير متوفر لدى المطبعة حاليًا. اختر لونًا أو مقاسًا آخر.'];
+        }
+
+        if ((float) $offering->base_price <= 0) {
+            return ['rank' => 1, 'text' => 'سعر هذا المنتج لم يُحدَّد عند المطبعة بعد.'];
+        }
+
+        foreach ($need['areas'] as $wanted) {
+            $area = $offering->branchPrintAreas->firstWhere('code', $wanted['code']);
+
+            if (! $area) {
+                return ['rank' => 2, 'text' => 'المطبعة لا تقدّم الطباعة على منطقة «'.$wanted['code'].'». احذف هذه المنطقة من التصميم.'];
+            }
+
+            if ($wanted['widthCm'] !== null && ($wanted['widthCm'] * 10 > $area->max_width_mm || $wanted['heightCm'] * 10 > $area->max_height_mm)) {
+                return ['rank' => 3, 'text' => sprintf(
+                    'تصميمك على «%s» (%s × %s سم) أكبر من أقصى حجم تطبعه المطبعة (%s × %s سم). صغّر التصميم.',
+                    $area->name, round($wanted['widthCm'], 1), round($wanted['heightCm'], 1), round($area->max_width_mm / 10, 1), round($area->max_height_mm / 10, 1),
+                )];
+            }
+
+            if ($area->branchPrintCapabilities->isEmpty()) {
+                return ['rank' => 2, 'text' => 'المطبعة لا تملك طريقة طباعة مفعّلة على «'.$area->name.'».'];
+            }
+        }
+
+        return null;
     }
 
     /** The city of the customer's default address (or their newest one); null when they have none. */

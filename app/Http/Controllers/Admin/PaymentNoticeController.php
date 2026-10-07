@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\Payment;
 use App\Models\PrintProviderBranch;
+use App\Services\PrintShopRouter;
 use App\Support\OrderNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,7 +33,7 @@ class PaymentNoticeController extends Controller
     public function index(): View
     {
         $payments = Payment::query()
-            ->with(['order.user:id,name,phone', 'order.items.product:id,name'])
+            ->with(['order.user', 'order.items.product'])
             ->whereHas('order')
             ->latest()
             ->limit(100)
@@ -52,6 +53,8 @@ class PaymentNoticeController extends Controller
         }
 
         $eligible = $this->eligibleBranches($order);
+        // A shop picked from the "other shops" list wins over the ticked card.
+        $request->merge(['branch_id' => $request->input('branch_id_other') ?: $request->input('branch_id')]);
         $validated = $request->validate([
             'branch_id' => ['required', 'integer', 'in:'.($eligible->pluck('id')->implode(',') ?: '0')],
         ], [
@@ -173,7 +176,6 @@ class PaymentNoticeController extends Controller
         $order = $payment->order;
         $payload = $payment->gateway_payload ?? [];
         [$icon, $method] = self::METHODS[$payment->method] ?? ['bi-cash-coin', $payment->method ?: 'غير محدد'];
-        $suggested = $order->items->first()?->print_provider_branch_id;
 
         return [
             'id' => $payment->id,
@@ -193,14 +195,60 @@ class PaymentNoticeController extends Controller
             'reason' => $payment->failure_reason,
             'approveUrl' => route('admin.payment-notices.approve', $payment),
             'rejectUrl' => route('admin.payment-notices.reject', $payment),
-            'shops' => $withShops
-                ? $this->eligibleBranches($order)->map(fn (PrintProviderBranch $branch) => [
-                    'id' => $branch->id,
-                    'label' => $this->branchLabel($branch),
-                    'suggested' => $branch->id === $suggested,
-                ])->values()->all()
-                : [],
+            'shops' => $withShops ? $this->shopChoices($order) : ['top' => [], 'others' => []],
         ];
+    }
+
+    /**
+     * The shops for the admin to choose from. "top" are the best three that can make the whole order (the same ranking the
+     * cart uses: the customer's city first, then the lowest estimated cost, then the shortest production time), each with
+     * the reasons it stands out. "others" are the remaining shops that sell every product but do not match every detail
+     * (a colour, a size or a print area), kept so the admin can still choose one by hand.
+     *
+     * @return array{top: array<int, array<string, mixed>>, others: array<int, array<string, mixed>>}
+     */
+    private function shopChoices(Order $order): array
+    {
+        $eligible = $this->eligibleBranches($order)->keyBy('id');
+        $router = app(PrintShopRouter::class);
+
+        $needs = $order->items->filter(fn ($item) => $item->product)->map(fn ($item) => $router->needFromOrderItem($item))->values();
+        $city = $order->shipping_address_snapshot['city'] ?? ($order->user ? $router->customerCity($order->user) : null);
+        $ranked = $needs->isEmpty() ? collect() : $router->rankBranches($needs, $city)->filter(fn (array $row) => $eligible->has($row['branchId']))->values();
+
+        $cheapest = $ranked->min('estimate');
+        $fastest = $ranked->min('days');
+
+        $top = $ranked->take(3)->values()->map(function (array $row, int $index) use ($eligible, $cheapest, $fastest, $ranked) {
+            $branch = $eligible[$row['branchId']];
+            $reasons = [];
+            if ($row['sameCity']) {
+                $reasons[] = 'في مدينة العميل';
+            }
+            if ($ranked->count() > 1 && $row['estimate'] === $cheapest) {
+                $reasons[] = 'الأقل تكلفة';
+            }
+            if ($ranked->count() > 1 && $row['days'] > 0 && $row['days'] === $fastest) {
+                $reasons[] = 'الأسرع تنفيذًا';
+            }
+
+            return [
+                'id' => $branch->id,
+                'rank' => $index + 1,
+                'name' => $branch->printProvider?->company_name ?? 'مطبعة',
+                'city' => $branch->city && $branch->city !== 'غير محدد' ? $branch->city : null,
+                'estimate' => $row['estimate'],
+                'days' => $row['days'],
+                'reasons' => $reasons,
+            ];
+        })->all();
+
+        $topIds = collect($top)->pluck('id');
+        $others = $eligible->reject(fn (PrintProviderBranch $branch) => $topIds->contains($branch->id))
+            ->map(fn (PrintProviderBranch $branch) => ['id' => $branch->id, 'label' => $this->branchLabel($branch)])
+            ->values()->all();
+
+        return ['top' => $top, 'others' => $others];
     }
 
     private function record(Order $order, Request $request, ?string $fromStatus, string $note, array $metadata): void
