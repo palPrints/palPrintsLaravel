@@ -156,7 +156,7 @@
       ...candidate,
       product: { ...candidate.product, printAreas, colors },
       design: { ...candidate.design, preview: previewByArea[selected[0]] || candidate.design.preview, previewByArea },
-      selection: { ...candidate.selection, printAreaIds: selected, defaultItem: { ...item, printAreaIds: selected.slice() }, items: [item] }
+      selection: { ...candidate.selection, defaultItem: { ...item, printAreaIds: selected.slice() }, items: [item] }
     };
   }
   async function buildStudioPayload(context) {
