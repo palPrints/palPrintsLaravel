@@ -128,7 +128,13 @@
                         <div class="cart-dropdown__list" id="cartDropdownList" @if($customerCartItems->isEmpty()) hidden @endif>
                             @foreach($customerCartItems->take(2) as $cartItem)
                                 <div class="cart-dropdown__item">
-                                    <div class="cart-dropdown__item-media"><img src="{{ asset($cartItem->product?->image ?: 'front/assets/images/customer/products/1.png') }}" alt="{{ $cartItem->product?->name }}"></div>
+                                    <div class="cart-dropdown__item-media">
+                                        @if(!empty($cartItem->selected_options['mockup']))
+                                            @include('customer.partials.cart-mockup', ['mockup' => $cartItem->selected_options['mockup'], 'alt' => $cartItem->product?->name ?? 'منتج'])
+                                        @else
+                                            <img src="{{ asset($cartItem->product?->image ?: 'front/assets/images/customer/products/1.png') }}" alt="{{ $cartItem->product?->name }}">
+                                        @endif
+                                    </div>
                                     <div class="cart-dropdown__item-body">
                                         <h4>{{ $cartItem->product?->name ?? 'منتج' }}</h4>
                                         <p>الكمية: {{ $cartItem->quantity }}</p>

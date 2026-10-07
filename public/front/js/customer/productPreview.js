@@ -108,6 +108,57 @@
   // The design studio's catalog has no database code; its categories map to the products the server can order.
   const AUDIENCES = window.palPrintsAudiences || {};
   const STUDIO_PRODUCT_CODES = { tshirts: "TSHIRT-CLASSIC", hoodies: "HOODIE-PREMIUM", mugs: "MUG-CERAMIC" };
+  // The studio's saved objects (positions and sizes are fractions of the print zone) as the preview draws them (percent).
+  // imageSource(assetId) gives the picture of an uploaded image, or nothing when it cannot be shown.
+  function modelsToPreview(models, imageSource) {
+    const graphics = new Map((window.PALPRINTS_STUDIO_GRAPHICS?.items || []).map(item => [item.id, item]));
+    const preview = { images: [], texts: [], icons: [] };
+    (models || []).forEach((model, index) => {
+      const common = { x: (Number(model.x) || 0) * 100, y: (Number(model.y) || 0) * 100, rotation: Number(model.angle) || 0, layerOrder: index + 1, flipX: Boolean(model.flipX), flipY: Boolean(model.flipY) };
+      if (model.kind === "image" && imageSource(model.assetId)) preview.images.push({ ...common, assetId: model.assetId, src: imageSource(model.assetId), alt: "صورة مرفوعة في التصميم", width: (Number(model.width) || .2) * 100, height: (Number(model.height) || .2) * 100 });
+      if (model.kind === "graphic") {
+        const graphic = graphics.get(model.graphicId);
+        if (graphic?.assetPath) preview.images.push({ ...common, src: graphic.assetPath, alt: graphic.nameAr || graphic.nameEn || "رسم من التصميم", width: (Number(model.width) || .2) * 100, height: (Number(model.height) || .2) * 100, tint: graphic.recolorable ? model.color || graphic.defaultColor : null });
+      }
+      if (model.kind === "text") preview.texts.push({ ...common, content: model.text || "", width: (Number(model.width) || .7) * (Number(model.scaleX) || 1) * 100, sizePercent: (Number(model.fontSize) || .1) * (Number(model.scaleY) || 1) * 100, fontFamily: model.fontFamily || "Cairo", color: model.fill || "#0b1f3a", fontWeight: model.fontWeight || "normal", fontStyle: model.fontStyle || "normal", textAlign: model.textAlign || "center", lineHeight: Number(model.lineHeight) || 1.2 });
+    });
+    return preview;
+  }
+  // A design picked from the store carries what its designer placed on each print area. Draw it the way the studio does:
+  // on the plain garment photo of the chosen colour (a colour without photos is the white garment painted with its hex),
+  // inside the print zone the designer worked in, and start with the areas that have artwork selected.
+  function upgradePublishedPayload(candidate) {
+    const layout = candidate?.design?.layout;
+    if (!layout || candidate.studioContext) return candidate;
+    const category = Object.keys(STUDIO_PRODUCT_CODES).find(key => STUDIO_PRODUCT_CODES[key] === String(candidate.product.code || "").toUpperCase());
+    const studioProduct = (window.PALPRINTS_PRODUCT_CATALOG?.products || []).find(item => item.categoryId === category);
+    if (!studioProduct) return candidate;
+    const studioAreas = studioProduct.editor?.printAreas || studioProduct.printAreas || [];
+    const studioAreaId = area => area.id === "wrap" ? "front" : area.id; // the mug's database area "wrap" is the studio's "front"
+    const printAreas = candidate.product.printAreas.map(area => {
+      const studio = studioAreas.find(item => item.id === studioAreaId(area));
+      if (!studio) return area;
+      const zone = studio.printZone || {};
+      return { ...area, image: studio.mockup || studio.image || area.image, placement: { top: Number(zone.topPct) || 0, left: Number(zone.leftPct) || 0, width: Number(zone.widthPct) || 100, height: Number(zone.heightPct) || 100 } };
+    });
+    const white = studioProduct.colors.find(color => color.id === "white") || studioProduct.colors[0];
+    const colors = candidate.product.colors.map(color => {
+      const known = studioProduct.colors.find(item => item.id === String(color.id).toLowerCase());
+      return known ? { ...color, image: known.image, areaMockups: known.areaMockups || {}, toneClass: "" } : { ...color, image: white.image, areaMockups: {}, toneClass: "" };
+    });
+    const assets = candidate.design.assets || {};
+    const previewByArea = {};
+    printAreas.forEach(area => { previewByArea[area.id] = modelsToPreview(layout[studioAreaId(area)] || [], id => assets[id]); });
+    const withArtwork = printAreas.filter(area => (layout[studioAreaId(area)] || []).length).map(area => area.id);
+    const selected = withArtwork.length ? withArtwork : candidate.selection.items[0].printAreaIds;
+    const item = { ...candidate.selection.items[0], printAreaIds: selected };
+    return {
+      ...candidate,
+      product: { ...candidate.product, printAreas, colors },
+      design: { ...candidate.design, preview: previewByArea[selected[0]] || candidate.design.preview, previewByArea },
+      selection: { ...candidate.selection, printAreaIds: selected, defaultItem: { ...item, printAreaIds: selected.slice() }, items: [item] }
+    };
+  }
   async function buildStudioPayload(context) {
     if (!context?.designId || !context?.productId) return null;
     const selection = read(sessionStorage, KEYS.selection, null);
@@ -117,25 +168,12 @@
     const product = (selection?.editorProduct?.id === context.productId ? selection.editorProduct : null) || catalog.find(item => item.id === context.productId);
     const draft = documentState?.drafts?.[context.productId];
     if (!product || !draft) return null;
-    const graphics = new Map((window.PALPRINTS_STUDIO_GRAPHICS?.items || []).map(item => [item.id, item]));
     const ids = [...new Set(Object.values(draft.areas || {}).flatMap(area => area?.objects || []).filter(item => item.kind === "image" && item.assetId).map(item => item.assetId))];
     const sources = new Map();
     await Promise.all(ids.map(async id => sources.set(id, await assetSource(context.designId, id))));
     const rawAreas = product.editor?.printAreas || product.printAreas || [];
     const previewByArea = {};
-    rawAreas.forEach(area => {
-      const preview = { images: [], texts: [], icons: [] };
-      (draft.areas?.[area.id]?.objects || []).forEach((model, index) => {
-        const common = { x: (Number(model.x) || 0) * 100, y: (Number(model.y) || 0) * 100, rotation: Number(model.angle) || 0, layerOrder: index + 1, flipX: Boolean(model.flipX), flipY: Boolean(model.flipY) };
-        if (model.kind === "image" && sources.get(model.assetId)) preview.images.push({ ...common, assetId: model.assetId, src: sources.get(model.assetId), alt: "صورة مرفوعة في التصميم", width: (Number(model.width) || .2) * 100, height: (Number(model.height) || .2) * 100 });
-        if (model.kind === "graphic") {
-          const graphic = graphics.get(model.graphicId);
-          if (graphic?.assetPath) preview.images.push({ ...common, src: graphic.assetPath, alt: graphic.nameAr || graphic.nameEn || "رسم من التصميم", width: (Number(model.width) || .2) * 100, height: (Number(model.height) || .2) * 100, tint: graphic.recolorable ? model.color || graphic.defaultColor : null });
-        }
-        if (model.kind === "text") preview.texts.push({ ...common, content: model.text || "", width: (Number(model.width) || .7) * (Number(model.scaleX) || 1) * 100, sizePercent: (Number(model.fontSize) || .1) * (Number(model.scaleY) || 1) * 100, fontFamily: model.fontFamily || "Cairo", color: model.fill || "#0b1f3a", fontWeight: model.fontWeight || "normal", fontStyle: model.fontStyle || "normal", textAlign: model.textAlign || "center", lineHeight: Number(model.lineHeight) || 1.2 });
-      });
-      previewByArea[area.id] = preview;
-    });
+    rawAreas.forEach(area => { previewByArea[area.id] = modelsToPreview(draft.areas?.[area.id]?.objects || [], id => sources.get(id)); });
     // A color without its own photo (`tint`) shows the white garment and this page paints it with the color's hex.
     // Keep only what the server says a print shop can make now, so a stale saved copy cannot offer a size nobody prints.
     const available = window.palPrintsPreviewCatalog?.available?.[String(product.code || STUDIO_PRODUCT_CODES[product.categoryId] || "").toUpperCase()];
@@ -174,7 +212,7 @@
     };
   }
 
-  const payload = await buildStudioPayload(workflow) || normalizeLegacy(read(sessionStorage, KEYS.preview, null));
+  const payload = upgradePublishedPayload(await buildStudioPayload(workflow) || normalizeLegacy(read(sessionStorage, KEYS.preview, null)));
   const saved = read(sessionStorage, KEYS.review, {});
   const savedMatches = saved.designId === payload.design.id && saved.productId === payload.product.id;
   const persistedItems = role === "customer" && savedMatches && Array.isArray(saved.orderItems) && saved.orderItems.length
@@ -437,7 +475,9 @@
     // A customer-made design is saved with its artwork files (multipart); a published design only sends ids (JSON).
     const request = custom
       ? customDesignForm(groupList, pieces).then(form => fetch(endpoint, { method: "POST", headers, body: form }))
-      : fetch(endpoint, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      // The cart shows the product in the chosen colour with the design on it, so each line carries that picture's description.
+      : Promise.all(groupList.map(async (group, index) => { group.mockup = await cartMockup(pieces[index]); }))
+        .then(() => fetch(endpoint, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify(body) }));
     request
       .then(response => response.json().catch(() => ({})).then(data => {
         if (!response.ok) { const firstError = data.errors ? Object.values(data.errors)[0][0] : data.message; throw new Error(firstError || "تعذرت إضافة المنتج إلى السلة. حاول مرة أخرى."); }

@@ -178,6 +178,7 @@ class CartController extends Controller
             'groups.*.quantity' => ['required', 'integer', 'min:1', 'max:99'],
             'groups.*.print_areas' => ['nullable', 'array'],
             'groups.*.print_areas.*' => ['string', 'max:50'],
+            'groups.*.mockup' => ['nullable', 'array'],
         ]);
 
         $product = Product::where('code', $validated['product_code'])->where('is_active', true)->first();
@@ -214,6 +215,12 @@ class CartController extends Controller
             (int) $group['quantity'],
         ))->all(), null, 'product_code');
 
+        // The designer's uploaded pictures are shown through the link that only works while the design is published.
+        $designFiles = collect($design->design_payload['files'] ?? [])
+            ->filter(fn ($file) => ! empty($file['asset_id']) && str_starts_with((string) ($file['mime_type'] ?? ''), 'image/'))
+            ->mapWithKeys(fn ($file) => [(string) $file['asset_id'] => route('customer.designs.asset', [$design, $file['asset_id']], false)])
+            ->all();
+
         foreach ($validated['groups'] as $group) {
             $variant = $this->matchVariant($variants, $group['color_id'], $group['size_id']);
 
@@ -221,6 +228,8 @@ class CartController extends Controller
                 'color' => $group['color_name'] ?? $group['color_id'],
                 'size' => $group['size_name'] ?? $group['size_id'],
                 'print_areas' => $group['print_areas'] ?? [],
+                // How the design looked in the preview (colour and print zone), so the cart can redraw it the same way.
+                'mockup' => $this->cleanMockup((array) ($group['mockup'] ?? []), $designFiles),
             ]);
 
             $item = CartItem::firstOrNew([

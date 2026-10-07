@@ -60,9 +60,13 @@ html[data-bs-theme="dark"] body.tshirts-page::before {
 .tshirts-page .product-card { cursor: default; background: #fff; border-color: var(--store-border); box-shadow: var(--store-shadow); }
 .tshirts-page .product-card__media { position: relative; display: grid; place-items: center; box-sizing: border-box; padding: 10px 16px; background: var(--store-surface-muted); }
 .tshirts-page .product-card__media > img { display: block; width: auto; height: 100%; max-width: 88%; object-fit: contain; object-position: center; }
+.tshirts-page .product-card__media > img { transition: transform 420ms cubic-bezier(.16, 1, .3, 1); }
+/* On hover the design zooms in slightly and the card gets a blue frame. */
 .tshirts-page .product-card:hover .product-card__media > img,
 .tshirts-page .product-card:focus-within .product-card__media > img,
-.tshirts-page .product-card.is-image-hovered .product-card__media > img { transform: none !important; }
+.tshirts-page .product-card.is-image-hovered .product-card__media > img { transform: scale(1.16) !important; }
+.tshirts-page .product-card:hover,
+.tshirts-page .product-card:focus-within { border-color: var(--store-primary-border); box-shadow: 0 12px 28px rgb(22 119 255 / 10%); }
 .tshirts-page .product-card__body { align-items: stretch; padding: 14px; text-align: start; }
 .tshirts-page .product-card__body h3 { font-size: 1.04rem; cursor: default; }
 .tshirts-page .product-card__body p { margin: 2px 0 10px; font-size: .86rem; }
@@ -114,4 +118,4 @@ html[data-bs-theme="dark"] body.tshirts-page::before {
 @media (max-width: 991px) { .tshirts-page .products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .tshirts-page .catalog-topline { flex-wrap: wrap; } .catalog-heading p { font-size: .88rem; } .tshirt-filters { gap: 6px; } .tshirt-filters button { gap: 5px; font-size: .8rem; } .tshirt-filters i { font-size: 1.15rem; } }
 @media (max-width: 480px) { .tshirts-page .products-grid { grid-template-columns: 1fr; } }
-@media (prefers-reduced-motion: reduce) { .tshirts-page .product-card, .tshirts-page .product-card__media img { transition: none; } .tshirts-page .product-card:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tshirts-page .product-card, .tshirts-page .product-card__media img { transition: none; } .tshirts-page .product-card:hover { transform: none; } .tshirts-page .product-card:hover .product-card__media > img { transform: none !important; } }

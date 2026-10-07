@@ -56,7 +56,7 @@
         window.palPrintsCustomerAssets = window.palPrintsCustomerAssets || {};
         window.palPrintsCustomerAssets.mugsImagesBase = @json(asset('front/assets/images/customer/mugs'));
         window.palPrintsCustomerAssets.cupFallbackImage = @json(asset('front/assets/images/customer/cup.webp'));
-        window.palPrintsCustomerAssets.publishedDesigns = @json($publishedDesigns);
+        window.palPrintsCustomerAssets.publishedDesigns = @json($publishedDesigns, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
         window.palPrintsCustomerAssets.productOptions = @json($productOptions);
     </script>
     <script src="{{ asset('front/js/customer/previewPayload.js') }}?v={{ filemtime(public_path('front/js/customer/previewPayload.js')) }}"></script>
