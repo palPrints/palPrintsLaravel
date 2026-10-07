@@ -12,6 +12,7 @@ use App\Models\Payment;
 use App\Models\PrintFile;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -231,7 +232,7 @@ class CheckoutService
         $designerProfit = (float) ($cartItem->design->designer_profit ?? 0) * $quantity;
         $providerCost = (float) $offering->base_price * $quantity;
 
-        return OrderItem::create([
+        $orderItem = OrderItem::create([
             'order_id' => $order->id,
             'product_id' => $cartItem->product_id,
             'variant_id' => $cartItem->variant_id,
@@ -248,6 +249,45 @@ class CheckoutService
             'platform_commission' => max(0, $totalPrice - $providerCost - $designerProfit),
             'selected_options' => $cartItem->selected_options,
         ]);
+
+        $this->attachDesignerFiles($order, $orderItem, $cartItem);
+
+        return $orderItem;
+    }
+
+    /**
+     * The print shop prints from files, so the artwork the designer uploaded into the design goes to it with the order line:
+     * each file is copied (the design itself can change or go offline later) and attached like a customer's own upload.
+     */
+    private function attachDesignerFiles(Order $order, OrderItem $orderItem, CartItem $cartItem): void
+    {
+        $disk = Storage::disk('local');
+
+        foreach ($cartItem->design->design_payload['files'] ?? [] as $file) {
+            if (empty($file['path']) || ! $disk->exists($file['path'])) {
+                continue;
+            }
+
+            $extension = strtolower(pathinfo((string) $file['path'], PATHINFO_EXTENSION));
+            $path = 'customer-print-files/orders/'.$order->id.'/'.Str::uuid().($extension ? '.'.$extension : '');
+            $disk->copy($file['path'], $path);
+
+            PrintFile::create([
+                'user_id' => $order->user_id,
+                'product_id' => $cartItem->product_id,
+                'order_item_id' => $orderItem->id,
+                'original_name' => $file['name'] ?? basename($path),
+                'stored_path' => $path,
+                'disk' => 'local',
+                'mime_type' => $file['mime_type'] ?? null,
+                'extension' => $extension,
+                'file_size' => $file['size'] ?? $disk->size($path),
+                'page_count' => 1,
+                'status' => PrintFile::STATUS_ATTACHED_TO_ORDER,
+                'uploaded_at' => now(),
+                'attached_to_order_at' => now(),
+            ]);
+        }
     }
 
     private function activeOffering(int $offeringId, int $branchId, CartItem $cartItem): BranchProductOffering
