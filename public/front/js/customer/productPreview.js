@@ -475,7 +475,9 @@
     // A customer-made design is saved with its artwork files (multipart); a published design only sends ids (JSON).
     const request = custom
       ? customDesignForm(groupList, pieces).then(form => fetch(endpoint, { method: "POST", headers, body: form }))
-      : fetch(endpoint, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      // The cart shows the product in the chosen colour with the design on it, so each line carries that picture's description.
+      : Promise.all(groupList.map(async (group, index) => { group.mockup = await cartMockup(pieces[index]); }))
+        .then(() => fetch(endpoint, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify(body) }));
     request
       .then(response => response.json().catch(() => ({})).then(data => {
         if (!response.ok) { const firstError = data.errors ? Object.values(data.errors)[0][0] : data.message; throw new Error(firstError || "تعذرت إضافة المنتج إلى السلة. حاول مرة أخرى."); }
