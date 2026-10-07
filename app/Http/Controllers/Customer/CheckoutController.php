@@ -162,6 +162,11 @@ class CheckoutController extends Controller
                 }
 
                 $value = $options[$key];
+                // A customer-made design stores its whole studio layout under "layout"; that is not a paper option to show.
+                if (is_array($value) && collect($value)->contains(fn ($item) => ! is_scalar($item))) {
+                    return null;
+                }
+
                 if (is_array($value)) {
                     $value = implode('، ', array_map(fn ($item) => $values[(string) $item] ?? (string) $item, $value));
                 } else {
