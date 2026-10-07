@@ -52,6 +52,12 @@
   object-position:center;
 }
 
+/* The customer's design drawn on the product: a flex box gives it a definite height (a grid's auto row would shrink it). */
+.order-basket-page .basket-item .product-media:has(.cart-mockup){
+  display:flex;
+  justify-content:center;
+}
+
 /* Trending products */
 .order-basket-page .trending{
   margin-top:24px;
