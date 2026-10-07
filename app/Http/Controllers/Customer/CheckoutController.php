@@ -117,6 +117,7 @@ class CheckoutController extends Controller
             'item_type' => $item->item_type,
             'product_name' => $item->product?->name ?? 'منتج',
             'product_image' => $firstPreview['preview_url'] ?? asset($item->product?->image ?: 'front/assets/images/customer/products/1.png'),
+            'mockup' => $options['mockup'] ?? null,
             'quantity' => (int) $item->quantity,
             'unit_price' => (float) $item->unit_price,
             'total_price' => (float) $item->unit_price * (int) $item->quantity,
