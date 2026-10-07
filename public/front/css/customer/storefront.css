@@ -1256,6 +1256,12 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   object-fit: contain;
 }
 
+/* The customer's design on the product: a flex box gives it a definite height (a grid's auto row would shrink it). */
+.cart-dropdown__item-media:has(.cart-mockup) {
+  display: flex;
+  justify-content: center;
+}
+
 .cart-dropdown__item-body {
   min-width: 0;
   flex: 1;
