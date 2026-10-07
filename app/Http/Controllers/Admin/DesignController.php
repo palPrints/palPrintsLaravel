@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -31,7 +32,7 @@ class DesignController extends Controller
     public function index(): View
     {
         $designs = Design::query()
-            ->with(['designer:id,name', 'product:id,name,category_id', 'product.category:id,name,slug'])
+            ->with(['designer:id,name', 'product:id,name,code,category_id', 'product.category:id,name,slug', 'product.branchProductOfferings.branchPrintAreas'])
             ->whereIn('status', array_keys(self::STATES))
             ->latest('submitted_at')
             ->latest('id')
@@ -42,9 +43,14 @@ class DesignController extends Controller
             (array) ($design->selected_options['allowed_color_ids'] ?? []),
             array_filter([$design->selected_options['color_id'] ?? null])
         ))->unique()->values();
-        $colorNames = AttributeValue::whereIn('code', $colorCodes)->pluck('value', 'code');
+        // A colour is stored as {"name": ..., "hex": ...} (or a plain name for the older ones): decode it for display.
+        $colorInfo = AttributeValue::whereIn('code', $colorCodes)->get()
+            ->groupBy('code')
+            ->map(fn ($values) => CatalogProductData::describeColor($values->first()));
+        $colorNames = $colorInfo->map(fn (array $color) => $color['name']);
+        $colorEntry = fn (string $code): array => ['id' => $code, 'name' => $colorInfo[$code]['name'] ?? $code, 'hex' => $colorInfo[$code]['hex'] ?? null];
 
-        $designs = $designs->map(function (Design $design) use ($colorNames) {
+        $designs = $designs->map(function (Design $design) use ($colorNames, $colorEntry) {
                 $category = $design->product?->category;
                 $date = $design->submitted_at ?? $design->created_at;
                 $options = $design->selected_options ?? [];
@@ -74,6 +80,7 @@ class DesignController extends Controller
                     'sizes' => implode('، ', $sizeNames),
                     'colors' => collect($options['allowed_color_ids'] ?? [])->map(fn ($code) => $colorNames[$code] ?? $code)->implode('، '),
                     'previewColor' => $colorNames[$options['color_id'] ?? ''] ?? '',
+                    'details' => $this->details($design, $options, $colorEntry),
                 ];
             });
 
@@ -132,6 +139,62 @@ class DesignController extends Controller
         });
 
         return $this->respond($request, true, $approved ? 'تم اعتماد التصميم بنجاح.' : 'تم رفض التصميم.');
+    }
+
+    /**
+     * What the details dialog draws: the colours, the print areas the shops offer for the product, and the design's
+     * layout on every area (the artwork files are private, so the page gets an admin-only link for each).
+     *
+     * @return array<string, mixed>
+     */
+    private function details(Design $design, array $options, \Closure $colorEntry): array
+    {
+        $code = strtolower((string) $design->product?->code);
+        $kind = match (true) {
+            str_contains($code, 'tshirt') => 'tshirts',
+            str_contains($code, 'hoodie') => 'hoodies',
+            str_contains($code, 'mug') => 'mugs',
+            str_contains($code, 'tote'), str_contains($code, 'bag') => 'bags',
+            str_contains($code, 'cap') => 'caps',
+            default => null,
+        };
+
+        $areas = ($design->product?->branchProductOfferings ?? collect())
+            ->filter(fn ($offering) => $offering->is_active)
+            ->flatMap(fn ($offering) => $offering->branchPrintAreas)
+            ->where('is_active', true)
+            ->unique('code')
+            ->map(fn ($area) => ['id' => $area->code, 'name' => $area->name])
+            ->values()
+            ->all();
+
+        $payload = (array) $design->design_payload;
+        $files = collect($payload['files'] ?? [])->mapWithKeys(fn (array $file) => [
+            $file['asset_id'] => route('admin.designs.file', [$design, $file['asset_id']]),
+        ])->all();
+
+        return [
+            'kind' => $kind,
+            'previewColor' => isset($options['color_id']) ? $colorEntry((string) $options['color_id']) : null,
+            'colors' => collect($options['allowed_color_ids'] ?? [])->map(fn ($colorCode) => $colorEntry((string) $colorCode))->values()->all(),
+            'areas' => $areas,
+            'layout' => $payload['layout']['areas'] ?? [],
+            'files' => $files,
+        ];
+    }
+
+    /** One artwork file of a design, for the admin's review only (the files are kept private). */
+    public function file(Design $design, string $assetId)
+    {
+        $file = collect($design->design_payload['files'] ?? [])->firstWhere('asset_id', $assetId);
+
+        abort_unless($file && Storage::disk('local')->exists($file['path']), 404);
+
+        return Storage::disk('local')->response($file['path'], null, [
+            'Content-Type' => $file['mime_type'] ?? 'application/octet-stream',
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+        ]);
     }
 
     private function respond(Request $request, bool $ok, string $message, int $status = 200): JsonResponse|RedirectResponse

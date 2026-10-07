@@ -1,4 +1,4 @@
-/* SweetAlert2 dressed in the PalPrints look (see pp-alert.js). */
+﻿/* SweetAlert2 dressed in the PalPrints look (see pp-alert.js). */
 /* Above every header, sidebar and drawer of the site (the highest in use is 5001), so the dim layer covers the whole screen. */
 .swal2-container { z-index: 100000; direction: rtl; font-family: "Cairo", system-ui, sans-serif; }
 .swal2-container.swal2-backdrop-show { background: rgb(11 31 58 / 45%); backdrop-filter: blur(2px); }

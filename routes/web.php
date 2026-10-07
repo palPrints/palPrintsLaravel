@@ -98,6 +98,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
         Route::get('/designs', [AdminDesignController::class, 'index'])->name('designs');
         Route::post('/designs/{design}/review', [AdminDesignController::class, 'review'])->name('designs.review');
+        Route::get('/designs/{design}/files/{assetId}', [AdminDesignController::class, 'file'])->name('designs.file');
 
         Route::get('/products', [AdminProductController::class, 'index'])->name('products');
         Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
@@ -202,6 +203,7 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::get('/designs/create', [DesignController::class, 'create'])->name('designs.create');
             Route::view('/designs/preview', 'customer.productPreview')->name('designs.preview');
             Route::get('/designs/review', [DesignController::class, 'review'])->name('designs.review');
+            Route::get('/designs/{design}', [DesignController::class, 'show'])->whereNumber('design')->name('designs.show');
             Route::post('/designs', [DesignController::class, 'store'])->name('designs.store');
         });
         Route::get('/profile', [DesignerProfileController::class, 'show'])->name('profile');

@@ -200,7 +200,7 @@
                 'productType' => $design->product?->name ?? '',
                 'status' => $design->status,
                 'updatedAt' => $updatedAt ? $updatedAt->toIso8601String() : null,
-                'previewUrl' => route('designer.designs.review', ['id' => $design->id]),
+                'previewUrl' => route('designer.designs.show', $design),
                 'editorUrl' => route('design-studio'),
             ];
         })->values()->all();

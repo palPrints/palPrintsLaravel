@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Designer;
 
 use App\Http\Controllers\Controller;
+use App\Models\AttributeValue;
 use App\Models\BranchProductOffering;
 use App\Models\Design;
 use App\Models\Notification;
@@ -29,6 +30,25 @@ class DesignController extends Controller
             ->get();
 
         return view('designer.designs.index', compact('designs'));
+    }
+
+    /** A saved design as the designer sent it: picture, product, prices, approved colours, and its review status. */
+    public function show(Design $design)
+    {
+        abort_unless($design->designer_id === Auth::id(), 404);
+
+        $options = $design->selected_options ?? [];
+        $colors = AttributeValue::whereIn('code', (array) ($options['allowed_color_ids'] ?? []))->get()
+            ->map(fn (AttributeValue $value) => CatalogProductData::describeColor($value))
+            ->all();
+        $audience = CatalogProductData::AUDIENCES[$options['display_category'] ?? ''] ?? null;
+
+        return view('designer.designs.show', [
+            'design' => $design->load('product'),
+            'colors' => $colors,
+            'audience' => $audience['label'] ?? null,
+            'sizes' => $audience ? collect($audience['sizes'])->whereIn('id', $options['allowed_size_ids'] ?? [])->pluck('name')->all() : [],
+        ]);
     }
 
     public function create()

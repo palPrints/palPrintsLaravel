@@ -113,7 +113,8 @@
     const selection = read(sessionStorage, KEYS.selection, null);
     const documentState = read(localStorage, KEYS.design + context.designId, null);
     const catalog = window.PALPRINTS_PRODUCT_CATALOG?.products || [];
-    const product = catalog.find(item => item.id === context.productId) || (selection?.editorProduct?.id === context.productId ? selection.editorProduct : null);
+    // The studio saves its own copy of the product (with the colors added in the admin); the static catalog lacks those.
+    const product = (selection?.editorProduct?.id === context.productId ? selection.editorProduct : null) || catalog.find(item => item.id === context.productId);
     const draft = documentState?.drafts?.[context.productId];
     if (!product || !draft) return null;
     const graphics = new Map((window.PALPRINTS_STUDIO_GRAPHICS?.items || []).map(item => [item.id, item]));
@@ -135,8 +136,12 @@
       });
       previewByArea[area.id] = preview;
     });
-    const colors = (product.colors || []).map(color => ({ ...color, areaMockups: color.areaMockups || {} }));
-    const sizes = product.sizes || [];
+    // A color without its own photo (`tint`) shows the white garment and this page paints it with the color's hex.
+    // Keep only what the server says a print shop can make now, so a stale saved copy cannot offer a size nobody prints.
+    const available = window.palPrintsPreviewCatalog?.available?.[String(product.code || STUDIO_PRODUCT_CODES[product.categoryId] || "").toUpperCase()];
+    const onlyAvailable = (items, ids) => { const kept = (items || []).filter(item => !ids || ids.includes(String(item.id).toLowerCase())); return kept.length ? kept : (items || []); };
+    const colors = onlyAvailable(product.colors, available?.colors).map(color => ({ ...color, areaMockups: color.tint ? {} : color.areaMockups || {} }));
+    const sizes = onlyAvailable(product.sizes, available?.sizes);
     const colorId = colors.some(item => item.id === context.preview?.colorId) ? context.preview.colorId : (draft.colorId || colors[0]?.id);
     const sizeId = sizes.some(item => item.id === context.preview?.sizeId) ? context.preview.sizeId : (draft.sizeId || sizes[0]?.id);
     const artworkAreas = rawAreas.filter(area => (draft.areas?.[area.id]?.objects || []).length).map(area => area.id);
@@ -375,7 +380,9 @@
     payload.selection.items = state.items.map(piece => ({ colorId: piece.colorId, sizeId: piece.sizeId, printAreaIds: [...piece.printAreaIds] })); payload.selection.activeItemIndex = state.activePieceIndex; try { sessionStorage.setItem(KEYS.preview, JSON.stringify(payload)); } catch (error) { /* Optional. */ }
   }
   function renderAll() { applyRoleUi(); renderMeta(); renderViewTabs(); renderCanvas(); renderColors(); renderSizes(); renderQuantity(); renderPieces(); renderAreas(); renderPrinting(); renderPrice(); renderWarnings(); renderAllowedSummary(); renderAllowedSizes(); renderValidation(); elements.zoomValue.textContent = Math.round(state.zoom * 100) + "%"; sync(); }
-  function showToast(message, error) { clearTimeout(state.toastTimer); elements.toast.className = "preview-toast is-visible " + (error ? "is-error" : "is-success"); elements.toastIcon.className = "bi " + (error ? "bi-exclamation-lg" : "bi-check2"); elements.toastMessage.textContent = message; state.toastTimer = setTimeout(() => elements.toast.classList.remove("is-visible"), 3000); }
+  function showToast(message, error) {
+    clearTimeout(state.toastTimer); elements.toast.className = "preview-toast is-visible " + (error ? "is-error" : "is-success"); elements.toastIcon.className = "bi " + (error ? "bi-exclamation-lg" : "bi-check2"); elements.toastMessage.textContent = message; state.toastTimer = setTimeout(() => elements.toast.classList.remove("is-visible"), 3000);
+  }
   // What the cart thumbnail needs to redraw the design exactly as previewed: the product picture (and its color tint),
   // the print zone, and the artwork placed inside it.
   async function cartMockup(piece, withUrls = false) {

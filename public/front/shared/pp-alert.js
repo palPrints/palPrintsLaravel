@@ -1,4 +1,4 @@
-/* One place for every confirm / alert / prompt pop-up in the site, drawn by SweetAlert2 (loaded before this file).
+﻿/* One place for every confirm / alert / prompt pop-up in the site, drawn by SweetAlert2 (loaded before this file).
    Use window.PalAlert instead of window.confirm / alert / prompt:
 
      PalAlert.confirm({ title, text, confirmText, cancelText, icon, danger }) -> Promise<boolean>

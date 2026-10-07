@@ -63,6 +63,9 @@ class CatalogProductData
                 'attributes.attribute',
                 'attributes.values.attributeValue',
                 'branchProductOfferings.branchPrintAreas',
+                'branchProductOfferings.branchOfferingVariants',
+                'variants.values.productAttributeValue.attributeValue',
+                'variants.values.productAttributeValue.productAttribute.attribute',
             ])
             ->where('is_active', true)
             ->whereNotIn('code', self::NOT_DESIGNABLE)
@@ -265,7 +268,53 @@ class CatalogProductData
                 ->values();
         }
 
+        // Only offer the colours and sizes some active print shop can really make; otherwise the customer
+        // picks them and is refused later, when the order is routed to a shop.
+        $sellable = self::sellable($product);
+
+        foreach (['color', 'size'] as $axis) {
+            if ($sellable === null || ! isset($result[$axis])) {
+                continue;
+            }
+
+            $offered = $result[$axis]->filter(fn (AttributeValue $value) => in_array(self::normalizeCode($value->code), $sellable[$axis], true))->values();
+            $result[$axis] = $offered->isNotEmpty() ? $offered : $result[$axis];
+        }
+
         return $result;
+    }
+
+    /**
+     * The colour and size codes (normalized) of the variants that at least one active shop offers,
+     * or null when no shop lists any variant (nothing to filter by).
+     *
+     * @return array{color: array<int, string>, size: array<int, string>}|null
+     */
+    private static function sellable(Product $product): ?array
+    {
+        $offered = $product->branchProductOfferings
+            ->filter(fn (BranchProductOffering $offering) => $offering->is_active)
+            ->flatMap(fn (BranchProductOffering $offering) => $offering->branchOfferingVariants->where('is_available', true)->pluck('variant_id'))
+            ->unique();
+
+        if ($offered->isEmpty()) {
+            return null;
+        }
+
+        $codes = ['color' => [], 'size' => []];
+
+        foreach ($product->variants->where('is_active', true)->whereIn('id', $offered->all()) as $variant) {
+            foreach ($variant->values as $variantValue) {
+                $pav = $variantValue->productAttributeValue;
+                $axis = $pav?->productAttribute?->attribute?->code;
+
+                if (isset($codes[$axis]) && $pav->attributeValue) {
+                    $codes[$axis][] = self::normalizeCode($pav->attributeValue->code);
+                }
+            }
+        }
+
+        return ['color' => array_values(array_unique($codes['color'])), 'size' => array_values(array_unique($codes['size']))];
     }
 
     /**
@@ -274,12 +323,17 @@ class CatalogProductData
      */
     private static function colors(Collection $values, string $thumbnail): array
     {
-        return $values->map(fn (AttributeValue $value) => [
-            'id' => $value->code,
-            'name' => $value->value,
-            'value' => self::swatch($value->code),
-            'image' => $thumbnail,
-        ])->values()->all() ?: [[
+        return $values->map(function (AttributeValue $value) use ($thumbnail) {
+            // Admin-added colours store {"name": ..., "hex": ...}; older ones are a plain name with a known swatch.
+            $color = self::describeColor($value);
+
+            return [
+                'id' => $value->code,
+                'name' => $color['name'],
+                'value' => $color['hex'],
+                'image' => $thumbnail,
+            ];
+        })->values()->all() ?: [[
             'id' => 'standard',
             'name' => 'قياسي',
             'value' => '#ffffff',
@@ -393,7 +447,7 @@ class CatalogProductData
 
     private static function productOrder(string $code): int
     {
-        return match ($code) {
+        return match (strtoupper($code)) {
             'TSHIRT-CLASSIC' => 1,
             'HOODIE-PREMIUM' => 2,
             'PAPER-PRINT' => 3,

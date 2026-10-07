@@ -20,9 +20,11 @@
     const sidebarStorageKey = "palprints-admin-sidebar-collapsed";
     let toastTimer = 0;
 
-    function showToast(message) {
+    /* type: "success" (default), "warning" or "error": it picks the icon and the coloured edge. */
+    function showToast(message, type) {
       if (!toast) return;
       window.clearTimeout(toastTimer);
+      toast.dataset.type = type || "success";
       toast.textContent = message;
       toast.classList.add("is-visible");
       toastTimer = window.setTimeout(function () {

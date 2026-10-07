@@ -25,8 +25,10 @@
             document.body.classList.add('pp-dark-mode');
         }
     </script>
-    @include('customer.partials.header')
-    @include('customer.partials.sidebar')
+    {{-- The design studio and the design preview are shared with designers: they get their own top bar and menu, not the shop's. --}}
+    @php($isDesignerView = auth()->user()?->hasRole('designer'))
+    @include($isDesignerView ? 'customer.partials.designer-header' : 'customer.partials.header')
+    @include($isDesignerView ? 'customer.partials.designer-sidebar' : 'customer.partials.sidebar')
 
     <main id="@yield('main-id', 'mainContent')" class="store-main @yield('main-class')">
         @yield('content')
