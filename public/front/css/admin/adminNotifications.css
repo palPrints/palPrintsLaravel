@@ -1,0 +1,54 @@
+.admin-notifications .an-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 18px; }
+.admin-notifications .an-heading h1 { margin: 0 0 4px; color: var(--navy); font-size: 24px; }
+.admin-notifications .an-heading p { margin: 0; color: var(--muted); font-size: 13px; }
+.an-read-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  color: #fff;
+  background: var(--blue);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+.an-read-all:hover { background: #0868e8; }
+
+.an-list { display: grid; gap: 8px; }
+.an-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  color: inherit;
+  text-align: start;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+  transition: border-color .15s, box-shadow .15s;
+}
+.an-item:hover { border-color: #b8d3ff; box-shadow: 0 4px 12px rgb(11 31 58 / 6%); }
+.an-item.is-unread { background: #f4f8ff; border-color: #cfe0ff; }
+.an-icon { display: grid; flex: none; width: 40px; height: 40px; place-items: center; color: var(--blue); background: #eaf2ff; border-radius: 10px; font-size: 18px; }
+.an-copy { display: grid; flex: 1; gap: 3px; min-width: 0; }
+.an-copy strong { color: var(--navy); font-size: 14px; }
+.an-item:not(.is-unread) .an-copy strong { font-weight: 600; }
+.an-copy small { color: var(--muted); font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.an-meta { display: flex; flex: none; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+.an-dot { width: 9px; height: 9px; background: var(--blue); border-radius: 50%; }
+
+.an-empty { padding: 48px 16px; color: var(--muted); text-align: center; background: #fff; border: 1px dashed var(--border); border-radius: 12px; }
+.an-empty i { font-size: 32px; }
+.an-pagination { margin-top: 18px; }
+
+@media (max-width: 640px) {
+  .admin-notifications .an-heading { align-items: flex-start; flex-direction: column; }
+  .an-item { align-items: flex-start; }
+  .an-meta { flex-direction: column-reverse; align-items: flex-end; }
+}
