@@ -386,3 +386,23 @@
     flex-direction: column;
   }
 }
+
+.manual-payment-review .dialog-secondary-button,
+.manual-payment-review .dialog-save-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 750;
+  text-decoration: none;
+}
+.manual-payment-review .dialog-secondary-button { color: var(--text); background: #eef3f8; }
+.manual-payment-review .dialog-secondary-button:hover { background: #e1e8f0; }
+.manual-payment-review .dialog-save-button { color: #fff; background: var(--blue); }
+.manual-payment-review .dialog-save-button:hover { background: #0868e8; }
+.manual-payment-review .dialog-save-button:disabled { opacity: .6; cursor: default; }

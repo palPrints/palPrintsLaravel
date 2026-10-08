@@ -48,6 +48,13 @@ class SupportTicketStore
         $tickets[] = $ticket;
         self::writeRaw($tickets);
 
+        AdminNotifier::toAdmins(
+            'support.new',
+            'طلب دعم جديد',
+            sprintf('أرسل %s (%s) طلب دعم: %s', $ticket['name'] ?? '—', $ticket['role_label'] ?? '—', $ticket['subject'] ?? ''),
+            route('admin.support'),
+        );
+
         return $ticket;
     }
 

@@ -11,6 +11,7 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\PrintFile;
 use App\Models\User;
+use App\Support\AdminNotifier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -90,6 +91,13 @@ class CheckoutService
                     'receipt_original_name' => $data['payment_receipt_original_name'] ?? null,
                 ],
             ]);
+
+            AdminNotifier::toAdmins(
+                'order.payment_review',
+                'إشعار دفع جديد بانتظار المراجعة',
+                sprintf('طلب جديد رقم %s من %s بقيمة %s ₪. راجع إشعار الدفع ووجّه الطلب لمطبعة.', $order->order_number, $user->name, number_format($totalAmount, 2)),
+                route('admin.payment-notices'),
+            );
 
             $cart->update([
                 'status' => 'converted',

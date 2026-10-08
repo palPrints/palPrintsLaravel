@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Support\AdminNotifier;
 use App\Models\WalletTransaction;
 use App\Models\WithdrawalRequest;
 use Illuminate\Support\Facades\DB;
@@ -69,6 +70,13 @@ class WithdrawalService
                 'pending_balance' => ((int) round(((float) $wallet->pending_balance) * 100) + $cents) / 100,
                 'last_updated' => now(),
             ]);
+
+            AdminNotifier::toAdmins(
+                'withdrawal.requested',
+                'طلب سحب أرباح جديد',
+                sprintf('طلب %s سحب %s ₪. رقم المرجع: %s', $user->name, number_format($cents / 100, 2), $withdrawal->reference_id),
+                route('admin.payments'),
+            );
 
             return $withdrawal;
         });

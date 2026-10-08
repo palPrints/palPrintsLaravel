@@ -37,14 +37,16 @@
         <h2 class="notices-heading">بانتظار المراجعة <span>{{ $pending->count() }}</span></h2>
 
         @forelse ($pending as $notice)
-            <article class="notice-card">
-                <header class="notice-head">
+            <details class="notice-card"@if ($pending->count() === 1) open @endif>
+                <summary class="notice-head">
                     <div>
                         <strong>طلب <bdi>{{ $notice['orderNumber'] }}</bdi></strong>
                         <small>{{ $notice['date'] }}</small>
                     </div>
-                    <bdi class="notice-amount">{{ number_format($notice['amount'], 2) }} ₪</bdi>
-                </header>
+                    <span class="notice-head-meta"><span><i class="bi bi-person" aria-hidden="true"></i> {{ $notice["customer"] }}</span><span><i class="bi {{ $notice["icon"] }}" aria-hidden="true"></i> {{ $notice["method"] }}</span></span>
+                    <bdi class="notice-amount">{{ number_format($notice["amount"], 2) }} ₪</bdi>
+                    <i class="bi bi-chevron-down notice-chevron" aria-hidden="true"></i>
+                </summary>
 
                 <div class="notice-body">
                     <dl class="notice-details">
@@ -130,7 +132,7 @@
                         <button class="notice-reject" type="submit"><i class="bi bi-x-circle" aria-hidden="true"></i> رفض الطلب</button>
                     </form>
                 </div>
-            </article>
+            </details>
         @empty
             <div class="notices-empty">
                 <i class="bi bi-inbox" aria-hidden="true"></i>

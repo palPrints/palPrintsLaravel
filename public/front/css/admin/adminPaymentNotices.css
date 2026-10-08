@@ -229,3 +229,12 @@
 @media (max-width: 860px) {
   .notice-actions { grid-template-columns: 1fr; padding-inline: 14px; }
 }
+/* Each notice is a collapsed row; open it to review the receipt and pick the print shop. */
+.notice-card > .notice-head { cursor: pointer; list-style: none; border-bottom: 0; }
+.notice-card > .notice-head::-webkit-details-marker { display: none; }
+.notice-card[open] > .notice-head { border-bottom: 1px solid var(--border); }
+.notice-card > .notice-head:hover { background: #f6f9fd; }
+.notice-head-meta { display: flex; flex: 1; flex-wrap: wrap; gap: 6px 18px; color: #4b5d78; font-size: 13px; }
+.notice-head-meta i { color: var(--blue); margin-inline-end: 4px; }
+.notice-chevron { color: #7a8aa0; transition: transform .18s; }
+.notice-card[open] .notice-chevron { transform: rotate(180deg); }

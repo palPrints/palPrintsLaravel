@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\ShippingController as AdminShippingController;
+use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\SupportController as AdminSupportController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Customer\CartController as CustomerCartController;
@@ -126,6 +127,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/settings/notifications', [AdminSettingController::class, 'updateNotifications'])->name('settings.notifications');
         Route::post('/settings/fees', [AdminSettingController::class, 'updateFees'])->name('settings.fees');
         Route::post('/settings/payments/{method}', [AdminSettingController::class, 'updatePaymentMethod'])->name('settings.payments');
+        Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('notifications');
+        Route::post('/notifications/read-all', [AdminNotificationController::class, 'readAll'])->name('notifications.read-all');
+        Route::post('/notifications/{notification}/read', [AdminNotificationController::class, 'read'])->name('notifications.read');
         Route::get('/support', [AdminSupportController::class, 'index'])->name('support');
         Route::post('/support/{ticket}/reply', [AdminSupportController::class, 'reply'])->name('support.reply');
         Route::post('/support/{ticket}/status', [AdminSupportController::class, 'updateStatus'])->name('support.status');
