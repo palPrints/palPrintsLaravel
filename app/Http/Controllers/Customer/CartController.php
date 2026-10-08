@@ -508,17 +508,24 @@ class CartController extends Controller
             ?? $variants->first();
     }
 
-    /** Shows a customer's own uploaded image (private storage) to its owner, for the cart thumbnail. */
+    /**
+     * Shows a customer's own uploaded file (private storage) to its owner, for the cart thumbnail: a picture as it is,
+     * any other file (a PDF) through the preview picture made for it.
+     */
     public function printFilePreview(Request $request, PrintFile $printFile)
     {
         abort_unless($printFile->user_id === $request->user()->id, 403);
-        abort_unless(str_starts_with((string) $printFile->mime_type, 'image/') && $printFile->status !== PrintFile::STATUS_DELETED, 404);
+        abort_if($printFile->status === PrintFile::STATUS_DELETED, 404);
 
-        $disk = Storage::disk($printFile->disk ?: 'local');
-        abort_unless($disk->exists($printFile->stored_path), 404);
+        $isPicture = str_starts_with((string) $printFile->mime_type, 'image/');
+        abort_unless($isPicture || $printFile->preview_path, 404);
 
-        return response()->file($disk->path($printFile->stored_path), [
-            'Content-Type' => $printFile->mime_type,
+        $disk = Storage::disk(($isPicture ? $printFile->disk : ($printFile->preview_disk ?: $printFile->disk)) ?: 'local');
+        $path = $isPicture ? $printFile->stored_path : $printFile->preview_path;
+        abort_unless($disk->exists($path), 404);
+
+        return response()->file($disk->path($path), [
+            'Content-Type' => $isPicture ? $printFile->mime_type : ($disk->mimeType($path) ?: 'image/jpeg'),
             'Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'", // keeps an uploaded SVG from running scripts
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, max-age=3600',
@@ -568,71 +575,6 @@ class CartController extends Controller
         $cartItem->delete();
 
         return back()->with('status', 'item-removed');
-    }
-    public function previewPrintFile(Request $request, PrintFile $printFile): BinaryFileResponse
-    {
-        abort_unless($printFile->user_id === $request->user()->id, 403);
-        abort_unless($printFile->preview_path && $printFile->status !== PrintFile::STATUS_DELETED, 404);
-
-        $disk = $printFile->preview_disk ?: $printFile->disk ?: 'local';
-        abort_unless(Storage::disk($disk)->exists($printFile->preview_path), 404);
-
-        $path = Storage::disk($disk)->path($printFile->preview_path);
-        $mime = Storage::disk($disk)->mimeType($printFile->preview_path) ?: 'image/jpeg';
-
-        return response()->file($path, ['Content-Type' => $mime]);
-    }
-
-
-    private function paperOptionTags(array $options): array
-    {
-        $labels = [
-            'paper_size' => 'حجم الورق',
-            'paper_type' => 'نوع الورق',
-            'color_mode' => 'لون الطباعة',
-            'sides' => 'جوانب الطباعة',
-            'layout' => 'تخطيط الصفحة',
-            'grouping' => 'طريقة الملفات',
-            'binding' => 'التغليف',
-            'quantity' => 'الكمية',
-            'file_count' => 'عدد الملفات',
-            'page_count' => 'عدد الصفحات',
-        ];
-
-        $values = [
-            'standard' => 'عادي 80 جم',
-            'thick' => 'فاخر 120 جم',
-            'coated' => 'مصقول 150 جم',
-            'bw' => 'أبيض وأسود',
-            'color' => 'ملون',
-            'single' => 'وجه واحد',
-            'double' => 'وجهين',
-            '1' => 'صفحة واحدة لكل وجه',
-            '2' => 'صفحتان لكل وجه',
-            '4' => '4 صفحات لكل وجه',
-            'combined' => 'دمج الملفات',
-            'separate' => 'فصل الملفات',
-            'none' => 'بدون تغليف',
-        ];
-
-        return collect($labels)
-            ->map(function (string $label, string $key) use ($options, $values) {
-                if (! array_key_exists($key, $options) || $options[$key] === '' || $options[$key] === null) {
-                    return null;
-                }
-
-                $value = $options[$key];
-                if (is_array($value)) {
-                    $value = implode('، ', array_map(fn ($item) => $values[(string) $item] ?? (string) $item, $value));
-                } else {
-                    $value = $values[(string) $value] ?? (string) $value;
-                }
-
-                return $label.': '.$value;
-            })
-            ->filter()
-            ->values()
-            ->all();
     }
 
     private function createPreview(UploadedFile $file, string $storedPath, string $extension, int $userId): array

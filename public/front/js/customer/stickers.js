@@ -170,6 +170,7 @@
     dropzone: document.getElementById("stickerDropzone"),
     uploadStatus: document.getElementById("uploadStatus"),
     preview: document.getElementById("stickerPreview"),
+    previewEmpty: document.getElementById("stickerPreviewEmpty"),
     previewFrame: document.getElementById("stickerPreviewFrame"),
     previewCaption: document.getElementById("previewCaption"),
     quantityInput: document.getElementById("stickerQuantity"),
@@ -697,6 +698,8 @@
       state.image = file;
       elements.preview.src = candidateUrl;
       elements.preview.alt = `معاينة الملف المرفوع: ${file.name}`;
+      elements.preview.hidden = false;
+      elements.previewEmpty.hidden = true;
       elements.previewCaption.textContent = file.name;
       setUploadStatus(`تم تحميل ${file.name} بنجاح.`, "success");
       applyPreviewShape(state.shape);
@@ -804,12 +807,19 @@
 
     elements.customizer.addEventListener("submit", (event) => {
       event.preventDefault();
+      if (!state.image) {
+        const message = "ارفع صورة تصميم الملصق أولاً ثم أضف الطلب إلى السلة.";
+        setUploadStatus(message, "error");
+        fallbackToast(message, "exclamation-triangle");
+        elements.dropzone.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+        return;
+      }
       stickerCart.push({
         id: makeCartId("custom"),
         type: "custom",
         orderType: "brand",
         category: "البراند",
-        imageName: state.image ? state.image.name : null,
+        imageName: state.image.name,
         quantity: state.quantity,
         size: state.size,
         shape: state.shape,

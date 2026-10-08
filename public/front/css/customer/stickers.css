@@ -388,6 +388,24 @@
 
 .stickers-preview-frame:hover img { transform: translateY(-5px) scale(1.02); }
 
+/* Nothing is drawn until the customer uploads a design: no sample picture stands in for it. */
+.stickers-preview-empty {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  max-width: 70%;
+  color: var(--store-muted);
+  text-align: center;
+}
+
+.stickers-preview-empty[hidden] { display: none; }
+
+.stickers-preview-empty i { color: #8aa4c4; font-size: 2.2rem; line-height: 1; }
+.stickers-preview-empty strong { color: var(--store-navy); font-size: .9rem; }
+.stickers-preview-empty span { font-size: .78rem; line-height: 1.7; }
+
 .stickers-preview-caption {
   margin: 10px 0 0;
   color: var(--store-muted);

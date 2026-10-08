@@ -77,14 +77,6 @@ class PrintShopRouter
         );
     }
 
-    /** The offering of the best branch for a single product (the common case of one design), or null. */
-    public function choose(Product $product, Collection $variantIds, array $studioAreas, ?array $layout, ?string $city): ?BranchProductOffering
-    {
-        $need = $this->need($product, $variantIds, $studioAreas, $layout);
-
-        return $this->chooseForOrder(collect([$need]), $city)['offerings'][$product->id] ?? null;
-    }
-
     /**
      * The branch that can make every line of the order, with its offering for each product.
      *
