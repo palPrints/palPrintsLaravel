@@ -23,8 +23,8 @@ class DashboardController extends Controller
         $lastMonthStart = $now->copy()->subMonthNoOverflow()->startOfMonth();
         $lastMonthEnd = $lastMonthStart->copy()->endOfMonth();
 
-        $usersTotal = User::count();
-        $usersLastMonth = User::where('created_at', '<=', $lastMonthEnd)->count();
+        $usersTotal = User::real()->count();
+        $usersLastMonth = User::real()->where('created_at', '<=', $lastMonthEnd)->count();
 
         // The orders tables are not part of the current schema yet, so every order figure falls back to zero.
         $hasOrders = Schema::hasTable('orders');

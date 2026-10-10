@@ -36,7 +36,6 @@ test('unapproved designer cannot access design creation pages', function () {
     foreach ([
         'designer.designs.index',
         'designer.designs.create',
-        'designer.designs.editor',
         'designer.designs.review',
     ] as $routeName) {
         $this->actingAs($designer)

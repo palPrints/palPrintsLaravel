@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Support\AdminNotifier;
 use App\Support\OrderNotifier;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrdersController extends Controller
 {
@@ -29,8 +31,8 @@ class OrdersController extends Controller
     /** Statuses that move an order from "current" to "previous". */
     private const FINAL_STATUSES = ['delivered', 'completed', 'cancelled', 'rejected'];
 
-    /** Only orders still in these statuses (not yet in production) can be cancelled by the customer. */
-    private const CANCELLABLE_STATUSES = ['pending'];
+    /** Only orders still in these statuses (the payment not approved yet, so nothing is in progress) can be cancelled by the customer. */
+    private const CANCELLABLE_STATUSES = ['pending', 'awaiting_payment_review'];
 
     public function index(Request $request): View
     {
@@ -52,11 +54,41 @@ class OrdersController extends Controller
     {
         abort_unless($order->user_id === $request->user()->id, 403);
 
-        if (! in_array($order->status, self::CANCELLABLE_STATUSES, true)) {
+        // Locked, so an admin approving the payment at the same moment cannot be overwritten by this cancel.
+        $cancelled = DB::transaction(function () use ($order) {
+            $order = Order::query()->lockForUpdate()->find($order->id);
+
+            if (! in_array($order->status, self::CANCELLABLE_STATUSES, true)) {
+                return false;
+            }
+
+            // The receipt was never approved, so nothing was charged: close the payment notice with the order.
+            $closedNotices = $order->payments()->where('status', 'pending_review')->update([
+                'status' => 'failed',
+                'failure_reason' => 'ألغى العميل الطلب قبل مراجعة الدفع.',
+            ]);
+
+            // The notice leaves the admin's list, so tell them why, and that any transfer already made must be returned.
+            if ($closedNotices > 0) {
+                AdminNotifier::toAdmins(
+                    'order.payment_cancelled',
+                    'ألغى العميل طلبًا بانتظار مراجعة الدفع',
+                    sprintf('ألغى %s الطلب رقم %s قبل مراجعة الدفع، وأُغلق إشعار الدفع الخاص به. إذا حوّل العميل المبلغ فعلًا فيجب إرجاعه له.', $order->user?->name ?? 'العميل', $order->order_number),
+                    route('admin.orders'),
+                );
+            }
+            $order->update([
+                'status' => 'cancelled',
+                'payment_status' => $order->payment_status === 'pending_review' ? 'failed' : $order->payment_status,
+            ]);
+
+            return true;
+        });
+
+        if (! $cancelled) {
             return back()->with('status', 'order-not-cancellable');
         }
 
-        $order->update(['status' => 'cancelled']);
         OrderNotifier::statusChanged($order->user_id, $order->order_number, 'cancelled');
 
         return back()->with('status', 'order-cancelled');

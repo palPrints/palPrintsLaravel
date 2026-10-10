@@ -8,6 +8,7 @@
     $navItems = [
         ['route' => 'admin.designs', 'icon' => 'bi-palette', 'label' => 'إدارة التصاميم', 'badge' => $adminPendingDesigns ?? 0],
         ['route' => 'admin.products', 'icon' => 'bi-shop-window', 'label' => 'إدارة المنتجات'],
+        ['route' => 'admin.stickers', 'icon' => 'bi-emoji-smile', 'label' => 'إدارة الستيكرات'],
         ['route' => 'admin.orders', 'icon' => 'bi-cart3', 'label' => 'إدارة الطلبات'],
         ['route' => 'admin.payment-notices', 'icon' => 'bi-receipt-cutoff', 'label' => 'إشعارات الدفع'],
         ['route' => 'admin.payments', 'icon' => 'bi-wallet2', 'label' => 'المدفوعات والأرباح'],

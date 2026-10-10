@@ -106,7 +106,7 @@
                                 <strong class="status pending">غير متاحة بعد</strong>
                             @elseif (filled($provider->$field))
                                 <strong class="status uploaded">مرفوع</strong>
-                                <a class="doc-link" href="{{ asset('storage/'.$provider->$field) }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right"></i> عرض</a>
+                                <a class="doc-link" href="{{ route('print-provider.documents', [$provider, $field]) }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right"></i> عرض</a>
                             @else
                                 <strong class="status missing">غير مرفوع</strong>
                             @endif
@@ -211,7 +211,7 @@
                                 <input type="file" name="{{ $field }}" accept=".jpg,.jpeg,.png,.webp,.pdf,image/*,application/pdf">
                                 <small>
                                     @if (filled($provider->$field))
-                                        <i class="bi bi-check-circle-fill"></i> تم رفع ملف سابقًا (<a href="{{ asset('storage/'.$provider->$field) }}" target="_blank" rel="noopener noreferrer">عرض</a>) — اختر ملفًا جديدًا لاستبداله.
+                                        <i class="bi bi-check-circle-fill"></i> تم رفع ملف سابقًا (<a href="{{ route('print-provider.documents', [$provider, $field]) }}" target="_blank" rel="noopener noreferrer">عرض</a>) — اختر ملفًا جديدًا لاستبداله.
                                     @else
                                         صورة أو ملف PDF، بحجم أقصى 5 ميجابايت.
                                     @endif

@@ -40,6 +40,19 @@
       designDate: "تاريخ الرفع",
       unnamedDesign: "تصميم بدون اسم",
       editDesign: "تعديل التصميم",
+      deleteDesign: "حذف",
+      withdrawDesign: "سحب وتعديل",
+      confirmWithdraw: "سحب التصميم من المراجعة؟",
+      confirmWithdrawText: "سيختفي من قائمة مراجعة الإدارة ويصير مسودة. بعد التعديل أرسليه للمراجعة من جديد.",
+      unpublishDesign: "إيقاف النشر",
+      duplicateDesign: "نسخ للتعديل",
+      confirmDelete: "حذف التصميم؟",
+      confirmDeleteText: "سيُحذف التصميم وملفاته نهائيًا ولا يمكن التراجع.",
+      confirmUnpublish: "إيقاف نشر التصميم؟",
+      confirmUnpublishText: "سيختفي من المتجر ومن سلال العملاء، وتبقى الطلبات السابقة كما هي. سيعود مسودة.",
+      confirmYes: "نعم، تابع",
+      confirmNo: "إلغاء",
+      actionFailed: "تعذر تنفيذ العملية. حاولي مرة أخرى.",
       previewDesign: "معاينة التصميم",
       moreActions: "المزيد من الإجراءات",
       copyPreviewLink: "نسخ رابط المعاينة",
@@ -169,7 +182,13 @@
         window.palPrintsDesignerFallbackImage || "",
       date: item.updatedAt || item.date || item.createdAt || "",
       previewUrl: item.previewUrl || "",
-      editorUrl: item.editorUrl || ""
+      editorUrl: item.editorUrl || "",
+      can: item.can || {},
+      lockReason: item.lockReason || "",
+      destroyUrl: item.destroyUrl || "",
+      unpublishUrl: item.unpublishUrl || "",
+      withdrawUrl: item.withdrawUrl || "",
+      duplicateUrl: item.duplicateUrl || ""
     };
   }
 
@@ -256,9 +275,61 @@
     );
   }
 
+  function canEdit(item) {
+    return Boolean(item && item.can && item.can.edit);
+  }
+
+  /* Secondary actions the server allows for this design (delete, take off the store, make a copy). */
+  function secondaryActions(item) {
+    const can = item.can || {};
+    const actions = [];
+
+    if (can.unpublish) {
+      actions.push({ action: "unpublish", label: translate("unpublishDesign"), icon: "bi-eye-slash" });
+    }
+
+    if (can.duplicate) {
+      actions.push({ action: "duplicate", label: translate("duplicateDesign"), icon: "bi-copy" });
+    }
+
+    if (can.delete) {
+      actions.push({ action: "delete", label: translate("deleteDesign"), icon: "bi-trash3", danger: true });
+    }
+
+    return actions;
+  }
+
+  /* The secondary actions as one row of icon buttons under the main button; the name shows on hover and for screen readers. */
+  function toolButtons(item) {
+    const actions = secondaryActions(item);
+
+    if (!actions.length) {
+      return "";
+    }
+
+    return '<div class="design-card-tools" role="group">' + actions.map(function (extra) {
+      const label = escapeHtml(extra.label);
+
+      return '<button type="button" class="design-icon-btn' +
+        (extra.danger ? " is-danger" : "") + '" data-design-action="' +
+        extra.action + '" title="' + label + '" aria-label="' + label + '">' +
+        '<i class="bi ' + extra.icon + '" aria-hidden="true"></i>' +
+        "</button>";
+    }).join("") + "</div>";
+  }
+
   function primaryAction(item) {
-    const editable =
-      item.status === "draft" || item.status === "rejected";
+    // Waiting for review: the main button pulls it back to a draft and opens it for editing.
+    if (item && item.can && item.can.withdraw) {
+      return {
+        action: "withdraw",
+        label: translate("withdrawDesign"),
+        icon: "bi-arrow-counterclockwise",
+        variant: "tertiary"
+      };
+    }
+
+    const editable = canEdit(item);
 
     return {
       action: editable ? "edit" : "preview",
@@ -315,7 +386,12 @@
       '<i class="bi ' + action.icon + '" aria-hidden="true"></i>',
       "<span>" + escapeHtml(action.label) + "</span>",
       "</button>",
+      toolButtons(item),
       "</div>",
+      item.lockReason
+        ? '<p class="design-card-note"><i class="bi bi-info-circle" aria-hidden="true"></i><span>' +
+          escapeHtml(item.lockReason) + "</span></p>"
+        : "",
       "</div>",
       "</article>"
     ].join("");
@@ -612,7 +688,73 @@
       return;
     }
 
+    if (action === "delete" || action === "unpublish" || action === "duplicate" || action === "withdraw") {
+      changeDesign(item, action, button);
+      return;
+    }
+
     navigateTo(item, action);
+  }
+
+  /* Delete / take off the store / make a copy: asks first when it cannot be undone, then the page is reloaded
+     so every card, count and tab shows the new state. The server decides what is allowed (and says why when not). */
+  async function changeDesign(item, action, button) {
+    const urls = { delete: item.destroyUrl, unpublish: item.unpublishUrl, duplicate: item.duplicateUrl, withdraw: item.withdrawUrl };
+    const url = urls[action];
+
+    if (!url) {
+      return;
+    }
+
+    if (action !== "duplicate" && window.PalAlert) {
+      const keys = {
+        delete: ["confirmDelete", "confirmDeleteText"],
+        unpublish: ["confirmUnpublish", "confirmUnpublishText"],
+        withdraw: ["confirmWithdraw", "confirmWithdrawText"]
+      }[action];
+      const confirmed = await window.PalAlert.confirm({
+        title: translate(keys[0]),
+        text: translate(keys[1]),
+        confirmText: translate("confirmYes"),
+        cancelText: translate("confirmNo"),
+        icon: "warning",
+        danger: action === "delete"
+      });
+
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    const token = document.querySelector('meta[name="csrf-token"]');
+    button.disabled = true;
+
+    try {
+      const response = await fetch(url, {
+        method: action === "delete" ? "DELETE" : "POST",
+        headers: { "Accept": "application/json", "X-CSRF-TOKEN": token ? token.content : "" },
+        credentials: "same-origin"
+      });
+      const data = await response.json().catch(function () { return {}; });
+
+      if (!response.ok) {
+        throw new Error(data.message || translate("actionFailed"));
+      }
+
+      // Withdrawn from review: go straight to the studio with the design open.
+      if (action === "withdraw" && data.redirect) {
+        window.location.href = data.redirect;
+        return;
+      }
+
+      window.location.reload();
+    } catch (error) {
+      button.disabled = false;
+
+      if (window.PalAlert) {
+        window.PalAlert.alert(error.message || translate("actionFailed"), { icon: "error" });
+      }
+    }
   }
 
   function setupTabs() {
@@ -721,11 +863,7 @@
 
       if (card) {
         const item = findDesign(card);
-        const actionName =
-          item &&
-          (item.status === "draft" || item.status === "rejected")
-            ? "edit"
-            : "preview";
+        const actionName = canEdit(item) ? "edit" : "preview";
 
         navigateTo(item, actionName);
       }
@@ -739,11 +877,7 @@
         event.preventDefault();
 
         const item = findDesign(event.target);
-        const action =
-          item &&
-          (item.status === "draft" || item.status === "rejected")
-            ? "edit"
-            : "preview";
+        const action = canEdit(item) ? "edit" : "preview";
 
         navigateTo(item, action);
       }

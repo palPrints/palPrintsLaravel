@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\PrintProvider\DocumentController;
 use App\Models\ApprovalRequest;
 use App\Models\Design;
 use App\Models\DesignerProfile;
@@ -82,6 +83,7 @@ class UserController extends Controller
                     'displayName' => $profile?->full_name ?: $user->name,
                     'avatar' => $this->storageUrl($profile?->profile_image),
                     'email' => $user->email,
+                    'userId' => $user->id,
                     'phone' => $user->phone ?? '—',
                     'jobTitle' => $profile?->getAttribute('job_title') ?: '—',
                     'experience' => $profile?->getAttribute('experience') ?: '—',
@@ -144,6 +146,7 @@ class UserController extends Controller
 
                 return [
                     'name' => $profile?->company_name ?? $user->name,
+                    'userId' => $user->id,
                     'contactName' => $user->name,
                     'email' => $user->email,
                     'phone' => $profile?->phone ?? $user->phone ?? '—',
@@ -159,9 +162,10 @@ class UserController extends Controller
                     'revenue' => '₪'.number_format((float) ($profile?->total_earnings ?? 0)),
                     'workingHours' => $this->workingHoursSummary($profile?->working_hours),
                     'operating' => $profile?->is_active ?? true,
-                    'verificationDocument' => $this->storageUrl($profile?->verification_document),
+                    // Private files: opened through a protected link, not a public /storage URL.
+                    'verificationDocument' => DocumentController::url($profile, 'verification_document'),
                     // The identity picture is only stored once the schema has the column.
-                    'idDocument' => $this->storageUrl($profile?->getAttribute('id_document')),
+                    'idDocument' => DocumentController::url($profile, 'id_document'),
                     'idDocumentAvailable' => Schema::hasColumn('print_providers', 'id_document'),
                     'contactEmail' => $profile?->getAttribute('contact_email') ?: '',
                     'status' => $this->onboardingStatus($user, $profile?->approval_status),

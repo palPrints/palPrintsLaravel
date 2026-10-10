@@ -237,3 +237,10 @@
 .about-faq details p {
   margin: 0 0 var(--sp-4);
 }
+
+/* Legal pages (terms, privacy) */
+.legal-updated { color: #7a8aa0; font-size: 13px; }
+.legal-toc .about-list { columns: 2; column-gap: 32px; }
+.legal-toc .about-list li { break-inside: avoid; }
+.about-block[id] { scroll-margin-top: 90px; }
+@media (max-width: 640px) { .legal-toc .about-list { columns: 1; } }

@@ -28,8 +28,8 @@
                 <i class="bi bi-person" aria-hidden="true"></i>
             </button>
             <div class="account-dropdown" id="accountDropdown" role="menu" aria-label="قائمة حساب المدير" hidden>
-                <a href="#" data-soon role="menuitem"><i class="bi bi-person" aria-hidden="true"></i><span>الملف الشخصي</span></a>
-                <a href="#" data-soon role="menuitem"><i class="bi bi-gear" aria-hidden="true"></i><span>إعدادات الحساب</span></a>
+                <a href="{{ route('admin.profile') }}" role="menuitem"><i class="bi bi-person" aria-hidden="true"></i><span>الملف الشخصي</span></a>
+                <a href="{{ route('admin.settings') }}" role="menuitem"><i class="bi bi-gear" aria-hidden="true"></i><span>إعدادات الحساب</span></a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="logout-link" role="menuitem"><i class="bi bi-box-arrow-left" aria-hidden="true"></i><span>تسجيل الخروج</span></button>

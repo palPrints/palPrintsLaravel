@@ -67,20 +67,21 @@ test('withdrawal records a wallet transaction and pending balance', function () 
     $designer = approvedDesigner();
     $wallet = Wallet::create([
         'user_id' => $designer->id,
-        'total_balance' => 100,
-        'available_balance' => 50,
+        'total_balance' => 200,
+        'available_balance' => 150,
         'pending_balance' => 10,
         'total_withdrawn' => 0,
     ]);
 
+    // The platform's minimum withdrawal is ₪100, so the request has to be at least that.
     $this->actingAs($designer)
-        ->postJson(route('designer.earnings.withdraw'), ['amount' => 20.5, 'method' => 'wallet'])
+        ->postJson(route('designer.earnings.withdraw'), ['amount' => 120.5, 'method' => 'wallet'])
         ->assertCreated();
 
     $transaction = WalletTransaction::where('wallet_id', $wallet->id)->firstOrFail();
 
     expect($wallet->fresh()->available_balance)->toEqual('29.50')
-        ->and($wallet->fresh()->pending_balance)->toEqual('30.50')
+        ->and($wallet->fresh()->pending_balance)->toEqual('130.50')
         ->and($transaction->type)->toBe('withdrawal')
         ->and($transaction->status)->toBe('requested');
 });

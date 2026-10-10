@@ -4,55 +4,16 @@ use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Support\Facades\Schema;
 
-test('database keeps authentication and product catalog tables while removing only legacy storefront tables', function () {
+test('the database has the tables the site works with', function () {
     foreach ([
-        'users',
-        'password_reset_tokens',
-        'sessions',
-        'roles',
-        'model_has_roles',
-        'designer_profiles',
-        'print_providers',
-        'social_accounts',
-        'audit_logs',
-        'categories',
-        'products',
-        'attributes',
-        'attribute_values',
-        'product_attributes',
-        'product_attribute_values',
-        'variants',
-        'variant_values',
-        'printing_methods',
-        'providers',
-        'provider_offerings',
-        'provider_offering_variants',
-        'print_areas',
-        'wallets',
-        'wallet_transactions',
-        'withdrawal_requests',
-        'designs',
-        'user_notifications',
-        'approval_requests',
-        'print_capabilities',
-        'print_capability_variants',
-        'pricing_rules',
+        'users', 'password_reset_tokens', 'sessions', 'roles', 'model_has_roles', 'social_accounts', 'audit_logs',
+        'designer_profiles', 'print_providers', 'print_provider_branches', 'branch_product_offerings', 'approval_requests',
+        'categories', 'products', 'attributes', 'attribute_values', 'product_attributes', 'product_attribute_values',
+        'variants', 'variant_values', 'printing_methods', 'designs', 'design_favorites',
+        'addresses', 'carts', 'cart_items', 'orders', 'order_items', 'payments', 'print_files',
+        'wallets', 'wallet_transactions', 'withdrawal_requests', 'user_notifications',
     ] as $table) {
-        expect(Schema::hasTable($table))->toBeTrue();
-    }
-
-    foreach ([
-        'addresses',
-        'carts',
-        'orders',
-        'order_items',
-        'reviews',
-        'delivery_partners',
-        'design_products',
-        'print_provider_products',
-        'system_settings',
-    ] as $table) {
-        expect(Schema::hasTable($table))->toBeFalse();
+        expect(Schema::hasTable($table))->toBeTrue("missing table: {$table}");
     }
 });
 

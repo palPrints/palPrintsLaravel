@@ -19,7 +19,6 @@
     const saveButton = document.getElementById("saveOrderChanges");
     const manualPaymentReview = document.getElementById("manualPaymentReview");
     const paymentReceiptLink = document.getElementById("paymentReceiptLink");
-    const approvePaymentButton = document.getElementById("approvePaymentButton");
     let activeFilter = "all";
     let activeRow = null;
 
@@ -77,11 +76,121 @@
 
     if (ordersSearch) ordersSearch.addEventListener("input", filterOrders);
 
+    /* ---------- A shop turned the order down: send it to another shop ---------- */
+    const rerouteSection = document.getElementById("rerouteSection");
+    const rerouteTop = document.getElementById("rerouteTop");
+    const rerouteOthers = document.getElementById("rerouteOthers");
+    const rerouteButton = document.getElementById("rerouteButton");
+
+    function readReroute(row) {
+      try { return row.dataset.reroute ? JSON.parse(row.dataset.reroute) : null; } catch (error) { return null; }
+    }
+
+    function fillReroute(row) {
+      const data = readReroute(row);
+      if (!rerouteSection) return;
+      rerouteSection.hidden = !data;
+      if (!data) return;
+
+      const hasShops = data.top.length > 0 || data.others.length > 0;
+      document.getElementById("rerouteHint").textContent = hasShops
+        ? "المطابع المقترحة مرتبة حسب مدينة العميل ثم الأقل تكلفة ثم الأسرع. المطبعة التي رفضت الطلب غير ظاهرة."
+        : "لا توجد مطبعة أخرى تقدّم كل منتجات هذا الطلب. يمكنك إلغاء الطلب وإرجاع المبلغ للعميل.";
+
+      rerouteTop.replaceChildren(...data.top.map(function (shop, index) {
+        const label = document.createElement("label");
+        label.className = "reroute-option";
+        const input = document.createElement("input");
+        input.type = "radio"; input.name = "rerouteChoice"; input.value = shop.id; input.checked = index === 0;
+        input.addEventListener("change", function () { rerouteOthers.value = ""; });
+        const body = document.createElement("span");
+        const name = document.createElement("strong");
+        name.textContent = (index + 1) + ". " + shop.name + (shop.city ? " (" + shop.city + ")" : "");
+        const meta = document.createElement("small");
+        meta.textContent = Number(shop.estimate).toFixed(2) + " ₪ · حتى " + shop.days + " يوم" + (shop.reasons.length ? " · " + shop.reasons.join("، ") : "");
+        body.append(name, meta);
+        label.append(input, body);
+        return label;
+      }));
+
+      rerouteOthers.replaceChildren(...[["", "—"]].concat(data.others.map(function (shop) { return [shop.id, shop.label]; })).map(function (pair) {
+        const option = document.createElement("option");
+        option.value = pair[0]; option.textContent = pair[1];
+        return option;
+      }));
+      rerouteOthers.parentElement.hidden = data.others.length === 0;
+      rerouteButton.disabled = !hasShops;
+    }
+
+    if (rerouteOthers) {
+      // A shop picked from the list wins over the ticked card, like on the payment notices page.
+      rerouteOthers.addEventListener("change", function () {
+        if (rerouteOthers.value) rerouteTop.querySelectorAll("input").forEach(function (input) { input.checked = false; });
+      });
+    }
+
+    if (rerouteButton) {
+      rerouteButton.addEventListener("click", function () {
+        const data = activeRow && readReroute(activeRow);
+        const chosen = rerouteOthers.value || (rerouteTop.querySelector("input:checked") || {}).value;
+        if (!data || !chosen) { feedback.textContent = "اختر المطبعة التي سيُوجَّه إليها الطلب."; return; }
+
+        rerouteButton.disabled = true;
+        window.fetch(data.url, {
+          method: "POST",
+          headers: { "Accept": "application/json", "Content-Type": "application/json", "X-CSRF-TOKEN": csrf ? csrf.content : "" },
+          body: JSON.stringify({ branch_id: Number(chosen) }),
+        })
+          .then(function (response) { return response.json().then(function (body) { return { ok: response.ok, body: body }; }); })
+          .then(function (result) {
+            if (!result.ok) throw new Error(result.body.message || "تعذّر توجيه الطلب.");
+            feedback.textContent = result.body.message;
+            // The printer column and the status change: reload so the table shows the new shop.
+            window.setTimeout(function () { window.location.reload(); }, 900);
+          })
+          .catch(function (error) {
+            feedback.textContent = error.message;
+            rerouteButton.disabled = false;
+          });
+      });
+    }
+
     /* ---------- Details dialog ---------- */
+    function renderItems(row) {
+      const list = document.getElementById("dialogItems");
+      let items = [];
+      try { items = JSON.parse(row.dataset.items || "[]"); } catch (error) { items = []; }
+
+      if (items.length === 0) {
+        const empty = document.createElement("li");
+        empty.textContent = "—";
+        list.replaceChildren(empty);
+        return;
+      }
+
+      list.replaceChildren(...items.map(function (item) {
+        const li = document.createElement("li");
+        const head = document.createElement("div");
+        const name = document.createElement("strong");
+        const price = document.createElement("bdi");
+        name.textContent = item.name + (item.design ? " — " + item.design : "") + " × " + item.quantity;
+        price.textContent = item.total;
+        head.append(name, price);
+        li.append(head);
+        if (item.details.length) {
+          const small = document.createElement("small");
+          small.textContent = item.details.join(" · ");
+          li.append(small);
+        }
+        return li;
+      }));
+    }
+
     function fillDetails(row) {
       const cells = Array.from(row.cells);
       const status = row.dataset.status;
-      const locked = status === "completed" || status === "cancelled";
+      const awaitingPayment = row.dataset.awaitingPayment === "1";
+      const next = (row.dataset.next || "").split(",").filter(Boolean);
 
       document.getElementById("orderDialogSubtitle").textContent = row.dataset.number;
       detailsList.replaceChildren(...[
@@ -104,20 +213,40 @@
       setText("dialogPhone", row.dataset.phone);
       setText("dialogPayment", row.dataset.payment);
       setText("dialogPaid", row.dataset.paid === "1" ? "مدفوع" : (row.dataset.paymentStatus === "pending_review" ? "بانتظار مراجعة الدفع" : "غير مدفوع"));
-      setText("dialogShipment", presentation[status].shipment);
+      setText("dialogShipment", (presentation[status] || {}).shipment);
       setText("dialogNotes", row.dataset.notes);
+      setText("dialogAddress", row.dataset.address);
+      const noticesLink = document.getElementById("paymentNoticesLink");
+      if (noticesLink) noticesLink.href = noticesLink.dataset.base + "?order=" + encodeURIComponent(row.dataset.number);
+      renderItems(row);
 
-      const canReviewPayment = row.dataset.paymentStatus === "pending_review" && row.dataset.receiptUrl && row.dataset.approvePaymentUrl;
-      if (manualPaymentReview) manualPaymentReview.hidden = !canReviewPayment;
-      if (paymentReceiptLink) paymentReceiptLink.href = row.dataset.receiptUrl || "#";
-      if (approvePaymentButton) approvePaymentButton.disabled = !canReviewPayment;
+      // The payment decision (and the choice of shop) is made on the payment notices page, not here.
+      if (manualPaymentReview) manualPaymentReview.hidden = !awaitingPayment;
+      if (paymentReceiptLink) {
+        paymentReceiptLink.hidden = !row.dataset.receiptUrl;
+        paymentReceiptLink.href = row.dataset.receiptUrl || "#";
+      }
 
+      fillReroute(row);
+
+      // The select lists where this order is now, then only where the admin may take it.
+      statusSelect.replaceChildren(...[status].concat(next).map(function (value, index) {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = index === 0 ? cells[1].innerText.trim() : (presentation[value] || {}).label || value;
+        return option;
+      }));
       statusSelect.value = status;
+      statusSelect.disabled = next.length === 0;
+      saveButton.disabled = next.length === 0;
+
       printerSelect.value = row.dataset.printerId || "";
       printerSelect.disabled = true; // display only: printers are assigned per branch, not from here
-      hint.textContent = locked
-        ? "لا يمكن إعادة توجيه الطلبات المكتملة أو الملغاة إلى مطبعة أخرى."
-        : "يمكنك تحديث الحالة أو إعادة توجيه الطلب إلى مطبعة أخرى.";
+      hint.textContent = awaitingPayment
+        ? "هذا الطلب بانتظار مراجعة الدفع: وافق عليه أو ارفضه من صفحة إشعارات الدفع."
+        : next.length === 0
+          ? "هذا الطلب نهائي، ولا يمكن تغيير حالته."
+          : "المطبعة تقبل الطلب وتُعلّمه «جاهز للتسليم». من هنا يمكنك شحنه وإكماله، أو إلغاؤه.";
       feedback.textContent = "";
     }
 
@@ -130,11 +259,33 @@
       dialog.showModal();
     });
 
+    // Coming back with the browser's back button can restore the page with the dialog still open: close it.
+    window.addEventListener("pageshow", function (event) {
+      if (event.persisted && dialog.open) dialog.close();
+    });
+
+    // Arriving from the dashboard with ?open=<order number> opens that order's details straight away.
+    const openNumber = new URLSearchParams(window.location.search).get("open");
+    if (openNumber) {
+      const target = orderRows.find(function (row) { return row.dataset.number === openNumber; });
+      if (target) {
+        activeRow = target;
+        fillDetails(target);
+        dialog.showModal();
+      }
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+
     saveButton.addEventListener("click", function () {
       if (!activeRow) return;
 
       const row = activeRow;
       const body = { status: statusSelect.value };
+
+      if (body.status === row.dataset.status) {
+        feedback.textContent = "اختر الحالة الجديدة أولًا.";
+        return;
+      }
 
       saveButton.disabled = true;
       window.fetch(row.dataset.updateUrl, {
@@ -155,67 +306,22 @@
           const next = presentation[body.status];
           const badge = row.querySelector(".order-status");
           row.dataset.status = body.status;
+          row.dataset.next = body.status === "shipped" ? "completed" : "";
           badge.className = "order-status " + next.className;
           badge.textContent = next.label;
-
-          if (!printerSelect.disabled && printerSelect.value) {
-            row.dataset.printerId = printerSelect.value;
-            row.cells[4].textContent = printerSelect.options[printerSelect.selectedIndex].textContent;
-          }
 
           feedback.textContent = result.data.message;
           setText("dialogShipment", next.shipment);
           filterOrders();
+          fillDetails(row); // the select now lists only what is still possible
+          feedback.textContent = result.data.message;
         })
         .catch(function (error) {
           feedback.textContent = error.message;
-        })
-        .finally(function () {
           saveButton.disabled = false;
         });
     });
 
-
-    if (approvePaymentButton) {
-      approvePaymentButton.addEventListener("click", function () {
-        if (!activeRow || !activeRow.dataset.approvePaymentUrl) return;
-
-        approvePaymentButton.disabled = true;
-        window.fetch(activeRow.dataset.approvePaymentUrl, {
-          method: "POST",
-          headers: {
-            "Accept": "application/json",
-            "X-CSRF-TOKEN": csrf ? csrf.content : "",
-          },
-        })
-          .then(function (response) {
-            return response.json().then(function (data) { return { ok: response.ok, data: data }; });
-          })
-          .then(function (result) {
-            if (!result.ok) throw new Error(result.data.message || "تعذر اعتماد الدفع.");
-
-            activeRow.dataset.paid = "1";
-            activeRow.dataset.paymentStatus = "paid";
-            activeRow.dataset.approvePaymentUrl = "";
-            activeRow.dataset.status = "processing";
-
-            const next = presentation.processing;
-            const badge = activeRow.querySelector(".order-status");
-            badge.className = "order-status " + next.className;
-            badge.textContent = next.label;
-
-            setText("dialogPaid", "مدفوع");
-            setText("dialogShipment", next.shipment);
-            if (manualPaymentReview) manualPaymentReview.hidden = true;
-            feedback.textContent = result.data.message;
-            filterOrders();
-          })
-          .catch(function (error) {
-            feedback.textContent = error.message;
-            approvePaymentButton.disabled = false;
-          });
-      });
-    }
     dialog.querySelectorAll("[data-order-dialog-close]").forEach(function (button) {
       button.addEventListener("click", function () { dialog.close(); });
     });

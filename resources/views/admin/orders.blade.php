@@ -77,9 +77,13 @@
                                     data-payment="{{ $order['payment'] }}"
                                     data-payment-status="{{ $order['paymentStatus'] }}"
                                     data-receipt-url="{{ $order['receiptUrl'] }}"
-                                    data-approve-payment-url="{{ $order['approvePaymentUrl'] }}"
+                                    data-next="{{ implode(',', $order['next']) }}"
+                                    data-awaiting-payment="{{ $order['awaitingPayment'] ? '1' : '0' }}"
+                                    data-reroute="{{ $order['reroute'] ? json_encode($order['reroute'], JSON_UNESCAPED_UNICODE) : '' }}"
                                     data-paid="{{ $order['paid'] ? '1' : '0' }}"
                                     data-notes="{{ $order['notes'] }}"
+                                    data-address="{{ $order['address'] }}"
+                                    data-items="{{ json_encode($order['items'], JSON_UNESCAPED_UNICODE) }}"
                                     data-update-url="{{ $order['updateUrl'] }}">
                                     <td><button class="order-details" type="button">عرض التفاصيل</button></td>
                                     <td><span class="order-status {{ $order['class'] }}">{{ $order['label'] }}</span></td>
@@ -129,15 +133,34 @@
                 <div><dt>طريقة الدفع</dt><dd id="dialogPayment"></dd></div>
                 <div><dt>حالة الدفع</dt><dd id="dialogPaid"></dd></div>
                 <div><dt>حالة الشحنة</dt><dd id="dialogShipment"></dd></div>
+                <div class="dialog-wide"><dt>عنوان التوصيل</dt><dd id="dialogAddress"></dd></div>
             </dl>
             <div class="dialog-note"><span>ملاحظات العميل</span><p id="dialogNotes"></p></div>
             <div class="manual-payment-review" id="manualPaymentReview" hidden>
                 <div>
                     <strong>مراجعة إشعار الدفع</strong>
-                    <small>افتح صورة الإشعار، ثم اعتمد الدفع إذا كان صحيحاً.</small>
+                    <small>الموافقة على الدفع واختيار المطبعة من صفحة إشعارات الدفع.</small>
                 </div>
                 <a id="paymentReceiptLink" class="dialog-secondary-button" href="#" target="_blank" rel="noopener">عرض الإشعار</a>
-                <button class="dialog-save-button" id="approvePaymentButton" type="button"><i class="bi bi-check2-circle"></i> اعتماد الدفع</button>
+                <a class="dialog-save-button" id="paymentNoticesLink" data-base="{{ route('admin.payment-notices') }}" href="{{ route('admin.payment-notices') }}"><i class="bi bi-receipt-cutoff"></i> مراجعة إشعار الدفع</a>
+            </div>
+        </section>
+
+        <section class="order-dialog-section" aria-labelledby="orderItemsTitle">
+            <h3 id="orderItemsTitle"><i class="bi bi-box-seam"></i> منتجات الطلب</h3>
+            <ul class="order-items-list" id="dialogItems"></ul>
+        </section>
+
+        {{-- A shop turned the order down: the best three other shops, or any other that sells every product. --}}
+        <section class="order-dialog-section reroute-section" id="rerouteSection" aria-labelledby="rerouteTitle" hidden>
+            <h3 id="rerouteTitle"><i class="bi bi-arrow-left-right"></i> رفضت المطبعة هذا الطلب: وجّهه لمطبعة أخرى</h3>
+            <p class="order-management-hint" id="rerouteHint"></p>
+            <div class="reroute-options" id="rerouteTop" role="radiogroup" aria-label="أفضل المطابع المقترحة"></div>
+            <label class="reroute-others" id="rerouteOthersLabel">أو اختر مطبعة أخرى
+                <select id="rerouteOthers"><option value="">—</option></select>
+            </label>
+            <div class="reroute-actions">
+                <button class="dialog-save-button" id="rerouteButton" type="button"><i class="bi bi-send-check"></i> توجيه الطلب لهذه المطبعة</button>
             </div>
         </section>
 
@@ -145,13 +168,8 @@
             <h3 id="orderManagementTitle"><i class="bi bi-sliders"></i> إدارة الطلب</h3>
             <div class="order-management-fields">
                 <label>حالة الطلب
-                    <select id="dialogStatusSelect">
-                        <option value="processing">قيد التنفيذ</option>
-                        <option value="shipped">تم الشحن</option>
-                        <option value="completed">مكتمل</option>
-                        <option value="pending">معلق</option>
-                        <option value="cancelled">ملغي</option>
-                    </select>
+                    {{-- Filled by adminOrders.js: the order's current state, then only the states it may move to. --}}
+                    <select id="dialogStatusSelect"></select>
                 </label>
                 <label>المطبعة المنفذة (للعرض فقط)
                     <select id="dialogPrinterSelect" disabled>

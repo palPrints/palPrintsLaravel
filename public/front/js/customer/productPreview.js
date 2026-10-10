@@ -9,6 +9,7 @@
   const roleAuth = window.PALPRINTS_ROLE_AUTH;
   const objectUrls = [];
   const $ = id => document.getElementById(id);
+  let studioOverflow = []; // print areas of the saved design that stick out of the print zone
   const elements = {
     pageTitle: $("previewPageTitle"), pageDescription: $("previewPageDescription"), breadcrumbProductName: $("breadcrumbProductName"), colorLabel: $("colorControlLabel"),
     viewTabs: $("viewTabs"), canvas: $("productCanvas"), image: $("productImage"), placement: $("designPlacement"), art: $("designArt"), tint: $("productTint"),
@@ -152,6 +153,7 @@
     const product = (selection?.editorProduct?.id === context.productId ? selection.editorProduct : null) || catalog.find(item => item.id === context.productId);
     const draft = documentState?.drafts?.[context.productId];
     if (!product || !draft) return null;
+    studioOverflow = (product.editor?.printAreas || []).filter(area => draft.areas?.[area.id]?.overflow).map(area => area.name || area.id);
     const ids = [...new Set(Object.values(draft.areas || {}).flatMap(area => area?.objects || []).filter(item => item.kind === "image" && item.assetId).map(item => item.assetId))];
     const sources = new Map();
     await Promise.all(ids.map(async id => sources.set(id, await assetSource(context.designId, id))));
@@ -201,6 +203,9 @@
   // so go back to the products instead of showing a made-up product.
   if (!studioPayload && !isUsablePreview(savedPreview)) { window.location.replace(window.palPrintsPreviewCatalog?.productsUrl || "/"); return; }
   const payload = upgradePublishedPayload(studioPayload || normalizeLegacy(savedPreview));
+  // The printing methods the shops really offer for this product (the customer picks one; it does not change the price yet).
+  const serverMethods = window.palPrintsPreviewCatalog?.printingMethods?.[String(payload.product.code || "").toUpperCase()] || [];
+  if (serverMethods.length > 1) payload.product.printing = { customerSelectable: true, technologies: serverMethods.map(item => ({ id: item.id, name: item.name, additionalCost: 0 })) };
   const saved = read(sessionStorage, KEYS.review, {});
   const savedMatches = saved.designId === payload.design.id && saved.productId === payload.product.id;
   const persistedItems = role === "customer" && savedMatches && Array.isArray(saved.orderItems) && saved.orderItems.length
@@ -358,23 +363,37 @@
   function renderPrinting() {
     const data = payload.product.printing || { customerSelectable: false, technologies: [] }; elements.printingSelect.replaceChildren();
     if (!data.customerSelectable || !data.technologies.length) { elements.printingSelect.add(new Option("غير متاحة — لم تتم تهيئتها بعد", "")); elements.printingSelect.disabled = true; elements.printingNote.textContent = "لم تُضف بيانات تقنيات الطباعة المتاحة لهذا المنتج أو المطبعة بعد."; return; }
-    elements.printingSelect.disabled = false; elements.printingSelect.add(new Option("اختر تقنية الطباعة", "")); data.technologies.forEach(item => elements.printingSelect.add(new Option(item.name + (numeric(item.additionalCost) === null ? "" : " · +" + formatMoney(item.additionalCost)), item.id))); elements.printingSelect.value = data.technologies.some(item => item.id === state.printingTechnologyId) ? state.printingTechnologyId : ""; elements.printingNote.textContent = "اختر من التقنيات التي أتاحتها المطبعة لهذا المنتج.";
+    elements.printingSelect.disabled = false; elements.printingSelect.add(new Option("اختر تقنية الطباعة", "")); data.technologies.forEach(item => elements.printingSelect.add(new Option(item.name + (numeric(item.additionalCost) > 0 ? " · +" + formatMoney(item.additionalCost) : ""), item.id))); elements.printingSelect.value = data.technologies.some(item => item.id === state.printingTechnologyId) ? state.printingTechnologyId : ""; elements.printingNote.textContent = "اختر التقنية التي تريد الطباعة بها. المطبعة التي تنفّذ طلبك تقدّم التقنية المختارة.";
   }
   function addPriceRow(label, value) { const row = document.createElement("div"), span = document.createElement("span"), strong = document.createElement("strong"); row.className = "price-line"; span.textContent = label; strong.textContent = value; row.append(span, strong); elements.priceBreakdown.appendChild(row); }
   function renderPrice() {
     const result = pricing(); elements.priceBreakdown.replaceChildren(); addPriceRow("سعر المنتج × " + state.items.length, result.baseTotal === null ? "غير متاح" : formatMoney(result.baseTotal)); result.areaFees.forEach(area => addPriceRow("طباعة " + area.name + " × " + area.count, area.total === null ? "غير مهيأة" : "+" + formatMoney(area.total))); if (!result.exact) addPriceRow("تكلفة الطباعة والإضافات", "غير متاحة حتى اكتمال بيانات المطبعة"); elements.total.textContent = result.exact ? formatMoney(result.total) : "غير متاح"; elements.mobileTotal.textContent = elements.total.textContent;
   }
   function renderWarnings() { const warnings = (payload.customerWarnings || []).filter(item => role === "designer" || item.customerVisible); elements.warnings.replaceChildren(); elements.warnings.hidden = !warnings.length; warnings.forEach(warning => { const li = document.createElement("li"); li.textContent = warning.message || warning.text; li.className = warning.blocking ? "is-blocking" : ""; elements.warnings.appendChild(li); }); }
-  function validationMessage() { if (role !== "customer") return ""; if (!activePiece()?.colorId || !activePiece()?.sizeId || !activePiece()?.printAreaIds.size) return "أكمل خيارات المنتج قبل المتابعة."; if (!pricing().exact) return "تعذر حساب سعر نهائي لأن تكلفة الطباعة لم تتم تهيئتها بعد."; if ((payload.customerWarnings || []).some(item => item.customerVisible && item.blocking)) return "عالج تحذير التصميم قبل الإضافة إلى السلة."; return ""; }
+  function validationMessage() { if (role !== "customer") return ""; if (!activePiece()?.colorId || !activePiece()?.sizeId || !activePiece()?.printAreaIds.size) return "أكمل خيارات المنتج قبل المتابعة."; if (payload.product.printing?.customerSelectable && payload.product.printing.technologies?.length && !state.printingTechnologyId) return "اختر تقنية الطباعة قبل الإضافة إلى السلة."; if (!pricing().exact) return "تعذر حساب سعر نهائي لأن تكلفة الطباعة لم تتم تهيئتها بعد."; if ((payload.customerWarnings || []).some(item => item.customerVisible && item.blocking)) return "عالج تحذير التصميم قبل الإضافة إلى السلة."; return ""; }
   function renderValidation() { const message = validationMessage(); elements.validation.hidden = !message; elements.validation.textContent = message; elements.addToCart.disabled = Boolean(message); elements.mobileAdd.disabled = Boolean(message); }
   function renderMeta() { elements.breadcrumbProductName.textContent = payload.product.name; const links = window.palPrintsPreviewCatalog; if (links) elements.breadcrumbProductName.href = links.links?.[String(payload.product.code || "").toUpperCase()] || links.productsUrl; elements.summaryTitle.textContent = payload.product.name; elements.designMeta.textContent = payload.design.name + " · تصميم: " + payload.design.designerName; elements.fullscreenTitle.textContent = "معاينة " + payload.design.name + " على " + payload.product.name; }
   // Designer: the sizes that suit this design come from the audience chosen at the start (men/women, oversized, kids).
   const audience = () => AUDIENCES[payload.studioSave?.category] || null;
+  // A design saved before the audience was asked has none: clothing then asks for it here, so its sizes can be chosen.
+  const needsAudience = () => role === "designer" && !audience() && ["TSHIRT-CLASSIC", "HOODIE-PREMIUM"].includes(String(payload.product.code || "").toUpperCase());
+  function renderAudienceChooser() {
+    $("audienceBadge").textContent = "";
+    $("allowedSizesSummary").textContent = "اختر الفئة المناسبة للتصميم لتظهر مقاساتها.";
+    const list = $("allowedSizeOptions");
+    list.replaceChildren();
+    Object.entries(AUDIENCES).forEach(([id, group]) => {
+      const button = document.createElement("button");
+      button.type = "button"; button.className = "size-chip"; button.dataset.categoryId = id; button.textContent = group.label;
+      list.appendChild(button);
+    });
+  }
   function renderAllowedSizes() {
     const section = $("designerSizeApproval"), group = audience();
     if (!section) return;
-    section.hidden = role !== "designer" || !group;
+    section.hidden = role !== "designer" || (!group && !needsAudience());
     if (section.hidden) return;
+    if (!group) { renderAudienceChooser(); return; }
     if (!state.allowedSizeIds) {
       const saved = read(sessionStorage, "palprintsDesignerPublish", null);
       const valid = new Set(group.sizes.map(size => size.id));
@@ -392,6 +411,14 @@
     $("allowedSizesSummary").textContent = state.allowedSizeIds.size ? state.allowedSizeIds.size + " من " + group.sizes.length + " مقاسات مختارة" : "لم يتم اختيار مقاسات بعد";
   }
   $("allowedSizeOptions")?.addEventListener("click", event => {
+    const chosen = event.target.closest("[data-category-id]");
+    if (chosen && AUDIENCES[chosen.dataset.categoryId]) {
+      payload.studioSave.category = chosen.dataset.categoryId; state.allowedSizeIds = null;
+      // Kept with the design's choice so a refresh or a return to the studio does not lose it.
+      const selection = read(sessionStorage, KEYS.selection, null);
+      if (selection) { selection.category = chosen.dataset.categoryId; try { sessionStorage.setItem(KEYS.selection, JSON.stringify(selection)); } catch (error) { /* Optional. */ } }
+      renderAllowedSizes(); return;
+    }
     const button = event.target.closest("[data-size-id]"); if (!button || !state.allowedSizeIds) return;
     const id = button.dataset.sizeId; state.allowedSizeIds.has(id) ? state.allowedSizeIds.delete(id) : state.allowedSizeIds.add(id);
     renderAllowedSizes();
@@ -429,6 +456,7 @@
     const save = payload.studioSave, form = new FormData();
     form.append("product_code", payload.product.code);
     form.append("design_name", payload.design.name || "");
+    if (state.printingTechnologyId) form.append("printing_method", state.printingTechnologyId);
     for (let index = 0; index < groupList.length; index += 1) groupList[index].mockup = await cartMockup(pieces[index]);
     form.append("groups", JSON.stringify(groupList));
     form.append("layout", JSON.stringify(save.layout));
@@ -444,7 +472,9 @@
   // Laravel: the cart lives in the database, so "add to cart" posts to the server.
   function addToCart() {
     if (role !== "customer") return;
+    if (document.body.dataset.authenticated !== "true") { showToast("سجّل الدخول أولًا لإضافة المنتج إلى السلة.", true); setTimeout(() => roleAuth.redirectToLogin(), 1200); return; }
     const message = validationMessage(); if (message) { showToast(message, true); return; }
+    if (studioOverflow.length) { showToast("التصميم يتجاوز حدود منطقة الطباعة (" + studioOverflow.join("، ") + "). عد إلى الاستوديو وعدّله قبل الإضافة للسلة.", true); return; }
     const assets = window.palPrintsCustomerAssets || {};
     const custom = Boolean(payload.studioSave);
     const endpoint = custom ? assets.cartCustomDesignUrl : assets.cartCatalogUrl;
@@ -457,7 +487,7 @@
       return { color_id: group.piece.colorId, color_name: color ? color.name : group.piece.colorId, size_id: group.piece.sizeId, size_name: size ? size.name : group.piece.sizeId, quantity: group.quantity, print_areas: selectedAreas(group.piece).map(area => area.name) };
     });
     const pieces = [...groups.values()].map(group => group.piece);
-    const body = { product_code: payload.product.code, design_id: payload.design.id, groups: groupList };
+    const body = { product_code: payload.product.code, design_id: payload.design.id, groups: groupList, printing_method: state.printingTechnologyId || null };
     [elements.addToCart, elements.mobileAdd].forEach(button => { button.disabled = true; });
     const headers = { "Accept": "application/json", "X-CSRF-TOKEN": csrf ? csrf.content : "" };
     // A customer-made design is saved with its artwork files (multipart); a published design only sends ids (JSON).
@@ -468,6 +498,7 @@
         .then(() => fetch(endpoint, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify(body) }));
     request
       .then(response => response.json().catch(() => ({})).then(data => {
+        if (response.status === 401 || response.status === 419) { setTimeout(() => roleAuth.redirectToLogin(), 1200); throw new Error("سجّل الدخول أولًا لإضافة المنتج إلى السلة."); }
         if (!response.ok) { const firstError = data.errors ? Object.values(data.errors)[0][0] : data.message; throw new Error(firstError || "تعذرت إضافة المنتج إلى السلة. حاول مرة أخرى."); }
         return data;
       }))
@@ -504,6 +535,7 @@
   async function continueToPublish(button) {
     const assets = window.palPrintsDesignerAssets || {};
     if (!state.allowedColorIds.size) { showToast("حدد لونًا واحدًا على الأقل مناسبًا لهذا التصميم.", true); return; }
+    if (needsAudience()) { showToast("اختر الفئة المناسبة للتصميم أولًا.", true); return; }
     if (audience() && !state.allowedSizeIds?.size) { showToast("حدد مقاسًا واحدًا على الأقل مناسبًا لهذا التصميم.", true); return; }
     if (!payload.studioSave || !payload.product.code) { showToast("تعذر تجهيز التصميم للنشر. عد إلى الاستوديو وحاول مرة أخرى.", true); return; }
     button.disabled = true;

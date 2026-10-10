@@ -41,14 +41,14 @@
                 <span><strong>المحادثة المباشرة</strong><small>متاحون من 9 صباحًا حتى 5 مساءً</small></span>
                 <b>بدء المحادثة</b>
             </button>
-            <a class="support-channel" href="mailto:support@palprints.com">
+            <a class="support-channel" href="mailto:{{ \App\Support\PlatformSettings::get('general', 'admin_email') }}">
                 <i class="bi bi-envelope"></i>
-                <span><strong>البريد الإلكتروني</strong><small dir="ltr">support@palprints.com</small></span>
+                <span><strong>البريد الإلكتروني</strong><small dir="ltr">{{ \App\Support\PlatformSettings::get('general', 'admin_email') }}</small></span>
                 <b>إرسال رسالة</b>
             </a>
-            <a class="support-channel" href="tel:+970599000000">
+            <a class="support-channel" href="tel:{{ preg_replace('/[^\d+]/', '', (string) \App\Support\PlatformSettings::get('general', 'contact_phone')) }}">
                 <i class="bi bi-telephone"></i>
-                <span><strong>اتصل بنا</strong><small dir="ltr">+970 59 900 0000</small></span>
+                <span><strong>اتصل بنا</strong><small dir="ltr">{{ \App\Support\PlatformSettings::get('general', 'contact_phone') }}</small></span>
                 <b>اتصال</b>
             </a>
         </section>

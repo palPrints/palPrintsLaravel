@@ -243,6 +243,12 @@
 
     document.getElementById("addProductButton").addEventListener("click", function () { openDialog(); });
 
+    // Arriving from the dashboard's "add product" button (?add=1) opens the add dialog straight away.
+    if (new URLSearchParams(window.location.search).get("add")) {
+      window.history.replaceState(null, "", window.location.pathname);
+      openDialog();
+    }
+
     dialog.querySelectorAll("[data-dialog-close]").forEach(function (button) {
       button.addEventListener("click", function () { dialog.close(); });
     });

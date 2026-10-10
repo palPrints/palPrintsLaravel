@@ -52,6 +52,18 @@ class User extends Authenticatable
         ];
     }
 
+    /** Hidden user that holds the cart of a visitor who has not signed in yet (see App\Support\GuestShopper). */
+    public function isGuestShopper(): bool
+    {
+        return str_ends_with((string) $this->email, \App\Support\GuestShopper::EMAIL_DOMAIN);
+    }
+
+    /** Everyone except the hidden guest-cart users. */
+    public function scopeReal($query)
+    {
+        return $query->where('email', 'not like', '%'.\App\Support\GuestShopper::EMAIL_DOMAIN);
+    }
+
     public function designerProfile()
     {
         return $this->hasOne(DesignerProfile::class);
