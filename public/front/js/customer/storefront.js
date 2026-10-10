@@ -435,33 +435,25 @@
       row.cards.push(card);
     });
 
+    let productsRevealed = false;
     const revealProducts = () => {
+      if (productsRevealed) return;
+      productsRevealed = true;
       reveal(productsHeading);
-      if (!rows.length) return;
-
-      window.setTimeout(() => {
-        rows[0].cards.forEach(reveal);
-      }, 260);
-
-      rows.slice(1).forEach((row) => {
-        const rowObserver = new IntersectionObserver((entries, observer) => {
-          if (!entries.some((entry) => entry.isIntersecting)) return;
-          row.cards.forEach(reveal);
-          observer.disconnect();
-        }, { threshold: 0.15, rootMargin: "0px 0px -12% 0px" });
-        rowObserver.observe(row.cards[0]);
-      });
+      cards.forEach(reveal);
     };
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) {
       revealProducts();
     } else {
       const productsObserver = new IntersectionObserver((entries, observer) => {
         if (!entries.some((entry) => entry.isIntersecting)) return;
         revealProducts();
         observer.disconnect();
-      }, { threshold: 0.12 });
+      }, { threshold: 0.01, rootMargin: "160px 0px" });
       productsObserver.observe(productsSection);
+      window.addEventListener("load", () => window.setTimeout(revealProducts, 700), { once: true });
+      window.addEventListener("pageshow", revealProducts, { once: true });
     }
   }
 
