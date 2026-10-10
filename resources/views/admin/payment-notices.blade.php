@@ -24,6 +24,10 @@
             <p>تظهر أفضل ثلاث مطابع، ويمكنك اختيار مطبعة أخرى يدويًا.</p>
         </details>
 
+        @if ($onlyOrder)
+            <p class="notices-flash" role="status"><i class="bi bi-funnel" aria-hidden="true"></i> يظهر هنا إشعار الطلب <bdi>{{ $onlyOrder }}</bdi> فقط. <a href="{{ route('admin.payment-notices') }}">عرض كل الإشعارات</a></p>
+        @endif
+
         @if (session('notice_status'))
             <p class="notices-flash is-success" role="status"><i class="bi bi-check-circle" aria-hidden="true"></i> {{ session('notice_status') }}</p>
         @endif
@@ -37,7 +41,7 @@
         <h2 class="notices-heading">بانتظار المراجعة <span>{{ $pending->count() }}</span></h2>
 
         @forelse ($pending as $notice)
-            <details class="notice-card"@if ($pending->count() === 1) open @endif>
+            <details class="notice-card"@if ($pending->count() === 1 || $onlyOrder) open @endif>
                 <summary class="notice-head">
                     <div>
                         <strong>طلب <bdi>{{ $notice['orderNumber'] }}</bdi></strong>

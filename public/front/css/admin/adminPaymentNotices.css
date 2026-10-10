@@ -207,7 +207,15 @@
 .shop-hint { margin: 0; color: #5b6b82; font-size: 13px; font-weight: 600; }
 .shop-empty { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 11px 13px; color: #92400e; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; font-size: 13px; font-weight: 700; line-height: 1.7; }
 
-.shop-options { display: grid; gap: 10px; }
+/* The suggested shops sit side by side (they wrap on a narrow screen). `.notice-form label` would make each card a centred column,
+   so the card rules below carry the same prefix to win over it. */
+.shop-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+.notice-form .shop-option { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 10px; padding: 12px; color: inherit; font-size: inherit; text-align: start; }
+.notice-form .shop-option > input { margin-top: 3px; }
+.notice-form .shop-option__body { gap: 6px; }
+.notice-form .shop-option__name { padding-inline-end: 54px; font-size: 14px; }
+.notice-form .shop-option__meta { flex-direction: column; gap: 3px; font-size: 12px; }
+.notice-form .shop-option__rank { position: absolute; inset-block-start: 10px; inset-inline-end: 10px; padding: 2px 10px; font-size: 11px; }
 .shop-option { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 12px 14px; background: #fff; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease; }
 .shop-option:hover { border-color: #9cc3f4; }
 .shop-option:has(input:checked) { background: #f4f9ff; border-color: #3385f5; box-shadow: 0 0 0 3px rgb(51 133 245 / 14%); }
@@ -238,3 +246,5 @@
 .notice-head-meta i { color: var(--blue); margin-inline-end: 4px; }
 .notice-chevron { color: #7a8aa0; transition: transform .18s; }
 .notice-card[open] .notice-chevron { transform: rotate(180deg); }
+.notices-flash:not(.is-success):not(.is-error) { color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; }
+.notices-flash a { color: inherit; font-weight: 800; text-decoration: underline; }

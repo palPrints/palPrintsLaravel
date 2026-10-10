@@ -25,11 +25,231 @@ class DesignController extends Controller
     {
         $designs = Design::query()
             ->with('product')
+            ->withCount(['orderItems', 'cartItems'])
             ->where('designer_id', Auth::id())
             ->latest()
             ->get();
 
         return view('designer.designs.index', compact('designs'));
+    }
+
+    /**
+     * What the designer may do with a design. A design that was bought (or sits in a cart) is part of someone's order,
+     * so it is never changed or deleted: the designer pulls it from the store, or makes a copy and edits that.
+     *
+     * @return array{edit: bool, delete: bool, unpublish: bool, duplicate: bool}
+     */
+    public static function abilities(Design $design): array
+    {
+        $sold = (int) ($design->order_items_count ?? $design->orderItems()->count());
+        $inCarts = (int) ($design->cart_items_count ?? $design->cartItems()->count());
+        $notLive = in_array($design->status, ['draft', 'rejected'], true);
+
+        return [
+            'edit' => $notLive && $sold === 0,
+            // A design waiting for review can also be deleted (the admin simply stops seeing it).
+            'delete' => ($notLive || $design->status === 'review') && $sold === 0 && $inCarts === 0,
+            'unpublish' => $design->status === 'published',
+            // A design the admin is still to review is pulled back to a draft first, so the admin never approves a version
+            // the designer is changing at that moment.
+            'withdraw' => $design->status === 'review' && $sold === 0,
+            // Offered where the design itself cannot be edited; an editable one is simply edited. (The server still copies any of their own.)
+            'duplicate' => ! ($notLive && $sold === 0),
+        ];
+    }
+
+    /** Why a design cannot be edited or deleted, in words for the designer; null when it can be edited. */
+    public static function lockReason(Design $design): ?string
+    {
+        if (self::abilities($design)['edit']) {
+            return null;
+        }
+
+        return match ($design->status) {
+            'published' => 'منشور: لا يُعدَّل ولا يُحذف. يمكنك إيقاف نشره أو نسخه للتعديل.',
+            'review' => 'قيد المراجعة: اسحبه من المراجعة لتعدّل عليه (وأرسله من جديد)، أو احذفه.',
+            default => 'طلبه عملاء: لا يُعدَّل ولا يُحذف. انسخه وعدّل على النسخة.',
+        };
+    }
+
+    /** Everything the design studio needs to open a saved design again (see design-studio.blade.php). */
+    public static function studioData(Design $design): array
+    {
+        $options = $design->selected_options ?? [];
+        $payload = (array) $design->design_payload;
+        $layout = (array) ($payload['layout'] ?? []);
+        $files = collect($payload['files'] ?? [])->filter(fn ($file) => ! empty($file['asset_id']));
+        $records = collect($payload['assets'] ?? [])->keyBy('assetId');
+
+        return [
+            'id' => $design->id,
+            'name' => $design->title,
+            'sellingPrice' => (float) $design->selling_price,
+            'productCode' => strtoupper((string) ($payload['product_code'] ?? $design->product?->code)),
+            'colorId' => $layout['colorId'] ?? ($options['color_id'] ?? null),
+            'sizeId' => $layout['sizeId'] ?? ($options['size_id'] ?? null),
+            'category' => $options['display_category'] ?? null,
+            'allowedColorIds' => (array) ($options['allowed_color_ids'] ?? []),
+            'allowedSizeIds' => (array) ($options['allowed_size_ids'] ?? []),
+            'areas' => (object) ($layout['areas'] ?? []),
+            // The studio's record of each picture; rebuilt from the saved file when an older design has none.
+            'assets' => $files->map(fn ($file) => $records->get($file['asset_id']) ?? [
+                'assetId' => $file['asset_id'],
+                'name' => $file['name'] ?? $file['asset_id'],
+                'mimeType' => $file['mime_type'] ?? 'image/png',
+                'size' => $file['size'] ?? 0,
+                'lastModified' => 0,
+                'fingerprint' => 'saved:'.$file['asset_id'],
+                'pixelWidth' => null,
+                'pixelHeight' => null,
+                'sourceType' => ($file['mime_type'] ?? '') === 'image/svg+xml' ? 'vector' : 'raster',
+                'createdAt' => now()->toIso8601String(),
+            ])->values()->all(),
+            'files' => $files->map(fn ($file) => [
+                'assetId' => $file['asset_id'],
+                'url' => route('designer.designs.file', [$design, $file['asset_id']]),
+            ])->values()->all(),
+        ];
+    }
+
+    /** One artwork file of the designer's own design, so the studio can load it again. */
+    public function file(Design $design, string $assetId)
+    {
+        abort_unless($design->designer_id === Auth::id(), 404);
+
+        $file = collect($design->design_payload['files'] ?? [])->firstWhere('asset_id', $assetId);
+        abort_unless($file && Storage::disk('local')->exists($file['path']), 404);
+
+        return Storage::disk('local')->response($file['path'], null, [
+            'Content-Type' => $file['mime_type'] ?? 'application/octet-stream',
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+            'Cache-Control' => 'private, no-store',
+        ]);
+    }
+
+    public function destroy(Request $request, Design $design): JsonResponse
+    {
+        abort_unless($design->designer_id === Auth::id(), 404);
+
+        // Checked again under a lock: the admin approving a design at the same moment must not lose it to this delete.
+        $deleted = DB::transaction(function () use ($design) {
+            $locked = Design::query()->withCount(['orderItems', 'cartItems'])->lockForUpdate()->find($design->id);
+
+            if (! $locked || ! self::abilities($locked)['delete']) {
+                return $locked;
+            }
+
+            $locked->delete();
+            $this->deleteFiles($locked); // the row is gone first; its files are removed after
+
+            return null;
+        });
+
+        if ($deleted) {
+            return response()->json(['message' => $deleted->status === 'published'
+                ? 'لا يمكن حذف تصميم منشور. أوقف نشره أولًا.'
+                : 'لا يمكن حذف هذا التصميم لأنه مرتبط بطلبات أو بسلال عملاء.'], 422);
+        }
+
+        return response()->json(['message' => 'تم حذف التصميم.']);
+    }
+
+    /** Pulls a design back from the admin's review queue to a draft, then the designer edits it and sends it again. */
+    public function withdraw(Request $request, Design $design): JsonResponse
+    {
+        abort_unless($design->designer_id === Auth::id(), 404);
+
+        $design->loadCount(['orderItems', 'cartItems']);
+
+        // Locked, so the admin approving it at the same moment and this withdrawal cannot both win.
+        $withdrawn = DB::transaction(function () use ($design) {
+            $locked = Design::query()->lockForUpdate()->find($design->id);
+
+            if ($locked->status !== 'review') {
+                return false;
+            }
+
+            $locked->update(['status' => 'draft', 'submitted_at' => null]);
+
+            return true;
+        });
+
+        if (! $withdrawn) {
+            return response()->json(['message' => 'لم يعد هذا التصميم قيد المراجعة، حدّث الصفحة.'], 422);
+        }
+
+        return response()->json([
+            'message' => 'تم سحب التصميم من المراجعة، وصار مسودة.',
+            'redirect' => route('design-studio', ['edit' => $design->id]),
+        ]);
+    }
+
+    /** Takes a published design off the store. It goes back to a draft; customers' carts lose it, past orders keep it. */
+    public function unpublish(Request $request, Design $design): JsonResponse
+    {
+        abort_unless($design->designer_id === Auth::id(), 404);
+
+        if ($design->status !== 'published') {
+            return response()->json(['message' => 'هذا التصميم غير منشور.'], 422);
+        }
+
+        DB::transaction(function () use ($design) {
+            // A design that is not for sale cannot stay in a basket (and the cart row would block nothing else).
+            $design->cartItems()->delete();
+            $design->update(['status' => 'draft', 'published_at' => null]);
+        });
+
+        return response()->json(['message' => 'تم إيقاف نشر التصميم، وصار مسودة.']);
+    }
+
+    /** A new draft made from any of the designer's designs, with its own copy of the picture and artwork. */
+    public function duplicate(Request $request, Design $design): JsonResponse
+    {
+        abort_unless($design->designer_id === Auth::id(), 404);
+
+        $copy = DB::transaction(function () use ($design) {
+            $copy = $design->replicate(['status', 'rejection_reason', 'submitted_at', 'reviewed_at', 'published_at', 'image', 'design_payload']);
+            $copy->title = Str::limit('نسخة من '.$design->title, 100, '');
+            $copy->status = 'draft';
+            $copy->save();
+
+            $payload = (array) $design->design_payload;
+            $files = [];
+            foreach ($payload['files'] ?? [] as $file) {
+                if (empty($file['path']) || ! Storage::disk('local')->exists($file['path'])) {
+                    continue;
+                }
+                $extension = strtolower(pathinfo((string) $file['path'], PATHINFO_EXTENSION));
+                $path = 'designer-designs/'.$copy->designer_id.'/'.$copy->id.'/'.Str::uuid().($extension ? '.'.$extension : '');
+                Storage::disk('local')->copy($file['path'], $path);
+                $files[] = ['path' => $path] + $file;
+            }
+
+            $image = null;
+            $previewPath = ltrim(Str::after((string) $design->image, 'storage/'), '/');
+            if ($design->image && str_starts_with($design->image, 'storage/') && Storage::disk('public')->exists($previewPath)) {
+                $image = 'designs/'.$copy->id.'-'.Str::random(8).'.png';
+                Storage::disk('public')->copy($previewPath, $image);
+                $image = 'storage/'.$image;
+            }
+
+            $copy->update(['image' => $image, 'design_payload' => ['files' => $files] + $payload]);
+
+            return $copy;
+        });
+
+        return response()->json(['message' => 'تم إنشاء نسخة كمسودة، افتحيها للتعديل.', 'id' => $copy->id], 201);
+    }
+
+    /** Removes a design's picture and its private artwork from the disks. */
+    private function deleteFiles(Design $design): void
+    {
+        if (str_starts_with((string) $design->image, 'storage/')) {
+            Storage::disk('public')->delete(Str::after($design->image, 'storage/'));
+        }
+
+        Storage::disk('local')->deleteDirectory('designer-designs/'.$design->designer_id.'/'.$design->id);
     }
 
     /** A saved design as the designer sent it: picture, product, prices, approved colours, and its review status. */
@@ -109,6 +329,9 @@ class DesignController extends Controller
             'allowedSizeIds.*' => ['string', 'max:20'],
             'mockup' => ['nullable', 'array'],
             'layout' => ['nullable', 'array'],
+            'assets' => ['nullable', 'array', 'max:40'],
+            // Set when the designer reopened a saved draft or rejected design: that design is updated instead of a new one made.
+            'editingDesignId' => ['nullable', 'integer'],
         ], [], [
             'designName' => 'اسم التصميم',
             'sellingPrice' => 'سعر البيع',
@@ -156,13 +379,28 @@ class DesignController extends Controller
         $status = $data['status'] === 'submitted' ? 'review' : 'draft';
         $designer = $request->user();
 
-        $design = DB::transaction(function () use ($request, $data, $product, $basePrice, $sellingPrice, $status, $designer, $category, $allowedSizeIds) {
-            $design = Design::create([
+        // Reopened design: only the designer's own draft or rejected design that nobody has bought can be changed.
+        $existing = null;
+        if (! empty($data['editingDesignId'])) {
+            $existing = Design::query()->withCount(['orderItems', 'cartItems'])
+                ->where('designer_id', $designer->id)->find($data['editingDesignId']);
+
+            if (! $existing || ! self::abilities($existing)['edit']) {
+                throw ValidationException::withMessages([
+                    'designName' => 'لا يمكن تعديل هذا التصميم (منشور أو قيد المراجعة أو مرتبط بطلبات). اصنعي نسخة منه وعدّلي عليها.',
+                ]);
+            }
+        }
+
+        $oldImage = $existing?->image;
+        $oldFiles = collect($existing?->design_payload['files'] ?? []);
+
+        $design = DB::transaction(function () use ($request, $data, $product, $basePrice, $sellingPrice, $status, $designer, $category, $allowedSizeIds, $existing, $oldFiles) {
+            $fields = [
                 'designer_id' => $designer->id,
                 'product_id' => $product->id,
                 'title' => $data['designName'],
                 'description' => $product->name,
-                'image' => null,
                 'base_price' => $basePrice,
                 'selling_price' => $sellingPrice,
                 'designer_profit' => max(0, $sellingPrice - $basePrice),
@@ -175,7 +413,14 @@ class DesignController extends Controller
                 ],
                 'status' => $status,
                 'submitted_at' => $status === 'review' ? now() : null,
-            ]);
+            ];
+
+            if ($existing) {
+                // A new review starts from scratch: the old verdict no longer applies.
+                $design = tap($existing)->update($fields + ['rejection_reason' => null, 'reviewed_at' => null, 'published_at' => null]);
+            } else {
+                $design = Design::create($fields + ['image' => null]);
+            }
 
             // Public picture of the design on the product: the gallery shows it after approval.
             $previewPath = $request->file('preview')->storeAs('designs', $design->id.'-'.Str::random(8).'.png', 'public');
@@ -194,6 +439,15 @@ class DesignController extends Controller
                 ];
             }
 
+            // A picture the layout still uses but the browser did not send again keeps its saved file.
+            $sent = collect($files)->pluck('asset_id');
+            $used = collect(data_get($data, 'layout.areas', []))->flatMap(fn ($area) => collect($area['objects'] ?? [])->pluck('assetId'))->filter()->unique();
+            $oldFiles->each(function ($old) use ($used, $sent, &$files) {
+                if (! empty($old['asset_id']) && $used->contains($old['asset_id']) && ! $sent->contains($old['asset_id'])) {
+                    $files[] = $old;
+                }
+            });
+
             $design->update([
                 'image' => 'storage/'.$previewPath,
                 'design_payload' => [
@@ -201,12 +455,23 @@ class DesignController extends Controller
                     'allowed_color_ids' => $data['allowedColorIds'] ?? [],
                     'layout' => $data['layout'] ?? null,
                     'mockup' => $data['mockup'] ?? null,
+                    'assets' => $data['assets'] ?? [],
                     'files' => $files,
                 ],
             ]);
 
             return $design;
         });
+
+        // The replaced picture and artwork are removed only now that the new ones are safely saved.
+        if ($existing) {
+            if (str_starts_with((string) $oldImage, 'storage/')) {
+                Storage::disk('public')->delete(Str::after($oldImage, 'storage/'));
+            }
+            $keptPaths = collect($design->design_payload['files'] ?? [])->pluck('path');
+            $oldFiles->pluck('path')->filter()->reject(fn ($path) => $keptPaths->contains($path))
+                ->each(fn ($path) => Storage::disk('local')->delete($path));
+        }
 
         if ($status === 'review') {
             // The designer's own confirmation, in their notifications.

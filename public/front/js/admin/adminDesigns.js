@@ -332,6 +332,15 @@
       document.getElementById("dialogDesignPreview").hidden = !document.getElementById("dialogAreasSection").hidden;
     }
 
+    // Arriving from the dashboard with ?open=<design id> opens that design's review dialog straight away.
+    (function () {
+      const wanted = new URLSearchParams(window.location.search).get("open");
+      if (!wanted) return;
+      window.history.replaceState(null, "", window.location.pathname);
+      const target = rows().find(function (row) { return row.dataset.id === wanted; });
+      if (target) openDetails(target);
+    })();
+
     document.getElementById("designTableBody").addEventListener("click", function (event) {
       const button = event.target.closest("[data-details]");
       if (button) openDetails(button.closest("[data-design-row]"));

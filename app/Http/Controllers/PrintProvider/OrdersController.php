@@ -49,6 +49,7 @@ class OrdersController extends Controller
         'layout' => 'تخطيط الصفحة',
         'grouping' => 'طريقة الملفات',
         'binding' => 'التغليف',
+        'printing_method_name' => 'تقنية الطباعة',
         'size' => 'القياس',
         'color' => 'اللون',
     ];
@@ -147,6 +148,10 @@ class OrdersController extends Controller
             'from_status' => $previous,
             'to_status' => $to,
             'note' => $note,
+            // Which branches turned the order down, so the admin never sends it back to one of them.
+            'metadata' => $to === 'rejected'
+                ? ['rejected_branch_ids' => $order->items()->whereIn('print_provider_branch_id', $this->providerBranchIds($request))->pluck('print_provider_branch_id')->unique()->values()->all()]
+                : null,
         ]);
 
         if ($order->user_id) {

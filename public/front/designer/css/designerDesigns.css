@@ -585,6 +585,81 @@ html[dir="ltr"] .design-group-link:hover > i { transform: translateX(3px); }
   border-radius: 12px;
 }
 
+/* The main button and the small icon buttons (copy / take off the store / delete) share one line. */
+.design-card-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.design-card-actions > .card-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+}
+
+.design-card-tools {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+/* Why this design cannot be edited or deleted. */
+.design-card-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 10px 0 0;
+  color: #64748b;
+  font-size: 0.74rem;
+  line-height: 1.6;
+}
+
+.design-card-note i {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  color: #94a3b8;
+}
+
+.design-icon-btn {
+  width: 38px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: #2c405c;
+  background: #ffffff;
+  border: 1px solid #dfe8f3;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.design-icon-btn:hover,
+.design-icon-btn:focus-visible {
+  color: #0a68eb;
+  background: #eef5ff;
+  border-color: #bed9ff;
+}
+
+.design-icon-btn.is-danger {
+  color: #b91c1c;
+}
+
+.design-icon-btn.is-danger:hover,
+.design-icon-btn.is-danger:focus-visible {
+  color: #ffffff;
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.design-icon-btn:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
 .design-card .card-btn.trend {
   color: #0a68eb;
   background: #ffffff;

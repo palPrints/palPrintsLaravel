@@ -265,7 +265,11 @@
               <div><dt>48h</dt><dd>متوسط وقت التنفيذ</dd></div>
             </dl>
 
-            <a class="partner-card__button partner-card__button--blue" href="{{ route('register') }}">سجّل مطبعتك</a>
+            @if (! $viewer)
+              <a class="partner-card__button partner-card__button--blue" href="{{ route('register', ['account_type' => 'print_provider']) }}">سجّل مطبعتك</a>
+            @elseif ($viewer->hasRole('print_provider'))
+              <a class="partner-card__button partner-card__button--blue" href="{{ route('print-provider.dashboard') }}">لوحة المطبعة</a>
+            @endif
           </article>
         </div>
       </section>

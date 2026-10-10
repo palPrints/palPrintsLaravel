@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\AccountDeletionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,7 +41,7 @@ class ProfileController extends Controller
     /**
      * Delete the user's account.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request, AccountDeletionService $accounts): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
@@ -48,9 +49,14 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        // Running orders, money in the wallet and the admin account are not closed from here: say why instead of failing.
+        if ($reasons = $accounts->blockers($user)) {
+            return back()->withErrors(['password' => implode(' ', $reasons)], 'userDeletion');
+        }
+
         Auth::logout();
 
-        $user->delete();
+        $accounts->delete($user);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

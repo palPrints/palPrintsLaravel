@@ -1050,6 +1050,16 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   transform: none;
 }
 
+/* interactions.css يضيف .pal-pressable على الأزرار (رفع + ظل + ارتداد)؛ هذا يثبّت الإشعار فوقه */
+.notifications-list .notification-item:hover,
+.notifications-list .notification-item:active,
+.notifications-list .notification-item.is-pressed,
+.notifications-list .notification-item.is-popped {
+  box-shadow: none;
+  transform: none;
+  animation: none;
+}
+
 .notification-item:focus-visible {
   outline: 2px solid var(--store-primary);
   outline-offset: -2px;
@@ -2491,3 +2501,58 @@ html[data-bs-theme="dark"] body.storefront-page::before {
   transform: scale(1.08) !important;
 }
 
+
+/* Visitor who is not signed in: no side menu, so the page uses the full width, and two sign-in links replace the account icons. */
+body.storefront-page.guest-shop .site-footer,
+body.storefront-page.guest-shop.sidebar-collapsed .site-footer {
+  margin-inline-start: 0;
+}
+
+/* The page keeps the same side gutter on both sides (not 0 on one side), so the content sits in the middle. */
+body.storefront-page.guest-shop .store-main,
+body.storefront-page.guest-shop.sidebar-collapsed .store-main {
+  margin-inline-start: var(--store-gutter);
+}
+
+body.storefront-page.guest-shop .store-header::after {
+  display: none;
+}
+
+.store-guest-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 16px;
+  color: var(--store-primary-hover);
+  background: transparent;
+  border: 1px solid var(--store-primary-border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.store-guest-link:hover {
+  background: var(--store-primary-soft);
+}
+
+.store-guest-link--primary {
+  color: #fff;
+  background: var(--store-primary);
+  border-color: var(--store-primary);
+}
+
+.store-guest-link--primary:hover {
+  color: #fff;
+  background: var(--store-primary-hover);
+}
+
+@media (max-width: 575px) {
+  .store-guest-link {
+    padding: 0 10px;
+    font-size: 12px;
+  }
+}

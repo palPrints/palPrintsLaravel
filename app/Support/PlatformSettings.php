@@ -33,11 +33,26 @@ class PlatformSettings
             'payments_withdrawals' => true,
             'marketing' => false,
         ],
+        'site' => [
+            'return_days' => 7,
+            'instagram' => '',
+            'facebook' => '',
+            'tiktok' => '',
+            'whatsapp' => '',
+        ],
+        'pages' => [
+            'terms' => '',
+            'privacy' => '',
+            'returns' => '',
+            'shipping' => '',
+            'faq' => '',
+        ],
         'fees' => [
             'platform_commission' => 12,
             'payment_processing_fee' => 2.5,
             'minimum_withdrawal' => 100,
             'tax_rate' => 16,
+            'shipping_cost' => 5,
         ],
     ];
 

@@ -6,7 +6,7 @@
         <a class="home-footer__wordmark" href="{{ route('home') }}" aria-label="PALPRINTS - الصفحة الرئيسية">
           <img src="{{ asset('front/home/images/palprints-wordmark-approved.png') }}" alt="PALPRINTS" />
         </a>
-        <p>منصة فلسطينية للطباعة عند الطلب، تجمع المصممين والمطابع والعملاء بشراكات التوصيل في مكان واحد.</p>
+        <p>منصة فلسطينية للطباعة عند الطلب، تجمع المصممين والمطابع والعملاء في مكان واحد.</p>
         <div class="home-footer__highlights" aria-label="مميزات PALPRINTS">
           <span>طباعة حسب الطلب</span>
           <span>دعم المصممين المحليين</span>
@@ -22,17 +22,33 @@
             <li><a href="{{ $toRole('customer', 'customer.tshirts') }}">تيشيرتات</a></li>
             <li><a href="{{ $toRole('customer', 'customer.hoodies') }}">هوديز</a></li>
             <li><a href="{{ $toRole('customer', 'customer.mugs') }}">أكواب وهدايا</a></li>
-            <li><a href="{{ $toRole('customer', 'customer.paperPrinting') }}">الطباعة علينا</a></li>
+            <li><a href="{{ $toRole('customer', 'customer.paperPrinting') }}">الطباعة عندنا</a></li>
           </ul>
         </section>
 
         <section class="home-footer__column">
-          <h2>انضم إلينا</h2>
-          <ul>
-            <li><a href="{{ route('register', ['account_type' => 'designer']) }}">سجّل كمصمم</a></li>
-            <li><a href="{{ route('register', ['account_type' => 'print_provider']) }}">سجّل مطبعتك</a></li>
-            <li><a href="{{ route('delivery-partners') }}">شركاء التوصيل</a></li>
-          </ul>
+          @auth
+            @php
+              $footerUser = auth()->user();
+              $footerSupport = match (true) {
+                $footerUser->hasRole('admin') => 'admin.support',
+                $footerUser->hasRole('designer') => 'designer.support',
+                $footerUser->hasRole('print_provider') => 'print-provider.support',
+                default => 'customer.support',
+              };
+            @endphp
+            <h2>حسابي</h2>
+            <ul>
+              <li><a href="{{ route($footerUser->dashboardRouteName()) }}">{{ $footerUser->hasRole('customer') ? 'المتجر' : 'لوحة التحكم' }}</a></li>
+              <li><a href="{{ route($footerSupport) }}">الدعم الفني</a></li>
+            </ul>
+          @else
+            <h2>انضم إلينا</h2>
+            <ul>
+              <li><a href="{{ route('register', ['account_type' => 'designer']) }}">سجّل كمصمم</a></li>
+              <li><a href="{{ route('register', ['account_type' => 'print_provider']) }}">سجّل مطبعتك</a></li>
+            </ul>
+          @endauth
         </section>
 
         <section class="home-footer__column">
@@ -60,10 +76,9 @@
     <div class="home-footer__bottom">
       <p>بالإبداع شراكة دائمة · © 2026 PALPRINTS</p>
       <div class="home-footer__payments" aria-label="وسائل الدفع المتاحة" dir="ltr">
-        <span>VISA</span>
-        <span>Mastercard</span>
         <span>PalPay</span>
         <span>Jawwal Pay</span>
+        <span>بنك فلسطين</span>
       </div>
     </div>
   </div>

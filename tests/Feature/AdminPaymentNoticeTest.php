@@ -19,10 +19,15 @@ function noticeShop(string $name, Product $product, bool $offersProduct = true):
     $branch = $provider->primaryBranch();
 
     if ($offersProduct) {
-        $branch->branchProductOfferings()->create([
+        $offering = $branch->branchProductOfferings()->create([
             'product_id' => $product->id, 'base_price' => 20, 'currency' => 'ILS',
             'production_time_min' => 2, 'production_time_max' => 2, 'daily_capacity' => 10, 'is_active' => true,
         ]);
+
+        // A shop only counts for an order when it offers the exact colour and size (variant) that was ordered.
+        Variant::where('product_id', $product->id)->get()->each(
+            fn (Variant $variant) => $offering->branchOfferingVariants()->create(['variant_id' => $variant->id, 'is_available' => true])
+        );
     }
 
     return $branch;
@@ -75,7 +80,8 @@ test('the admin sees the pending notice with only the shops that offer the order
         ->assertOk()
         ->assertSee('PP-1001')
         ->assertSee('receipt-99887766.png')
-        ->assertSee('مطبعة النور — مقترحة')
+        ->assertSee('مطبعة النور')
+        ->assertSee('الأفضل') // the best-ranked shop carries this tag, the same one the order is routed to on approval
         ->assertSee('مطبعة الأمل')
         ->assertDontSee('مطبعة بدون تيشيرت');
 });

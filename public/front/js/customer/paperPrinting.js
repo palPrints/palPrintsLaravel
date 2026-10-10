@@ -168,6 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function addFiles(fileList) {
     if (document.body.dataset.authenticated !== "true") {
       showToast(t("signInRequired"), "error");
+      window.setTimeout(function () { window.location.href = "/login"; }, 1200);
       return;
     }
     const incoming = Array.prototype.slice.call(fileList || []);
@@ -586,6 +587,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }).then(function (response) {
       if (response.ok) {
         window.location.href = window.palPrintsCustomerAssets.basketUrl;
+        return;
+      }
+      if (response.status === 401 || response.status === 419) {
+        showToast(t("signInRequired"), "error");
+        window.setTimeout(function () { window.location.href = "/login"; }, 1200);
         return;
       }
       throw new Error("add-to-cart-failed");

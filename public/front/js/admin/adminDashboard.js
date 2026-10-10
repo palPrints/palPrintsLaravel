@@ -1,4 +1,4 @@
-/* Admin dashboard page: orders search, animated counters, section reveal, review buttons. */
+/* Admin dashboard page: orders search, animated counters, section reveal. */
 (function (window, document) {
   "use strict";
 
@@ -6,10 +6,6 @@
     const searchInput = document.getElementById("dashboardSearch");
     const emptyOrdersRow = document.getElementById("emptyOrdersRow");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    function showToast(message) {
-      if (window.PalAdmin) window.PalAdmin.toast(message);
-    }
 
     function normalizeSearchValue(value) {
       return String(value || "")
@@ -81,21 +77,6 @@
 
     if (searchInput) searchInput.addEventListener("input", filterOrders);
 
-    document.querySelectorAll("[data-review]").forEach(function (button) {
-      button.addEventListener("click", function () {
-        showToast("صفحة مراجعة الطلبات قيد التطوير.");
-      });
-    });
-
-    document.querySelectorAll("[data-action]").forEach(function (button) {
-      button.addEventListener("click", function () {
-        const messages = {
-          "add-product": "صفحة إدارة المنتجات قيد التطوير.",
-          "view-all-orders": "صفحة إدارة الطلبات قيد التطوير."
-        };
-        showToast(messages[button.dataset.action] || "تم تنفيذ الإجراء.");
-      });
-    });
   }
 
   if (document.readyState === "loading") {

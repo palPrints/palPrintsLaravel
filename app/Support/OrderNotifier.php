@@ -46,6 +46,18 @@ class OrderNotifier
         ]);
     }
 
+    /** The admin cancelled an order that was routed to this shop: it must stop working on it. */
+    public static function cancelledForShop(int $providerUserId, string $orderNumber): void
+    {
+        Notification::create([
+            'user_id' => $providerUserId,
+            'type' => 'order.cancelled_for_provider',
+            'title' => 'أُلغي طلب كان عندك',
+            'message' => sprintf('أُلغي الطلب رقم %s، يرجى إيقاف العمل عليه.', $orderNumber),
+            'link' => route('print-provider.requests'),
+        ]);
+    }
+
     /** A shop turned an order down: tells the admins, who have to route it elsewhere or settle it with the customer. */
     public static function rejectedByShop(string $orderNumber, string $shopName, string $reason): void
     {

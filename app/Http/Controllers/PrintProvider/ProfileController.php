@@ -208,7 +208,8 @@ class ProfileController extends Controller
             $oldPaths[$field] = $provider->$field;
 
             if ($request->hasFile($field)) {
-                $newPaths[$field] = $request->file($field)->store('print-provider/documents', 'public');
+                // Identity and licence files go to the private disk; they are opened through print-provider.documents.
+                $newPaths[$field] = $request->file($field)->store('print-provider/documents', 'local');
             }
         }
 
@@ -263,7 +264,7 @@ class ProfileController extends Controller
             });
         } catch (Throwable $exception) {
             foreach ($newPaths as $path) {
-                Storage::disk('public')->delete($path);
+                Storage::disk('local')->delete($path);
             }
 
             throw $exception;
@@ -272,6 +273,8 @@ class ProfileController extends Controller
         // Replaced files are removed only after the new ones are safely saved.
         foreach ($newPaths as $field => $path) {
             if (filled($oldPaths[$field] ?? null)) {
+                // An older file may still be on the public disk.
+                Storage::disk('local')->delete($oldPaths[$field]);
                 Storage::disk('public')->delete($oldPaths[$field]);
             }
         }

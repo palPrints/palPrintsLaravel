@@ -8,7 +8,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>عن PALPRINTS</title>
-    <meta name="description" content="PalPrints منصة فلسطينية للطباعة عند الطلب، تجمع العملاء والمصممين والمطابع وشركاء التوصيل في مكان واحد." />
+    <meta name="description" content="PalPrints منصة فلسطينية للطباعة عند الطلب، تجمع العملاء والمصممين والمطابع في مكان واحد." />
     <link rel="stylesheet" href="{{ asset('front/home/css/home.css') }}?v={{ hash_file('sha256', public_path('front/home/css/home.css')) }}" />
     <link rel="stylesheet" href="{{ asset('front/home/css/about.css') }}?v={{ filemtime(public_path('front/home/css/about.css')) }}" />
     <link rel="stylesheet" href="{{ asset('front/shared/theme-dark.css') }}?v={{ filemtime(public_path('front/shared/theme-dark.css')) }}" />
@@ -22,7 +22,7 @@
         <section class="about-block">
           <h1 id="about-title">من هي PalPrints؟</h1>
           <p>PalPrints منصة فلسطينية للطباعة عند الطلب، تربط العملاء والمصممين بمطابع محلية متخصصة، حتى تتحول أي فكرة إلى منتج مطبوع بجودة عالية يصل إلى بابك، دون الحاجة إلى مخزون أو معدات طباعة.</p>
-          <p>تختار المنتج وتضع عليه تصميمك أو تصميمًا من مصممينا، وتتولى المطبعة الشريكة الطباعة والتجهيز، ثم يتولى شركاء التوصيل إيصال الطلب إليك.</p>
+          <p>تختار المنتج وتضع عليه تصميمك أو تصميمًا من مصممينا، وتتولى المطبعة الشريكة الطباعة والتجهيز، ثم يصلك الطلب إلى بابك.</p>
         </section>
 
         <section class="about-block">
@@ -109,7 +109,11 @@
           <div class="about-actions">
             <a class="about-button about-button--primary" href="{{ $toRole('customer', 'customer.store') }}">ابدأ التسوق</a>
             <a class="about-button about-button--outline" href="{{ $toRole('designer', 'designer.designs.create') }}">ابدأ التصميم</a>
-            <a class="about-button about-button--outline" href="{{ route('register') }}">سجّل مطبعتك</a>
+            @if (! $viewer)
+              <a class="about-button about-button--outline" href="{{ route('register', ['account_type' => 'print_provider']) }}">سجّل مطبعتك</a>
+            @elseif ($viewer->hasRole('print_provider'))
+              <a class="about-button about-button--outline" href="{{ route('print-provider.dashboard') }}">لوحة المطبعة</a>
+            @endif
           </div>
           <p class="about-help">للمساعدة، <a href="{{ $toRole('customer', 'customer.support') }}">تواصل معنا</a></p>
         </section>

@@ -21,6 +21,20 @@
         panels.forEach(function (panel) { panel.hidden = panel.dataset.settingsPanel !== target; });
       });
     });
+    var pageTabs = Array.from(document.querySelectorAll("[data-page-tab]"));
+    pageTabs.forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        pageTabs.forEach(function (item) { item.classList.toggle("active", item === tab); });
+        document.querySelectorAll("[data-page-pane]").forEach(function (pane) { pane.hidden = pane.dataset.pagePane !== tab.dataset.pageTab; });
+      });
+    });
+    document.querySelectorAll("[data-subtab]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var scope = button.closest("[data-settings-panel]");
+        scope.querySelectorAll("[data-subtab]").forEach(function (item) { var active = item === button; item.classList.toggle("active", active); item.setAttribute("aria-selected", String(active)); });
+        scope.querySelectorAll("[data-subpanel]").forEach(function (panel) { panel.hidden = panel.dataset.subpanel !== button.dataset.subtab; });
+      });
+    });
     var csrfMeta = document.querySelector('meta[name="csrf-token"]');
     var csrfToken = csrfMeta ? csrfMeta.content : "";
 

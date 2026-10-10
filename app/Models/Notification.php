@@ -26,6 +26,12 @@ class Notification extends Model
         'read_at' => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        // A notice the admin switched off in Settings > Notifications is simply not created.
+        static::creating(fn (Notification $notification) => \App\Support\NotificationPreferences::allows($notification->type));
+    }
+
     // ========== العلاقات ==========
 
     public function user()

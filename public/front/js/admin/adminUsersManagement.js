@@ -316,6 +316,19 @@
     const initialHash = window.location.hash.replace("#", "");
     selectUserType(initialHash === "designers" ? "designers" : initialHash === "print-shops" ? "printShops" : "customers", false);
 
+    // Arriving from the dashboard with ?open=<user id> expands that designer / print shop and scrolls to it.
+    const openUserId = new URLSearchParams(window.location.search).get("open");
+    if (openUserId && (activeUserType === "designers" || activeUserType === "printShops")) {
+      const found = userTypes[activeUserType].users.findIndex(function (user) { return String(user.userId) === openUserId; });
+      if (found >= 0) {
+        if (activeUserType === "designers") expandedDesignerIndex = found; else expandedPrintShopIndex = found;
+        renderUsers();
+        const entry = usersList.querySelector(".user-entry.is-expanded");
+        if (entry) entry.scrollIntoView({ block: "center" });
+      }
+      window.history.replaceState(null, "", window.location.pathname + window.location.hash);
+    }
+
     if (usersSubmenu) {
       usersSubmenu.addEventListener("click", function (event) {
         const link = event.target.closest("[data-user-type]");

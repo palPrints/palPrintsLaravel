@@ -201,7 +201,14 @@
                 'status' => $design->status,
                 'updatedAt' => $updatedAt ? $updatedAt->toIso8601String() : null,
                 'previewUrl' => route('designer.designs.show', $design),
-                'editorUrl' => route('design-studio'),
+                // What the designer may do with it (a bought design cannot be changed; see DesignController::abilities).
+                'can' => \App\Http\Controllers\Designer\DesignController::abilities($design),
+                'lockReason' => \App\Http\Controllers\Designer\DesignController::lockReason($design),
+                'editorUrl' => route('design-studio', ['edit' => $design->id]),
+                'destroyUrl' => route('designer.designs.destroy', $design),
+                'unpublishUrl' => route('designer.designs.unpublish', $design),
+                'withdrawUrl' => route('designer.designs.withdraw', $design),
+                'duplicateUrl' => route('designer.designs.duplicate', $design),
             ];
         })->values()->all();
     @endphp

@@ -15,6 +15,7 @@
     $notifications = $settings['notifications'];
     $fees = $settings['fees'];
     $payments = $settings['payments'];
+    $site = $settings['site'];
 @endphp
 
 @section('content')
@@ -28,6 +29,7 @@
             <button type="button" data-settings-tab="payments"><i class="bi bi-credit-card"></i><span>وسائل الدفع</span></button>
             <button type="button" data-settings-tab="notifications"><i class="bi bi-bell"></i><span>الإشعارات</span></button>
             <button type="button" data-settings-tab="fees"><i class="bi bi-percent"></i><span>الرسوم والعمولات</span></button>
+            <button type="button" data-settings-tab="pages"><i class="bi bi-file-earmark-text"></i><span>صفحات الموقع</span></button>
             <button type="button" data-settings-tab="audit"><i class="bi bi-clock-history"></i><span>سجل النشاط</span></button>
         </nav>
 
@@ -91,6 +93,44 @@
                     <div class="admin-info-note"><i class="bi bi-info-circle"></i><span>الحد الأدنى للسحب يُطبَّق فورًا على طلبات سحب المصممين والمطابع.</span></div>
                     <footer class="admin-form-actions"><button class="admin-primary-button" type="submit"><i class="bi bi-check2"></i>تحديث الرسوم</button></footer>
                 </form>
+            </section>
+
+            <section class="admin-settings-panel" data-settings-panel="pages" hidden>
+                <div class="admin-panel-heading"><div><h2>صفحات الموقع</h2><p>عدّل نصوص الصفحات العامة ورسوم الشحن ومهلة الاسترجاع وروابط التواصل. تظهر التغييرات للزوار فور الحفظ.</p></div></div>
+
+                <nav class="admin-settings-tabs admin-settings-subtabs" aria-label="أقسام صفحات الموقع">
+                    <button class="active" type="button" data-subtab="site" aria-selected="true"><i class="bi bi-sliders"></i><span>بيانات الموقع</span></button>
+                    @foreach ($pageTexts as $key => $page)
+                        <button type="button" data-subtab="{{ $key }}"><i class="bi bi-file-text"></i><span>{{ $page['label'] }}</span></button>
+                    @endforeach
+                </nav>
+
+                <section class="admin-tool-card" data-subpanel="site">
+                    <header class="admin-tool-card__header"><div><h2>بيانات تظهر في الموقع</h2><p>رسوم الشحن تُطبَّق على الطلبات الجديدة، وروابط التواصل تظهر في فوتر المتجر.</p></div><span class="admin-section-icon"><i class="bi bi-truck"></i></span></header>
+                    <form class="admin-settings-form" data-admin-form="site" data-action="{{ route('admin.settings.site') }}">
+                        <div class="admin-field-grid">
+                            <label><span>رسوم الشحن للطلب الواحد</span><span class="admin-number-field"><input type="number" name="shipping_cost" min="0" step="0.01" value="{{ $fees['shipping_cost'] }}" required><b>₪</b></span></label>
+                            <label><span>مهلة الاسترجاع بعد الاستلام</span><span class="admin-number-field"><input type="number" name="return_days" min="0" max="365" value="{{ $site['return_days'] }}" required><b>يوم</b></span></label>
+                            <label><span>رابط إنستغرام</span><input type="url" name="instagram" value="{{ $site['instagram'] }}" dir="ltr" placeholder="https://instagram.com/..."></label>
+                            <label><span>رابط فيسبوك</span><input type="url" name="facebook" value="{{ $site['facebook'] }}" dir="ltr" placeholder="https://facebook.com/..."></label>
+                            <label><span>رابط تيك توك</span><input type="url" name="tiktok" value="{{ $site['tiktok'] }}" dir="ltr" placeholder="https://tiktok.com/@..."></label>
+                            <label><span>رقم واتساب</span><input type="tel" name="whatsapp" value="{{ $site['whatsapp'] }}" dir="ltr" placeholder="+970599000000"></label>
+                        </div>
+                        <div class="admin-info-note"><i class="bi bi-info-circle"></i><span>أي رابط تتركه فارغًا لا تظهر أيقونته. البريد ورقم التواصل يُعدَّلان من «الإعدادات العامة».</span></div>
+                        <footer class="admin-form-actions"><button class="admin-primary-button" type="submit"><i class="bi bi-check2"></i>حفظ البيانات</button></footer>
+                    </form>
+                </section>
+
+                @foreach ($pageTexts as $key => $page)
+                    <section class="admin-tool-card" data-subpanel="{{ $key }}" hidden>
+                        <header class="admin-tool-card__header"><div><h2>{{ $page['label'] }}</h2><p>{{ $page['custom'] ? 'نص معدَّل من الإدارة.' : 'يعرض النص الافتراضي حاليًا؛ عدّله واحفظ لاعتماد نصك.' }} <a href="{{ route($key) }}" target="_blank" rel="noopener">معاينة الصفحة</a></p></div><span class="admin-section-icon"><i class="bi bi-file-text"></i></span></header>
+                        <form class="admin-settings-form" data-admin-form="page-{{ $key }}" data-action="{{ route('admin.settings.pages', $key) }}">
+                            <div class="admin-info-note"><i class="bi bi-info-circle"></i><span>طريقة الكتابة: <b dir="ltr"># عنوان</b> للعنوان الرئيسي، <b dir="ltr">## عنوان قسم</b>، <b dir="ltr">### عنوان فرعي</b>، <b dir="ltr">- نقطة</b>، <b dir="ltr">1. بند مرقّم</b>، <b dir="ltr">**نص غامق**</b>، <b dir="ltr">[نص الرابط](/faq)</b>. في الأسئلة الشائعة اكتب السؤال بعد <b dir="ltr">##</b> وتحته الجواب. لإظهار قيمة حيّة اكتب: @foreach ($pageTokens as $token => $tokenLabel)<b dir="ltr">{{ '{'.$token.'}' }}</b> ({{ $tokenLabel }}){{ $loop->last ? '.' : '، ' }}@endforeach لاستعادة النص الافتراضي امسح النص كله واحفظ.</span></div>
+                            <label class="admin-field-wide"><span>نص الصفحة</span><textarea name="content" rows="16" spellcheck="false">{{ $page['text'] }}</textarea></label>
+                            <footer class="admin-form-actions"><button class="admin-secondary-button" type="reset"><i class="bi bi-arrow-counterclockwise"></i>تراجع عن التعديلات</button><button class="admin-primary-button" type="submit"><i class="bi bi-check2"></i>حفظ الصفحة</button></footer>
+                        </form>
+                    </section>
+                @endforeach
             </section>
 
             <section class="admin-settings-panel" data-settings-panel="audit" hidden>

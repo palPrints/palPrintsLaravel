@@ -8,7 +8,6 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Support\CatalogProductData;
 use App\Support\ProductVariants;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -99,14 +98,40 @@ class ProductController extends Controller
         ]);
     }
 
+    /** What stops a product from being deleted, in words: [table, label with :n]. */
+    private const DELETE_BLOCKERS = [
+        ['order_items', 'طلبات (:n بند)'],
+        ['cart_items', 'سلات عملاء (:n بند)'],
+        ['branch_product_offerings', 'مطابع تقدّمه (:n عرض)'],
+        ['designs', 'تصاميم عليه (:n تصميم)'],
+        ['print_files', 'ملفات طباعة مرفوعة (:n ملف)'],
+    ];
+
     public function destroy(Request $request, Product $product): JsonResponse
     {
-        try {
-            $product->delete();
-        } catch (QueryException) {
+        // The count and the delete share one transaction on the locked product row, so nothing can attach in between.
+        $blockers = DB::transaction(function () use ($product) {
+            Product::query()->lockForUpdate()->find($product->id);
+
+            $found = [];
+            foreach (self::DELETE_BLOCKERS as [$table, $label]) {
+                $count = DB::table($table)->where('product_id', $product->id)->count();
+                if ($count > 0) {
+                    $found[] = str_replace(':n', (string) $count, $label);
+                }
+            }
+
+            if ($found === []) {
+                $product->delete();
+            }
+
+            return $found;
+        });
+
+        if ($blockers !== []) {
             return response()->json([
                 'ok' => false,
-                'message' => 'لا يمكن حذف منتج مرتبط بتصاميم أو عروض. أوقفه مؤقتًا بدلًا من حذفه.',
+                'message' => 'لا يمكن حذف «'.$product->name.'» لأنه مرتبط بـ: '.implode('، ', $blockers).'. أوقفه مؤقتًا بدلًا من حذفه.',
             ], 422);
         }
 
