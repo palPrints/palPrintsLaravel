@@ -28,7 +28,7 @@ class ReportController extends Controller
     private function userStats(): array
     {
         $now = now();
-        $totalNow = User::count();
+        $totalNow = User::real()->count();
 
         $stats = [];
 
@@ -36,11 +36,11 @@ class ReportController extends Controller
             $cutoff = $now->copy()->subDays($days);
             $prevCutoff = $now->copy()->subDays($days * 2);
 
-            $totalAtCutoff = User::where('created_at', '<=', $cutoff)->count();
-            $newInPeriod = User::where('created_at', '>', $cutoff)->count();
-            $newInPrevPeriod = User::whereBetween('created_at', [$prevCutoff, $cutoff])->count();
-            $activeInPeriod = User::where('last_login_at', '>=', $cutoff)->count();
-            $activeInPrevPeriod = User::whereBetween('last_login_at', [$prevCutoff, $cutoff])->count();
+            $totalAtCutoff = User::real()->where('created_at', '<=', $cutoff)->count();
+            $newInPeriod = User::real()->where('created_at', '>', $cutoff)->count();
+            $newInPrevPeriod = User::real()->whereBetween('created_at', [$prevCutoff, $cutoff])->count();
+            $activeInPeriod = User::real()->where('last_login_at', '>=', $cutoff)->count();
+            $activeInPrevPeriod = User::real()->whereBetween('last_login_at', [$prevCutoff, $cutoff])->count();
 
             $stats[$period] = [
                 'total' => $totalNow,

@@ -37,7 +37,7 @@ class PrintShopRouter
      * @param  array<string, mixed>|null  $layout  the studio layout ({areas: {areaId: {objects: [...]}}})
      * @return array{product: Product, variantIds: Collection<int, int>, areas: array<int, array{code: string, widthCm: ?float, heightCm: ?float}>, quantity: int}
      */
-    public function need(Product $product, Collection $variantIds, array $studioAreas, ?array $layout, int $quantity = 1): array
+    public function need(Product $product, Collection $variantIds, array $studioAreas, ?array $layout, int $quantity = 1, ?string $method = null): array
     {
         $areas = collect($studioAreas)->map(fn (string $area) => $this->studioAreaId($product, $area))->unique()->map(function (string $studioId) use ($product, $layout) {
             $code = $this->databaseArea($product, $studioId);
@@ -46,7 +46,7 @@ class PrintShopRouter
             return ['code' => $code, 'widthCm' => $size['width'] ?? null, 'heightCm' => $size['height'] ?? null];
         })->values()->all();
 
-        return ['product' => $product, 'variantIds' => $variantIds->values(), 'areas' => $areas, 'quantity' => max(1, $quantity)];
+        return ['product' => $product, 'variantIds' => $variantIds->values(), 'areas' => $areas, 'quantity' => max(1, $quantity), 'method' => $method ?: null];
     }
 
     /** The same need, read back from a line already in the cart. */
@@ -60,6 +60,7 @@ class PrintShopRouter
             array_values((array) ($options['print_areas'] ?? [])),
             is_array($options['layout'] ?? null) ? $options['layout'] : null,
             (int) $item->quantity,
+            $options['printing_method'] ?? null,
         );
     }
 
@@ -74,6 +75,7 @@ class PrintShopRouter
             array_values((array) ($options['print_areas'] ?? [])),
             is_array($options['layout'] ?? null) ? $options['layout'] : null,
             (int) $item->quantity,
+            $options['printing_method'] ?? null,
         );
     }
 
@@ -108,6 +110,7 @@ class PrintShopRouter
                 'branchOfferingVariants',
                 'branchPrintAreas' => fn ($query) => $query->where('is_active', true),
                 'branchPrintAreas.branchPrintCapabilities' => fn ($query) => $query->where('is_active', true),
+                'branchPrintAreas.branchPrintCapabilities.printingMethod',
                 'branchPrintAreas.branchPrintCapabilities.branchPricingRules' => fn ($query) => $query->where('is_active', true),
             ])
             ->whereIn('product_id', $productIds)
@@ -177,6 +180,7 @@ class PrintShopRouter
                 'branchOfferingVariants',
                 'branchPrintAreas' => fn ($query) => $query->where('is_active', true),
                 'branchPrintAreas.branchPrintCapabilities' => fn ($query) => $query->where('is_active', true),
+                'branchPrintAreas.branchPrintCapabilities.printingMethod',
             ])
             ->where('product_id', $needs->first()['product']->id)
             ->where('is_active', true)
@@ -221,9 +225,23 @@ class PrintShopRouter
             if ($area->branchPrintCapabilities->isEmpty()) {
                 return ['rank' => 2, 'text' => 'المطبعة لا تملك طريقة طباعة مفعّلة على «'.$area->name.'».'];
             }
+
+            if ($this->capabilitiesFor($area, $need['method'] ?? null)->isEmpty()) {
+                return ['rank' => 2, 'text' => 'المطبعة لا تقدّم تقنية الطباعة التي اخترتها على «'.$area->name.'». اختر تقنية أخرى.'];
+            }
         }
 
         return null;
+    }
+
+    /** The area's printing methods; only the one the customer chose when they chose one. */
+    private function capabilitiesFor(BranchPrintArea $area, ?string $method)
+    {
+        if (! $method) {
+            return $area->branchPrintCapabilities;
+        }
+
+        return $area->branchPrintCapabilities->filter(fn ($capability) => $capability->printingMethod?->code === $method)->values();
     }
 
     /** The city of the customer's default address (or their newest one); null when they have none. */
@@ -348,7 +366,7 @@ class PrintShopRouter
             }
 
             $squareCm = ($wanted['widthCm'] ?? 0) * ($wanted['heightCm'] ?? 0);
-            $cheapest = $area->branchPrintCapabilities
+            $cheapest = $this->capabilitiesFor($area, $need['method'] ?? null)
                 ->map(function ($capability) use ($squareCm) {
                     $rules = $capability->branchPricingRules;
                     $fixed = (float) ($rules->firstWhere('pricing_type', 'print_method_addon')?->amount ?? 0);

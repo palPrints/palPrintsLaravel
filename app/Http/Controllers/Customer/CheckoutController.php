@@ -15,6 +15,17 @@ use Illuminate\Validation\Rule;
 
 class CheckoutController extends Controller
 {
+    /** Checkout value of each payment method => its switch in Settings > Payment methods. */
+    private const PAYMENT_METHODS = ['palpay' => 'palpay', 'jawwal' => 'jawwal_pay', 'bank' => 'bank_of_palestine'];
+
+    /** The methods the admin has switched on. */
+    private function enabledPaymentMethods(): array
+    {
+        $switches = \App\Support\PlatformSettings::group('payments');
+
+        return array_keys(array_filter(self::PAYMENT_METHODS, fn (string $key) => (bool) ($switches[$key] ?? false)));
+    }
+
     public function show(Request $request): View|RedirectResponse
     {
         $cart = $this->activeCart($request);
@@ -25,7 +36,7 @@ class CheckoutController extends Controller
 
         $items = $cart->items->map(fn (CartItem $item) => $this->presentItem($item));
         $subtotal = $items->sum('total_price');
-        $shippingCost = $subtotal > 0 ? 5.00 : 0.00;
+        $shippingCost = $subtotal > 0 ? (float) \App\Support\PlatformSettings::get('fees', 'shipping_cost', 5) : 0.00;
         $totalAmount = $subtotal + $shippingCost;
         $addresses = $request->user()->addresses()
             ->where('is_deleted', false)
@@ -38,6 +49,7 @@ class CheckoutController extends Controller
             'cart' => $cart,
             'items' => $items,
             'addresses' => $addresses,
+            'paymentMethods' => $this->enabledPaymentMethods(),
             'subtotal' => $subtotal,
             'shippingCost' => $shippingCost,
             'totalAmount' => $totalAmount,
@@ -59,7 +71,7 @@ class CheckoutController extends Controller
             'street' => ['required_without:address_id', 'nullable', 'string', 'max:180'],
             'building' => ['nullable', 'string', 'max:120'],
             'apartment' => ['nullable', 'string', 'max:120'],
-            'payment_method' => ['required', 'string', 'in:palpay,jawwal,bank'],
+            'payment_method' => ['required', 'string', Rule::in($this->enabledPaymentMethods())],
             'payment_receipt' => ['required_if:payment_method,palpay,jawwal,bank', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);

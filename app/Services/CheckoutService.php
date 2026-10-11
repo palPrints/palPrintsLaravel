@@ -49,7 +49,7 @@ class CheckoutService
 
             $address = $this->resolveAddress($user, $data);
             $subtotal = $cart->items->sum(fn (CartItem $item) => (float) $item->unit_price * (int) $item->quantity);
-            $shippingCost = $subtotal > 0 ? 5.00 : 0.00;
+            $shippingCost = $subtotal > 0 ? (float) \App\Support\PlatformSettings::get('fees', 'shipping_cost', 5) : 0.00;
             $discountAmount = 0.00;
             $totalAmount = max(0, $subtotal + $shippingCost - $discountAmount);
 

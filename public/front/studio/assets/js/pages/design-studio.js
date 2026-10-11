@@ -454,6 +454,8 @@
       object.set({ borderColor: outside ? "#dc3f45" : "#1677ff", cornerColor: outside ? "#dc3f45" : "#1677ff" });
     });
     const hasOverflow = outsideCount > 0;
+    // Saved with the draft, so the preview step (and the cart) can refuse a design that does not fit its print area.
+    if (app.design?.areas?.[app.area?.id]) app.design.areas[app.area.id].overflow = hasOverflow;
     const formatConflict = elements.printZone.classList.contains("has-format-conflict");
     elements.printZone.classList.toggle("has-overflow", hasOverflow);
     elements.printZone.setAttribute("aria-label", hasOverflow
@@ -1257,6 +1259,13 @@
   }
 
   addEventListener("beforeunload", () => { saveActiveArea(); commitDesign(); app.objectUrls.forEach(url => URL.revokeObjectURL(url)); });
-  window.PALPRINTS_DESIGN_STUDIO_EXPORT = Object.freeze({ createPrintAreaCanvas: createPrintAreaExport });
+  /** Names of the print areas (of the product being designed) that hold something outside the print zone. */
+  function overflowAreaNames() {
+    if (!app.design || !app.product) return [];
+    updatePrintZoneFeedback(); saveActiveArea(); commitDesign();
+    const areas = app.drafts[app.product.id]?.areas || {};
+    return app.product.editor.printAreas.filter(area => areas[area.id]?.overflow).map(area => area.name || area.id);
+  }
+  window.PALPRINTS_DESIGN_STUDIO_EXPORT = Object.freeze({ createPrintAreaCanvas: createPrintAreaExport, overflowAreaNames });
   void init();
 })(window, document);

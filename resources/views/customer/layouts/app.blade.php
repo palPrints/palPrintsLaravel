@@ -16,7 +16,8 @@
     @stack('styles')
     <link rel="stylesheet" href="{{ asset('front/shared/table-pagination.css') }}?v={{ filemtime(public_path('front/shared/table-pagination.css')) }}">
 </head>
-<body class="@yield('body-class', 'storefront-page')" data-authenticated="{{ auth()->check() ? 'true' : 'false' }}">
+@php($isGuestShop = ! auth()->check() || auth()->user()->isGuestShopper())
+<body class="@yield('body-class', 'storefront-page'){{ $isGuestShop ? ' guest-shop' : '' }}" data-authenticated="{{ auth()->check() && ! auth()->user()->isGuestShopper() ? 'true' : 'false' }}" data-shopper="true">
     <script>
         // Toggled from the settings page's "الوضع الليلي" switch. Scoped to settings-page only
         // (not a global data-bs-theme flip) so it can't collide with the separate, page-specific
@@ -28,7 +29,9 @@
     {{-- The design studio and the design preview are shared with designers: they get their own top bar and menu, not the shop's. --}}
     @php($isDesignerView = auth()->user()?->hasRole('designer'))
     @include($isDesignerView ? 'customer.partials.designer-header' : 'customer.partials.header')
-    @include($isDesignerView ? 'customer.partials.designer-sidebar' : 'customer.partials.sidebar')
+    @unless ($isGuestShop)
+        @include($isDesignerView ? 'customer.partials.designer-sidebar' : 'customer.partials.sidebar')
+    @endunless
 
     <main id="@yield('main-id', 'mainContent')" class="store-main @yield('main-class')">
         @yield('content')

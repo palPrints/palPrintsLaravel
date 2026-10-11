@@ -16,9 +16,11 @@
                 </span>
             </a>
 
+            @unless ($isGuestShop ?? false)
             <button type="button" class="icon-button sidebar-toggle" id="sidebarToggle" aria-label="فتح القائمة الجانبية" aria-expanded="false" aria-controls="storeSidebar">
                 <i class="bi bi-list" aria-hidden="true"></i>
             </button>
+            @endunless
 
             <form class="store-search" id="productSearchForm" role="search">
                 <span class="store-search__icon" aria-hidden="true">
@@ -62,6 +64,10 @@
             </nav>
 
             <div class="store-header__actions" aria-label="إجراءات الحساب">
+                @if ($isGuestShop ?? false)
+                    <a href="{{ route('login') }}" class="store-guest-link">تسجيل الدخول</a>
+                    <a href="{{ route('register') }}" class="store-guest-link store-guest-link--primary">ابدأ الآن</a>
+                @else
                 <div class="profile-menu">
                     <button type="button" class="icon-button" id="profileMenuToggle" aria-label="الملف الشخصي" aria-expanded="false" aria-controls="profileDropdown">
                         <i class="bi bi-person" aria-hidden="true"></i>
@@ -95,7 +101,7 @@
                             @forelse($customerLatestNotifications as $notification)
                                 <form method="POST" action="{{ route('customer.notifications.read', $notification) }}">
                                     @csrf
-                                    <button type="submit" class="notification-item{{ $notification->is_read ? '' : ' is-unread' }}">
+                                    <button type="submit" data-no-press class="notification-item{{ $notification->is_read ? '' : ' is-unread' }}">
                                         <span class="notification-item__icon"><i class="bi {{ $notificationIcons[$notification->type] ?? 'bi-bell' }}" aria-hidden="true"></i></span>
                                         <span class="notification-item__body">
                                             <strong>{{ $notification->title }}</strong>
@@ -115,6 +121,7 @@
                         @endif
                     </div>
                 </div>
+                @endif
                 <span class="store-header__actions-divider" aria-hidden="true"></span>
                 <div class="cart-menu">
                     <button type="button" class="icon-button" id="cartButton" aria-label="{{ $customerCartCount ? 'سلة التسوق، '.$customerCartCount.' منتجات' : 'سلة التسوق، فارغة' }}" aria-expanded="false" aria-controls="cartDropdown">

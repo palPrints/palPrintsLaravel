@@ -11,6 +11,7 @@ use App\Models\PrintFile;
 use App\Models\Product;
 use App\Models\Variant;
 use App\Services\PrintShopRouter;
+use App\Support\PrintingMethodOptions;
 use App\Support\CatalogProductData;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -26,9 +27,8 @@ class CartController extends Controller
 {
     public function index(Request $request): View
     {
-        $cart = $this->activeCart($request);
-
-        $items = $cart->items()->with(['product', 'design', 'printFiles'])->get()->map(function (CartItem $item) {
+        // A visitor who has added nothing yet has no cart at all; show it empty without creating anything.
+        $items = ($request->user() ? $this->activeCart($request)->items() : CartItem::whereRaw('1 = 0'))->with(['product', 'design', 'printFiles'])->get()->map(function (CartItem $item) {
             $options = $item->selected_options ?? [];
 
             $designImage = null;
@@ -170,6 +170,7 @@ class CartController extends Controller
         $validated = $request->validate([
             'product_code' => ['required', 'in:TSHIRT-CLASSIC,HOODIE-PREMIUM,MUG-CERAMIC'],
             'design_id' => ['required', 'integer'],
+            'printing_method' => ['nullable', 'string', 'max:30'],
             'groups' => ['required', 'array', 'min:1', 'max:99'],
             'groups.*.color_id' => ['required', 'string', 'max:40'],
             'groups.*.color_name' => ['nullable', 'string', 'max:40'],
@@ -205,6 +206,7 @@ class CartController extends Controller
 
         $unitPrice = (float) ($design->selling_price ?: $design->base_price);
         $cart = $this->activeCart($request);
+        $method = $this->printingMethod($validated['product_code'], $validated['printing_method'] ?? null);
 
         $router = app(PrintShopRouter::class);
         $route = $this->routeCart($request, $cart, collect($validated['groups'])->map(fn ($group) => $router->need(
@@ -213,6 +215,7 @@ class CartController extends Controller
             $group['print_areas'] ?? [],
             null,
             (int) $group['quantity'],
+            $method['code'] ?? null,
         ))->all(), null, 'product_code');
 
         // The designer's uploaded pictures are shown through the link that only works while the design is published.
@@ -228,6 +231,8 @@ class CartController extends Controller
                 'color' => $group['color_name'] ?? $group['color_id'],
                 'size' => $group['size_name'] ?? $group['size_id'],
                 'print_areas' => $group['print_areas'] ?? [],
+                'printing_method' => $method['code'] ?? null,
+                'printing_method_name' => $method['name'] ?? null,
                 // How the design looked in the preview (colour and print zone), so the cart can redraw it the same way.
                 'mockup' => $this->cleanMockup((array) ($group['mockup'] ?? []), $designFiles),
             ]);
@@ -265,6 +270,7 @@ class CartController extends Controller
         $validated = $request->validate([
             'product_code' => ['required', 'in:TSHIRT-CLASSIC,HOODIE-PREMIUM,MUG-CERAMIC'],
             'design_name' => ['nullable', 'string', 'max:120'],
+            'printing_method' => ['nullable', 'string', 'max:30'],
             'groups' => ['required', 'json'],
             'layout' => ['nullable', 'json', 'max:200000'],
             'files' => ['nullable', 'array', 'max:20'],
@@ -304,12 +310,14 @@ class CartController extends Controller
         $cart = $this->activeCart($request);
         $router = app(PrintShopRouter::class);
         $layoutData = ($validated['layout'] ?? null) ? json_decode($validated['layout'], true) : null;
+        $method = $this->printingMethod($validated['product_code'], $validated['printing_method'] ?? null);
         $route = $this->routeCart($request, $cart, $groups->map(fn ($group) => $router->need(
             $product,
             collect([$this->matchVariant($variants, $group['color_id'], $group['size_id'])->id]),
             $group['print_areas'] ?? [],
             is_array($layoutData) ? $layoutData : null,
             (int) $group['quantity'],
+            $method['code'] ?? null,
         ))->all(), null, 'product_code');
         $offering = $route['offerings'][$product->id];
         $user = $request->user();
@@ -332,6 +340,8 @@ class CartController extends Controller
                     'color' => $group['color_name'] ?? $group['color_id'],
                     'size' => $group['size_name'] ?? $group['size_id'],
                     'print_areas' => $group['print_areas'] ?? [],
+                    'printing_method' => $method['code'] ?? null,
+                    'printing_method_name' => $method['name'] ?? null,
                     'design_name' => $validated['design_name'] ?? null,
                     'layout' => $layout,
                     'branch_product_offering_id' => $offering->id,
@@ -387,6 +397,29 @@ class CartController extends Controller
      * @param  array<string, string>  $assetFiles  studio asset id => preview URL of the saved file
      * @return array<string, mixed>|null
      */
+    /**
+     * The printing method the customer chose, checked against what the print shops really offer for this product.
+     * Products with a single method (or none) have nothing to choose, so they return null.
+     *
+     * @return array{code: string, name: string}|null
+     */
+    private function printingMethod(string $productCode, ?string $chosen): ?array
+    {
+        $options = collect(PrintingMethodOptions::forPreview()[strtoupper($productCode)] ?? []);
+
+        if ($options->isEmpty()) {
+            return null;
+        }
+
+        $method = $options->firstWhere('id', $chosen);
+
+        if (! $method) {
+            throw ValidationException::withMessages(['printing_method' => 'اختر تقنية الطباعة قبل الإضافة إلى السلة.']);
+        }
+
+        return ['code' => $method['id'], 'name' => $method['name']];
+    }
+
     private function cleanMockup(array $mockup, array $assetFiles): ?array
     {
         $number = fn ($value, float $min = -500, float $max = 500) => max($min, min($max, round((float) $value, 3)));
@@ -514,7 +547,7 @@ class CartController extends Controller
      */
     public function printFilePreview(Request $request, PrintFile $printFile)
     {
-        abort_unless($printFile->user_id === $request->user()->id, 403);
+        abort_unless($request->user() && $printFile->user_id === $request->user()->id, 403);
         abort_if($printFile->status === PrintFile::STATUS_DELETED, 404);
 
         $isPicture = str_starts_with((string) $printFile->mime_type, 'image/');
@@ -611,7 +644,7 @@ class CartController extends Controller
 
     private function authorizeItem(Request $request, CartItem $cartItem): void
     {
-        abort_unless($cartItem->cart->user_id === $request->user()->id, 403);
+        abort_unless($request->user() && $cartItem->cart->user_id === $request->user()->id, 403);
     }
 
     private function detectPageCount(UploadedFile $file, string $extension): ?int

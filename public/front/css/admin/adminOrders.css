@@ -406,3 +406,47 @@
 .manual-payment-review .dialog-save-button { color: #fff; background: var(--blue); }
 .manual-payment-review .dialog-save-button:hover { background: #0868e8; }
 .manual-payment-review .dialog-save-button:disabled { opacity: .6; cursor: default; }
+
+/* Orders a shop turned down: the suggested shops as cards, the rest in a list. */
+.reroute-section[hidden] { display: none; }
+.reroute-options { display: grid; gap: 8px; margin-top: 10px; }
+.reroute-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 12px;
+  background: rgba(37, 99, 235, 0.04);
+  cursor: pointer;
+}
+.reroute-option:has(input:checked) { border-color: #2563eb; background: rgba(37, 99, 235, 0.1); }
+.reroute-option span { display: grid; gap: 2px; }
+.reroute-option small { color: #64748b; }
+.reroute-others { display: grid; gap: 6px; margin-top: 12px; font-weight: 700; }
+.reroute-others[hidden] { display: none; }
+.reroute-actions { margin-top: 14px; display: flex; justify-content: flex-start; }
+.reroute-actions .dialog-save-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 7px;
+  color: #fff;
+  background: var(--blue);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 750;
+}
+.reroute-actions .dialog-save-button:hover { background: #0868e8; }
+.reroute-actions .dialog-save-button:disabled { opacity: .6; cursor: default; }
+
+.order-items-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.order-items-list li { display: grid; gap: 5px; padding: 9px 11px; background: var(--soft); border: 1px solid var(--border); border-radius: 7px; }
+.order-items-list li > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.order-items-list strong { color: var(--navy); font-size: 12px; font-weight: 800; }
+.order-items-list bdi { color: var(--blue); font-size: 12px; font-weight: 800; white-space: nowrap; }
+.order-items-list small { color: var(--muted); font-size: 10px; font-weight: 650; line-height: 1.8; }
+.dialog-customer-details .dialog-wide { grid-column: 1 / -1; }
+.manual-payment-review [hidden] { display: none !important; }

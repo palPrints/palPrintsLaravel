@@ -15,7 +15,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth/apple/callback',
         ]);
 
+        $middleware->web(append: [
+            \App\Http\Middleware\MaintenanceMode::class,
+            \App\Http\Middleware\MergeGuestCart::class,
+        ]);
+
         $middleware->alias([
+            'shopper' => \App\Http\Middleware\ShopperAccess::class,
             'active' => \App\Http\Middleware\CheckUserActive::class,
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
