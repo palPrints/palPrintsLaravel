@@ -86,6 +86,25 @@
     termsError.textContent = terms.checked ? "" : "يجب الموافقة على الشروط والأحكام.";
   });
 
+  /* Google sign-up needs the chosen role and the terms consent, so they travel in the link. */
+  const googleRegister = document.getElementById("googleRegister");
+  if (googleRegister) {
+    googleRegister.addEventListener("click", function (event) {
+      event.preventDefault();
+      if (!terms.checked) {
+        termsError.textContent = "يجب الموافقة على الشروط والأحكام.";
+        formStatus.textContent = "علّم على الموافقة على الشروط والأحكام أولًا، ثم اختر التسجيل عبر Google.";
+        terms.scrollIntoView({ block: "center", behavior: "smooth" });
+        return;
+      }
+      formStatus.textContent = "";
+      const url = new URL(googleRegister.href, window.location.origin);
+      url.searchParams.set("account_type", form.querySelector('input[name="account_type"]:checked').value);
+      url.searchParams.set("terms", "1");
+      window.location.assign(url.href);
+    });
+  }
+
   form.addEventListener("submit", function (event) {
     if (submitting) {
       event.preventDefault();

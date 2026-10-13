@@ -71,7 +71,7 @@ test('designer can update profile data and upload a profile image', function () 
             'locale' => 'en',
             'name' => 'Updated Designer',
             'email' => 'UPDATED-DESIGNER@EXAMPLE.COM',
-            'phone' => '+970599000111',
+            'phone' => '0599 000-111',
             'portfolio_url' => 'https://behance.net/updated',
             'skills' => 'Branding, Illustrator, Branding',
             'bio' => 'Updated professional bio.',
@@ -85,7 +85,7 @@ test('designer can update profile data and upload a profile image', function () 
 
     expect($designer->name)->toBe('Updated Designer')
         ->and($designer->email)->toBe('updated-designer@example.com')
-        ->and($designer->phone)->toBe('+970599000111')
+        ->and($designer->phone)->toBe('0599000111')
         ->and($designer->email_verified_at)->toBeNull()
         ->and($profile->full_name)->toBe('Updated Designer')
         ->and($profile->portfolio_url)->toBe('https://behance.net/updated')
@@ -124,6 +124,54 @@ test('designer profile update returns localized validation errors', function () 
         ->and(session('errors')->first('portfolio_url'))->toBe('Enter a valid portfolio link starting with http or https.');
 });
 
+test('phone must start with 059 or 056 and be 10 digits', function (string $phone, bool $valid) {
+    $designer = designerProfileTestUser();
+
+    $response = $this->actingAs($designer)
+        ->from(route('designer.profile'))
+        ->patch(route('designer.profile.update'), [
+            'locale' => 'ar',
+            'name' => 'مصمم',
+            'email' => 'phone-check@example.com',
+            'phone' => $phone,
+            'bio' => 'نبذة',
+            'skills' => 'تصميم',
+            'portfolio_url' => 'https://example.com/me',
+        ]);
+
+    if ($valid) {
+        $response->assertSessionDoesntHaveErrors('phone');
+    } else {
+        $response->assertSessionHasErrors('phone');
+        expect($designer->fresh()->phone)->not->toBe($phone);
+    }
+})->with([
+    '059 valid' => ['0591234567', true],
+    '056 valid' => ['0561234567', true],
+    'spaces and dash are cleaned' => ['059 123-4567', true],
+    '052 prefix' => ['0521234567', false],
+    '9 digits' => ['059123456', false],
+    '11 digits' => ['05912345678', false],
+    'country code' => ['+970591234567', false],
+    'letters' => ['059abc4567', false],
+]);
+
+test('phone is optional', function () {
+    $designer = designerProfileTestUser();
+
+    $this->actingAs($designer)
+        ->patch(route('designer.profile.update'), [
+            'locale' => 'ar',
+            'name' => 'مصمم',
+            'email' => 'nophone@example.com',
+            'phone' => '',
+            'bio' => 'نبذة',
+            'skills' => 'تصميم',
+            'portfolio_url' => 'https://example.com/me',
+        ])
+        ->assertSessionDoesntHaveErrors('phone');
+});
+
 test('complete designer profile can submit an approval request', function () {
     $designer = designerProfileTestUser();
 
@@ -134,6 +182,7 @@ test('complete designer profile can submit an approval request', function () {
             'email' => 'complete@example.com',
             'bio' => 'نبذة مهنية للمصمم.',
             'skills' => 'تصميم، هوية بصرية',
+            'portfolio_url' => 'https://example.com/portfolio',
         ])
         ->assertRedirect(route('designer.profile'));
 
@@ -146,6 +195,67 @@ test('complete designer profile can submit an approval request', function () {
 
     expect($designer->fresh()->designerProfile->approval_status)->toBe('submitted')
         ->and($designer->approvalRequests()->count())->toBe(1);
+});
+
+test('a profile missing the portfolio link is not marked complete and cannot be submitted', function () {
+    $designer = designerProfileTestUser();
+
+    $this->actingAs($designer)
+        ->patch(route('designer.profile.update'), [
+            'locale' => 'ar',
+            'name' => 'مصمم ناقص',
+            'email' => 'partial@example.com',
+            'bio' => 'نبذة مهنية للمصمم.',
+            'skills' => 'تصميم، هوية بصرية',
+        ])
+        ->assertRedirect(route('designer.profile'));
+
+    expect($designer->fresh()->designerProfile->profile_completed_at)->toBeNull();
+
+    $this->actingAs($designer)
+        ->post(route('onboarding.submit'))
+        ->assertSessionHasErrors('profile');
+
+    expect($designer->fresh()->designerProfile->approval_status)->toBe('draft')
+        ->and($designer->approvalRequests()->count())->toBe(0);
+});
+
+test('a stale completed flag cannot be used to submit a profile whose saved data is incomplete', function () {
+    $designer = designerProfileTestUser([], [
+        'bio' => 'نبذة',
+        'skills' => ['تصميم'],
+        'portfolio_url' => null,
+        'profile_completed_at' => now(),
+    ]);
+
+    $this->actingAs($designer)
+        ->post(route('onboarding.submit'))
+        ->assertSessionHasErrors('profile');
+
+    expect(session('errors')->first('profile'))->toContain('رابط معرض الأعمال')
+        ->and($designer->fresh()->designerProfile->approval_status)->toBe('draft')
+        ->and($designer->approvalRequests()->count())->toBe(0);
+});
+
+test('the send for approval button only shows once the saved profile is complete', function () {
+    $incomplete = designerProfileTestUser([], ['bio' => 'نبذة', 'skills' => ['تصميم'], 'profile_completed_at' => now()]);
+
+    $this->actingAs($incomplete)
+        ->get(route('designer.profile'))
+        ->assertOk()
+        ->assertDontSee('إرسال للاعتماد');
+
+    $complete = designerProfileTestUser([], [
+        'bio' => 'نبذة',
+        'skills' => ['تصميم'],
+        'portfolio_url' => 'https://example.com/me',
+        'profile_completed_at' => now(),
+    ]);
+
+    $this->actingAs($complete)
+        ->get(route('designer.profile'))
+        ->assertOk()
+        ->assertSee('إرسال للاعتماد');
 });
 
 test('non designer accounts cannot access designer profile routes', function () {

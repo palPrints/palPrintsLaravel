@@ -5,6 +5,7 @@
 @push('styles')
     <link rel="stylesheet" href="{{ asset('front/css/admin/adminEarningsPayments.css').'?v='.filemtime(public_path('front/css/admin/adminEarningsPayments.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/css/admin/adminDesigns.css').'?v='.filemtime(public_path('front/css/admin/adminDesigns.css')) }}">
+    <link rel="stylesheet" href="{{ asset('front/css/admin/adminDesignAreas.css').'?v='.filemtime(public_path('front/css/admin/adminDesignAreas.css')) }}">
 @endpush
 
 @php
@@ -66,6 +67,7 @@
                                 data-colors="{{ $design['colors'] }}"
                                 data-preview-color="{{ $design['previewColor'] }}"
                                 data-reason="{{ $design['rejectionReason'] }}"
+                                data-details="{{ json_encode($design['details'], JSON_UNESCAPED_UNICODE) }}"
                                 data-review-url="{{ route('admin.designs.review', $design['id']) }}">
                                 <td><code>{{ $design['code'] }}</code></td>
                                 <td><strong>{{ $design['title'] }}</strong></td>
@@ -98,14 +100,19 @@
             <div><dt>المنتج</dt><dd id="dialogProduct"></dd></div>
             <div><dt>تاريخ الرفع</dt><dd id="dialogDate"></dd></div>
             <div data-detail-row="audience"><dt>الفئة</dt><dd id="dialogAudience"></dd></div>
-            <div data-detail-row="previewColor"><dt>لون المعاينة</dt><dd id="dialogPreviewColor"></dd></div>
-            <div data-detail-row="colors"><dt>الألوان المناسبة</dt><dd id="dialogColors"></dd></div>
+            <div data-detail-row="previewColor"><dt>لون المصمم</dt><dd id="dialogPreviewColor"></dd></div>
             <div data-detail-row="sizes"><dt>المقاسات المناسبة</dt><dd id="dialogSizes"></dd></div>
             <div><dt>تكلفة المنتج</dt><dd id="dialogBasePrice"></dd></div>
             <div><dt>سعر البيع</dt><dd id="dialogSellingPrice"></dd></div>
             <div><dt>ربح المصمم من كل قطعة</dt><dd id="dialogProfit"></dd></div>
             <div id="dialogReasonRow" hidden><dt>سبب الرفض</dt><dd id="dialogReason"></dd></div>
         </dl>
+        <section class="design-areas-section" id="dialogAreasSection" hidden>
+            <h3>التصميم على مناطق الطباعة</h3>
+            <p class="design-areas-note" id="dialogAreasNote"></p>
+            <div class="design-colors" id="dialogColorPicker" role="radiogroup" aria-label="معاينة التصميم على لون" hidden></div>
+            <div class="design-areas" id="dialogAreas"></div>
+        </section>
         <footer id="dialogActions"><button class="approve-design" id="approveDesign" type="button"><i class="bi bi-check-circle"></i>اعتماد التصميم</button><button class="reject-design" id="rejectDesign" type="button">رفض التصميم</button></footer>
     </div>
 </dialog>
@@ -126,5 +133,9 @@
 @endsection
 
 @push('scripts')
+    {{-- The studio's product pictures and print zones, and its clip-art list: the dialog redraws the design on every print area. --}}
+    <script>window.palPrintsStudioBase = @json(asset('front/studio').'/');</script>
+    <script src="{{ asset('front/studio/assets/js/pages/design-studio-product-catalog.js') }}"></script>
+    <script src="{{ asset('front/studio/assets/js/pages/design-studio-graphics.js') }}"></script>
     <script src="{{ asset('front/js/admin/adminDesigns.js').'?v='.filemtime(public_path('front/js/admin/adminDesigns.js')) }}"></script>
 @endpush

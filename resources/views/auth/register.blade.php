@@ -109,6 +109,14 @@
             <label class="terms-option"><input type="checkbox" id="terms" name="terms" value="1" @checked(old('terms')) required><span>أوافق على <a href="{{ route('terms') }}" target="_blank" rel="noopener">الشروط والأحكام</a> و<a href="{{ route('privacy') }}" target="_blank" rel="noopener">سياسة الخصوصية</a></span></label>
             <p class="terms-error" id="termsError" aria-live="polite">{{ $err('terms') }}</p>
             <button class="submit-button" type="submit"><span>إنشاء حساب عميل</span><i class="bi bi-arrow-left"></i></button>
+            @if ($registrationOpen)
+              <div class="social-divider" aria-hidden="true"><span>أو</span></div>
+              <a class="social-register-button" id="googleRegister" href="{{ route('social.redirect', ['provider' => 'google', 'source' => 'register']) }}">
+                <i class="bi bi-google" aria-hidden="true"></i>
+                <span>التسجيل باستخدام Google</span>
+              </a>
+              @error('social')<p class="terms-error" role="alert">{{ $message }}</p>@enderror
+            @endif
             <p class="form-status is-error" id="formStatus" role="status" aria-live="polite"></p>
             <p class="login-prompt">لديك حساب بالفعل؟ <a href="{{ route('login') }}">تسجيل الدخول</a></p>
           </div>

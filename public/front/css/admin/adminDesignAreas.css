@@ -1,0 +1,61 @@
+/* Admin designs dialog: facts as tiles, the design drawn on every print area, and a colour picker to try it on. */
+.design-dialog { width: min(900px, calc(100% - 28px)); overflow-x: hidden; scrollbar-width: thin; scrollbar-color: #bcd1ee transparent; }
+.design-dialog ::selection { color: #fff; background: var(--blue); }
+
+/* Facts: small tiles in two columns instead of a long two-column list */
+.dialog-metadata { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; padding: 20px 26px 22px; }
+.dialog-metadata > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 10px 14px 11px; background: #f7faff; border: 1px solid #e3ecf8; border-radius: 10px; }
+.dialog-metadata dt { color: var(--muted); font-size: 12px; font-weight: 700; }
+.dialog-metadata dd { min-width: 0; margin: 0; font-size: 14px; font-weight: 800; overflow-wrap: anywhere; }
+#dialogReasonRow { grid-column: 1 / -1; background: #fff5f5; border-color: #f6d4d4; }
+#dialogReasonRow dd { color: #b91c1c; }
+
+/* The sent design on every area */
+.design-areas-section { margin: 0; padding: 22px 26px 26px; background: #f6f9fe; border-top: 1px solid var(--border); }
+.design-areas-section[hidden] { display: none; }
+.design-areas-section h3 { margin: 0 0 4px; color: var(--navy); font-size: 17px; font-weight: 800; }
+.design-areas-note { margin: 0 0 14px; color: var(--muted); font-size: 13px; font-weight: 600; line-height: 1.7; }
+
+/* Colour picker */
+.design-colors { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+.design-colors[hidden] { display: none; }
+.design-color { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 4px 14px 4px 12px; color: var(--navy); background: #fff; border: 1px solid #d8e4f4; border-radius: 999px; cursor: pointer; font: inherit; font-size: 13px; font-weight: 700; transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease; }
+.design-color i { width: 18px; height: 18px; border: 1px solid rgb(11 31 58 / 20%); border-radius: 50%; }
+.design-color:hover { border-color: #9cc3f4; }
+.design-color[aria-checked="true"] { background: #eaf3ff; border-color: var(--blue); box-shadow: 0 0 0 3px rgb(51 133 245 / 16%); }
+.design-color:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+/* Area cards */
+.design-areas { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.design-area { margin: 0; padding: 10px; background: #fff; border: 1px solid #e1eaf7; border-radius: 14px; box-shadow: 0 2px 8px rgb(11 31 58 / 5%); }
+.design-area.is-empty { background: #fafbfd; box-shadow: none; }
+.design-area figcaption { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding-inline: 2px; color: var(--navy); font-size: 14px; font-weight: 800; }
+.design-area figcaption small { padding: 2px 9px; color: var(--muted); background: #eef2f7; border-radius: 999px; font-size: 11.5px; font-weight: 800; }
+.design-area.has-design figcaption small { color: #14532d; background: #dcfce7; }
+
+.design-area__stage { position: relative; background: radial-gradient(circle at 50% 45%, #fff 0, #f1f6fd 78%); border-radius: 10px; overflow: hidden; }
+.design-area__stage > img { display: block; width: 100%; height: auto; }
+.design-area__tint { position: absolute; inset: 0; mix-blend-mode: multiply; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+.design-area__zone { position: absolute; }
+.design-area__item { position: absolute; display: block; max-width: none; background-repeat: no-repeat; background-position: center; background-size: contain; transform-origin: center; }
+.design-area__text { position: absolute; display: block; overflow: hidden; line-height: 1.2; white-space: pre-wrap; word-break: break-word; }
+
+/* Swatches in the facts (the designer's own colour) */
+.design-swatches { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.design-swatch { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 800; }
+.design-swatch i { width: 16px; height: 16px; border: 1px solid rgb(11 31 58 / 20%); border-radius: 50%; }
+
+/* Keep the decision buttons in reach while the long dialog scrolls */
+.design-dialog footer { position: sticky; bottom: 0; background: #fff; box-shadow: 0 -8px 18px rgb(11 31 58 / 6%); }
+
+@media (max-width: 640px) {
+  .dialog-metadata { grid-template-columns: 1fr; padding-inline: 16px; }
+  .design-areas-section { padding-inline: 16px; }
+  .design-areas { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+}
+@media (max-width: 400px) {
+  .design-areas { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .design-color { transition: none; }
+}

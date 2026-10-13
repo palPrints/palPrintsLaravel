@@ -111,6 +111,9 @@
                     <label class="acct-field"><span>كلمة المرور الجديدة</span><span class="acct-input"><i class="bi bi-key" aria-hidden="true"></i><input name="password" type="password" minlength="8" autocomplete="new-password" required></span><small>8 أحرف على الأقل.</small></label>
                     <label class="acct-field"><span>تأكيد كلمة المرور</span><span class="acct-input"><i class="bi bi-key-fill" aria-hidden="true"></i><input name="password_confirmation" type="password" minlength="8" autocomplete="new-password" required></span><small class="acct-field-error" id="passwordMatchError">كلمتا المرور غير متطابقتين.</small></label>
                 </div>
+                <div class="acct-grid is-single">
+                    @include('partials.password-code-field', ['field' => 'acct-field', 'shell' => 'acct-input'])
+                </div>
                 <footer class="acct-actions"><button type="submit" class="acct-button is-primary"><i class="bi bi-shield-check" aria-hidden="true"></i>تحديث الأمان</button></footer>
             </form>
         </section>
@@ -128,7 +131,7 @@
             <header class="acct-section-head"><span><i class="bi bi-patch-check" aria-hidden="true"></i></span><div><h2>اعتماد حساب المطبعة</h2><p>تابع تفعيل البريد وحالة مراجعة حساب المطبعة.</p></div></header>
             <div class="acct-requirements">
                 @foreach ($requirements as $item)
-                    <div class="acct-requirement"><i class="bi {{ $item['icon'] }}" aria-hidden="true"></i><div><strong>{{ $item['title'] }}</strong><p>{{ $item['text'] }}</p></div><span @class(['acct-status', 'is-warning' => $item['warning']])>{{ $item['label'] }}</span></div>
+                    <div class="acct-requirement"><i class="bi {{ $item['icon'] }}" aria-hidden="true"></i><div><strong>{{ $item['title'] }}</strong><p>{{ $item['text'] }}</p></div><span @class(['acct-status', 'is-warning' => $item['warning']])>{{ $item['label'] }}</span>@if ($item['icon'] === 'bi-envelope-check' && $item['warning'])<form method="POST" action="{{ route('verification.send') }}" class="email-verify-form">@csrf<button type="submit" class="email-verify-button"><i class="bi bi-send" aria-hidden="true"></i> أرسل رمز التوثيق</button></form>@endif</div>
                 @endforeach
                 @if ($adminNote && $needsChanges)
                     <div class="acct-note"><i class="bi bi-chat-left-text" aria-hidden="true"></i><span>ملاحظات الإدارة: {{ $adminNote }}</span></div>
@@ -142,7 +145,6 @@
             <header class="acct-section-head"><span><i class="bi bi-sliders" aria-hidden="true"></i></span><div><h2>تفضيلات العرض</h2><p>خصص طريقة ظهور واستخدام المنصة.</p></div></header>
             <div class="acct-options">
                 <div class="acct-option"><div><strong>الوضع الليلي</strong><small>استخدام الألوان الداكنة في واجهة الحساب.</small></div><label class="acct-switch"><input type="checkbox" id="settingsThemeToggle"><span class="acct-switch-track"></span></label></div>
-                <div class="acct-option"><div><strong>تقليل الحركات</strong><small>تقليل مؤثرات الانتقال والحركة.</small></div><label class="acct-switch"><input type="checkbox" id="reduceMotionToggle"><span class="acct-switch-track"></span></label></div>
             </div>
         </section>
 

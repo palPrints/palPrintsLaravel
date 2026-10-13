@@ -7,13 +7,23 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Support\EmailVerificationCode;
+use Illuminate\Auth\MustVerifyEmail as VerifiesEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasRoles, Notifiable;
+    // Email verification is on request only: the trait gives the methods; the MustVerifyEmail interface is left out on purpose,
+    // because it would also send the mail at every registration.
+    use HasFactory, HasRoles, Notifiable, VerifiesEmail;
+
+    /** Verification works with a mailed code, not a link. */
+    public function sendEmailVerificationNotification(): void
+    {
+        EmailVerificationCode::send($this);
+    }
 
     protected $fillable = [
         'name',
@@ -40,6 +50,18 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /** Hidden user that holds the cart of a visitor who has not signed in yet (see App\Support\GuestShopper). */
+    public function isGuestShopper(): bool
+    {
+        return str_ends_with((string) $this->email, \App\Support\GuestShopper::EMAIL_DOMAIN);
+    }
+
+    /** Everyone except the hidden guest-cart users. */
+    public function scopeReal($query)
+    {
+        return $query->where('email', 'not like', '%'.\App\Support\GuestShopper::EMAIL_DOMAIN);
     }
 
     public function designerProfile()
@@ -186,8 +208,18 @@ class User extends Authenticatable
 
     public function hasCompletedRoleProfile(): bool
     {
-        return ! $this->supportsOnboarding()
-            || $this->roleProfile()?->profile_completed_at !== null;
+        if (! $this->supportsOnboarding()) {
+            return true;
+        }
+
+        $profile = $this->roleProfile();
+
+        if ($profile?->profile_completed_at === null) {
+            return false;
+        }
+
+        // The stored flag alone is not trusted: the saved designer data must still be complete.
+        return ! $profile instanceof DesignerProfile || $profile->isComplete();
     }
 
     public function hasApprovedBusinessAccount(): bool

@@ -138,6 +138,10 @@
   margin-top: 18px;
 }
 
+.designer-submit-review[hidden] {
+  display: none;
+}
+
 html[data-bs-theme="dark"] .designer-form-errors { color: #fda29b; background: rgb(240 68 56 / 12%); border-color: rgb(240 68 56 / 30%); }
 html[data-bs-theme="dark"] .designer-field-error { color: #fda29b; }
 html[data-bs-theme="dark"] .designer-review-notice.is-approved { background: rgb(22 163 74 / 12%); border-color: rgb(22 163 74 / 30%); }
@@ -167,7 +171,7 @@ html[data-bs-theme="dark"] .designer-review-notice.is-rejected { background: rgb
   transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
 }
 
-.notification-item:hover { border-color: #1677ff; box-shadow: 0 6px 16px rgb(22 119 255 / 10%); transform: translateY(-1px); }
+.notification-item:hover { box-shadow: none; transform: none; }
 .notification-item.is-unread { background: #eff6ff; border-color: #bfdbfe; }
 
 .notification-icon {

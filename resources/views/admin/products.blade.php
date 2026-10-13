@@ -39,6 +39,8 @@
                     data-category-id="{{ $product['categoryId'] }}"
                     data-description="{{ $product['description'] }}"
                     data-image="{{ $product['image'] }}"
+                    data-colors="{{ json_encode($product['colors'], JSON_UNESCAPED_UNICODE) }}"
+                    data-sizes="{{ implode('، ', $product['sizes']) }}"
                     data-status="{{ $product['active'] ? 'active' : 'paused' }}"
                     data-update-url="{{ route('admin.products.update', $product['id']) }}"
                     data-toggle-url="{{ route('admin.products.toggle', $product['id']) }}"
@@ -113,6 +115,16 @@
                 </select>
             </label>
             <label><span>الوصف</span><textarea id="productDescriptionInput" name="description" rows="3" maxlength="1000" placeholder="وصف مختصر للمنتج"></textarea></label>
+            <div class="options-field">
+                <span class="field-label">الألوان المتاحة للمنتج</span>
+                <div class="color-rows" id="colorRows"></div>
+                <button class="add-color-button" type="button" id="addColorButton"><i class="bi bi-plus-circle"></i> إضافة لون</button>
+                <small>المطابع تختار من هذه الألوان ما توفّره، والعميل يرى فقط ما توفّره مطبعة.</small>
+            </div>
+            <label class="options-field"><span>المقاسات المتاحة للمنتج</span>
+                <input id="productSizesInput" name="sizes" type="text" required maxlength="300" placeholder="S, M, L, XL — أو اكتب: مقاس واحد">
+                <small>افصل بين المقاسات بفاصلة.</small>
+            </label>
         </div>
         <footer>
             <button class="secondary-button" type="button" data-dialog-close>إلغاء</button>

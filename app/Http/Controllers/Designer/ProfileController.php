@@ -17,7 +17,7 @@ use Throwable;
 
 class ProfileController extends Controller
 {
-    private const EXTRA_FIELDS = ['job_title', 'experience', 'location', 'specialization'];
+    private const EXTRA_FIELDS = ['job_title', 'experience', 'specialization'];
 
     public function show(Request $request): View
     {
@@ -52,7 +52,6 @@ class ProfileController extends Controller
             'profileExtra' => [
                 'job_title' => $profile->getAttribute('job_title'),
                 'experience' => $profile->getAttribute('experience'),
-                'location' => $profile->getAttribute('location'),
                 'specialization' => $profile->getAttribute('specialization') ?: $profile->bio,
             ],
             'designStats' => $designStats,
@@ -103,7 +102,6 @@ class ProfileController extends Controller
                     'bio' => $about,
                     'skills' => $skills,
                     'portfolio_url' => $validated['portfolio_url'],
-                    'profile_completed_at' => filled($about) && count($skills) > 0 ? now() : null,
                 ]);
 
                 // Optional profile fields are stored only once their columns exist in designer_profiles.
@@ -116,6 +114,8 @@ class ProfileController extends Controller
                 if ($newImagePath !== null) {
                     $profile->profile_image = $newImagePath;
                 }
+
+                $profile->profile_completed_at = $profile->isComplete() ? now() : null;
 
                 $profile->save();
 

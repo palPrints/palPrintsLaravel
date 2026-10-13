@@ -106,8 +106,9 @@
                             <td><span class="status {{ $statusClass }}">{{ $statusLabel }}</span></td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="empty-row">لا توجد أرباح مسجلة حتى الآن.</td></tr>
+                        <tr><td colspan="6" class="empty-row"><i class="bi bi-inbox"></i>لا توجد أرباح مسجلة حتى الآن.</td></tr>
                     @endforelse
+                    <tr class="filter-empty" hidden><td colspan="6" class="empty-row"><i class="bi bi-inbox"></i>لا توجد أرباح ضمن هذه الفترة.</td></tr>
                 </tbody>
             </table>
         </div>
@@ -136,7 +137,7 @@
                             @endif
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="empty-row">لا توجد طلبات سحب سابقة.</td></tr>
+                        <tr><td colspan="6" class="empty-row"><i class="bi bi-inbox"></i>لا توجد طلبات سحب سابقة.</td></tr>
                     @endforelse
                 </tbody>
             </table>

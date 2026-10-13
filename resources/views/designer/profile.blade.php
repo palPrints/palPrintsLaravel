@@ -6,7 +6,7 @@
     $status = $approval['status'];
     $needsChanges = in_array($status, ['rejected', 'changes_requested'], true);
     $awaitingReview = in_array($status, ['submitted', 'under_review'], true);
-    $profileComplete = $profile->profile_completed_at !== null;
+    $profileComplete = $profile->profile_completed_at !== null && $profile->isComplete();
     $adminNote = $profile->admin_notes ?: $profile->rejection_reason;
     $skillsText = old('skills', $profileSkills->implode('، '));
     $skillsForView = collect(preg_split('/[,،]/u', (string) $skillsText))->map(fn ($s) => trim($s))->filter()->values();
@@ -79,7 +79,6 @@
                             <div><dt>سنوات الخبرة</dt><dd>{{ $profileExtra['experience'] ?: $dash }}</dd></div>
                             <div><dt>البريد الإلكتروني</dt><dd class="designer-detail-with-icon" dir="ltr">{{ $user->email }}</dd><i class="bi bi-envelope" aria-hidden="true"></i></div>
                             <div><dt>رقم الهاتف</dt><dd class="designer-detail-with-icon" dir="ltr">{{ $user->phone ?: $dash }}</dd><i class="bi bi-telephone" aria-hidden="true"></i></div>
-                            <div><dt>موقع العمل</dt><dd>{{ $profileExtra['location'] ?: $dash }}</dd></div>
                         </dl>
                     </section>
 
@@ -89,7 +88,7 @@
                             <h2>المهارات والتخصص</h2>
                         </header>
                         <dl class="designer-details-grid designer-details-single">
-                            <div><dt>نبذة تعريفية</dt><dd>{{ $profileExtra['specialization'] ?: $dash }}</dd></div>
+                            <div><dt>نبذة تعريفية</dt><dd class="designer-bio-text">{{ $profileExtra['specialization'] ?: $dash }}</dd></div>
                             <div>
                                 <dt>المهارات</dt>
                                 <dd class="designer-skill-list">
@@ -143,8 +142,7 @@
                             <label>المسمى المهني<input id="profileRole" name="job_title" type="text" maxlength="120" value="{{ old('job_title', $profileExtra['job_title']) }}">@error('job_title')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
                             <label>سنوات الخبرة<input id="profileExperience" name="experience" type="text" maxlength="60" value="{{ old('experience', $profileExtra['experience']) }}">@error('experience')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
                             <label>البريد الإلكتروني <em>*</em><span class="designer-input-icon"><i class="bi bi-envelope"></i><input id="profileEmail" name="email" type="email" required maxlength="255" value="{{ old('email', $user->email) }}" dir="ltr" @error('email') aria-invalid="true" @enderror></span>@error('email')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
-                            <label>رقم الهاتف<span class="designer-input-icon"><i class="bi bi-telephone"></i><input id="profilePhone" name="phone" type="tel" maxlength="30" value="{{ old('phone', $user->phone) }}" dir="ltr"></span>@error('phone')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
-                            <label class="designer-full-field">موقع العمل<input id="profileLocation" name="location" type="text" maxlength="120" value="{{ old('location', $profileExtra['location']) }}">@error('location')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
+                            <label>رقم الهاتف<span class="designer-input-icon"><i class="bi bi-telephone"></i><input id="profilePhone" name="phone" type="tel" inputmode="numeric" maxlength="10" pattern="05[69][0-9]{7}" title="يجب أن يبدأ رقم الهاتف بـ 059 أو 056 ويتكوّن من 10 أرقام." placeholder="059xxxxxxx" value="{{ old('phone', $user->phone) }}" dir="ltr"></span>@error('phone')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
                         </div>
                     </section>
 
@@ -154,9 +152,20 @@
                             <h2>المهارات والتخصص</h2>
                         </header>
                         <div class="designer-fields designer-single-column">
-                            <label>نبذة تعريفية <em>*</em><input id="profileSpecialization" name="specialization" type="text" required maxlength="1000" value="{{ old('specialization', $profileExtra['specialization']) }}">@error('specialization')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
-                            <label>المهارات <em>*</em><textarea id="profileSkills" name="skills" rows="3" required maxlength="500">{{ $skillsText }}</textarea>@error('skills')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
-                            <small class="designer-field-note"><i class="bi bi-info-circle"></i> افصل بين المهارات بفاصلة.</small>
+                            <label>نبذة تعريفية <em>*</em><textarea id="profileSpecialization" class="designer-bio-field" name="specialization" rows="6" required maxlength="1000" placeholder="عرّف بنفسك وبأسلوب تصميمك وخبرتك...">{{ old('specialization', $profileExtra['specialization']) }}</textarea>@error('specialization')<small class="designer-field-error">{{ $message }}</small>@enderror</label>
+                            <div class="designer-skills-field">
+                                <label for="profileSkillsInput">المهارات <em>*</em></label>
+                                <span class="designer-skills-box" id="skillsBox">
+                                    <span class="designer-skills-chips" id="skillsChips"></span>
+                                    <span class="designer-skills-entry">
+                                        <input id="profileSkillsInput" type="text" maxlength="40" autocomplete="off" enterkeyhint="done" placeholder="اكتب مهارة ثم اضغط Enter">
+                                        <button type="button" class="designer-skills-add" id="skillAddButton"><i class="bi bi-plus-lg" aria-hidden="true"></i> إضافة</button>
+                                    </span>
+                                </span>
+                                <input type="hidden" id="profileSkills" name="skills" value="{{ $skillsText }}">
+                                @error('skills')<small class="designer-field-error">{{ $message }}</small>@enderror
+                            </div>
+                            <small class="designer-field-note"><i class="bi bi-info-circle"></i> اكتب المهارة واضغط Enter (أو زر إضافة). يمكنك إضافة حتى 12 مهارة، واضغط × لحذف أي مهارة.</small>
                         </div>
                     </section>
                 </div>

@@ -874,6 +874,12 @@ body.admin-dashboard-page {
   color: var(--pp-navy-500);
   font-size: 11px;
 }
+.admin-add-product,
+.admin-view-all,
+.admin-approval-item > a,
+.admin-design-item > a {
+  text-decoration: none;
+}
 .admin-add-product {
   min-height: 42px;
   display: inline-flex;
@@ -1196,7 +1202,9 @@ body.admin-dashboard-page {
 .admin-type-pill.is-designer { color: var(--pp-blue-700); background: var(--pp-blue-50); }
 .admin-type-pill.is-printshop { color: #b25500; background: var(--pp-orange-100); }
 .admin-approval-item button,
-.admin-design-item button {
+.admin-design-item button,
+.admin-approval-item > a,
+.admin-design-item > a {
   min-height: 31px;
   display: inline-flex;
   align-items: center;
@@ -1213,7 +1221,9 @@ body.admin-dashboard-page {
   transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
 }
 .admin-approval-item button:hover,
-.admin-design-item button:hover {
+.admin-design-item button:hover,
+.admin-approval-item > a:hover,
+.admin-design-item > a:hover {
   color: #fff;
   background: var(--pp-blue-600);
   transform: translateY(-1px);
@@ -1449,7 +1459,9 @@ body.admin-dashboard-page {
   }
 
   .admin-approval-item button,
-  .admin-design-item button {
+  .admin-design-item button,
+  .admin-approval-item > a,
+  .admin-design-item > a {
     grid-column: 2;
     justify-self: start;
   }

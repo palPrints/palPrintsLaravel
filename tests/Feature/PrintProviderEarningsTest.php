@@ -9,6 +9,7 @@ beforeEach(function () {
 
     $this->provider = User::factory()->create();
     $this->provider->assignRole('print_provider');
+    $this->provider->printProvider()->create(['company_name' => 'مطبعة', 'approval_status' => 'approved', 'is_active' => true]);
     $this->wallet = Wallet::create([
         'user_id' => $this->provider->id,
         'total_balance' => 1000,

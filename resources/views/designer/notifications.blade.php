@@ -45,7 +45,7 @@
             @forelse ($notifications as $notification)
                 <form method="POST" action="{{ route('designer.notifications.read', $notification) }}">
                     @csrf
-                    <button type="submit" @class(['notification-item', 'is-unread' => ! $notification->is_read])>
+                    <button type="submit" data-no-press @class(['notification-item', 'is-unread' => ! $notification->is_read])>
                         <span class="notification-icon"><i class="bi {{ $icons[$notification->type] ?? 'bi-bell' }}" aria-hidden="true"></i></span>
                         <span class="notification-copy">
                             <strong>{{ $notification->title }}</strong>

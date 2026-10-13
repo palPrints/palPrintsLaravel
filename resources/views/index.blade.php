@@ -185,7 +185,7 @@
               <li><span>3</span>استلمه مطبوعًا</li>
             </ol>
 
-            <a class="paper-print__button" href="{{ $toRole('customer', 'customer.paperPrinting') }}">
+            <a class="paper-print__button" href="{{ $viewer ? $toRole('customer', 'customer.paperPrinting') : route('register') }}">
               <span>اطبع ملفاتك الآن</span>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12H4m6-6-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </a>
@@ -265,7 +265,11 @@
               <div><dt>48h</dt><dd>متوسط وقت التنفيذ</dd></div>
             </dl>
 
-            <a class="partner-card__button partner-card__button--blue" href="{{ route('register') }}">سجّل مطبعتك</a>
+            @if (! $viewer)
+              <a class="partner-card__button partner-card__button--blue" href="{{ route('register', ['account_type' => 'print_provider']) }}">سجّل مطبعتك</a>
+            @elseif ($viewer->hasRole('print_provider'))
+              <a class="partner-card__button partner-card__button--blue" href="{{ route('print-provider.dashboard') }}">لوحة المطبعة</a>
+            @endif
           </article>
         </div>
       </section>

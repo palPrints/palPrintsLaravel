@@ -335,8 +335,15 @@
 
     if (sidebarLogout) {
       sidebarLogout.addEventListener("click", () => {
-        const confirmed = window.confirm("هل تريد تسجيل الخروج من حسابك؟");
-        if (confirmed) window.location.href = sidebarLogout.dataset.href || "login.html";
+        PalAlert.confirm({
+          title: "تسجيل الخروج",
+          text: "هل تريد تسجيل الخروج من حسابك؟",
+          confirmText: "نعم، سجّل الخروج",
+          icon: "question",
+          danger: false,
+        }).then((ok) => {
+          if (ok) window.location.href = sidebarLogout.dataset.href || "login.html";
+        });
       });
     }
 

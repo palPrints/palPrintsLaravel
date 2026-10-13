@@ -1906,7 +1906,7 @@ html[data-bs-theme="dark"] .paper-progress {
   position: fixed;
   z-index: 1800;
   inset-inline-end: 24px;
-  bottom: 24px;
+  top: 86px;
   max-width: min(380px, calc(100vw - 32px));
   display: flex;
   align-items: center;
@@ -1919,7 +1919,7 @@ html[data-bs-theme="dark"] .paper-progress {
   box-shadow: 0 18px 50px rgb(15 27 65 / 22%);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(14px);
+  transform: translateY(-14px);
   transition: 0.2s ease;
   font-size: 13px;
   font-weight: 700;
@@ -2237,7 +2237,7 @@ html[dir="ltr"] .stage-actions .bi-arrow-right {
   }
 
   .paper-toast {
-    bottom: 86px;
+    top: 76px;
   }
 
   .paper-printing-page .store-footer {
@@ -2249,7 +2249,7 @@ html[dir="ltr"] .stage-actions .bi-arrow-right {
   }
 
   body.paper-printing-page.paper-review-active .paper-toast {
-    bottom: 18px;
+    top: 76px;
   }
 
   body.paper-printing-page.paper-review-active .store-footer {

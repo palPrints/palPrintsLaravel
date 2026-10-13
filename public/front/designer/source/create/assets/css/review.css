@@ -779,7 +779,7 @@ button {
     position: fixed;
     z-index: 20;
     right: 50%;
-    bottom: 24px;
+    top: 86px;
     padding: 11px 18px;
     color: #fff;
     background: var(--navy);
@@ -787,7 +787,7 @@ button {
     box-shadow: var(--shadow);
     opacity: 0;
     pointer-events: none;
-    transform: translate(50%, 12px);
+    transform: translate(50%, -12px);
     transition: var(--transition);
 }
 

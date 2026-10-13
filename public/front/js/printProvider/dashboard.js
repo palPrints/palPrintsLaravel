@@ -176,7 +176,8 @@
         if (matches) visibleRows += 1;
       });
 
-      if (emptySearchRow) emptySearchRow.hidden = visibleRows !== 0;
+      // "No matching orders" only makes sense when there are orders to search in.
+      if (emptySearchRow) emptySearchRow.hidden = rows.length === 0 || visibleRows !== 0;
     }
 
     function showToast(message) {
@@ -221,13 +222,21 @@
       });
     }
 
-    if (logoutButton) {
-      logoutButton.addEventListener("click", function () {
-        if (window.confirm("هل تريد تسجيل الخروج من حساب المطبعة؟")) {
-          window.location.href = logoutButton.getAttribute("data-href") || "login.html";
-        }
+    // Both logout buttons (sidebar and account menu) are real forms: ask first, then submit.
+    document.querySelectorAll('form[action$="/logout"]').forEach(function (logoutForm) {
+      logoutForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        PalAlert.confirm({
+          title: "تسجيل الخروج",
+          text: "هل تريد تسجيل الخروج من حساب المطبعة؟",
+          confirmText: "نعم، سجّل الخروج",
+          icon: "question",
+          danger: false,
+        }).then(function (ok) {
+          if (ok) HTMLFormElement.prototype.submit.call(logoutForm);
+        });
       });
-    }
+    });
 
     document.addEventListener("click", function (event) {
       const unavailableLink = event.target.closest('a[href="#"]');

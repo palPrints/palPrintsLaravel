@@ -62,7 +62,6 @@
 .settings-role-note i { color:#f07606; }
 .settings-delete-dialog { border-radius:16px; }
 .settings-delete-dialog .profile-dialog-header h2 { color:#b91c1c; }
-.settings-page.reduce-motion *, .settings-page.reduce-motion *::before, .settings-page.reduce-motion *::after { scroll-behavior:auto!important; animation:none!important; transition:none!important; }
 body.settings-page[data-user-role="printer"] { --profile-sidebar-width:230px; }
 body.settings-page[data-user-role="printer"] .designer-printshop-topbar { height:68px; min-height:68px; grid-template-columns:230px 48px minmax(240px,520px) 1fr; gap:14px; padding:0 0 0 28px; }
 body.settings-page[data-user-role="printer"] .designer-printshop-brand { width:230px; height:68px; }
@@ -133,3 +132,7 @@ html[data-bs-theme="dark"] .settings-requirement-status.is-warning { color:#fcd4
 
 /* Mobile (phones): every tab stays visible, icon above the label. */
 @media (max-width:768px) { .settings-tabs { grid-template-columns:none; grid-auto-flow:column; grid-auto-columns:minmax(84px,1fr); } .settings-tab { min-height:58px; flex-direction:column; gap:3px; padding:8px 6px; font-size:12px; } .settings-tab::after { inset-inline:10px; } }
+
+.email-verify-form { margin: 0; flex: 0 0 auto; }
+.email-verify-button { padding: 6px 12px; border: 1px solid #1677ff; border-radius: 999px; color: #1677ff; background: #fff; font: 700 11px inherit; font-family: inherit; cursor: pointer; white-space: nowrap; }
+.email-verify-button:hover { color: #fff; background: #1677ff; }

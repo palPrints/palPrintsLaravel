@@ -6,6 +6,7 @@ use App\Models\Address;
 use App\Models\BranchPrintArea;
 use App\Models\BranchProductOffering;
 use App\Models\CartItem;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
 use App\Support\CatalogProductData;
@@ -36,16 +37,16 @@ class PrintShopRouter
      * @param  array<string, mixed>|null  $layout  the studio layout ({areas: {areaId: {objects: [...]}}})
      * @return array{product: Product, variantIds: Collection<int, int>, areas: array<int, array{code: string, widthCm: ?float, heightCm: ?float}>, quantity: int}
      */
-    public function need(Product $product, Collection $variantIds, array $studioAreas, ?array $layout, int $quantity = 1): array
+    public function need(Product $product, Collection $variantIds, array $studioAreas, ?array $layout, int $quantity = 1, ?string $method = null): array
     {
-        $areas = collect($studioAreas)->unique()->map(function (string $studioId) use ($product, $layout) {
+        $areas = collect($studioAreas)->map(fn (string $area) => $this->studioAreaId($product, $area))->unique()->map(function (string $studioId) use ($product, $layout) {
             $code = $this->databaseArea($product, $studioId);
             $size = $this->designSizeCm($layout, $studioId, $code, $product);
 
             return ['code' => $code, 'widthCm' => $size['width'] ?? null, 'heightCm' => $size['height'] ?? null];
         })->values()->all();
 
-        return ['product' => $product, 'variantIds' => $variantIds->values(), 'areas' => $areas, 'quantity' => max(1, $quantity)];
+        return ['product' => $product, 'variantIds' => $variantIds->values(), 'areas' => $areas, 'quantity' => max(1, $quantity), 'method' => $method ?: null];
     }
 
     /** The same need, read back from a line already in the cart. */
@@ -59,15 +60,23 @@ class PrintShopRouter
             array_values((array) ($options['print_areas'] ?? [])),
             is_array($options['layout'] ?? null) ? $options['layout'] : null,
             (int) $item->quantity,
+            $options['printing_method'] ?? null,
         );
     }
 
-    /** The offering of the best branch for a single product (the common case of one design), or null. */
-    public function choose(Product $product, Collection $variantIds, array $studioAreas, ?array $layout, ?string $city): ?BranchProductOffering
+    /** The same need, read back from a line of a placed order. */
+    public function needFromOrderItem(OrderItem $item): array
     {
-        $need = $this->need($product, $variantIds, $studioAreas, $layout);
+        $options = (array) $item->selected_options;
 
-        return $this->chooseForOrder(collect([$need]), $city)['offerings'][$product->id] ?? null;
+        return $this->need(
+            $item->product,
+            collect($item->variant_id ? [$item->variant_id] : []),
+            array_values((array) ($options['print_areas'] ?? [])),
+            is_array($options['layout'] ?? null) ? $options['layout'] : null,
+            (int) $item->quantity,
+            $options['printing_method'] ?? null,
+        );
     }
 
     /**
@@ -101,6 +110,7 @@ class PrintShopRouter
                 'branchOfferingVariants',
                 'branchPrintAreas' => fn ($query) => $query->where('is_active', true),
                 'branchPrintAreas.branchPrintCapabilities' => fn ($query) => $query->where('is_active', true),
+                'branchPrintAreas.branchPrintCapabilities.printingMethod',
                 'branchPrintAreas.branchPrintCapabilities.branchPricingRules' => fn ($query) => $query->where('is_active', true),
             ])
             ->whereIn('product_id', $productIds)
@@ -153,6 +163,87 @@ class PrintShopRouter
             ->values();
     }
 
+    /**
+     * Why no shop can make a single-product order, in words for the customer (the reason of the closest shop), or null
+     * when it is not one product or no reason is found.
+     *
+     * @param  Collection<int, array>  $needs
+     */
+    public function explain(Collection $needs): ?string
+    {
+        if ($needs->pluck('product.id')->unique()->count() !== 1) {
+            return null;
+        }
+
+        $offerings = BranchProductOffering::query()
+            ->with([
+                'branchOfferingVariants',
+                'branchPrintAreas' => fn ($query) => $query->where('is_active', true),
+                'branchPrintAreas.branchPrintCapabilities' => fn ($query) => $query->where('is_active', true),
+                'branchPrintAreas.branchPrintCapabilities.printingMethod',
+            ])
+            ->where('product_id', $needs->first()['product']->id)
+            ->where('is_active', true)
+            ->get();
+
+        // Prefer the reason that is about the design (area, size) over a missing colour or size: it is the closest to working.
+        $reasons = $needs
+            ->flatMap(fn (array $need) => $offerings->map(fn (BranchProductOffering $offering) => $this->blocker($offering, $need)))
+            ->filter()
+            ->values();
+
+        return $reasons->first(fn (array $reason) => $reason['rank'] > 1)['text'] ?? $reasons->first()['text'] ?? null;
+    }
+
+    /** @return array{rank: int, text: string}|null why this offering cannot make the line; null when it can */
+    private function blocker(BranchProductOffering $offering, array $need): ?array
+    {
+        $available = $offering->branchOfferingVariants->where('is_available', true)->pluck('variant_id');
+
+        if (! $need['variantIds']->every(fn ($id) => $available->contains($id))) {
+            return ['rank' => 1, 'text' => 'اللون أو المقاس الذي اخترته غير متوفر لدى المطبعة حاليًا. اختر لونًا أو مقاسًا آخر.'];
+        }
+
+        if ((float) $offering->base_price <= 0) {
+            return ['rank' => 1, 'text' => 'سعر هذا المنتج لم يُحدَّد عند المطبعة بعد.'];
+        }
+
+        foreach ($need['areas'] as $wanted) {
+            $area = $offering->branchPrintAreas->firstWhere('code', $wanted['code']);
+
+            if (! $area) {
+                return ['rank' => 2, 'text' => 'المطبعة لا تقدّم الطباعة على منطقة «'.$wanted['code'].'». احذف هذه المنطقة من التصميم.'];
+            }
+
+            if ($wanted['widthCm'] !== null && ($wanted['widthCm'] * 10 > $area->max_width_mm || $wanted['heightCm'] * 10 > $area->max_height_mm)) {
+                return ['rank' => 3, 'text' => sprintf(
+                    'تصميمك على «%s» (%s × %s سم) أكبر من أقصى حجم تطبعه المطبعة (%s × %s سم). صغّر التصميم.',
+                    $area->name, round($wanted['widthCm'], 1), round($wanted['heightCm'], 1), round($area->max_width_mm / 10, 1), round($area->max_height_mm / 10, 1),
+                )];
+            }
+
+            if ($area->branchPrintCapabilities->isEmpty()) {
+                return ['rank' => 2, 'text' => 'المطبعة لا تملك طريقة طباعة مفعّلة على «'.$area->name.'».'];
+            }
+
+            if ($this->capabilitiesFor($area, $need['method'] ?? null)->isEmpty()) {
+                return ['rank' => 2, 'text' => 'المطبعة لا تقدّم تقنية الطباعة التي اخترتها على «'.$area->name.'». اختر تقنية أخرى.'];
+            }
+        }
+
+        return null;
+    }
+
+    /** The area's printing methods; only the one the customer chose when they chose one. */
+    private function capabilitiesFor(BranchPrintArea $area, ?string $method)
+    {
+        if (! $method) {
+            return $area->branchPrintCapabilities;
+        }
+
+        return $area->branchPrintCapabilities->filter(fn ($capability) => $capability->printingMethod?->code === $method)->values();
+    }
+
     /** The city of the customer's default address (or their newest one); null when they have none. */
     public function customerCity(User $user): ?string
     {
@@ -200,6 +291,25 @@ class PrintShopRouter
         }
 
         return ['width' => round($maxX - $minX, 2), 'height' => round($maxY - $minY, 2)];
+    }
+
+    /**
+     * The studio's id for a print area given either as an id ("front") or as the name the customer saw ("أمامي").
+     * The cart keeps the names (the basket and the shop's order page show them), so they are turned back into ids here.
+     */
+    private function studioAreaId(Product $product, string $area): string
+    {
+        $area = trim($area);
+        $definitions = collect(CatalogProductData::areaDefinitions($product->code));
+        $area = ['الأمام' => 'أمامي', 'الخلف' => 'خلفي'][$area] ?? $area; // the studio's own names for front and back
+        $match = $definitions->first(fn (array $definition) => $definition['code'] === $area || $definition['name'] === $area);
+
+        if (! $match) {
+            return $area;
+        }
+
+        // The database names the mug's single area "wrap"; the studio calls it "front".
+        return array_search($match['code'], self::DATABASE_AREA[strtoupper($product->code)] ?? [], true) ?: $match['code'];
     }
 
     public function databaseArea(Product $product, string $studioAreaId): string
@@ -256,7 +366,7 @@ class PrintShopRouter
             }
 
             $squareCm = ($wanted['widthCm'] ?? 0) * ($wanted['heightCm'] ?? 0);
-            $cheapest = $area->branchPrintCapabilities
+            $cheapest = $this->capabilitiesFor($area, $need['method'] ?? null)
                 ->map(function ($capability) use ($squareCm) {
                     $rules = $capability->branchPricingRules;
                     $fixed = (float) ($rules->firstWhere('pricing_type', 'print_method_addon')?->amount ?? 0);

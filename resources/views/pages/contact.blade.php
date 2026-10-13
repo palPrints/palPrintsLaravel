@@ -8,8 +8,27 @@
     <p>فريق PalPrints جاهز لمساعدتك في أي استفسار عن الطلبات أو التصاميم أو التسجيل في المنصة.</p>
   </section>
 
+  @php
+    $contactEmail = \App\Support\PlatformSettings::get('general', 'admin_email');
+    $contactPhone = \App\Support\PlatformSettings::get('general', 'contact_phone');
+  @endphp
+  @if ($contactEmail || $contactPhone)
+    <section class="about-block">
+      <h2>تواصل مباشر</h2>
+      <p>تستطيع مراسلتنا أو الاتصال بنا حتى لو لم يكن لديك حساب.</p>
+      <ul class="about-list">
+        @if ($contactEmail)
+          <li>البريد الإلكتروني: <a class="about-link" href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a></li>
+        @endif
+        @if ($contactPhone)
+          <li>الهاتف: <a class="about-link" href="tel:{{ preg_replace('/[^\d+]/', '', $contactPhone) }}" dir="ltr">{{ $contactPhone }}</a></li>
+        @endif
+      </ul>
+    </section>
+  @endif
+
   <section class="about-block">
-    <h2>كيف نساعدك؟</h2>
+    <h2>للمسجّلين في المنصة</h2>
     <ul class="about-list">
       <li>لديك طلب أو استفسار عن طلب؟ افتح تذكرة من صفحة الدعم في حسابك: <a class="about-link" href="{{ $toRole('customer', 'customer.support') }}">الدعم للعملاء</a>.</li>
       <li>مصمم؟ تواصل من صفحة الدعم في <a class="about-link" href="{{ $toRole('designer', 'designer.support') }}">لوحة المصمم</a>.</li>

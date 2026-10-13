@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\CatalogProductData;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -43,6 +44,25 @@ class BranchProductOffering extends Model
     public function branchPrintAreas()
     {
         return $this->hasMany(BranchPrintArea::class);
+    }
+
+    /**
+     * Gives the offering a row per print area its product has, switched off until the shop ticks it. Rows that exist
+     * (ticked or not) are left alone, so this is safe to call again.
+     */
+    public function ensurePrintAreas(): void
+    {
+        $product = $this->product ?? Product::find($this->product_id);
+        if (! $product) {
+            return;
+        }
+
+        foreach (CatalogProductData::areaDefinitions($product->code) as $area) {
+            $this->branchPrintAreas()->firstOrCreate(
+                ['code' => $area['code']],
+                ['name' => $area['name'], 'max_width_mm' => $area['width'], 'max_height_mm' => $area['height'], 'is_active' => false],
+            );
+        }
     }
 
     public function branchPricingRules()

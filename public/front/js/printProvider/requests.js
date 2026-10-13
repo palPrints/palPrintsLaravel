@@ -61,21 +61,24 @@ document.addEventListener("DOMContentLoaded", function () {
   let selectedDateFrom = "";
   let selectedDateTo = "";
 
+  /* The table's pager (shared/table-pagination.js) pages whatever rows are left visible here. */
   function applyOrderFilters() {
-    let visibleRows = 0;
+    let matching = 0;
 
     orderRows.forEach(function (row) {
-      const matchesStatus = selectedStatus === "all" || row.dataset.status === selectedStatus;
       const orderDate = row.dataset.orderDate;
-      const matchesStart = !selectedDateFrom || orderDate >= selectedDateFrom;
-      const matchesEnd = !selectedDateTo || orderDate <= selectedDateTo;
-      const isVisible = matchesStatus && matchesStart && matchesEnd;
+      const isVisible = (selectedStatus === "all" || row.dataset.status === selectedStatus)
+        && (!selectedDateFrom || orderDate >= selectedDateFrom)
+        && (!selectedDateTo || orderDate <= selectedDateTo);
 
       row.hidden = !isVisible;
-      if (isVisible) visibleRows += 1;
+      if (isVisible) matching += 1;
     });
 
-    emptyOrdersRow.hidden = visibleRows !== 0;
+    if (orderRows.length > 0) {
+      emptyOrdersRow.hidden = matching !== 0;
+      emptyOrdersRow.querySelector("td span").textContent = "لا توجد طلبات ضمن الفلاتر المحددة.";
+    }
   }
 
   statusTabs.forEach(function (tab) {
@@ -137,176 +140,196 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   document.addEventListener("click", closeFilterMenu);
+  applyOrderFilters();
 
-  const paginationButtons = document.querySelectorAll(".table-pagination button");
+  /* ---------- order details dialog (the data comes from the server) ---------- */
 
-  paginationButtons.forEach(function (button) {
-    button.addEventListener("click", function () {
-      if (!/^\d+$/.test(button.textContent.trim())) return;
-
-      paginationButtons.forEach(function (item) {
-        item.classList.remove("active");
-        item.removeAttribute("aria-current");
-      });
-
-      button.classList.add("active");
-      button.setAttribute("aria-current", "page");
-    });
-  });
-
+  const orders = window.printProviderOrders || {};
+  const routes = window.printProviderRoutes || {};
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || "";
   const detailsDialog = document.getElementById("orderDetailsDialog");
   const dialogTitle = document.getElementById("orderDialogTitle");
   const dialogContent = document.getElementById("orderDialogContent");
-  const detailLabels = ["رقم الطلب", "المنتج", "الكمية", "قيمة الطلب", "تاريخ الطلب", "موعد التسليم", "الحالة", "التنبيه"];
-  const orderProducts = {
-    "#10358": [
-      { name: "تيشيرت قطن أبيض", quantity: 30, price: "72.00 ₪" },
-      { name: "تيشيرت قطن أسود", quantity: 20, price: "48.00 ₪" }
-    ],
-    "#10357": [
-      { name: "هودي أسود", quantity: 5, price: "60.00 ₪" },
-      { name: "هودي رمادي", quantity: 5, price: "60.00 ₪" },
-      { name: "هودي كحلي", quantity: 5, price: "60.00 ₪" },
-      { name: "هودي أبيض", quantity: 5, price: "60.00 ₪" }
-    ],
-    "#10356": [{ name: "كوب سيراميك مطبوع", quantity: 100, price: "350.00 ₪" }],
-    "#10355": [{ name: "ستيكرات مخصصة", quantity: 200, price: "80.00 ₪" }],
-    "#10354": [
-      { name: "ورق A4 ملون", quantity: 200, price: "60.00 ₪" },
-      { name: "ورق A4 أبيض وأسود", quantity: 200, price: "50.00 ₪" },
-      { name: "ورق مقوّى", quantity: 100, price: "40.00 ₪" }
-    ],
-    "#10353": [
-      { name: "تيشيرت قطن أبيض", quantity: 15, price: "37.50 ₪" },
-      { name: "تيشيرت قطن أسود", quantity: 15, price: "37.50 ₪" }
-    ],
-    "#10352": [{ name: "كوب سيراميك مطبوع", quantity: 80, price: "280.00 ₪" }],
-    "#10351": [{ name: "هودي بطباعة أمامية", quantity: 25, price: "300.00 ₪" }],
-    "#10350": [{ name: "ستيكرات مخصصة", quantity: 150, price: "60.00 ₪" }],
-    "#10349": [{ name: "ورق A4 ملون", quantity: 300, price: "210.00 ₪" }]
-  };
+  const dialogFooter = document.getElementById("orderDialogFooter");
 
-  function productVisuals(productName) {
-    if (productName.includes("تيشيرت")) {
-      return "assets/images/tshirts/adults-good-day.png";
-    }
-
-    if (productName.includes("هودي")) {
-      return "assets/images/orderBasket/good-vibes-hoodie.png";
-    }
-
-    if (productName.includes("كوب")) {
-      return "assets/images/mugs/palestine.png";
-    }
-
-    if (productName.includes("ستيكر")) {
-      return "assets/images/stickers/colorful/watermelon.svg";
-    }
-
-    return "assets/images/posterposter.png";
+  function element(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
   }
 
-  function createProductVisual(labelText, imagePath, alternativeText) {
-    const figure = document.createElement("figure");
-    const label = document.createElement("figcaption");
-    const image = document.createElement("img");
-
-    figure.className = "product-visual";
-    label.textContent = labelText;
-    image.src = imagePath;
-    image.alt = alternativeText;
-    image.loading = "lazy";
-    figure.append(label, image);
-    return figure;
+  function formatMoney(value) {
+    return Number(value).toFixed(2) + " ₪";
   }
 
-  function productSpecifications(productName, index) {
-    if (productName.includes("تيشيرت")) {
-      return {
-        size: index % 2 === 0 ? "L" : "XL",
-        color: productName.includes("أسود") ? "أسود" : "أبيض"
-      };
-    }
-
-    if (productName.includes("هودي")) {
-      const hoodieColors = ["أسود", "رمادي", "كحلي", "أبيض"];
-      const hoodieSizes = ["M", "L", "XL", "2XL"];
-      return { size: hoodieSizes[index % hoodieSizes.length], color: hoodieColors[index % hoodieColors.length] };
-    }
-
-    if (productName.includes("كوب")) return { size: "330 مل", color: "أبيض" };
-    if (productName.includes("ستيكر")) return { size: "7 × 7 سم", color: "متعدد الألوان" };
-
-    return {
-      size: "A4",
-      color: productName.includes("أبيض وأسود") ? "أبيض وأسود" : productName.includes("مقوّى") ? "أبيض" : "ملون"
-    };
+  function formatSize(bytes) {
+    if (!bytes) return "";
+    if (bytes < 1024 * 1024) return Math.max(1, Math.round(bytes / 1024)) + " ك.ب";
+    return (bytes / (1024 * 1024)).toFixed(1) + " م.ب";
   }
 
-  function appendOrderProducts(orderNumber) {
-    const productsSection = document.createElement("section");
-    const heading = document.createElement("h3");
-    const productsList = document.createElement("div");
-    const products = orderProducts[orderNumber] || [];
+  function detailItem(label, value) {
+    const item = element("div", "order-detail-item");
+    item.append(element("small", "", label), element("strong", "", value));
+    return item;
+  }
 
-    productsSection.className = "order-products";
-    heading.innerHTML = '<i class="bi bi-box-seam" aria-hidden="true"></i> منتجات الطلب <span>(' + products.length + ")</span>";
-    productsList.className = "order-products-list";
+  function appendOrderItems(order) {
+    const section = element("section", "order-products");
+    const heading = element("h3");
+    heading.innerHTML = '<i class="bi bi-box-seam" aria-hidden="true"></i> منتجات الطلب ';
+    heading.appendChild(element("span", "", "(" + order.items.length + ")"));
+    const list = element("div", "order-products-list");
 
-    products.forEach(function (product, index) {
-      const productRow = document.createElement("div");
-      const productInfo = document.createElement("div");
-      const name = document.createElement("strong");
-      const quantity = document.createElement("span");
-      const price = document.createElement("b");
-      const options = document.createElement("div");
-      const size = document.createElement("span");
-      const color = document.createElement("span");
-      const specifications = productSpecifications(product.name, index);
-      const productImage = createProductVisual("المنتج بالتصميم", productVisuals(product.name), "صورة " + product.name + " بالتصميم");
+    order.items.forEach(function (item, index) {
+      const row = element("div", "order-product-row");
+      const info = element("div", "order-product-info");
+      info.append(
+        element("strong", "", String(index + 1) + ". " + item.name),
+        element("span", "", "الكمية: " + item.quantity)
+      );
 
-      productRow.className = "order-product-row";
-      productInfo.className = "order-product-info";
-      name.textContent = String(index + 1) + ". " + product.name;
-      quantity.textContent = "الكمية: " + product.quantity;
-      price.textContent = product.price;
-      options.className = "product-options";
-      size.textContent = "القياس: " + specifications.size;
-      color.textContent = "اللون: " + specifications.color;
-      options.append(size, color);
-      productInfo.append(name, quantity, options, price);
-      productRow.append(productInfo, productImage);
-      productsList.appendChild(productRow);
+      if (item.design_title) info.appendChild(element("span", "", "التصميم: " + item.design_title));
+
+      if (item.details.length) {
+        const options = element("div", "product-options");
+        item.details.forEach(function (detail) { options.appendChild(element("span", "", detail.label + ": " + detail.value)); });
+        info.appendChild(options);
+      }
+
+      info.appendChild(element("b", "", formatMoney(item.cost)));
+
+      if (item.files.length) {
+        const files = element("div", "order-files");
+        files.appendChild(element("small", "", "ملفات الطباعة"));
+        item.files.forEach(function (file) {
+          const link = element("a", "order-file-link");
+          link.href = file.url;
+          const meta = [file.pages ? file.pages + " صفحة" : "", formatSize(file.size)].filter(Boolean).join(" · ");
+          link.innerHTML = '<i class="bi bi-download" aria-hidden="true"></i>';
+          link.append(element("span", "", file.name));
+          if (meta) link.appendChild(element("em", "", meta));
+          files.appendChild(link);
+        });
+        info.appendChild(files);
+      } else if (item.type === "upload") {
+        info.appendChild(element("span", "", "لا توجد ملفات مرفقة"));
+      }
+
+      row.appendChild(info);
+
+      if (item.image) {
+        const figure = element("figure", "product-visual");
+        const image = document.createElement("img");
+        image.src = item.image;
+        image.alt = "تصميم " + item.name;
+        image.loading = "lazy";
+        figure.append(element("figcaption", "", "التصميم"), image);
+        row.appendChild(figure);
+      }
+
+      list.appendChild(row);
     });
 
-    productsSection.append(heading, productsList);
-    dialogContent.appendChild(productsSection);
+    section.append(heading, list);
+    dialogContent.appendChild(section);
+  }
+
+  function post(action, order, body) {
+    return fetch(routes[action].replace("__ID__", order.id), {
+      method: "POST",
+      headers: { "X-CSRF-TOKEN": csrfToken, "Accept": "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify(body || {})
+    }).then(function (response) {
+      return response.json().catch(function () { return {}; }).then(function (data) {
+        if (!response.ok) throw new Error((data.errors && Object.values(data.errors)[0][0]) || data.message || "تعذر تنفيذ الإجراء.");
+        return data;
+      });
+    });
+  }
+
+  function showResult(text, icon) {
+    if (window.PalAlert) return window.PalAlert.alert(text, { icon: icon || "success" });
+    window.alert(text);
+    return Promise.resolve();
+  }
+
+  function runAction(action, order, body, successIcon) {
+    return post(action, order, body)
+      .then(function (data) { return showResult(data.message, successIcon).then(function () { window.location.reload(); }); })
+      .catch(function (error) { return showResult(error.message, "error"); });
+  }
+
+  function confirmAction(options) {
+    return window.PalAlert ? window.PalAlert.confirm(options) : Promise.resolve(window.confirm(options.title));
+  }
+
+  function closeDialog() {
+    if (typeof detailsDialog.close === "function") detailsDialog.close();
+    else detailsDialog.removeAttribute("open");
+  }
+
+  function footerButton(label, className, onClick) {
+    const button = element("button", "dialog-close-button " + className, label);
+    button.type = "button";
+    button.addEventListener("click", onClick);
+    dialogFooter.appendChild(button);
+  }
+
+  function renderFooter(order) {
+    dialogFooter.replaceChildren();
+
+    if (order.actions.accept) {
+      footerButton("قبول الطلب", "dialog-accept-button", function () {
+        closeDialog();
+        confirmAction({ title: "قبول الطلب #" + order.number, text: "بعد القبول يظهر الطلب كقيد التنفيذ ويُبلَّغ العميل.", confirmText: "نعم، اقبل", icon: "question", danger: false })
+          .then(function (ok) { if (ok) runAction("accept", order); });
+      });
+    }
+
+    if (order.actions.reject) {
+      footerButton("رفض الطلب", "dialog-reject-button", function () {
+        closeDialog();
+        const ask = window.PalAlert
+          ? window.PalAlert.prompt({ title: "رفض الطلب #" + order.number, text: "اكتب سبب الرفض ليصل للعميل.", placeholder: "سبب الرفض", confirmText: "رفض الطلب", multiline: true })
+          : Promise.resolve(window.prompt("سبب الرفض"));
+        ask.then(function (reason) {
+          if (reason === null || reason === undefined) return;
+          if (String(reason).trim().length < 3) { showResult("اكتب سببًا واضحًا للرفض.", "warning"); return; }
+          runAction("reject", order, { reason: String(reason).trim() }, "info");
+        });
+      });
+    }
+
+    if (order.actions.ready) {
+      footerButton("جاهز للتسليم", "dialog-accept-button", function () {
+        closeDialog();
+        confirmAction({ title: "الطلب #" + order.number + " جاهز؟", text: "سيُبلَّغ العميل أن الطلب جاهز للتسليم لشركة التوصيل.", confirmText: "نعم، جاهز", icon: "question", danger: false })
+          .then(function (ok) { if (ok) runAction("ready", order); });
+      });
+    }
+
+    footerButton("إغلاق", "", closeDialog);
   }
 
   document.querySelectorAll(".details-button").forEach(function (button) {
     button.addEventListener("click", function () {
-      const row = button.closest("tr");
-      const cells = Array.from(row.cells).slice(0, 8);
-      const orderNumber = cells[0].textContent.trim();
+      const order = orders[button.closest("tr").dataset.orderId];
+      if (!order) return;
 
-      dialogTitle.textContent = orderNumber;
+      dialogTitle.textContent = "#" + order.number;
       dialogContent.replaceChildren();
-
-      cells.forEach(function (cell, index) {
-        if (index === 1) return;
-
-        const item = document.createElement("div");
-        const label = document.createElement("small");
-        const value = document.createElement("strong");
-
-        item.className = "order-detail-item";
-        label.textContent = detailLabels[index];
-        value.textContent = cell.textContent.trim();
-        item.append(label, value);
-        dialogContent.appendChild(item);
-      });
-
-      appendOrderProducts(orderNumber);
+      dialogContent.append(
+        detailItem("رقم الطلب", "#" + order.number),
+        detailItem("الحالة", order.status_label),
+        detailItem("تاريخ الطلب", order.date_label),
+        detailItem("الكمية", String(order.quantity)),
+        detailItem("مستحقاتك", formatMoney(order.value))
+      );
+      if (order.notes) dialogContent.appendChild(detailItem("ملاحظات العميل", order.notes));
+      appendOrderItems(order);
+      renderFooter(order);
 
       if (typeof detailsDialog.showModal === "function") detailsDialog.showModal();
       else detailsDialog.setAttribute("open", "");
@@ -314,13 +337,10 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   detailsDialog.querySelectorAll("[data-dialog-close]").forEach(function (button) {
-    button.addEventListener("click", function () {
-      if (typeof detailsDialog.close === "function") detailsDialog.close();
-      else detailsDialog.removeAttribute("open");
-    });
+    button.addEventListener("click", closeDialog);
   });
 
   detailsDialog.addEventListener("click", function (event) {
-    if (event.target === detailsDialog) detailsDialog.close();
+    if (event.target === detailsDialog) closeDialog();
   });
 });

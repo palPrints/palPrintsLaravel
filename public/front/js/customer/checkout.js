@@ -102,8 +102,27 @@
     const needed = requiresReceipt();
     field.hidden = !needed;
     input.required = needed;
-    if (!needed) input.value = '';
+    if (!needed) { input.value = ''; showReceipt(input); }
   }
+
+  /* Shows the chosen receipt's name and a small preview inside the upload box. */
+  function showReceipt(input) {
+    const box = input.closest('.receipt-drop');
+    if (!box) return;
+    const name = box.querySelector('[data-receipt-name]');
+    const thumb = box.querySelector('.receipt-thumb');
+    const file = input.files && input.files[0];
+    if (thumb.src.startsWith('blob:')) URL.revokeObjectURL(thumb.src);
+    box.classList.toggle('has-file', Boolean(file));
+    name.textContent = file ? file.name : 'اضغطي لاختيار صورة الإشعار';
+    thumb.hidden = !file;
+    if (file) thumb.src = URL.createObjectURL(file); else thumb.removeAttribute('src');
+  }
+
+  document.getElementById('paymentReceipt')?.addEventListener('change', function (event) {
+    showReceipt(event.target);
+    if (event.target.files.length) validateReceipt();
+  });
 
   function validateReceipt() {
     if (!requiresReceipt()) return true;

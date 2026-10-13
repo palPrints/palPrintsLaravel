@@ -149,11 +149,22 @@
     function reviewWithdrawal(action) {
       if (!activeRow) return;
 
-      let reason = null;
-      if (action === "reject") {
-        reason = window.prompt("سبب رفض الطلب (اختياري):", "");
-        if (reason === null) return;
-      }
+      if (action !== "reject") { sendReview(action, null); return; }
+
+      PalAlert.prompt({
+        title: "رفض الطلب",
+        text: "سبب رفض الطلب (اختياري):",
+        confirmText: "رفض الطلب",
+        multiline: true,
+        danger: true,
+        icon: "warning",
+      }).then(function (reason) {
+        if (reason !== null) sendReview(action, reason);
+      });
+    }
+
+    function sendReview(action, reason) {
+      if (!activeRow) return;
 
       const row = activeRow;
       const buttons = [dialogApprove, dialogReject];

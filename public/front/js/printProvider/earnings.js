@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded",function(){
   document.addEventListener("keydown",function(event){if(event.key==="Escape"){closeNotificationMenu();closeAccountMenu()}});
   document.querySelectorAll("[data-period]").forEach(function(button){button.addEventListener("click",function(){
     document.querySelectorAll("[data-period]").forEach(function(item){item.classList.remove("active")});button.classList.add("active");
-    const value=button.dataset.period;document.querySelectorAll("#earningsRows tr").forEach(function(row){row.hidden=value==="today"||(!["custom","90"].includes(value)&&Number(row.dataset.days)>Number(value))});
+    const value=button.dataset.period,limit=value==="today"?0:["custom","90"].includes(value)?Infinity:Number(value);let shown=0;const dataRows=document.querySelectorAll("#earningsRows tr[data-days]");dataRows.forEach(function(row){row.hidden=Number(row.dataset.days)>limit;if(!row.hidden)shown++});const none=document.querySelector("#earningsRows .filter-empty");if(none)none.hidden=dataRows.length===0||shown>0;
   })});
   const dialog=document.getElementById("withdrawDialog"),amount=document.getElementById("withdrawAmount"),payoutAccount=document.getElementById("payoutAccount"),payoutAccountLabel=document.getElementById("payoutAccountLabel"),payoutAccountHint=document.getElementById("payoutAccountHint");
   const payoutMethods={

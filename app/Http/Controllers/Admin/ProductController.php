@@ -7,11 +7,13 @@ use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Product;
 use App\Support\CatalogProductData;
-use Illuminate\Database\QueryException;
+use App\Support\ProductVariants;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -31,7 +33,7 @@ class ProductController extends Controller
                 'description' => $product->description,
                 'image' => $this->imageUrl($product->image),
                 'active' => $product->is_active,
-            ]);
+            ] + ProductVariants::options($product));
 
         return view('admin.products', [
             'products' => $products,
@@ -45,8 +47,15 @@ class ProductController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $data = $this->validated($request);
-        $product = Product::create($data);
+        $options = $this->validatedOptions($request, true);
+        $data = $this->validated($request); // stores the image, so only after everything else is valid
+
+        $product = DB::transaction(function () use ($data, $options) {
+            $product = Product::create($data);
+            ProductVariants::sync($product, $options['colors'], $options['sizes']);
+
+            return $product;
+        });
 
         $this->log($request, 'admin.product_created', $product);
 
@@ -55,10 +64,17 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product): JsonResponse
     {
-        $data = $this->validated($request, $product);
+        $options = $this->validatedOptions($request, false);
+        $data = $this->validated($request, $product); // stores the image, so only after everything else is valid
         $oldImage = $product->image;
 
-        $product->update($data);
+        DB::transaction(function () use ($product, $data, $options) {
+            $product->update($data);
+
+            if ($options) {
+                ProductVariants::sync($product, $options['colors'], $options['sizes']);
+            }
+        });
 
         if (isset($data['image']) && $this->isUploaded($oldImage)) {
             Storage::disk('public')->delete($this->storagePath($oldImage));
@@ -82,14 +98,40 @@ class ProductController extends Controller
         ]);
     }
 
+    /** What stops a product from being deleted, in words: [table, label with :n]. */
+    private const DELETE_BLOCKERS = [
+        ['order_items', 'طلبات (:n بند)'],
+        ['cart_items', 'سلات عملاء (:n بند)'],
+        ['branch_product_offerings', 'مطابع تقدّمه (:n عرض)'],
+        ['designs', 'تصاميم عليه (:n تصميم)'],
+        ['print_files', 'ملفات طباعة مرفوعة (:n ملف)'],
+    ];
+
     public function destroy(Request $request, Product $product): JsonResponse
     {
-        try {
-            $product->delete();
-        } catch (QueryException) {
+        // The count and the delete share one transaction on the locked product row, so nothing can attach in between.
+        $blockers = DB::transaction(function () use ($product) {
+            Product::query()->lockForUpdate()->find($product->id);
+
+            $found = [];
+            foreach (self::DELETE_BLOCKERS as [$table, $label]) {
+                $count = DB::table($table)->where('product_id', $product->id)->count();
+                if ($count > 0) {
+                    $found[] = str_replace(':n', (string) $count, $label);
+                }
+            }
+
+            if ($found === []) {
+                $product->delete();
+            }
+
+            return $found;
+        });
+
+        if ($blockers !== []) {
             return response()->json([
                 'ok' => false,
-                'message' => 'لا يمكن حذف منتج مرتبط بتصاميم أو عروض. أوقفه مؤقتًا بدلًا من حذفه.',
+                'message' => 'لا يمكن حذف «'.$product->name.'» لأنه مرتبط بـ: '.implode('، ', $blockers).'. أوقفه مؤقتًا بدلًا من حذفه.',
             ], 422);
         }
 
@@ -128,6 +170,69 @@ class ProductController extends Controller
         }
 
         return $validated;
+    }
+
+    /**
+     * The colours and sizes sent with the form. A new product must have at least one of each, because a product with
+     * no variants cannot be offered by any shop; when editing they are optional and left alone if not sent.
+     *
+     * @return array{colors: array<int, array{code: ?string, name: string, hex: string}>, sizes: array<int, string>}|null
+     */
+    private function validatedOptions(Request $request, bool $required): ?array
+    {
+        if (! $required && ! $request->has('colors') && ! $request->has('sizes')) {
+            return null;
+        }
+
+        $request->validate([
+            'colors' => ['required', 'json'],
+            'sizes' => ['required', 'string', 'max:300'],
+        ], [
+            'colors.required' => 'أضف لونًا واحدًا على الأقل.',
+            'colors.json' => 'قائمة الألوان غير صحيحة.',
+            'sizes.required' => 'أضف مقاسًا واحدًا على الأقل.',
+        ]);
+
+        $colors = json_decode((string) $request->input('colors'), true);
+        $colors = is_array($colors) ? array_values($colors) : [];
+
+        $validator = validator(['colors' => $colors], [
+            'colors' => ['required', 'array', 'min:1', 'max:20'],
+            'colors.*.name' => ['required', 'string', 'max:40'],
+            'colors.*.hex' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'colors.*.code' => ['nullable', 'string', 'max:60'],
+        ], [
+            'colors.required' => 'أضف لونًا واحدًا على الأقل.',
+            'colors.min' => 'أضف لونًا واحدًا على الأقل.',
+            'colors.max' => 'الحد الأقصى 20 لونًا.',
+            'colors.*.name.required' => 'اكتب اسم كل لون.',
+            'colors.*.hex.regex' => 'اختر رمز لون صحيحًا.',
+        ]);
+        $validator->validate();
+
+        $hexes = collect($colors)->pluck('hex')->map(fn ($hex) => strtolower($hex));
+        if ($hexes->count() !== $hexes->unique()->count()) {
+            throw ValidationException::withMessages(['colors' => 'لا يمكن تكرار نفس اللون.']);
+        }
+
+        $sizes = collect(preg_split('/[,،\n]+/u', (string) $request->input('sizes')))
+            ->map(fn ($size) => trim((string) $size))
+            ->filter()
+            ->unique(fn ($size) => ProductVariants::sizeCode($size))
+            ->values();
+
+        if ($sizes->isEmpty() || $sizes->count() > 15 || $sizes->contains(fn ($size) => mb_strlen($size) > 12)) {
+            throw ValidationException::withMessages(['sizes' => 'اكتب من 1 إلى 15 مقاسًا، كل مقاس بحد أقصى 12 حرفًا، وافصل بينها بفاصلة.']);
+        }
+
+        return [
+            'colors' => collect($colors)->map(fn ($color) => [
+                'code' => $color['code'] ?? null,
+                'name' => trim($color['name']),
+                'hex' => strtolower($color['hex']),
+            ])->all(),
+            'sizes' => $sizes->all(),
+        ];
     }
 
     private function imageUrl(?string $path): ?string

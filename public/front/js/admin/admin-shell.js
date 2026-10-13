@@ -20,9 +20,11 @@
     const sidebarStorageKey = "palprints-admin-sidebar-collapsed";
     let toastTimer = 0;
 
-    function showToast(message) {
+    /* type: "success" (default), "warning" or "error": it picks the icon and the coloured edge. */
+    function showToast(message, type) {
       if (!toast) return;
       window.clearTimeout(toastTimer);
+      toast.dataset.type = type || "success";
       toast.textContent = message;
       toast.classList.add("is-visible");
       toastTimer = window.setTimeout(function () {
@@ -161,7 +163,16 @@
 
     if (logoutForm) {
       logoutForm.addEventListener("submit", function (event) {
-        if (!window.confirm("هل تريد تسجيل الخروج من لوحة الإدارة؟")) event.preventDefault();
+        event.preventDefault();
+        PalAlert.confirm({
+          title: "تسجيل الخروج",
+          text: "هل تريد تسجيل الخروج من لوحة الإدارة؟",
+          confirmText: "نعم، سجّل الخروج",
+          icon: "question",
+          danger: false,
+        }).then(function (ok) {
+          if (ok) HTMLFormElement.prototype.submit.call(logoutForm);
+        });
       });
     }
 

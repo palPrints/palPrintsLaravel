@@ -13,15 +13,12 @@
     <link rel="stylesheet" href="{{ asset('front/css/customer/storefront.css') }}?v={{ filemtime(public_path('front/css/customer/storefront.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/shared/interactions.css') }}?v={{ filemtime(public_path('front/shared/interactions.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/css/shared/site-footer.css') }}?v={{ hash_file('sha256', public_path('front/css/shared/site-footer.css')) }}">
-    <link rel="stylesheet" href="{{ asset('front/shared/confirm-dialog.css') }}?v={{ filemtime(public_path('front/shared/confirm-dialog.css')) }}">
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('front/shared/table-pagination.css') }}?v={{ filemtime(public_path('front/shared/table-pagination.css')) }}">
 </head>
-<body class="@yield('body-class', 'storefront-page')" data-authenticated="{{ auth()->check() ? 'true' : 'false' }}">
+@php($isGuestShop = ! auth()->check() || auth()->user()->isGuestShopper())
+<body class="@yield('body-class', 'storefront-page'){{ $isGuestShop ? ' guest-shop' : '' }}" data-authenticated="{{ auth()->check() && ! auth()->user()->isGuestShopper() ? 'true' : 'false' }}" data-shopper="true">
     <script>
-        // Toggled from the settings page's "تقليل الحركات" switch; applied here so it takes effect on every page.
-        if (localStorage.getItem('palprints-reduce-motion') === '1') {
-            document.body.classList.add('pp-reduce-motion');
-        }
         // Toggled from the settings page's "الوضع الليلي" switch. Scoped to settings-page only
         // (not a global data-bs-theme flip) so it can't collide with the separate, page-specific
         // dark-mode CSS already baked into storefront/catalog pages.
@@ -29,8 +26,12 @@
             document.body.classList.add('pp-dark-mode');
         }
     </script>
-    @include('customer.partials.header')
-    @include('customer.partials.sidebar')
+    {{-- The design studio and the design preview are shared with designers: they get their own top bar and menu, not the shop's. --}}
+    @php($isDesignerView = auth()->user()?->hasRole('designer'))
+    @include($isDesignerView ? 'customer.partials.designer-header' : 'customer.partials.header')
+    @unless ($isGuestShop)
+        @include($isDesignerView ? 'customer.partials.designer-sidebar' : 'customer.partials.sidebar')
+    @endunless
 
     <main id="@yield('main-id', 'mainContent')" class="store-main @yield('main-class')">
         @yield('content')
@@ -49,7 +50,8 @@
     </script>
     <script src="{{ asset('front/js/customer/storefront.js') }}?v={{ filemtime(public_path('front/js/customer/storefront.js')) }}"></script>
     <script src="{{ asset('front/shared/interactions.js') }}?v={{ filemtime(public_path('front/shared/interactions.js')) }}"></script>
-    <script src="{{ asset('front/shared/confirm-dialog.js') }}?v={{ filemtime(public_path('front/shared/confirm-dialog.js')) }}"></script>
+    @include('partials.pp-alert')
+    <script src="{{ asset('front/shared/table-pagination.js') }}?v={{ filemtime(public_path('front/shared/table-pagination.js')) }}"></script>
     @stack('scripts')
 @include('partials.page-loader', ['wait' => View::hasSection('page-loader-wait')])
 </body>

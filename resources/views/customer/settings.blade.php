@@ -105,6 +105,8 @@
                             <span>تأكيد كلمة المرور</span>
                             <span class="pp-input-shell"><i class="bi bi-key-fill"></i><input id="password_confirmation" type="password" name="password_confirmation" autocomplete="new-password" required></span>
                         </label>
+                        @include('partials.password-code-field', ['field' => 'pp-field', 'shell' => 'pp-input-shell'])
+                        @error('code', 'updatePassword') <small class="pp-field-error">{{ $message }}</small> @enderror
                     </div>
                     <div class="settings-form-actions">
                         <button type="submit" class="btn-brand"><i class="bi bi-shield-check"></i> تحديث كلمة المرور</button>
@@ -167,10 +169,6 @@
                 <div class="settings-option">
                     <div><strong>الوضع الليلي</strong><small>مظهر داكن لصفحات الحساب (الحساب، الأمان، الطلبات...).</small></div>
                     <label class="pp-switch"><input type="checkbox" id="darkModeToggle"><span class="pp-switch-track"></span></label>
-                </div>
-                <div class="settings-option">
-                    <div><strong>تقليل الحركات</strong><small>تقليل مؤثرات الانتقال والحركة أثناء التصفح.</small></div>
-                    <label class="pp-switch"><input type="checkbox" id="reduceMotionToggle"><span class="pp-switch-track"></span></label>
                 </div>
             </section>
 

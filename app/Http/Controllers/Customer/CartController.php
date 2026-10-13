@@ -11,6 +11,7 @@ use App\Models\PrintFile;
 use App\Models\Product;
 use App\Models\Variant;
 use App\Services\PrintShopRouter;
+use App\Support\PrintingMethodOptions;
 use App\Support\CatalogProductData;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -26,9 +27,8 @@ class CartController extends Controller
 {
     public function index(Request $request): View
     {
-        $cart = $this->activeCart($request);
-
-        $items = $cart->items()->with(['product', 'design', 'printFiles'])->get()->map(function (CartItem $item) {
+        // A visitor who has added nothing yet has no cart at all; show it empty without creating anything.
+        $items = ($request->user() ? $this->activeCart($request)->items() : CartItem::whereRaw('1 = 0'))->with(['product', 'design', 'printFiles'])->get()->map(function (CartItem $item) {
             $options = $item->selected_options ?? [];
 
             $designImage = null;
@@ -170,6 +170,7 @@ class CartController extends Controller
         $validated = $request->validate([
             'product_code' => ['required', 'in:TSHIRT-CLASSIC,HOODIE-PREMIUM,MUG-CERAMIC'],
             'design_id' => ['required', 'integer'],
+            'printing_method' => ['nullable', 'string', 'max:30'],
             'groups' => ['required', 'array', 'min:1', 'max:99'],
             'groups.*.color_id' => ['required', 'string', 'max:40'],
             'groups.*.color_name' => ['nullable', 'string', 'max:40'],
@@ -178,6 +179,7 @@ class CartController extends Controller
             'groups.*.quantity' => ['required', 'integer', 'min:1', 'max:99'],
             'groups.*.print_areas' => ['nullable', 'array'],
             'groups.*.print_areas.*' => ['string', 'max:50'],
+            'groups.*.mockup' => ['nullable', 'array'],
         ]);
 
         $product = Product::where('code', $validated['product_code'])->where('is_active', true)->first();
@@ -204,6 +206,7 @@ class CartController extends Controller
 
         $unitPrice = (float) ($design->selling_price ?: $design->base_price);
         $cart = $this->activeCart($request);
+        $method = $this->printingMethod($validated['product_code'], $validated['printing_method'] ?? null);
 
         $router = app(PrintShopRouter::class);
         $route = $this->routeCart($request, $cart, collect($validated['groups'])->map(fn ($group) => $router->need(
@@ -212,7 +215,14 @@ class CartController extends Controller
             $group['print_areas'] ?? [],
             null,
             (int) $group['quantity'],
+            $method['code'] ?? null,
         ))->all(), null, 'product_code');
+
+        // The designer's uploaded pictures are shown through the link that only works while the design is published.
+        $designFiles = collect($design->design_payload['files'] ?? [])
+            ->filter(fn ($file) => ! empty($file['asset_id']) && str_starts_with((string) ($file['mime_type'] ?? ''), 'image/'))
+            ->mapWithKeys(fn ($file) => [(string) $file['asset_id'] => route('customer.designs.asset', [$design, $file['asset_id']], false)])
+            ->all();
 
         foreach ($validated['groups'] as $group) {
             $variant = $this->matchVariant($variants, $group['color_id'], $group['size_id']);
@@ -221,6 +231,10 @@ class CartController extends Controller
                 'color' => $group['color_name'] ?? $group['color_id'],
                 'size' => $group['size_name'] ?? $group['size_id'],
                 'print_areas' => $group['print_areas'] ?? [],
+                'printing_method' => $method['code'] ?? null,
+                'printing_method_name' => $method['name'] ?? null,
+                // How the design looked in the preview (colour and print zone), so the cart can redraw it the same way.
+                'mockup' => $this->cleanMockup((array) ($group['mockup'] ?? []), $designFiles),
             ]);
 
             $item = CartItem::firstOrNew([
@@ -256,6 +270,7 @@ class CartController extends Controller
         $validated = $request->validate([
             'product_code' => ['required', 'in:TSHIRT-CLASSIC,HOODIE-PREMIUM,MUG-CERAMIC'],
             'design_name' => ['nullable', 'string', 'max:120'],
+            'printing_method' => ['nullable', 'string', 'max:30'],
             'groups' => ['required', 'json'],
             'layout' => ['nullable', 'json', 'max:200000'],
             'files' => ['nullable', 'array', 'max:20'],
@@ -295,12 +310,14 @@ class CartController extends Controller
         $cart = $this->activeCart($request);
         $router = app(PrintShopRouter::class);
         $layoutData = ($validated['layout'] ?? null) ? json_decode($validated['layout'], true) : null;
+        $method = $this->printingMethod($validated['product_code'], $validated['printing_method'] ?? null);
         $route = $this->routeCart($request, $cart, $groups->map(fn ($group) => $router->need(
             $product,
             collect([$this->matchVariant($variants, $group['color_id'], $group['size_id'])->id]),
             $group['print_areas'] ?? [],
             is_array($layoutData) ? $layoutData : null,
             (int) $group['quantity'],
+            $method['code'] ?? null,
         ))->all(), null, 'product_code');
         $offering = $route['offerings'][$product->id];
         $user = $request->user();
@@ -323,6 +340,8 @@ class CartController extends Controller
                     'color' => $group['color_name'] ?? $group['color_id'],
                     'size' => $group['size_name'] ?? $group['size_id'],
                     'print_areas' => $group['print_areas'] ?? [],
+                    'printing_method' => $method['code'] ?? null,
+                    'printing_method_name' => $method['name'] ?? null,
                     'design_name' => $validated['design_name'] ?? null,
                     'layout' => $layout,
                     'branch_product_offering_id' => $offering->id,
@@ -378,6 +397,29 @@ class CartController extends Controller
      * @param  array<string, string>  $assetFiles  studio asset id => preview URL of the saved file
      * @return array<string, mixed>|null
      */
+    /**
+     * The printing method the customer chose, checked against what the print shops really offer for this product.
+     * Products with a single method (or none) have nothing to choose, so they return null.
+     *
+     * @return array{code: string, name: string}|null
+     */
+    private function printingMethod(string $productCode, ?string $chosen): ?array
+    {
+        $options = collect(PrintingMethodOptions::forPreview()[strtoupper($productCode)] ?? []);
+
+        if ($options->isEmpty()) {
+            return null;
+        }
+
+        $method = $options->firstWhere('id', $chosen);
+
+        if (! $method) {
+            throw ValidationException::withMessages(['printing_method' => 'اختر تقنية الطباعة قبل الإضافة إلى السلة.']);
+        }
+
+        return ['code' => $method['id'], 'name' => $method['name']];
+    }
+
     private function cleanMockup(array $mockup, array $assetFiles): ?array
     {
         $number = fn ($value, float $min = -500, float $max = 500) => max($min, min($max, round((float) $value, 3)));
@@ -458,7 +500,7 @@ class CartController extends Controller
 
         if (! $route) {
             throw ValidationException::withMessages([$errorField => $current->isEmpty()
-                ? 'لا توجد مطبعة متاحة تقدم مناطق الطباعة والألوان والمقاسات التي اخترتها بهذا الحجم حاليًا.'
+                ? ($router->explain(collect($newNeeds)) ?? 'لا توجد مطبعة متاحة تقدم مناطق الطباعة والألوان والمقاسات التي اخترتها بهذا الحجم حاليًا.')
                 : 'لا توجد مطبعة واحدة تستطيع تنفيذ كل منتجات سلتك مع هذا المنتج. أكمل طلب السلة الحالية أولًا ثم اطلب هذا المنتج في طلب منفصل.']);
         }
 
@@ -499,17 +541,24 @@ class CartController extends Controller
             ?? $variants->first();
     }
 
-    /** Shows a customer's own uploaded image (private storage) to its owner, for the cart thumbnail. */
+    /**
+     * Shows a customer's own uploaded file (private storage) to its owner, for the cart thumbnail: a picture as it is,
+     * any other file (a PDF) through the preview picture made for it.
+     */
     public function printFilePreview(Request $request, PrintFile $printFile)
     {
-        abort_unless($printFile->user_id === $request->user()->id, 403);
-        abort_unless(str_starts_with((string) $printFile->mime_type, 'image/') && $printFile->status !== PrintFile::STATUS_DELETED, 404);
+        abort_unless($request->user() && $printFile->user_id === $request->user()->id, 403);
+        abort_if($printFile->status === PrintFile::STATUS_DELETED, 404);
 
-        $disk = Storage::disk($printFile->disk ?: 'local');
-        abort_unless($disk->exists($printFile->stored_path), 404);
+        $isPicture = str_starts_with((string) $printFile->mime_type, 'image/');
+        abort_unless($isPicture || $printFile->preview_path, 404);
 
-        return response()->file($disk->path($printFile->stored_path), [
-            'Content-Type' => $printFile->mime_type,
+        $disk = Storage::disk(($isPicture ? $printFile->disk : ($printFile->preview_disk ?: $printFile->disk)) ?: 'local');
+        $path = $isPicture ? $printFile->stored_path : $printFile->preview_path;
+        abort_unless($disk->exists($path), 404);
+
+        return response()->file($disk->path($path), [
+            'Content-Type' => $isPicture ? $printFile->mime_type : ($disk->mimeType($path) ?: 'image/jpeg'),
             'Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'", // keeps an uploaded SVG from running scripts
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, max-age=3600',
@@ -560,71 +609,6 @@ class CartController extends Controller
 
         return back()->with('status', 'item-removed');
     }
-    public function previewPrintFile(Request $request, PrintFile $printFile): BinaryFileResponse
-    {
-        abort_unless($printFile->user_id === $request->user()->id, 403);
-        abort_unless($printFile->preview_path && $printFile->status !== PrintFile::STATUS_DELETED, 404);
-
-        $disk = $printFile->preview_disk ?: $printFile->disk ?: 'local';
-        abort_unless(Storage::disk($disk)->exists($printFile->preview_path), 404);
-
-        $path = Storage::disk($disk)->path($printFile->preview_path);
-        $mime = Storage::disk($disk)->mimeType($printFile->preview_path) ?: 'image/jpeg';
-
-        return response()->file($path, ['Content-Type' => $mime]);
-    }
-
-
-    private function paperOptionTags(array $options): array
-    {
-        $labels = [
-            'paper_size' => 'حجم الورق',
-            'paper_type' => 'نوع الورق',
-            'color_mode' => 'لون الطباعة',
-            'sides' => 'جوانب الطباعة',
-            'layout' => 'تخطيط الصفحة',
-            'grouping' => 'طريقة الملفات',
-            'binding' => 'التغليف',
-            'quantity' => 'الكمية',
-            'file_count' => 'عدد الملفات',
-            'page_count' => 'عدد الصفحات',
-        ];
-
-        $values = [
-            'standard' => 'عادي 80 جم',
-            'thick' => 'فاخر 120 جم',
-            'coated' => 'مصقول 150 جم',
-            'bw' => 'أبيض وأسود',
-            'color' => 'ملون',
-            'single' => 'وجه واحد',
-            'double' => 'وجهين',
-            '1' => 'صفحة واحدة لكل وجه',
-            '2' => 'صفحتان لكل وجه',
-            '4' => '4 صفحات لكل وجه',
-            'combined' => 'دمج الملفات',
-            'separate' => 'فصل الملفات',
-            'none' => 'بدون تغليف',
-        ];
-
-        return collect($labels)
-            ->map(function (string $label, string $key) use ($options, $values) {
-                if (! array_key_exists($key, $options) || $options[$key] === '' || $options[$key] === null) {
-                    return null;
-                }
-
-                $value = $options[$key];
-                if (is_array($value)) {
-                    $value = implode('، ', array_map(fn ($item) => $values[(string) $item] ?? (string) $item, $value));
-                } else {
-                    $value = $values[(string) $value] ?? (string) $value;
-                }
-
-                return $label.': '.$value;
-            })
-            ->filter()
-            ->values()
-            ->all();
-    }
 
     private function createPreview(UploadedFile $file, string $storedPath, string $extension, int $userId): array
     {
@@ -660,7 +644,7 @@ class CartController extends Controller
 
     private function authorizeItem(Request $request, CartItem $cartItem): void
     {
-        abort_unless($cartItem->cart->user_id === $request->user()->id, 403);
+        abort_unless($request->user() && $cartItem->cart->user_id === $request->user()->id, 403);
     }
 
     private function detectPageCount(UploadedFile $file, string $extension): ?int

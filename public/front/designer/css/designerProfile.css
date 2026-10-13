@@ -755,6 +755,153 @@ html[data-bs-theme="dark"] .designer-skill-chip {
   box-shadow: 0 0 0 3px rgb(22 119 255 / 12%);
 }
 
+/* The border and soft shadow already show focus, so the page-wide outline would draw a second line. */
+.profile-page .designer-fields input:focus-visible,
+.profile-page .designer-fields textarea:focus-visible {
+  outline: none;
+}
+
+.designer-fields input[aria-invalid="true"]:focus,
+.designer-fields textarea[aria-invalid="true"]:focus {
+  border-color: #f04438;
+  box-shadow: 0 0 0 3px rgb(240 68 56 / 12%);
+}
+
+.designer-fields textarea.designer-bio-field {
+  min-height: 140px;
+  line-height: 1.7;
+  resize: vertical;
+}
+
+.designer-bio-text {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+
+.designer-skills-field > label {
+  display: block;
+  color: #0b1f3a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.designer-skills-field > label em {
+  color: #e11d25;
+  font-style: normal;
+}
+
+.designer-skills-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 5px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #d9e4f2;
+  border-radius: 9px;
+}
+
+.designer-skills-box:hover,
+.designer-skills-box:focus-within {
+  border-color: #1677ff;
+  box-shadow: 0 0 0 3px rgb(22 119 255 / 12%);
+}
+
+.designer-skills-box.is-invalid,
+.designer-skills-box.is-invalid:focus-within {
+  border-color: #f04438;
+  box-shadow: 0 0 0 3px rgb(240 68 56 / 12%);
+}
+
+.designer-skills-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #d9e4f2;
+}
+
+.designer-skills-chips:empty {
+  display: none;
+}
+
+.designer-skills-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.designer-skills-chips .designer-skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.designer-skills-chips .designer-skill-chip button {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.designer-skills-chips .designer-skill-chip button:hover {
+  background: rgb(8 103 232 / 14%);
+}
+
+.designer-fields .designer-skills-box input {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  min-height: 38px;
+  margin: 0;
+  padding: 4px 2px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.designer-fields .designer-skills-box input:hover,
+.designer-fields .designer-skills-box input:focus {
+  border: 0;
+  box-shadow: none;
+}
+
+.designer-skills-add {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 38px;
+  padding: 0 16px;
+  color: #0867e8;
+  background: #eff6ff;
+  border: 1px solid #cfe2ff;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.designer-skills-add:hover {
+  background: #dbeafe;
+}
+
+html[data-bs-theme="dark"] .designer-skills-box {
+  background: #0f1829;
+  border-color: #263654;
+}
+
 .designer-input-icon {
   position: relative;
   display: flex;
@@ -918,7 +1065,7 @@ html[data-bs-theme="dark"] .designer-skill-chip {
 }
 
 .designer-form-actions {
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 18px 8px 0;
 }
 

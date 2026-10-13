@@ -869,6 +869,9 @@ img {
   padding: 6px 12px;
 }
 
+/* The empty-state rows are table rows (display: table-row) so the plain [hidden] attribute would not hide them. */
+.printshop-empty-search[hidden] { display: none; }
+
 .printshop-empty-search td {
   padding: 34px 20px;
   color: var(--pp-navy-500);
@@ -895,8 +898,8 @@ img {
 .printshop-toast {
   position: fixed;
   z-index: 300;
-  inset-inline-start: 24px;
-  inset-block-end: 24px;
+  inset-inline-end: 24px;
+  inset-block-start: 86px;
   max-width: min(360px, calc(100vw - 32px));
   padding: 11px 16px;
   color: #fff;
@@ -907,14 +910,21 @@ img {
   font-weight: 600;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(12px);
+  transform: translateY(-12px);
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.printshop-toast.is-visible {
+.printshop-toast.is-visible,
+.printshop-toast.show {
   opacity: 1;
+  visibility: visible;
   transform: translateY(0);
 }
+
+/* A toast that is not showing a message takes no space and is never drawn (no empty dark pill). The profile page toast uses .show. */
+.printshop-toast:not(.is-visible):not(.show) { visibility: hidden; }
+.printshop-toast:empty,
+.printshop-toast:has(> span:empty) { display: none; }
 
 /* Wallet-page motion language applied to the dashboard content. */
 .printshop-stat-card,
@@ -1155,7 +1165,7 @@ img {
 
   .printshop-toast {
     inset-inline: 16px;
-    inset-block-end: 16px;
+    inset-block-start: 76px;
     max-width: none;
   }
 }
@@ -1253,4 +1263,47 @@ img {
     inset-inline: 12px auto;
     width: min(240px, calc(100vw - 24px));
   }
+}
+
+/* Notification dropdown (real unread notifications). Selectors are prefixed on purpose: buttons and links keep their
+   browser look unless something this specific says otherwise. */
+.notification-wrap .notification-dropdown { width: 340px; max-width: calc(100vw - 24px); }
+.notification-wrap .notification-list { max-height: 360px; margin: 0; padding: 6px; overflow-y: auto; list-style: none; }
+.notification-wrap .notification-list li { margin: 0; padding: 0; list-style: none; }
+.notification-wrap .notification-list li + li { margin-top: 4px; }
+.notification-wrap .notification-list form { margin: 0; }
+.notification-wrap .notification-entry {
+  -webkit-appearance: none;
+  appearance: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 10px;
+  color: #0b1f3a;
+  text-align: start;
+  background: #eff6ff;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color .16s ease;
+}
+.notification-wrap .notification-entry:hover,
+.notification-wrap .notification-entry:focus-visible { background: #dae9ff; }
+.notification-wrap .notification-entry__icon { flex: none; display: grid; place-items: center; width: 36px; height: 36px; color: #1677ff; background: #fff; border-radius: 10px; font-size: 1rem; }
+.notification-wrap .notification-entry__body { display: grid; gap: 2px; min-width: 0; flex: 1; text-align: start; }
+.notification-wrap .notification-entry__body strong { color: #0b1f3a; font-size: 13px; line-height: 1.5; }
+.notification-wrap .notification-entry__body small { color: #5b7394; font-size: 12px; line-height: 1.6; }
+.notification-wrap .notification-entry__body time { color: #5b7394; font-size: 11px; opacity: .85; }
+.notification-wrap .notification-dropdown-footer { display: block; padding: 11px 12px; color: #1677ff; text-align: center; text-decoration: none; border-top: 1px solid #dfe8f3; font-size: 12.5px; font-weight: 700; }
+.notification-wrap .notification-dropdown-footer:hover { background: #f7fafd; border-radius: 0 0 12px 12px; }
+html[data-bs-theme="dark"] .notification-wrap .notification-entry { color: #e6edf7; background: #1a2740; }
+html[data-bs-theme="dark"] .notification-wrap .notification-entry:hover { background: #22324f; }
+html[data-bs-theme="dark"] .notification-wrap .notification-entry__icon { background: #111a2e; }
+html[data-bs-theme="dark"] .notification-wrap .notification-entry__body strong { color: #e6edf7; }
+
+@media (max-width: 760px) {
+  .notification-wrap .notification-dropdown { width: auto; max-width: none; }
 }

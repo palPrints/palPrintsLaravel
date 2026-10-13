@@ -8,6 +8,7 @@ use App\Models\DesignFavorite;
 use App\Models\Product;
 use App\Support\CatalogProductData;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Storage;
 
 class CatalogController extends Controller
 {
@@ -266,9 +267,52 @@ class CatalogController extends Controller
             'designer' => $design->designer?->name ?? 'PalPrints Designer',
             'price' => (float) ($design->selling_price ?: $design->base_price),
             'image' => $design->image ? asset($design->image) : asset($fallbackImage),
+            // What the designer placed on each print area, so the preview can draw it on any colour; the uploaded pictures
+            // are private files, so each one is given a link that only works for a published design.
+            'layout' => $this->previewLayout($design),
+            'assets' => $this->previewAssets($design),
             'is_favorite' => $isFavorite,
             'favorite_url' => route('customer.designs.favorite', $design),
         ];
+    }
+
+    /**
+     * The objects the designer placed, per print area (positions and sizes are fractions of the print zone).
+     *
+     * @return array<string, array<int, array<string, mixed>>>
+     */
+    private function previewLayout(Design $design): array
+    {
+        return collect($design->design_payload['layout']['areas'] ?? [])
+            ->map(fn ($area) => array_values(array_filter((array) ($area['objects'] ?? []), 'is_array')))
+            ->filter()
+            ->all();
+    }
+
+    /** @return array<string, string> studio asset id => link to the designer's uploaded picture */
+    private function previewAssets(Design $design): array
+    {
+        return collect($design->design_payload['files'] ?? [])
+            ->filter(fn ($file) => ! empty($file['asset_id']) && str_starts_with((string) ($file['mime_type'] ?? ''), 'image/'))
+            ->mapWithKeys(fn ($file) => [(string) $file['asset_id'] => route('customer.designs.asset', [$design, $file['asset_id']], false)])
+            ->all();
+    }
+
+    /** A picture the designer uploaded into a design that is on sale, shown in the customer's preview of that design. */
+    public function designAsset(Design $design, string $assetId)
+    {
+        abort_unless($design->status === 'published', 404);
+
+        $file = collect($design->design_payload['files'] ?? [])->firstWhere('asset_id', $assetId);
+
+        abort_unless($file && str_starts_with((string) ($file['mime_type'] ?? ''), 'image/') && Storage::disk('local')->exists($file['path']), 404);
+
+        return Storage::disk('local')->response($file['path'], null, [
+            'Content-Type' => $file['mime_type'],
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'; sandbox", // keeps an uploaded SVG from running scripts
+            'Cache-Control' => 'private, max-age=3600',
+        ]);
     }
 
     /**

@@ -266,6 +266,7 @@
        3) enable the preview button and continue to the customer preview page. */
     (async function loadStudio() {
       const DB = @json($dbCatalog);
+      const EDIT = @json($editDesign ?? null);
       const SEED_KEY = "palprintsStudioSeed";
       const SELECTION_KEY = "palprintsDesignerSelection";
       const DESIGN_PREFIX = "palprintsDesign:";
@@ -292,6 +293,15 @@
           if (!src) return;
           const dbColorIds = (db.colors || []).map(function (color) { return String(color.id).toLowerCase(); });
           let colors = src.colors.filter(function (color) { return dbColorIds.includes(color.id); });
+          // Colours the admin added have no photo: tint the white garment (t-shirts and hoodies only).
+          const white = src.colors.find(function (color) { return color.id === "white"; });
+          if (white && (src.categoryId === "tshirts" || src.categoryId === "hoodies")) {
+            colors = (db.colors || []).map(function (color) {
+              const id = String(color.id).toLowerCase();
+              const known = src.colors.find(function (item) { return item.id === id; });
+              return known || { id: id, name: color.name, value: color.value, image: white.image, areaMockups: white.areaMockups, tint: color.value };
+            });
+          }
           if (!colors.length) colors = src.colors;
           let sizes = (db.sizes || []).map(function (size) { const id = studioSizeId(size.id); return { id: id, name: id === "standard" ? "قياسي" : id }; });
           if (!sizes.length) sizes = src.sizes;
@@ -370,13 +380,18 @@
       async function openUploadedDesign(seed) {
         const catalog = (window.PALPRINTS_PRODUCT_CATALOG || {}).products || [];
         const product = catalog.find(function (item) { return item.categoryId === seed.kind; });
+        if (!product) return;
         const blob = await readPendingUpload();
-        if (!product || !blob) return;
 
         const designId = "customer-" + seed.designId;
         const colorId = product.colors.some(function (c) { return c.id === String(seed.colorId || "").toLowerCase(); }) ? String(seed.colorId).toLowerCase() : product.defaultColor;
         const sizeId = product.sizes.some(function (s) { return s.id === studioSizeId(seed.sizeId); }) ? studioSizeId(seed.sizeId) : product.sizes[0].id;
         const areaId = product.editor.printAreas.some(function (a) { return a.id === studioAreaId(seed.areaId); }) ? studioAreaId(seed.areaId) : product.editor.defaultAreaId;
+        // No uploaded picture to place: still open the studio on the product the customer chose.
+        if (!blob) {
+          sessionStorage.setItem(SELECTION_KEY, JSON.stringify({ productId: product.id, editorProduct: product, colorId: colorId, sizeId: sizeId, printAreaIds: [areaId] }));
+          return;
+        }
         sessionStorage.setItem(SELECTION_KEY, JSON.stringify({ productId: product.id, editorProduct: product, colorId: colorId, sizeId: sizeId, printAreaIds: [areaId], designId: designId }));
 
         const size = await imageSize(blob);
@@ -412,6 +427,12 @@
         }, 200);
 
         button.addEventListener("click", function () {
+          // A design that sticks out of the print zone is cut off in the print file: stop here and say where.
+          const overflowing = window.PALPRINTS_DESIGN_STUDIO_EXPORT?.overflowAreaNames?.() || [];
+          if (overflowing.length) {
+            PalAlert.alert("بعض عناصر التصميم تتجاوز حدود منطقة الطباعة (" + overflowing.join("، ") + "). الأجزاء الخارجة لن تُطبع، لذلك صغّرها أو حرّكها إلى داخل الإطار ثم تابع إلى المعاينة.", { title: "التصميم خارج منطقة الطباعة", icon: "warning" });
+            return;
+          }
           // The studio saves edits a moment after each change; wait for the last one.
           setTimeout(function () {
             try {
@@ -419,14 +440,14 @@
               const doc = selection && JSON.parse(localStorage.getItem(DESIGN_PREFIX + selection.designId) || "null");
               const productId = doc && doc.activeProductId;
               const draft = doc && doc.drafts && doc.drafts[productId];
-              if (!draft) { window.alert("تعذر حفظ التصميم. حاول مرة أخرى."); return; }
+              if (!draft) { PalAlert.alert("تعذر حفظ التصميم. حاول مرة أخرى.", { icon: "error" }); return; }
               sessionStorage.setItem("palprintsStudioWorkflowContext", JSON.stringify({
                 schemaVersion: 1, workflowMode: @json($workflowMode ?? 'customer'), source: "design-studio", designId: selection.designId,
                 productId: productId, activeAreaId: draft.activeAreaId,
                 preview: { colorId: draft.colorId || null, sizeId: draft.sizeId || null }, updatedAt: new Date().toISOString()
               }));
               window.location.href = @json($previewUrl ?? route('customer.productPreview'));
-            } catch (error) { window.alert("تعذر فتح المعاينة. حاول مرة أخرى."); }
+            } catch (error) { PalAlert.alert("تعذر فتح المعاينة. حاول مرة أخرى.", { icon: "error" }); }
           }, 400);
         });
       }
@@ -452,6 +473,71 @@
           if (!fresh.sizes.some(function (size) { return size.id === selection.sizeId; })) selection.sizeId = fresh.sizes[0].id;
           sessionStorage.setItem(SELECTION_KEY, JSON.stringify(selection));
         } catch (error) { /* Nothing stored, or storage is blocked. */ }
+      }
+
+      /* A designer reopening a saved draft or rejected design: put its layout, colour, size and artwork pictures back in the
+         studio exactly like openUploadedDesign does for a customer's upload, under a fresh studio id. The server's own copy
+         is only replaced when the designer saves again (the publish step sends editingDesignId). */
+      async function openSavedDesign(edit) {
+        const EDITING_KEY = "palprintsEditingDesign";
+        const catalog = (window.PALPRINTS_PRODUCT_CATALOG || {}).products || [];
+        const product = catalog.find(function (item) { return item.code === String(edit.productCode || "").toUpperCase(); });
+        if (!product) return;
+
+        // A refresh of this page must not throw away what was changed since it was opened.
+        try {
+          const editing = JSON.parse(sessionStorage.getItem(EDITING_KEY) || "null");
+          if (editing && editing.id === edit.id && localStorage.getItem(DESIGN_PREFIX + editing.designId)) return;
+        } catch (error) { /* start over from the saved design */ }
+
+        const designId = "designer-edit-" + edit.id + "-" + Date.now();
+        const colorId = product.colors.some(function (c) { return c.id === edit.colorId; }) ? edit.colorId : product.defaultColor;
+        const sizeId = product.sizes.some(function (s) { return s.id === edit.sizeId; }) ? edit.sizeId : product.sizes[0].id;
+
+        // Every print area of the product exists in the draft; areas the product no longer has are left out.
+        const areas = {};
+        product.editor.printAreas.forEach(function (a) {
+          const saved = edit.areas && edit.areas[a.id];
+          areas[a.id] = { objects: saved && Array.isArray(saved.objects) ? saved.objects : [] };
+        });
+        const filled = product.editor.printAreas.find(function (a) { return areas[a.id].objects.length; });
+        const areaId = filled ? filled.id : product.editor.defaultAreaId;
+
+        // The artwork comes back from the server into the studio's own picture store.
+        const loaded = [];
+        for (const file of edit.files || []) {
+          try {
+            const response = await fetch(file.url, { credentials: "same-origin" });
+            if (!response.ok) continue;
+            const blob = await response.blob();
+            if (!(await putAsset(designId, file.assetId, blob))) {
+              const reader = new FileReader();
+              const dataUrl = await new Promise(function (resolve, reject) { reader.onload = function () { resolve(reader.result); }; reader.onerror = reject; reader.readAsDataURL(blob); });
+              localStorage.setItem(ASSET_FALLBACK_PREFIX + designId + ":" + file.assetId, dataUrl);
+            }
+            loaded.push(file.assetId);
+          } catch (error) { /* this picture stays missing; the studio shows the rest */ }
+        }
+
+        sessionStorage.setItem(SELECTION_KEY, JSON.stringify({
+          productId: product.id, editorProduct: product, colorId: colorId, sizeId: sizeId, printAreaIds: [areaId],
+          category: edit.category || null, designId: designId, designName: edit.name
+        }));
+        localStorage.setItem(DESIGN_PREFIX + designId, JSON.stringify({
+          schemaVersion: 2, designId: designId, activeProductId: product.id,
+          assets: (edit.assets || []).filter(function (asset) { return loaded.includes(asset.assetId); }),
+          drafts: { [product.id]: { productId: product.id, colorId: colorId, sizeId: sizeId, activeAreaId: areaId, areas: areas } },
+          updatedAt: new Date().toISOString()
+        }));
+        // The preview page starts from the colours and sizes the designer approved before (it reads these two keys for the
+        // design it is showing), and the publish step from the name and price; saving updates this design, not a new one.
+        const validColors = (edit.allowedColorIds || []).filter(function (id) { return product.colors.some(function (c) { return c.id === id; }); });
+        sessionStorage.setItem("palprintsReviewState", JSON.stringify({
+          workflowMode: "designer", designId: designId, productId: product.id,
+          allowedColorIds: validColors.length ? validColors : [colorId], updatedAt: new Date().toISOString()
+        }));
+        sessionStorage.setItem("palprintsDesignerPublish", JSON.stringify({ designId: designId, allowedSizeIds: edit.allowedSizeIds || [] }));
+        sessionStorage.setItem(EDITING_KEY, JSON.stringify({ id: edit.id, designId: designId, name: edit.name, sellingPrice: edit.sellingPrice }));
       }
 
       /* A designer picks the product on the designer "choose product" page, which saves only database ids
@@ -484,6 +570,7 @@
         const seed = JSON.parse(sessionStorage.getItem(SEED_KEY) || "null");
         sessionStorage.removeItem(SEED_KEY);
         if (seed && seed.source === "upload") await openUploadedDesign(seed);
+        if (EDIT) await openSavedDesign(EDIT);
         adoptDesignerSelection();
         refreshStoredSelection();
       } catch (error) { /* The studio opens with whatever selection already exists. */ }
