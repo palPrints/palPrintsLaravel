@@ -156,6 +156,40 @@ test('approving the payment queues the WhatsApp offer for the chosen shop', func
     Queue::assertPushed(SendOrderOfferToShop::class, fn ($job) => $job->orderId === $this->order->id && $job->printProviderId === $this->provider->id);
 });
 
+test('after approving, the admin gets a wa.me link with the order written for the shop', function () {
+    Queue::fake();
+    $this->customer->update(['name' => 'سارة العميلة']);
+    $this->order->update(['status' => 'awaiting_payment_review', 'payment_status' => 'pending_review']);
+    $payment = Payment::create([
+        'order_id' => $this->order->id, 'user_id' => $this->customer->id, 'payment_number' => 'PAY-WA-2',
+        'status' => 'pending_review', 'method' => 'bank', 'amount' => 50, 'gateway_payload' => ['mode' => 'manual_receipt_review'],
+    ]);
+
+    $response = $this->actingAs($this->admin)->post(route('admin.payment-notices.approve', $payment), ['branch_id' => $this->branch->id]);
+
+    $chat = $response->getSession()->get('notice_whatsapp');
+    expect($chat['shop'])->toBe('مطبعة النور')
+        ->and($chat['url'])->toStartWith('https://wa.me/970599123456?text=');
+
+    $text = rawurldecode(explode('?text=', $chat['url'])[1]);
+    expect($text)->toContain('PLP-WA-1')
+        ->toContain('طباعة الأوراق × 3')
+        ->toContain('60.00 ₪')
+        ->toContain(route('print-provider.requests'))
+        ->not->toContain('سارة العميلة');
+
+    // The reviewed list keeps the button for later.
+    $this->actingAs($this->admin)->get(route('admin.payment-notices'))
+        ->assertOk()
+        ->assertSee('https://wa.me/970599123456', false);
+});
+
+test('without a whatsapp number the admin is told the shop only sees the dashboard', function () {
+    $this->provider->update(['whatsapp_number' => null]);
+
+    expect(\App\Services\WhatsApp\ShopChatLink::forOrder($this->order))->toBe(['url' => null, 'shop' => 'مطبعة النور']);
+});
+
 test('the offer is the approved template with the order details and accept / reject buttons', function () {
     $offer = ($this->sendOffer)();
 
