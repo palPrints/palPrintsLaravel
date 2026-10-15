@@ -7,15 +7,18 @@ use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\PrintFile;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\Variant;
 use App\Models\WhatsAppMessage;
 use App\Services\WhatsApp\PhoneNumber;
+use App\Services\WhatsApp\ShopChatLink;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Http\Client\Request as HttpRequest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     config([
@@ -188,6 +191,40 @@ test('after approving, the admin gets a wa.me link with the order written for th
     $this->actingAs($this->admin)->get(route('admin.payment-notices'))
         ->assertOk()
         ->assertSee('https://wa.me/970599123456', false);
+});
+
+test('the wa.me message links each print file, and the signed link downloads it without logging in', function () {
+    Storage::fake('local');
+    Storage::disk('local')->put('customer-print-files/wa/a.pdf', '%PDF-1.4 test');
+    $file = PrintFile::create([
+        'user_id' => $this->customer->id, 'product_id' => $this->product->id, 'order_item_id' => $this->order->items()->value('id'),
+        'original_name' => 'عقد.pdf', 'stored_path' => 'customer-print-files/wa/a.pdf', 'disk' => 'local',
+        'mime_type' => 'application/pdf', 'extension' => 'pdf', 'file_size' => 13, 'status' => 'attached_to_order',
+    ]);
+
+    $text = rawurldecode(explode('?text=', ShopChatLink::forOrder($this->order->fresh())['url'])[1]);
+    expect($text)->toContain('📄 عقد.pdf');
+
+    preg_match('#https?://\S+/shared/print-files/'.$file->id.'\?\S+#', $text, $match);
+    expect($match)->not->toBeEmpty();
+    $link = $match[0];
+
+    // Works for a guest, with the original file name.
+    $this->get($link)->assertOk()
+        ->assertHeader('content-disposition', "attachment; filename=aakd.pdf; filename*=utf-8''".rawurlencode('عقد.pdf'));
+
+    // A changed signature, or the plain URL, is refused.
+    $this->get($link.'x')->assertForbidden();
+    $this->get(route('print-files.shared', $file))->assertForbidden();
+
+    // After the link expires.
+    $this->travel(8)->days();
+    $this->get($link)->assertForbidden();
+    $this->travelBack();
+
+    // A file the customer deleted is gone even with a valid link.
+    $file->update(['status' => PrintFile::STATUS_DELETED]);
+    $this->get($link)->assertNotFound();
 });
 
 test('without a whatsapp number the admin is told the shop only sees the dashboard', function () {

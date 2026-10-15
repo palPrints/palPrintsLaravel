@@ -35,7 +35,7 @@ class PaymentNoticeController extends Controller
     public function index(): View
     {
         $payments = Payment::query()
-            ->with(['order.user', 'order.items.product', 'order.items.printProviderBranch.printProvider'])
+            ->with(['order.user', 'order.items.product', 'order.items.printFiles', 'order.items.printProviderBranch.printProvider'])
             ->whereHas('order')
             ->latest()
             ->limit(100)
