@@ -40,6 +40,7 @@ use App\Http\Controllers\PrintProvider\SupportController as PrintProviderSupport
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleDashboardController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\WhatsAppWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -51,6 +52,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('index');
 })->name('home');
+
+// WhatsApp Cloud API webhook (Meta). Public, outside CSRF; the controller checks Meta's signature.
+Route::get('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'verify'])->middleware('throttle:60,1')->name('webhooks.whatsapp.verify');
+Route::post('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'receive'])->middleware('throttle:600,1')->name('webhooks.whatsapp');
 
 Route::view('/about', 'about')->name('about');
 Route::view('/faq', 'pages.faq')->name('faq');

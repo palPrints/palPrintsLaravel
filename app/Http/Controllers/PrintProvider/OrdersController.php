@@ -5,9 +5,8 @@ namespace App\Http\Controllers\PrintProvider;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\OrderStatusHistory;
 use App\Models\PrintFile;
-use App\Support\OrderNotifier;
+use App\Services\Orders\ShopOrderTransitions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -34,11 +33,6 @@ class OrdersController extends Controller
         'rejected' => ['rejected', 'مرفوضة', 'is-rejected'],
         'cancelled' => ['rejected', 'ملغية', 'is-rejected'],
     ];
-
-    /** The admin approving the payment leaves the order "processing": it is new to the shop until the shop accepts it. */
-    private const NEW_STATUSES = ['pending', 'processing'];
-
-    private const PROGRESS_STATUSES = ['confirmed', 'in_production'];
 
     /** Human labels for the options saved on an order item. */
     private const OPTION_LABELS = [
@@ -92,26 +86,26 @@ class OrdersController extends Controller
         ]);
     }
 
-    public function accept(Request $request, Order $order): JsonResponse
+    public function accept(Request $request, Order $order, ShopOrderTransitions $transitions): JsonResponse
     {
         $order = $this->ownedOrder($request, $order);
 
-        return $this->transition($request, $order, self::NEW_STATUSES, 'confirmed', 'تم قبول الطلب وبدأ تنفيذه.');
+        return $this->respond($transitions->accept($order, $request->user()), 'تم قبول الطلب وبدأ تنفيذه.');
     }
 
-    public function reject(Request $request, Order $order): JsonResponse
+    public function reject(Request $request, Order $order, ShopOrderTransitions $transitions): JsonResponse
     {
         $order = $this->ownedOrder($request, $order);
         $data = $request->validate(['reason' => ['required', 'string', 'min:3', 'max:500']]);
 
-        return $this->transition($request, $order, self::NEW_STATUSES, 'rejected', 'تم رفض الطلب.', $data['reason']);
+        return $this->respond($transitions->reject($order, $request->user(), $data['reason']), 'تم رفض الطلب.');
     }
 
-    public function ready(Request $request, Order $order): JsonResponse
+    public function ready(Request $request, Order $order, ShopOrderTransitions $transitions): JsonResponse
     {
         $order = $this->ownedOrder($request, $order);
 
-        return $this->transition($request, $order, self::PROGRESS_STATUSES, 'ready', 'تم تحديد الطلب كجاهز للتسليم.');
+        return $this->respond($transitions->ready($order, $request->user()), 'تم تحديد الطلب كجاهز للتسليم.');
     }
 
     /** Download one of the customer's print files — only for an item that was routed to this shop. */
@@ -130,31 +124,10 @@ class OrdersController extends Controller
         ]);
     }
 
-    private function transition(Request $request, Order $order, array $from, string $to, string $message, ?string $note = null): JsonResponse
+    private function respond(bool $moved, string $message): JsonResponse
     {
-        $previous = $order->status;
-
-        // One conditional update, so a double click (or two people) cannot move the same order twice.
-        $moved = Order::query()->whereKey($order->id)->whereIn('status', $from)->update(['status' => $to, 'updated_at' => now()]);
-
-        if ($moved === 0) {
+        if (! $moved) {
             return response()->json(['message' => 'لا يمكن تنفيذ هذا الإجراء على الطلب بحالته الحالية.'], 422);
-        }
-
-        OrderStatusHistory::create([
-            'order_id' => $order->id,
-            'changed_by' => $request->user()->id,
-            'from_status' => $previous,
-            'to_status' => $to,
-            'note' => $note,
-        ]);
-
-        if ($order->user_id) {
-            OrderNotifier::statusChanged((int) $order->user_id, $order->order_number, $to, $note);
-        }
-
-        if ($to === 'rejected') {
-            OrderNotifier::rejectedByShop($order->order_number, (string) $request->user()->printProvider?->company_name, (string) $note);
         }
 
         return response()->json(['message' => $message]);
@@ -208,9 +181,9 @@ class OrdersController extends Controller
             'alert' => $waitingDays >= 2 ? 'ينتظر ردك منذ '.$waitingDays.' أيام' : null,
             'notes' => $order->notes,
             'actions' => [
-                'accept' => in_array($order->status, self::NEW_STATUSES, true),
-                'reject' => in_array($order->status, self::NEW_STATUSES, true),
-                'ready' => in_array($order->status, self::PROGRESS_STATUSES, true),
+                'accept' => in_array($order->status, ShopOrderTransitions::NEW_STATUSES, true),
+                'reject' => in_array($order->status, ShopOrderTransitions::NEW_STATUSES, true),
+                'ready' => in_array($order->status, ShopOrderTransitions::PROGRESS_STATUSES, true),
             ],
             'items' => $order->items->map(fn (OrderItem $item) => $this->presentItem($order, $item))->values()->all(),
         ];

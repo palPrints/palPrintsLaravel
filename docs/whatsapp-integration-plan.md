@@ -11,7 +11,22 @@ Meta changes limits, pricing and API versions often. Re-check every **[K]** and 
 
 ---
 
-## 0. What the codebase looks like today (constraints on the plan)
+## Status — 2026-10-15
+
+The codebase moved on after this plan was written, which simplifies it:
+
+- **Step 0 already exists.** `CheckoutService` turns the cart into an `Order` + `OrderItem`s (with `provider_cost`); the admin approves the payment notice and routes the **whole order to one branch** (`Admin\PaymentNoticeController@approve`). So there is one shop per order and the per-shop `provider_order_assignments` table is not needed: `orders.status` (`processing` → `confirmed` / `rejected` → `ready`) is the state.
+- **Built on `feature/whatsapp-integration`:**
+  - `config/whatsapp.php` + `WHATSAPP_*` in `.env.example` (`WHATSAPP_ENABLED=false` by default).
+  - Migration: `print_providers.whatsapp_notifications_enabled`, `whatsapp_opted_in_at`; table `whatsapp_messages` (outbound + inbound log, unique wamid = webhook dedupe).
+  - `PhoneNumber::normalize()` (E.164 digits, default country 970); the profile form validates and stores the normalised number and has the opt-in checkbox.
+  - `ShopOrderTransitions`: accept / reject / ready, shared by the dashboard and WhatsApp.
+  - `SendOrderOfferToShop` job, dispatched after commit when the admin approves the payment: template `new_print_order` with quick replies `accept:<token>` / `reject:<token>`; 4xx → failed, no retry; 5xx/429 → retried.
+  - `GET|POST /webhooks/whatsapp`: verify-token handshake, `X-Hub-Signature-256` check on the raw body, monotonic delivery statuses, button taps. Reject asks for the reason by text (30 min), "إلغاء" cancels.
+  - `tests/Feature/WhatsAppIntegrationTest.php`.
+- **Still to do:** Meta setup (§3) and template approval (§7, body text in `config/whatsapp.php`), sandbox E2E (§22.6), reminders/expiry (§14), admin message log + resend, follow-up design images.
+
+## 0. What the codebase looked like on 2026-10-02 (constraints on the plan)
 
 | Fact | Consequence |
 |---|---|

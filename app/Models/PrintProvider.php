@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\WhatsApp\PhoneNumber;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -16,6 +17,8 @@ class PrintProvider extends Model
         'address',
         'phone',
         'whatsapp_number',
+        'whatsapp_notifications_enabled',
+        'whatsapp_opted_in_at',
         'contact_email',
         'services',
         'working_hours',
@@ -43,6 +46,8 @@ class PrintProvider extends Model
         'approved_at' => 'datetime',
         'total_earnings' => 'decimal:2',
         'is_active' => 'boolean',
+        'whatsapp_notifications_enabled' => 'boolean',
+        'whatsapp_opted_in_at' => 'datetime',
     ];
 
     // ========== ط§ظ„ط¹ظ„ط§ظ‚ط§طھ ==========
@@ -59,6 +64,16 @@ class PrintProvider extends Model
     public function branches()
     {
         return $this->hasMany(PrintProviderBranch::class);
+    }
+
+    /** The shop's WhatsApp number in international digits when it agreed to get orders there and may receive them, else null. */
+    public function whatsappRecipient(): ?string
+    {
+        if (! $this->whatsapp_notifications_enabled || ! $this->is_active || $this->approval_status !== 'approved') {
+            return null;
+        }
+
+        return PhoneNumber::normalize($this->whatsapp_number);
     }
 
     /** The shop's main branch (its offerings live there); created from the profile data when it has none yet. */

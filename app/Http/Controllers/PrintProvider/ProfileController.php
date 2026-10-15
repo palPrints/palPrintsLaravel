@@ -8,6 +8,8 @@ use App\Models\PrintProvider;
 use App\Models\PrintProviderBranch;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\WhatsApp\PhoneNumber;
+use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -167,7 +169,12 @@ class ProfileController extends Controller
             'email' => ['required', 'email', 'max:255', Rule::unique(User::class, 'email')->ignore($request->user())],
             'phone' => ['required', 'string', 'max:30'],
             'owner_phone' => ['required', 'string', 'max:30'],
-            'whatsapp_number' => ['nullable', 'string', 'max:30'],
+            'whatsapp_number' => ['nullable', 'string', 'max:30', function (string $attribute, mixed $value, Closure $fail) {
+                if (PhoneNumber::normalize((string) $value) === null) {
+                    $fail('أدخل رقم واتساب صحيحًا، مثل 0599123456 أو ‎+970599123456.');
+                }
+            }, 'required_if_accepted:whatsapp_notifications'],
+            'whatsapp_notifications' => ['nullable', 'boolean'],
             'products' => ['nullable', 'array'],
             'products.*' => ['integer', Rule::exists('products', 'id')->where('is_active', true)],
             'services' => ['nullable', 'array'],
@@ -195,6 +202,7 @@ class ProfileController extends Controller
             'email.unique' => 'هذا البريد الإلكتروني مستخدم بالفعل.',
             'phone.required' => 'أدخل رقم هاتف المطبعة.',
             'owner_phone.required' => 'أدخل رقم هاتف صاحب المطبعة.',
+            'whatsapp_number.required_if_accepted' => 'أدخل رقم الواتساب الذي ستصلك عليه الطلبات.',
             'address.required' => 'أدخل العنوان التفصيلي.',
         ] + self::documentMessages($documentFields));
 
@@ -244,10 +252,18 @@ class ProfileController extends Controller
                     ]]
                     : [];
 
-                $user->printProvider()->updateOrCreate(['user_id' => $user->id], $documents + $contactEmail + $services + [
+                // Orders reach the shop on WhatsApp only after it ticks the box; the time it agreed is kept.
+                $whatsappNumber = PhoneNumber::normalize($validated['whatsapp_number'] ?? null);
+                $whatsappEnabled = $whatsappNumber !== null && $request->boolean('whatsapp_notifications');
+                $whatsapp = [
+                    'whatsapp_number' => $whatsappNumber,
+                    'whatsapp_notifications_enabled' => $whatsappEnabled,
+                    'whatsapp_opted_in_at' => $whatsappEnabled ? ($user->printProvider?->whatsapp_opted_in_at ?? now()) : null,
+                ];
+
+                $user->printProvider()->updateOrCreate(['user_id' => $user->id], $documents + $contactEmail + $services + $whatsapp + [
                     'company_name' => $validated['company_name'],
                     'phone' => $validated['phone'],
-                    'whatsapp_number' => $validated['whatsapp_number'] ?? null,
                     'address' => $validated['address'],
                     'working_hours' => [
                         'available' => $request->boolean('available'),
