@@ -67,7 +67,8 @@ class WhatsAppClient
             ->post($url, $request)
             ->throw();
 
-        return ['id' => (string) $response->json('messages.0.id'), 'request' => $request];
+        // contacts.0.wa_id is the number WhatsApp actually knows the recipient by (it can be +972 for a +970 we sent to).
+        return ['id' => (string) $response->json('messages.0.id'), 'wa_id' => $response->json('contacts.0.wa_id'), 'request' => $request];
     }
 
     /** Meta rejects template parameters with new lines, tabs or more than four spaces in a row. */

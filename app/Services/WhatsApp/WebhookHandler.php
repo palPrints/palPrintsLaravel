@@ -131,7 +131,7 @@ class WebhookHandler
 
         // The payload token says which order; it only counts from the number we sent it to, and when Meta tells us which
         // message was answered it has to be that offer.
-        if (! $offer || ! hash_equals($offer->wa_id, $from) || ($contextId && $offer->wa_message_id && $contextId !== $offer->wa_message_id)) {
+        if (! $offer || ! PhoneNumber::sameSubscriber($offer->wa_id, $from) ||($contextId && $offer->wa_message_id && $contextId !== $offer->wa_message_id)) {
             return;
         }
 

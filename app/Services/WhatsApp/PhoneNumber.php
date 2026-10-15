@@ -34,4 +34,25 @@ class PhoneNumber
         // E.164: a country code that does not start with 0, at most 15 digits in all.
         return preg_match('/^[1-9][0-9]{9,14}$/', $number) === 1 ? $number : null;
     }
+
+    /**
+     * Whether two normalised numbers reach the same phone. A Palestinian line works under both +970 and +972, and
+     * WhatsApp may report it under either one, so 970599123456 and 972599123456 count as the same shop.
+     */
+    public static function sameSubscriber(?string $a, ?string $b): bool
+    {
+        $a = self::normalize($a);
+        $b = self::normalize($b);
+        if ($a === null || $b === null) {
+            return false;
+        }
+
+        if ($a === $b) {
+            return true;
+        }
+
+        return preg_match('/^97[02](\d+)$/', $a, $first) === 1
+            && preg_match('/^97[02](\d+)$/', $b, $second) === 1
+            && $first[1] === $second[1];
+    }
 }

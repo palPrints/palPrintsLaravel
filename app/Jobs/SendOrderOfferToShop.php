@@ -7,6 +7,7 @@ use App\Models\OrderItem;
 use App\Models\PrintProvider;
 use App\Models\WhatsAppMessage;
 use App\Services\Orders\ShopOrderTransitions;
+use App\Services\WhatsApp\PhoneNumber;
 use App\Services\WhatsApp\WhatsAppClient;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -93,7 +94,14 @@ class SendOrderOfferToShop implements ShouldQueue
             throw $exception;
         }
 
-        $message->update(['wa_message_id' => $sent['id'], 'payload' => $sent['request'], 'status' => 'accepted', 'error' => null]);
+        $message->update([
+            'wa_message_id' => $sent['id'],
+            // Replies go to the number WhatsApp reported, so they reach the shop whichever prefix (970 / 972) it uses.
+            'wa_id' => PhoneNumber::normalize($sent['wa_id'] ?? null) ?? $to,
+            'payload' => $sent['request'],
+            'status' => 'accepted',
+            'error' => null,
+        ]);
     }
 
     public function failed(?Throwable $exception): void

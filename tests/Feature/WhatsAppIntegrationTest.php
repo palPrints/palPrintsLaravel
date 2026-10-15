@@ -97,6 +97,36 @@ test('phone numbers are normalised to international digits', function (?string $
     [null, null],
 ]);
 
+test('a palestinian number is the same shop under 970 and 972', function (string $a, string $b, bool $same) {
+    expect(PhoneNumber::sameSubscriber($a, $b))->toBe($same);
+})->with([
+    ['970599123456', '972599123456', true],
+    ['972599123456', '0599123456', true],
+    ['970599123456', '970599123456', true],
+    ['970599123456', '972591111111', false],
+    ['970599123456', '962599123456', false],
+]);
+
+test('a tap reported from the 972 form of the shop number is accepted', function () {
+    $offer = ($this->sendOffer)();
+    Queue::fake();
+
+    ($this->webhook)(($this->inbound)(['id' => 'wamid.IN1', 'from' => '972599123456', 'type' => 'button', 'button' => ['payload' => 'accept:'.$offer->action_token]]))->assertOk();
+
+    expect($this->order->fresh()->status)->toBe('confirmed');
+});
+
+test('the offer keeps the number whatsapp reports for the shop, so replies reach it', function () {
+    Http::fake(['graph.facebook.com/*' => Http::response([
+        'contacts' => [['input' => '970599123456', 'wa_id' => '972599123456']],
+        'messages' => [['id' => 'wamid.OFFER1']],
+    ])]);
+
+    SendOrderOfferToShop::dispatchSync($this->order->id, $this->provider->id);
+
+    expect(WhatsAppMessage::where('purpose', 'offer')->value('wa_id'))->toBe('972599123456');
+});
+
 test('meta can verify the webhook only with the right token', function () {
     $this->get('/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=test-verify-token&hub.challenge=12345')
         ->assertOk()->assertSeeText('12345');
