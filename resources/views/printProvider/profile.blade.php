@@ -82,7 +82,7 @@
                     <div><dt>اسم المطبعة</dt><dd>{{ $provider->company_name ?: $dash }}</dd></div>
                     <div><dt>البريد الإلكتروني</dt><dd dir="ltr">{{ $user->email }}</dd></div>
                     <div><dt>هاتف المطبعة</dt><dd dir="ltr">{{ $provider->phone ?: $dash }}</dd></div>
-                    <div><dt>واتساب</dt><dd dir="ltr">{{ $provider->whatsapp_number ? '+'.ltrim($provider->whatsapp_number, '+') : $dash }}</dd></div>
+                    <div><dt>واتساب</dt><dd dir="ltr">{{ $provider->whatsappDisplayNumber() ?: $dash }}</dd></div>
                     <div><dt>الطلبات على واتساب</dt><dd>{{ $provider->whatsapp_notifications_enabled ? 'مفعّلة' : 'غير مفعّلة' }}</dd></div>
                 </dl>
             </section>
@@ -187,7 +187,7 @@
                             <label>اسم المطبعة <em>*</em><input name="company_name" required value="{{ old('company_name', $provider->company_name) }}"></label>
                             <label>البريد الإلكتروني <em>*</em><span class="input-icon"><i class="bi bi-envelope"></i><input name="email" required type="email" value="{{ old('email', $user->email) }}" dir="ltr"></span></label>
                             <label>هاتف المطبعة <em>*</em><span class="input-icon"><i class="bi bi-telephone"></i><input name="phone" required value="{{ old('phone', $provider->phone) }}" dir="ltr"></span></label>
-                            <label>واتساب<span class="input-icon whatsapp"><i class="bi bi-whatsapp"></i><input name="whatsapp_number" value="{{ old('whatsapp_number', $provider->whatsapp_number ? '+'.ltrim($provider->whatsapp_number, '+') : '') }}" placeholder="0599123456" dir="ltr"></span></label>
+                            <label>واتساب<span class="input-icon whatsapp"><i class="bi bi-whatsapp"></i><input name="whatsapp_number" value="{{ old('whatsapp_number', $provider->whatsappDisplayNumber()) }}" placeholder="0599123456" dir="ltr"></span></label>
                             <label class="service-option full whatsapp-optin">
                                 <input type="checkbox" name="whatsapp_notifications" value="1" @checked(old('whatsapp_notifications', $provider->whatsapp_notifications_enabled))>
                                 <span>استقبال الطلبات الجديدة على واتساب، مع إمكانية قبولها أو رفضها من الرسالة</span>

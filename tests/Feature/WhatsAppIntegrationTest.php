@@ -91,6 +91,11 @@ test('phone numbers are normalised to international digits', function (?string $
     ['+970-599-123456', '970599123456'],
     ['00972 59 912 3456', '972599123456'],
     ['٠٥٩٩١٢٣٤٥٦', '970599123456'],
+    ['+972594045626', '972594045626'],
+    // Copied from WhatsApp / contacts: invisible direction marks and a no-break space around the number.
+    ["\u{202A}+972 59-404-5626\u{202C}", '972594045626'],
+    ["\u{2066}+972594045626\u{2069}", '972594045626'],
+    ["\u{200F}0599\u{00A0}123\u{00A0}456", '970599123456'],
     ['12345', null],
     ['not a number', null],
     ['', null],

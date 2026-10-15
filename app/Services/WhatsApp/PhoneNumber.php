@@ -21,7 +21,9 @@ class PhoneNumber
             '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4', '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
         ]);
 
-        $number = preg_replace('/[\s\-().\x{200E}\x{200F}]/u', '', $number);
+        // Spaces of any kind, separators, and the invisible direction marks a number copied from WhatsApp or the contacts
+        // app carries (\p{Cf}: U+200E, U+202A…U+202E, U+2066…U+2069, …).
+        $number = preg_replace('/[\p{Z}\s\p{Cf}\-().\/]/u', '', $number);
 
         if (str_starts_with($number, '+')) {
             $number = substr($number, 1);

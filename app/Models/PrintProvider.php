@@ -76,6 +76,14 @@ class PrintProvider extends Model
         return PhoneNumber::normalize($this->whatsapp_number);
     }
 
+    /** The WhatsApp number as shown to people: +970599123456 once normalised, else as it was typed before normalising existed. */
+    public function whatsappDisplayNumber(): ?string
+    {
+        $number = PhoneNumber::normalize($this->whatsapp_number);
+
+        return $number !== null ? '+'.$number : $this->whatsapp_number;
+    }
+
     /** The shop's main branch (its offerings live there); created from the profile data when it has none yet. */
     public function primaryBranch(): PrintProviderBranch
     {
