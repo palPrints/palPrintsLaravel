@@ -178,7 +178,8 @@ test('after approving, the admin gets a wa.me link with the order written for th
 
     $text = rawurldecode(explode('?text=', $chat['url'])[1]);
     expect($text)->toContain('PLP-WA-1')
-        ->toContain('طباعة الأوراق × 3')
+        ->toContain("• طباعة الأوراق\u{200F} — الكمية: 3")
+        ->toContain('رقم الطلب: PLP-WA-1')
         ->toContain('60.00 ₪')
         ->toContain(route('print-provider.requests'))
         ->not->toContain('سارة العميلة');

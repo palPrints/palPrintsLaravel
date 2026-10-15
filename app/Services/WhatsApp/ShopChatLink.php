@@ -35,18 +35,25 @@ class ShopChatLink
     /** @param  \Illuminate\Support\Collection<int, OrderItem>  $items */
     private static function message(Order $order, PrintProvider $provider, $items): string
     {
-        $products = $items->map(fn (OrderItem $item) => '• '.($item->product?->name ?? 'منتج').' × '.(int) $item->quantity)->implode("\n");
+        // WhatsApp picks each line's direction from its first letter, so an Arabic line holding a Latin product name or an
+        // order number came out scrambled. Every Arabic line starts with a right-to-left mark, and no punctuation is left
+        // right after a Latin run (it would jump to the wrong side).
+        $rtl = "\u{200F}";
+        $line = fn (string $text) => $rtl.$text;
+
+        $products = $items->map(fn (OrderItem $item) => $line('• '.($item->product?->name ?? 'منتج').$rtl.' — الكمية: '.(int) $item->quantity));
 
         return implode("\n", [
-            'مرحبًا '.trim((string) $provider->company_name).'،',
-            'وصلكم طلب جديد من PALPRINTS رقم '.$order->order_number.'.',
+            $line('مرحبًا '.trim((string) $provider->company_name).$rtl.'،'),
+            $line('وصلكم طلب جديد من منصة PALPRINTS'),
+            $line('رقم الطلب: '.$order->order_number),
             '',
-            'المنتجات:',
-            $products,
+            $line('المنتجات:'),
+            ...$products->all(),
             '',
-            'مستحقاتكم: '.number_format((float) $items->sum('provider_cost'), 2).' ₪',
+            $line('مستحقاتكم: '.number_format((float) $items->sum('provider_cost'), 2).' ₪'),
             '',
-            'لقبول الطلب أو رفضه وتنزيل الملفات:',
+            $line('لقبول الطلب أو رفضه وتنزيل الملفات:'),
             route('print-provider.requests'),
         ]);
     }
