@@ -29,6 +29,12 @@ function catalogGroup(string $color, string $size, int $quantity = 1): array
 
 beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
+
+    // The catalog seeder gives its branches and offerings to the first print shop on file; the cart needs a shop that makes the product.
+    $shop = User::factory()->create(['is_active' => true]);
+    $shop->assignRole('print_provider');
+    $shop->printProvider()->create(['company_name' => 'Demo Print House', 'phone' => '0599000001', 'approval_status' => 'approved', 'is_active' => true]);
+
     $this->seed(CatalogDemoSeeder::class);
     $this->customer = User::factory()->create();
     $this->customer->assignRole('customer');
@@ -39,7 +45,7 @@ test('t-shirt is added with the exact variant and the server-side price', functi
 
     $this->actingAs($this->customer)->postJson(route('customer.cart.store-catalog'), [
         'product_code' => 'TSHIRT-CLASSIC',
-        'design_id' => $design->id,
+        'design_id' => $design->id, 'printing_method' => 'dtf',
         'unit_price' => 1, // must be ignored
         'groups' => [catalogGroup('black', 'm', 2)],
     ])->assertOk()->assertJson(['redirect' => route('customer.basket')]);
@@ -50,7 +56,7 @@ test('t-shirt is added with the exact variant and the server-side price', functi
         ->and((float) $item->unit_price)->toBe(30.0)
         ->and($item->design_id)->toBe($design->id);
 
-    $this->actingAs($this->customer)->get(route('customer.basket'))->assertOk()->assertSee('black')->assertSee('طباعة: الأمام');
+    $this->actingAs($this->customer)->get(route('customer.basket'))->assertOk()->assertSee('طباعة: الأمام');
 });
 
 test('unknown color and missing size fall back to a real variant but keep the choice', function () {
@@ -58,7 +64,7 @@ test('unknown color and missing size fall back to a real variant but keep the ch
 
     $this->actingAs($this->customer)->postJson(route('customer.cart.store-catalog'), [
         'product_code' => 'TSHIRT-CLASSIC',
-        'design_id' => $design->id,
+        'design_id' => $design->id, 'printing_method' => 'dtf',
         'groups' => [catalogGroup('default', 'xxl')],
     ])->assertOk();
 
@@ -72,7 +78,7 @@ test('hoodie is added with its own design and the chosen navy variant', function
 
     $this->actingAs($this->customer)->postJson(route('customer.cart.store-catalog'), [
         'product_code' => 'HOODIE-PREMIUM',
-        'design_id' => $design->id,
+        'design_id' => $design->id, 'printing_method' => 'dtf',
         'groups' => [catalogGroup('navy', 'l')],
     ])->assertOk();
 
@@ -111,8 +117,9 @@ test('mug is added with its one-size variant', function () {
 
     $this->actingAs($this->customer)->postJson(route('customer.cart.store-catalog'), [
         'product_code' => 'MUG-CERAMIC',
-        'design_id' => $design->id,
-        'groups' => [catalogGroup('default', 'standard')],
+        'design_id' => $design->id, 'printing_method' => 'dtf',
+        // The mug has one area, which the studio calls "front" (the database calls it "wrap").
+        'groups' => [array_merge(catalogGroup('default', 'standard'), ['print_areas' => ['front']])],
     ])->assertOk();
 
     expect(CartItem::with('variant')->sole()->variant->sku)->toBe('MUG-CERAMIC-WHITE');
@@ -120,7 +127,7 @@ test('mug is added with its one-size variant', function () {
 
 test('adding the same choice twice increases the quantity', function () {
     $design = publishedDesignFor('TSHIRT-CLASSIC');
-    $payload = ['product_code' => 'TSHIRT-CLASSIC', 'design_id' => $design->id, 'groups' => [catalogGroup('white', 'l', 2)]];
+    $payload = ['product_code' => 'TSHIRT-CLASSIC', 'design_id' => $design->id, 'printing_method' => 'dtf', 'groups' => [catalogGroup('white', 'l', 2)]];
 
     $this->actingAs($this->customer)->postJson(route('customer.cart.store-catalog'), $payload)->assertOk();
     $this->actingAs($this->customer)->postJson(route('customer.cart.store-catalog'), $payload)->assertOk();
@@ -136,4 +143,26 @@ test('product without a published design is rejected', function () {
     ])->assertUnprocessable()->assertJsonValidationErrors('product_code');
 
     expect(CartItem::count())->toBe(0);
+});
+
+test('the printing method is required when the product has several, and it must be one a shop offers', function () {
+    $design = publishedDesignFor('TSHIRT-CLASSIC');
+    $payload = ['product_code' => 'TSHIRT-CLASSIC', 'design_id' => $design->id, 'groups' => [catalogGroup('black', 'm')]];
+
+    $this->actingAs($this->customer)->postJson(route('customer.cart.store-catalog'), $payload)
+        ->assertStatus(422)->assertJsonValidationErrors('printing_method');
+    $this->actingAs($this->customer)->postJson(route('customer.cart.store-catalog'), $payload + ['printing_method' => 'vinyl-cut'])
+        ->assertStatus(422)->assertJsonValidationErrors('printing_method');
+    expect(CartItem::count())->toBe(0);
+});
+
+test('the chosen printing method is saved on the cart line and the preview offers only real methods', function () {
+    $design = publishedDesignFor('TSHIRT-CLASSIC');
+
+    $this->actingAs($this->customer)->postJson(route('customer.cart.store-catalog'), [
+        'product_code' => 'TSHIRT-CLASSIC', 'design_id' => $design->id, 'printing_method' => 'dtg', 'groups' => [catalogGroup('black', 'm')],
+    ])->assertOk();
+
+    expect(CartItem::sole()->selected_options)->toMatchArray(['printing_method' => 'dtg', 'printing_method_name' => \App\Models\PrintingMethod::where('code', 'dtg')->value('name')]);
+    expect(array_column(\App\Support\PrintingMethodOptions::forPreview()['TSHIRT-CLASSIC'] ?? [], 'id'))->toContain('dtf', 'dtg');
 });

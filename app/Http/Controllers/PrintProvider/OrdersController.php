@@ -43,6 +43,7 @@ class OrdersController extends Controller
         'layout' => 'تخطيط الصفحة',
         'grouping' => 'طريقة الملفات',
         'binding' => 'التغليف',
+        'printing_method_name' => 'تقنية الطباعة',
         'size' => 'القياس',
         'color' => 'اللون',
     ];
@@ -194,7 +195,8 @@ class OrdersController extends Controller
         $options = collect($item->selected_options ?? []);
 
         $details = $options
-            ->filter(fn ($value, $key) => isset(self::OPTION_LABELS[$key]) && (is_scalar($value) || is_array($value)) && $value !== '' && $value !== [])
+            // A studio design saves its whole layout (nested arrays) under "layout", the paper option's name: not a plain option to list.
+            ->filter(fn ($value, $key) => isset(self::OPTION_LABELS[$key]) && (is_scalar($value) || (is_array($value) && collect($value)->every(fn ($item) => is_scalar($item)))) && $value !== '' && $value !== [])
             ->map(fn ($value, $key) => [
                 'label' => self::OPTION_LABELS[$key],
                 'value' => collect((array) $value)->map(fn ($v) => self::OPTION_VALUES[(string) $v] ?? (string) $v)->implode('، '),

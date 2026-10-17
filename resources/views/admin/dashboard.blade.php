@@ -23,6 +23,9 @@
         'delivered' => ['label' => 'تم التسليم', 'class' => 'is-delivered'],
         'completed' => ['label' => 'تم التسليم', 'class' => 'is-delivered'],
         'cancelled' => ['label' => 'ملغي', 'class' => 'is-cancelled'],
+        'awaiting_payment_review' => ['label' => 'بانتظار مراجعة الدفع', 'class' => 'is-waiting'],
+        'ready' => ['label' => 'جاهز للتسليم', 'class' => 'is-progress'],
+        'rejected' => ['label' => 'مرفوض من المطبعة', 'class' => 'is-cancelled'],
     ];
     $designIcons = [['is-blue', 'bi-geo-alt'], ['is-orange', 'bi-star'], ['is-green', 'bi-vector-pen']];
     $avatarLetter = fn (?string $name): string => mb_substr(trim((string) $name), 0, 1) ?: '؟';
@@ -37,10 +40,10 @@
             <h1 id="dashboardTitle">لوحة التحكم</h1>
             <p><time datetime="{{ now()->toDateString() }}">{{ $today }}</time></p>
         </div>
-        <button class="admin-add-product" type="button" data-action="add-product">
+        <a class="admin-add-product" href="{{ route('admin.products', ['add' => 1]) }}">
             <i class="bi bi-plus-lg" aria-hidden="true"></i>
             <span>إضافة منتج جديد</span>
-        </button>
+        </a>
     </section>
 
     <section class="admin-metric-grid" aria-label="ملخص أداء المنصة">
@@ -139,7 +142,7 @@
                             <strong>{{ $approval->user?->name ?? 'مستخدم محذوف' }}</strong>
                             <p><span class="admin-type-pill {{ $role['class'] }}">{{ $role['label'] }}</span> {{ optional($approval->submitted_at)->locale('ar')->diffForHumans() }}</p>
                         </div>
-                        <button type="button" data-review="طلب {{ $approval->user?->name }}">مراجعة الطلب <i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+                        <a href="{{ route('admin.users', ['open' => $approval->user_id]) }}#{{ $approval->role === 'designer' ? 'designers' : 'print-shops' }}">مراجعة الطلب <i class="bi bi-chevron-left" aria-hidden="true"></i></a>
                     </article>
                 @empty
                     <p class="admin-empty-note">لا توجد طلبات اعتماد معلقة.</p>
@@ -158,7 +161,7 @@
                             <strong>{{ $design->title }}</strong>
                             <p>{{ $design->designer?->name }}@if ($design->product) · {{ $design->product->name }}@endif</p>
                         </div>
-                        <button type="button" data-review="{{ $design->title }}">مراجعة <i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+                        <a href="{{ route('admin.designs', ['open' => $design->id]) }}">مراجعة <i class="bi bi-chevron-left" aria-hidden="true"></i></a>
                     </article>
                 @empty
                     <p class="admin-empty-note">لا توجد تصاميم بانتظار المراجعة.</p>
@@ -168,15 +171,15 @@
     </div>
 
     <section class="admin-reference-card admin-orders-card" id="financialOverview" aria-labelledby="latestOrdersTitle">
-        <header class="admin-reference-card__header"><h2 id="latestOrdersTitle">أحدث الطلبات</h2><button class="admin-view-all" type="button" data-action="view-all-orders">عرض الكل <i class="bi bi-chevron-left" aria-hidden="true"></i></button></header>
+        <header class="admin-reference-card__header"><h2 id="latestOrdersTitle">أحدث الطلبات</h2><a class="admin-view-all" href="{{ route('admin.orders') }}">عرض الكل <i class="bi bi-chevron-left" aria-hidden="true"></i></a></header>
         <div class="admin-orders-table-wrap" tabindex="0" aria-label="جدول أحدث الطلبات، قابل للتمرير أفقياً">
             <table class="admin-orders-table">
                 <thead><tr><th scope="col">رقم الطلب</th><th scope="col">العميل</th><th scope="col">المنتج</th><th scope="col">المبلغ</th><th scope="col">الحالة</th><th scope="col">التاريخ</th></tr></thead>
                 <tbody id="ordersTableBody">
                     @foreach ($latestOrders as $order)
-                        @php($status = $orderStatuses[$order->status] ?? ['label' => $order->status, 'class' => 'is-waiting'])
+                        @php($status = $orderStatuses[$order->status] ?? ['label' => 'حالة أخرى', 'class' => 'is-waiting'])
                         <tr data-order-row data-search="{{ $order->order_number }} {{ $order->customer }} {{ $order->product }} {{ $status['label'] }}">
-                            <td><a href="#" dir="ltr">#{{ $order->order_number }}</a></td>
+                            <td><a href="{{ route('admin.orders', ['open' => $order->order_number]) }}" dir="ltr">#{{ $order->order_number }}</a></td>
                             <td>{{ $order->customer }}</td>
                             <td>{{ $order->product ?: '—' }}</td>
                             <td><b dir="ltr">{{ number_format((float) $order->total_amount, 2) }} ₪</b></td>

@@ -212,9 +212,23 @@ test('the orders page shows real orders and admin can update their status', func
         ->assertSee('عميلة تجريبية')
         ->assertSee('85.00 ₪');
 
-    $this->actingAs($admin)->patchJson(route('admin.orders.update', $id), ['status' => 'shipped'])->assertOk();
+    // A new order cannot be shipped by hand; the admin can only cancel it from here.
+    $this->actingAs($admin)->patchJson(route('admin.orders.update', $id), ['status' => 'shipped'])->assertStatus(422);
+    expect(DB::table('orders')->where('id', $id)->value('status'))->toBe('pending');
 
-    expect(DB::table('orders')->where('id', $id)->value('status'))->toBe('shipped');
+    $this->actingAs($admin)->patchJson(route('admin.orders.update', $id), ['status' => 'cancelled'])->assertOk();
+    expect(DB::table('orders')->where('id', $id)->value('status'))->toBe('cancelled');
 
     $this->actingAs($admin)->patchJson(route('admin.orders.update', $id), ['status' => 'nonsense'])->assertStatus(422);
+});
+
+test('a product that has designs cannot be deleted and the message says why', function () {
+    $admin = makeAdmin();
+    $design = makeDesign('draft');
+
+    $response = $this->actingAs($admin)->deleteJson(route('admin.products.destroy', $design->product_id))->assertStatus(422);
+
+    expect($response->json('message'))->toContain('تصاميم')->toContain('أوقفه مؤقتًا');
+    expect(Product::whereKey($design->product_id)->exists())->toBeTrue();
+    expect($design->fresh()->product_id)->toBe($design->product_id);
 });

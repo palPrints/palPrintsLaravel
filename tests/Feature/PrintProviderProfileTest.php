@@ -22,6 +22,7 @@ test('print provider profile shows stored data instead of demo values', function
 
 test('print provider can update the shop profile and becomes ready for review once the documents are uploaded', function () {
     Storage::fake('public');
+    Storage::fake('local');
 
     $this->actingAs($this->owner)
         ->patch(route('print-provider.profile.update'), [

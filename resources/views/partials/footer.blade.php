@@ -29,39 +29,59 @@
             <div class="site-footer__column">
                 <h2>المتجر</h2>
                 <a href="{{ route('customer.store') }}#products">كل المنتجات</a>
-                <a href="{{ route('customer.store') }}#products">التصنيفات</a>
-                <a href="{{ route('customer.store') }}#products">الإكسسوارات</a>
-                <a href="{{ route('customer.store') }}#products">الأكثر مبيعًا</a>
+                <a href="{{ route('customer.tshirts') }}">تيشيرتات</a>
+                <a href="{{ route('customer.hoodies') }}">هوديز</a>
+                <a href="{{ route('customer.mugs') }}">أكواب</a>
+                <a href="{{ route('customer.stickers') }}">ستيكرات</a>
             </div>
             <div class="site-footer__column">
                 <h2>حسابك</h2>
                 <a href="{{ route('customer.profile') }}">الملف الشخصي</a>
                 <a href="{{ route('customer.orders') }}">طلباتي</a>
                 <a href="{{ route('customer.favorites') }}">المفضلة</a>
-                <a href="#">سلة المشتريات</a>
+                <a href="{{ route('customer.basket') }}">سلة المشتريات</a>
             </div>
         @endif
         <div class="site-footer__column">
             <h2>المساعدة</h2>
-            <a href="#">الدعم الفني</a>
-            <a href="#">الأسئلة الشائعة</a>
+            <a href="{{ auth()->user()?->hasRole('designer') ? route('designer.support') : route('customer.support') }}">الدعم الفني</a>
+            <a href="{{ route('faq') }}">الأسئلة الشائعة</a>
+            <a href="{{ route('shipping') }}">الشحن والتوصيل</a>
+            <a href="{{ route('returns') }}">سياسة الاسترجاع</a>
             <a href="{{ route('privacy') }}">سياسة الخصوصية</a>
             <a href="{{ route('terms') }}">الشروط والأحكام</a>
         </div>
         <div class="site-footer__column site-footer__column--contact">
             <h2>تواصل معنا</h2>
-            <a href="mailto:support@palprints.com"><i class="bi bi-envelope" aria-hidden="true"></i> support@palprints.com</a>
-            <a href="tel:+970599000000"><i class="bi bi-telephone" aria-hidden="true"></i> <span dir="ltr">+970 59 900 0000</span></a>
+            @php
+                $footerEmail = \App\Support\PlatformSettings::get('general', 'admin_email');
+                $footerPhone = \App\Support\PlatformSettings::get('general', 'contact_phone');
+            @endphp
+            @if ($footerEmail)
+                <a href="mailto:{{ $footerEmail }}"><i class="bi bi-envelope" aria-hidden="true"></i> {{ $footerEmail }}</a>
+            @endif
+            @if ($footerPhone)
+                <a href="tel:{{ preg_replace('/[^\d+]/', '', $footerPhone) }}"><i class="bi bi-telephone" aria-hidden="true"></i> <span dir="ltr">{{ $footerPhone }}</span></a>
+            @endif
             <span><i class="bi bi-geo-alt" aria-hidden="true"></i> رام الله، فلسطين</span>
         </div>
     </div>
     <div class="site-footer__bottom">
         <p>© {{ now()->year }} PalPrints. جميع الحقوق محفوظة.</p>
         <div class="site-footer__social" aria-label="حسابات التواصل الاجتماعي">
-            <a href="#" aria-label="Instagram"><i class="bi bi-instagram" aria-hidden="true"></i></a>
-            <a href="#" aria-label="Facebook"><i class="bi bi-facebook" aria-hidden="true"></i></a>
-            <a href="#" aria-label="TikTok"><i class="bi bi-tiktok" aria-hidden="true"></i></a>
-            <a href="#" aria-label="WhatsApp"><i class="bi bi-whatsapp" aria-hidden="true"></i></a>
+            @php
+                $footerSocials = [
+                    'Instagram' => ['bi-instagram', \App\Support\PlatformSettings::get('site', 'instagram')],
+                    'Facebook' => ['bi-facebook', \App\Support\PlatformSettings::get('site', 'facebook')],
+                    'TikTok' => ['bi-tiktok', \App\Support\PlatformSettings::get('site', 'tiktok')],
+                    'WhatsApp' => ['bi-whatsapp', ($wa = preg_replace('/\D/', '', (string) \App\Support\PlatformSettings::get('site', 'whatsapp'))) ? 'https://wa.me/'.$wa : null],
+                ];
+            @endphp
+            @foreach ($footerSocials as $name => [$icon, $url])
+                @if ($url)
+                    <a href="{{ $url }}" target="_blank" rel="noopener" aria-label="{{ $name }}"><i class="bi {{ $icon }}" aria-hidden="true"></i></a>
+                @endif
+            @endforeach
         </div>
     </div>
 </footer>

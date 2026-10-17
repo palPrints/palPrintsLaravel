@@ -74,7 +74,7 @@
                 <div class="section-title-row"><h2 id="customizerTitle">تخصيص طلبك</h2><span>معاينة مباشرة</span></div>
                 <div class="stickers-customizer-grid">
                     <div class="stickers-preview-column">
-                        <div class="stickers-preview-frame" id="stickerPreviewFrame" data-shape="custom"><span class="stickers-preview-shape-label"><i class="bi bi-stars" aria-hidden="true"></i>قص حسب حدود التصميم</span><img id="stickerPreview" src="{{ asset('front/assets/images/customer/palprints-wordmark-transparent.png') }}" alt="معاينة تصميم ملصق البراند"></div>
+                        <div class="stickers-preview-frame" id="stickerPreviewFrame" data-shape="custom"><span class="stickers-preview-shape-label"><i class="bi bi-stars" aria-hidden="true"></i>قص حسب حدود التصميم</span><img id="stickerPreview" alt="" hidden><div class="stickers-preview-empty" id="stickerPreviewEmpty"><i class="bi bi-image" aria-hidden="true"></i><strong>لم تُرفع صورة التصميم بعد</strong><span>ارفع تصميمك من الأعلى لتظهر معاينة الملصق هنا</span></div></div>
                         <p class="stickers-preview-caption" id="previewCaption">معاينة الملصق قبل الطباعة</p>
                     </div>
                     <form class="stickers-options" id="stickerCustomizer" novalidate>
@@ -119,5 +119,6 @@
         window.palPrintsCustomerAssets.publishedDesigns = @json($publishedDesigns ?? []);
         window.palPrintsCustomerAssets.productOptions = @json($productOptions ?? ['colors' => [], 'sizes' => []]);
     </script>
+    <script src="{{ asset('front/js/customer/imageRules.js') }}?v={{ filemtime(public_path('front/js/customer/imageRules.js')) }}"></script>
     <script src="{{ asset('front/js/customer/stickers.js') }}?v={{ filemtime(public_path('front/js/customer/stickers.js')) }}"></script>
 @endpush

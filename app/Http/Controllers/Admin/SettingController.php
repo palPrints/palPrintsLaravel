@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Support\PlatformSettings;
+use App\Support\SitePages;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -33,6 +34,12 @@ class SettingController extends Controller
         return view('admin.settings', [
             'settings' => PlatformSettings::all(),
             'paymentMethods' => self::PAYMENT_METHODS,
+            'pageTexts' => collect(SitePages::PAGES)->map(fn (array $page, string $key) => [
+                'label' => $page[0],
+                'text' => SitePages::editorText($key),
+                'custom' => SitePages::custom($key) !== '',
+            ]),
+            'pageTokens' => SitePages::TOKENS,
             'auditLogs' => Schema::hasTable('audit_logs')
                 ? AuditLog::with('user:id,name')->latest()->limit(20)->get()->map(fn (AuditLog $log) => $this->auditRow($log))
                 : collect(),
@@ -87,6 +94,53 @@ class SettingController extends Controller
         return response()->json(['ok' => true, 'message' => 'تم تحديث الرسوم.']);
     }
 
+    public function updatePage(Request $request, string $page): JsonResponse
+    {
+        if (! array_key_exists($page, SitePages::PAGES)) {
+            abort(404);
+        }
+
+        $validated = $request->validate(['content' => ['nullable', 'string', 'max:40000']]);
+        $content = trim(str_replace(["\r\n", "\r"], "\n", (string) ($validated['content'] ?? '')));
+
+        // Saving the unchanged default text would freeze it; treat it as "no custom text".
+        if ($content === SitePages::defaultText($page)) {
+            $content = '';
+        }
+
+        PlatformSettings::update('pages', [$page => $content]);
+
+        $label = SitePages::PAGES[$page][0];
+        $this->logChange($request, 'settings.page_updated', 'تحديث نص صفحة «'.$label.'».');
+
+        return response()->json(['ok' => true, 'message' => $content === '' ? 'تمت استعادة النص الافتراضي لصفحة '.$label.'.' : 'تم حفظ صفحة '.$label.'.']);
+    }
+
+    public function updateSite(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'shipping_cost' => ['required', 'numeric', 'min:0', 'max:10000'],
+            'return_days' => ['required', 'integer', 'min:0', 'max:365'],
+            'instagram' => ['nullable', 'url', 'max:255'],
+            'facebook' => ['nullable', 'url', 'max:255'],
+            'tiktok' => ['nullable', 'url', 'max:255'],
+            'whatsapp' => ['nullable', 'string', 'max:30', 'regex:/^\+?[0-9\s-]*$/'],
+        ]);
+
+        PlatformSettings::update('fees', ['shipping_cost' => (float) $validated['shipping_cost']]);
+        PlatformSettings::update('site', [
+            'return_days' => (int) $validated['return_days'],
+            'instagram' => (string) ($validated['instagram'] ?? ''),
+            'facebook' => (string) ($validated['facebook'] ?? ''),
+            'tiktok' => (string) ($validated['tiktok'] ?? ''),
+            'whatsapp' => (string) ($validated['whatsapp'] ?? ''),
+        ]);
+
+        $this->logChange($request, 'settings.site_updated', 'تحديث رسوم الشحن ومهلة الاسترجاع وروابط التواصل.');
+
+        return response()->json(['ok' => true, 'message' => 'تم حفظ بيانات الموقع.']);
+    }
+
     public function updatePaymentMethod(Request $request, string $method): JsonResponse
     {
         if (! array_key_exists($method, self::PAYMENT_METHODS)) {
@@ -94,6 +148,15 @@ class SettingController extends Controller
         }
 
         $enabled = $request->boolean('enabled');
+
+        // Customers must always have a way to pay, so the last method that is on cannot be switched off.
+        $othersOn = collect(array_keys(self::PAYMENT_METHODS))
+            ->reject(fn (string $key) => $key === $method)
+            ->contains(fn (string $key) => (bool) PlatformSettings::get('payments', $key, false));
+
+        if (! $enabled && ! $othersOn) {
+            return response()->json(['ok' => false, 'message' => 'يجب أن تبقى وسيلة دفع واحدة على الأقل مفعّلة.'], 422);
+        }
 
         PlatformSettings::update('payments', [$method => $enabled]);
 

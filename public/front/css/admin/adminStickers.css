@@ -1,0 +1,31 @@
+.stickers-header-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.stickers-note { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 10px 14px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 9px; font: 600 11px "Cairo", sans-serif; }
+
+/* Category chips: the name and its edit / delete buttons sit inside one rounded group. */
+.stickers-categories-bar { flex-wrap: wrap; }
+.sticker-cat { display: inline-flex; align-items: center; gap: 2px; padding-inline-end: 6px; background: #fff; border: 1px solid var(--border); border-radius: 999px; transition: border-color .18s ease, box-shadow .18s ease; }
+.sticker-cat .summary-pill { background: transparent; border-color: transparent; box-shadow: none; transform: none; }
+.sticker-cat:not(.is-active):hover { border-color: #bed9ff; }
+.sticker-cat.is-active { background: var(--blue); border-color: var(--blue); box-shadow: 0 6px 16px rgb(22 119 255 / 20%); }
+.sticker-cat.is-active .summary-pill { color: #fff; }
+.sticker-cat-tools { display: inline-flex; gap: 2px; }
+.sticker-cat-tools button { width: 26px; height: 26px; display: grid; place-items: center; color: #7b8aa0; background: none; border: 0; border-radius: 50%; cursor: pointer; font-size: 12px; transition: background-color .16s ease, color .16s ease; }
+.sticker-cat-tools button:hover { color: var(--blue); background: var(--blue-50); }
+.sticker-cat-tools button[data-remove-category]:hover { color: #fff; background: var(--danger); }
+.sticker-cat.is-active .sticker-cat-tools button { color: rgb(255 255 255 / 80%); }
+.sticker-cat.is-active .sticker-cat-tools button:hover { color: #fff; background: rgb(255 255 255 / 22%); }
+.sticker-cat.is-active .sticker-cat-tools button[data-remove-category]:hover { background: var(--danger); }
+
+/* Sticker cards */
+.stickers-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.sticker-card { min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 4px 14px rgb(15 23 42 / 8%); transition: transform .2s ease, box-shadow .2s ease; }
+.sticker-card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgb(11 31 58 / 10%); }
+.sticker-visual { aspect-ratio: 1; display: grid; place-items: center; padding: 14px; background: repeating-conic-gradient(#f1f5f9 0 25%, #fff 0 50%) 0 0 / 16px 16px; border-bottom: 1px solid var(--border); }
+.sticker-visual img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.sticker-info { display: grid; gap: 3px; padding: 11px 13px 6px; }
+.sticker-info h3 { margin: 0; overflow: hidden; color: var(--navy); font: 800 13px "Cairo", sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+.sticker-info p { margin: 0; color: #91a4bb; font: 600 10px "Cairo", sans-serif; }
+.sticker-actions { display: grid; grid-template-columns: 1fr 38px; gap: 8px; margin-top: auto; padding: 8px 13px 13px; }
+.sticker-actions button { min-height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1.5px solid transparent; border-radius: 9px; cursor: pointer; font: 700 12px "Cairo", sans-serif; transition: transform .16s ease, color .16s ease, background-color .16s ease, border-color .16s ease; }
+.sticker-actions button:hover { transform: translateY(-1px); }
+.sticker-actions .delete-action { padding: 0; }

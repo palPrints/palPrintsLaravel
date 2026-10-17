@@ -11,7 +11,9 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\PrintFile;
 use App\Models\User;
+use App\Support\AdminNotifier;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -47,7 +49,7 @@ class CheckoutService
 
             $address = $this->resolveAddress($user, $data);
             $subtotal = $cart->items->sum(fn (CartItem $item) => (float) $item->unit_price * (int) $item->quantity);
-            $shippingCost = $subtotal > 0 ? 5.00 : 0.00;
+            $shippingCost = $subtotal > 0 ? (float) \App\Support\PlatformSettings::get('fees', 'shipping_cost', 5) : 0.00;
             $discountAmount = 0.00;
             $totalAmount = max(0, $subtotal + $shippingCost - $discountAmount);
 
@@ -89,6 +91,13 @@ class CheckoutService
                     'receipt_original_name' => $data['payment_receipt_original_name'] ?? null,
                 ],
             ]);
+
+            AdminNotifier::toAdmins(
+                'order.payment_review',
+                'إشعار دفع جديد بانتظار المراجعة',
+                sprintf('طلب جديد رقم %s من %s بقيمة %s ₪. راجع إشعار الدفع ووجّه الطلب لمطبعة.', $order->order_number, $user->name, number_format($totalAmount, 2)),
+                route('admin.payment-notices'),
+            );
 
             $cart->update([
                 'status' => 'converted',
@@ -134,13 +143,17 @@ class CheckoutService
     {
         $options = $cartItem->selected_options ?? [];
 
-        if ($cartItem->design_id !== null || $cartItem->product?->code !== 'PAPER-PRINT') {
+        // This type holds paper printing and the customer's own studio designs (a product with their artwork on it).
+        // Only paper printing must come with uploaded files: a studio design may be made of text and clip art alone.
+        $isPaper = $cartItem->product?->code === 'PAPER-PRINT';
+
+        if ($cartItem->design_id !== null || ! $cartItem->product) {
             throw ValidationException::withMessages([
                 'cart' => 'عنصر طباعة الورق في السلة غير صحيح.',
             ]);
         }
 
-        if ($cartItem->printFiles->isEmpty()) {
+        if ($isPaper && $cartItem->printFiles->isEmpty()) {
             throw ValidationException::withMessages([
                 'files' => 'لا توجد ملفات مرتبطة بعنصر طباعة الورق.',
             ]);
@@ -227,7 +240,7 @@ class CheckoutService
         $designerProfit = (float) ($cartItem->design->designer_profit ?? 0) * $quantity;
         $providerCost = (float) $offering->base_price * $quantity;
 
-        return OrderItem::create([
+        $orderItem = OrderItem::create([
             'order_id' => $order->id,
             'product_id' => $cartItem->product_id,
             'variant_id' => $cartItem->variant_id,
@@ -244,6 +257,45 @@ class CheckoutService
             'platform_commission' => max(0, $totalPrice - $providerCost - $designerProfit),
             'selected_options' => $cartItem->selected_options,
         ]);
+
+        $this->attachDesignerFiles($order, $orderItem, $cartItem);
+
+        return $orderItem;
+    }
+
+    /**
+     * The print shop prints from files, so the artwork the designer uploaded into the design goes to it with the order line:
+     * each file is copied (the design itself can change or go offline later) and attached like a customer's own upload.
+     */
+    private function attachDesignerFiles(Order $order, OrderItem $orderItem, CartItem $cartItem): void
+    {
+        $disk = Storage::disk('local');
+
+        foreach ($cartItem->design->design_payload['files'] ?? [] as $file) {
+            if (empty($file['path']) || ! $disk->exists($file['path'])) {
+                continue;
+            }
+
+            $extension = strtolower(pathinfo((string) $file['path'], PATHINFO_EXTENSION));
+            $path = 'customer-print-files/orders/'.$order->id.'/'.Str::uuid().($extension ? '.'.$extension : '');
+            $disk->copy($file['path'], $path);
+
+            PrintFile::create([
+                'user_id' => $order->user_id,
+                'product_id' => $cartItem->product_id,
+                'order_item_id' => $orderItem->id,
+                'original_name' => $file['name'] ?? basename($path),
+                'stored_path' => $path,
+                'disk' => 'local',
+                'mime_type' => $file['mime_type'] ?? null,
+                'extension' => $extension,
+                'file_size' => $file['size'] ?? $disk->size($path),
+                'page_count' => 1,
+                'status' => PrintFile::STATUS_ATTACHED_TO_ORDER,
+                'uploaded_at' => now(),
+                'attached_to_order_at' => now(),
+            ]);
+        }
     }
 
     private function activeOffering(int $offeringId, int $branchId, CartItem $cartItem): BranchProductOffering

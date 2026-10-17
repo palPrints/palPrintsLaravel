@@ -835,3 +835,16 @@ body .admin-toast.is-visible {
     font-size: 12px;
   }
 }
+
+/* Admin notifications: unread counts per type in the bell dropdown, and the "view all" link */
+.admin-notification-dropdown .notification-view-all {
+  display: block;
+  padding: 10px;
+  color: var(--blue);
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+.admin-notification-dropdown .notification-view-all:hover { background: #f4f8ff; border-radius: 0 0 12px 12px; }

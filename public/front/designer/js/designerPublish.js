@@ -25,10 +25,20 @@
     return;
   }
 
+  /* Set by the studio when a saved draft/rejected design was reopened, and here after the first save of a new design,
+     so saving again updates that design instead of making another one. Tied to this studio session by its design id. */
+  const EDITING_KEY = "palprintsEditingDesign";
+  function readEditing() {
+    try {
+      const editing = JSON.parse(sessionStorage.getItem(EDITING_KEY) || "null");
+      return editing && editing.designId === stash.designId ? editing : null;
+    } catch (error) { return null; }
+  }
+
   const basePrice = Number((config.basePrices || {})[String(stash.productCode).toUpperCase()] || 0);
   const state = {
     designName: stash.form?.designName ?? stash.designName ?? "",
-    sellingPrice: Number(stash.form?.sellingPrice) || (basePrice + 16),
+    sellingPrice: Number(stash.form?.sellingPrice) || Number(readEditing()?.sellingPrice) || (basePrice + 16),
     rightsConfirmed: stash.form?.rightsConfirmed ?? false
   };
 
@@ -102,7 +112,9 @@
       category: stash.category || null,
       allowedSizeIds: stash.allowedSizeIds || [],
       mockup: stash.mockup,
-      layout: stash.layout
+      layout: stash.layout,
+      assets: stash.assets || [],
+      editingDesignId: readEditing()?.id || null
     }));
     form.append("preview", await (await fetch(stash.preview)).blob(), "design-preview.png");
 
@@ -130,6 +142,8 @@
       const first = data.errors ? Object.values(data.errors)[0][0] : data.message;
       throw new Error(first || "تعذر حفظ التصميم. حاول مرة أخرى.");
     }
+    // Remember which design this is, so the next save updates it.
+    try { sessionStorage.setItem(EDITING_KEY, JSON.stringify({ id: data.id, designId: stash.designId, name: state.designName, sellingPrice: state.sellingPrice })); } catch (error) { /* Optional. */ }
     return data;
   }
 
@@ -154,6 +168,7 @@
     try {
       await send("submitted");
       sessionStorage.removeItem(STASH_KEY);
+      sessionStorage.removeItem(EDITING_KEY);
       showToast("تم إرسال تصميمك للمراجعة، وسنُعلمك عند الموافقة عليه.", "success");
       $("successDialog").hidden = false;
       $("closeDialog").focus();
@@ -171,12 +186,16 @@
   $("publishPreview").src = stash.preview;
   $("productName").textContent = stash.productName || "";
   $("colorName").textContent = stash.colorName || "";
-  $("allowedColors").textContent = (stash.allowedColorIds || []).length + " ألوان";
+  const colorCount = (stash.allowedColorIds || []).length;
+  $("allowedColors").textContent = colorCount === 1 ? "لون واحد" : colorCount === 2 ? "لونان" : colorCount <= 10 ? colorCount + " ألوان" : colorCount + " لونًا";
   const audience = (config.audiences || {})[stash.category];
   if (audience) {
     $("audienceName").textContent = audience.label;
     const names = audience.sizes.filter(size => (stash.allowedSizeIds || []).includes(size.id)).map(size => size.name);
-    $("allowedSizes").textContent = names.length ? names.join("، ") : "—";
+    // Each size as its own small pill, so "S، M، L" does not run together.
+    const sizesBox = $("allowedSizes");
+    sizesBox.classList.toggle("dp-chips", names.length > 0);
+    sizesBox.replaceChildren(...(names.length ? names.map(name => Object.assign(document.createElement("span"), { className: "dp-chip", textContent: name })) : [document.createTextNode("—")]));
   }
   $("designName").value = state.designName;
   $("nameCount").textContent = state.designName.length;

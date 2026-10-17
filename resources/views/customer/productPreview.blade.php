@@ -235,6 +235,8 @@
             available: @json($productAvailable),
             links: @json($productLinks),
             productsUrl: @json($productsUrl),
+            // Printing methods (DTF, DTG...) the print shops really offer, for the products that have more than one.
+            printingMethods: @json(\App\Support\PrintingMethodOptions::forPreview()),
         };
     </script>
     <script src="{{ asset('front/studio/assets/js/pages/design-studio-product-catalog.js') }}"></script>

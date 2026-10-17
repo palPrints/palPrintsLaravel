@@ -47,13 +47,21 @@ class ShopOrderTransitions
 
         $order->status = $to;
 
+        $metadata = $via === 'dashboard' ? [] : ['via' => $via];
+        if ($to === 'rejected') {
+            // Which branches turned the order down, so the admin never sends it back to one of them.
+            $metadata['rejected_branch_ids'] = $order->items()
+                ->whereIn('print_provider_branch_id', $shopUser->printProvider?->branches()->pluck('id') ?? collect())
+                ->pluck('print_provider_branch_id')->unique()->values()->all();
+        }
+
         OrderStatusHistory::create([
             'order_id' => $order->id,
             'changed_by' => $shopUser->id,
             'from_status' => $previous,
             'to_status' => $to,
             'note' => $note,
-            'metadata' => $via === 'dashboard' ? null : ['via' => $via],
+            'metadata' => $metadata ?: null,
         ]);
 
         if ($order->user_id) {
