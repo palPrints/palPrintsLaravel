@@ -28,6 +28,7 @@ class EarningsController extends Controller
             'wallet' => $wallet,
             'transactions' => $transactions,
             'transactionTypes' => self::TRANSACTION_TYPES,
+            'minimumWithdrawal' => (float) PlatformSettings::get('fees', 'minimum_withdrawal', 100),
         ]);
     }
 
