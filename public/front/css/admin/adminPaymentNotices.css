@@ -237,6 +237,16 @@
 @media (max-width: 860px) {
   .notice-actions { grid-template-columns: 1fr; padding-inline: 14px; }
 }
+/* wa.me hand-off: the admin sends the shop its new order from their own WhatsApp. */
+.notices-flash.is-whatsapp { justify-content: space-between; flex-wrap: wrap; color: #14532d; background: #f0fdf4; border: 1px solid #86efac; }
+.notices-flash.is-whatsapp > span { display: flex; align-items: center; gap: 8px; }
+.notices-flash.is-whatsapp .bi-whatsapp { color: #16a34a; }
+.notice-whatsapp-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 9px; color: #fff; background: #16a34a; font-size: 13px; font-weight: 800; text-decoration: none; white-space: nowrap; }
+.notice-whatsapp-btn:hover, .notice-whatsapp-btn:focus-visible { background: #15803d; color: #fff; }
+.notices-flash.is-whatsapp .notice-whatsapp-btn .bi-whatsapp { color: #fff; }
+.notice-whatsapp-btn.is-small { margin-top: 4px; padding: 4px 10px; font-size: 12px; }
+.notice-shop { display: block; font-weight: 700; }
+
 /* Each notice is a collapsed row; open it to review the receipt and pick the print shop. */
 .notice-card > .notice-head { cursor: pointer; list-style: none; border-bottom: 0; }
 .notice-card > .notice-head::-webkit-details-marker { display: none; }
@@ -246,5 +256,5 @@
 .notice-head-meta i { color: var(--blue); margin-inline-end: 4px; }
 .notice-chevron { color: #7a8aa0; transition: transform .18s; }
 .notice-card[open] .notice-chevron { transform: rotate(180deg); }
-.notices-flash:not(.is-success):not(.is-error) { color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; }
-.notices-flash a { color: inherit; font-weight: 800; text-decoration: underline; }
+.notices-flash:not(.is-success):not(.is-error):not(.is-whatsapp) { color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; }
+.notices-flash a:not(.notice-whatsapp-btn) { color: inherit; font-weight: 800; text-decoration: underline; }

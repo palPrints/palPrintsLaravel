@@ -31,6 +31,16 @@
         @if (session('notice_status'))
             <p class="notices-flash is-success" role="status"><i class="bi bi-check-circle" aria-hidden="true"></i> {{ session('notice_status') }}</p>
         @endif
+        @if ($chat = session('notice_whatsapp'))
+            <div class="notices-flash is-whatsapp">
+                @if ($chat['url'])
+                    <span><i class="bi bi-whatsapp" aria-hidden="true"></i> أبلغ {{ $chat['shop'] }} بالطلب على واتساب، الرسالة جاهزة وتحتاج فقط إلى إرسال.</span>
+                    <a class="notice-whatsapp-btn" href="{{ $chat['url'] }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i> إرسال للمطبعة</a>
+                @else
+                    <span><i class="bi bi-whatsapp" aria-hidden="true"></i> لم تضف {{ $chat['shop'] }} رقم واتساب في ملفها، لذلك سيصلها الطلب في صفحة الطلبات فقط.</span>
+                @endif
+            </div>
+        @endif
         @if (session('notice_error'))
             <p class="notices-flash is-error" role="alert"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> {{ session('notice_error') }}</p>
         @endif
@@ -157,6 +167,7 @@
                             <th scope="col">طريقة الدفع</th>
                             <th scope="col">القرار</th>
                             <th scope="col">التاريخ</th>
+                            <th scope="col">المطبعة</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -175,6 +186,18 @@
                                     @endif
                                 </td>
                                 <td>{{ $notice['date'] }}</td>
+                                <td>
+                                    @if ($notice['whatsapp'])
+                                        <span class="notice-shop">{{ $notice['whatsapp']['shop'] }}</span>
+                                        @if ($notice['whatsapp']['url'])
+                                            <a class="notice-whatsapp-btn is-small" href="{{ $notice['whatsapp']['url'] }}" target="_blank" rel="noopener" aria-label="إرسال الطلب {{ $notice['orderNumber'] }} إلى {{ $notice['whatsapp']['shop'] }} على واتساب"><i class="bi bi-whatsapp" aria-hidden="true"></i> واتساب</a>
+                                        @else
+                                            <small class="notice-reason">بدون رقم واتساب</small>
+                                        @endif
+                                    @else
+                                        —
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>

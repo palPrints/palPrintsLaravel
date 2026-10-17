@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendOrderOfferToShop;
 use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\Payment;
 use App\Models\PrintProviderBranch;
 use App\Services\OrderShopChoices;
+use App\Services\WhatsApp\ShopChatLink;
 use App\Support\OrderNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,7 +38,7 @@ class PaymentNoticeController extends Controller
         $onlyOrder = $request->query('order');
 
         $payments = Payment::query()
-            ->with(['order.user', 'order.items.product'])
+            ->with(['order.user', 'order.items.product', 'order.items.printFiles', 'order.items.printProviderBranch.printProvider'])
             ->whereHas('order', fn ($order) => $onlyOrder ? $order->where('order_number', $onlyOrder) : $order)
             ->latest()
             ->limit(100)
@@ -87,13 +89,16 @@ class PaymentNoticeController extends Controller
 
         OrderNotifier::paymentReviewed((int) $order->user_id, $order->order_number, true);
 
-        // The chosen shop's owner learns about the new order.
+        // The chosen shop's owner learns about the new order: in the app, and on WhatsApp when the shop opted in.
         if ($providerUserId = $branch->printProvider()->value('user_id')) {
             OrderNotifier::newOrderForShop((int) $providerUserId, $order->order_number, $order->items->count());
         }
+        SendOrderOfferToShop::dispatch($order->id, (int) $branch->print_provider_id);
         $this->audit($request, 'admin.payment_notice_approved', 'الموافقة على إشعار دفع الطلب '.$order->order_number, ['order_id' => $order->id, 'payment_id' => $payment->id, 'branch_id' => $branch->id]);
 
-        return back()->with('notice_status', 'تمت الموافقة على الطلب '.$order->order_number.' وتوجيهه إلى '.$this->branchLabel($branch).'.');
+        return back()
+            ->with('notice_status', 'تمت الموافقة على الطلب '.$order->order_number.' وتوجيهه إلى '.$this->branchLabel($branch).'.')
+            ->with('notice_whatsapp', ShopChatLink::forOrder($order->fresh()));
     }
 
     public function reject(Request $request, Payment $payment): RedirectResponse
@@ -181,6 +186,7 @@ class PaymentNoticeController extends Controller
             'approveUrl' => route('admin.payment-notices.approve', $payment),
             'rejectUrl' => route('admin.payment-notices.reject', $payment),
             'shops' => $withShops ? $this->shopChoices($order) : ['top' => [], 'others' => []],
+            'whatsapp' => $payment->status === 'paid' ? ShopChatLink::forOrder($order) : null,
         ];
     }
 

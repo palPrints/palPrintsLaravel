@@ -43,6 +43,8 @@ use App\Http\Controllers\PrintProvider\SupportController as PrintProviderSupport
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleDashboardController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\SharedPrintFileController;
+use App\Http\Controllers\WhatsAppWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -54,6 +56,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('index');
 })->name('home');
+
+// WhatsApp Cloud API webhook (Meta). Public, outside CSRF; the controller checks Meta's signature.
+Route::get('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'verify'])->middleware('throttle:60,1')->name('webhooks.whatsapp.verify');
+Route::post('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'receive'])->middleware('throttle:600,1')->name('webhooks.whatsapp');
+
+// The customer's print file, from the signed, expiring link in the WhatsApp message the admin sends the shop.
+Route::get('/shared/print-files/{printFile}', SharedPrintFileController::class)
+    ->middleware(['signed', 'throttle:30,1'])->name('print-files.shared');
 
 Route::view('/about', 'about')->name('about');
 Route::view('/faq', 'pages.faq')->name('faq');
