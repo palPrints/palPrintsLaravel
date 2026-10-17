@@ -208,6 +208,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const withdrawForm = document.getElementById("withdrawForm");
   const amount = document.getElementById("withdrawAmount");
   const method = document.getElementById("payoutMethod");
+  if (method) {
+    method.addEventListener("change", function () {
+      const bank = method.value === "bank-of-palestine";
+      document.getElementById("payoutAccountLabel").textContent = bank ? "رقم الهاتف أو IBAN" : "رقم الهاتف";
+      document.getElementById("payoutAccountError").textContent = bank ? "أدخل رقم هاتف صحيح أو IBAN يبدأ بـ PS." : "أدخل رقم هاتف صحيح (9-10 أرقام).";
+      document.getElementById("payoutAccount").placeholder = bank ? "059xxxxxxx أو PS.." : "059xxxxxxx";
+    });
+  }
 
   function closeDialog() { if (dialog && dialog.open) dialog.close(); }
   if (openDialog && dialog) openDialog.addEventListener("click", function () {
@@ -241,8 +249,20 @@ document.addEventListener("DOMContentLoaded", function () {
       method.closest(".profile-field").classList.toggle("has-error", !methodValid);
       amount.setAttribute("aria-invalid", String(!amountValid));
       method.setAttribute("aria-invalid", String(!methodValid));
+      // Bank of Palestine takes a phone number or an IBAN; the wallets take a phone number.
+      const holder = document.getElementById("payoutHolder");
+      const account = document.getElementById("payoutAccount");
+      const accountClean = account.value.replace(/[s-]+/g, "").toUpperCase();
+      const accountValid = method.value === "bank-of-palestine"
+        ? /^([0-9]{9,10}|PS[0-9]{2}[A-Z0-9]{25})$/.test(accountClean)
+        : /^[0-9]{9,10}$/.test(accountClean);
+      const holderValid = holder.value.trim().length >= 3;
+      holder.closest(".profile-field").classList.toggle("has-error", !holderValid);
+      account.closest(".profile-field").classList.toggle("has-error", !accountValid);
       if (!amountValid) return amount.focus();
       if (!methodValid) return method.focus();
+      if (!holderValid) return holder.focus();
+      if (!accountValid) return account.focus();
 
       const submitButton = withdrawForm.querySelector("[type=submit]");
       submitting = true;
@@ -259,6 +279,8 @@ document.addEventListener("DOMContentLoaded", function () {
           body: JSON.stringify({
             amount: amount.value,
             method: method.value,
+            holder: holder.value.trim(),
+            account: account.value,
             notes: document.getElementById("withdrawNotes")?.value || null
           })
         });

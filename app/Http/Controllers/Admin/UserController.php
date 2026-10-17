@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\PrintProvider\DocumentController;
 use App\Models\ApprovalRequest;
+use App\Models\AuditLog;
 use App\Models\Design;
 use App\Models\DesignerProfile;
 use App\Models\PrintProvider;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -35,21 +40,60 @@ class UserController extends Controller
         ]);
     }
 
+    /** Suspends an active account or activates a suspended one (customers, designers and print shops only). */
+    public function toggle(Request $request, User $user): JsonResponse
+    {
+        abort_unless($user->hasAnyRole(['customer', 'designer', 'print_provider']) && ! $user->hasRole('admin'), 403);
+        abort_if($user->is($request->user()), 403);
+
+        $active = ! $user->is_active;
+        $user->update(['is_active' => $active]);
+        // A suspended shop must not receive new orders either.
+        $user->printProvider?->update(['is_active' => $active]);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => $active ? 'admin.user_activated' : 'admin.user_suspended',
+            'description' => ($active ? 'تفعيل' : 'تعطيل').' حساب المستخدم رقم '.$user->id,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'new_values' => ['user_id' => $user->id, 'is_active' => $active],
+        ]);
+
+        $profile = $user->hasRole('designer') ? $user->designerProfile : $user->printProvider;
+
+        return response()->json([
+            'status' => $this->onboardingStatus($user, $profile?->approval_status),
+            'message' => $active ? 'تم تفعيل الحساب.' : 'تم تعطيل الحساب، ولن يستطيع المستخدم الدخول.',
+        ]);
+    }
+
     private function customers(): array
     {
+        $orders = Order::query()
+            ->selectRaw('user_id, count(*) as orders_count, max(created_at) as last_order_at')
+            ->selectRaw("sum(case when payment_status = 'paid' then total_amount else 0 end) as spent")
+            ->groupBy('user_id')
+            ->get()
+            ->keyBy('user_id');
+
         return User::role('customer')
             ->orderByDesc('created_at')
             ->get()
-            ->map(function (User $user) {
+            ->map(function (User $user) use ($orders) {
+                $stats = $orders->get($user->id);
+
                 return [
+                    'userId' => $user->id,
+                    'toggleUrl' => route('admin.users.toggle', $user),
                     'name' => $user->name,
                     'email' => $user->email,
                     'phone' => $user->phone ?? '—',
                     'city' => '—',
                     'registered' => $user->created_at?->locale('ar')->translatedFormat('j F Y') ?? '—',
-                    'metric' => 0,
-                    'spend' => '₪0',
-                    'lastOrder' => '—',
+                    'metric' => (int) ($stats?->orders_count ?? 0),
+                    'spend' => '₪'.number_format((float) ($stats?->spent ?? 0)),
+                    'lastOrder' => $stats?->last_order_at ? \Illuminate\Support\Carbon::parse($stats->last_order_at)->locale('ar')->translatedFormat('j F Y') : '—',
                     'status' => $user->is_active ? 'active' : 'suspended',
                 ];
             })
@@ -84,6 +128,7 @@ class UserController extends Controller
                     'avatar' => $this->storageUrl($profile?->profile_image),
                     'email' => $user->email,
                     'userId' => $user->id,
+                    'toggleUrl' => route('admin.users.toggle', $user),
                     'phone' => $user->phone ?? '—',
                     'jobTitle' => $profile?->getAttribute('job_title') ?: '—',
                     'experience' => $profile?->getAttribute('experience') ?: '—',
@@ -135,18 +180,33 @@ class UserController extends Controller
             ->groupBy('print_provider_id')
             ->map(fn ($rows) => $rows->pluck('name')->map(fn ($name) => e($name))->implode('، '));
 
+        // Real jobs per shop, from the order lines routed to its branches. The shop's earnings are not credited yet,
+        // so the revenue shown is the shop's cost on its finished jobs.
+        $jobs = OrderItem::query()
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->join('print_provider_branches', 'print_provider_branches.id', '=', 'order_items.print_provider_branch_id')
+            ->selectRaw('print_provider_branches.print_provider_id as provider_id')
+            ->selectRaw("count(distinct case when orders.status = 'completed' then orders.id end) as done")
+            ->selectRaw("count(distinct case when orders.status in ('processing', 'confirmed', 'ready') and orders.payment_status = 'paid' then orders.id end) as active")
+            ->selectRaw("sum(case when orders.status = 'completed' then order_items.provider_cost else 0 end) as revenue")
+            ->groupBy('print_provider_branches.print_provider_id')
+            ->get()
+            ->keyBy('provider_id');
+
         return User::role('print_provider')
             ->with(['printProvider', 'approvalRequests' => fn ($query) => $query->latest('id')->limit(1)])
             ->orderByDesc('created_at')
             ->get()
-            ->map(function (User $user) use ($productNames) {
+            ->map(function (User $user) use ($productNames, $jobs) {
                 /** @var PrintProvider|null $profile */
                 $profile = $user->printProvider;
                 $request = $user->approvalRequests->first();
+                $stats = $profile ? $jobs->get($profile->id) : null;
 
                 return [
                     'name' => $profile?->company_name ?? $user->name,
                     'userId' => $user->id,
+                    'toggleUrl' => route('admin.users.toggle', $user),
                     'contactName' => $user->name,
                     'email' => $user->email,
                     'phone' => $profile?->phone ?? $user->phone ?? '—',
@@ -155,11 +215,11 @@ class UserController extends Controller
                     'products' => $profile ? ($productNames[$profile->id] ?? '') : '',
                     'city' => '—',
                     'joined' => $user->created_at?->locale('ar')->translatedFormat('j F Y') ?? '—',
-                    'metric' => (int) ($profile?->total_orders ?? 0),
-                    'activeJobs' => 0,
+                    'metric' => (int) ($stats?->done ?? 0),
+                    'activeJobs' => (int) ($stats?->active ?? 0),
                     'jobsAvailable' => Schema::hasTable('orders'),
                     'delivery' => '—',
-                    'revenue' => '₪'.number_format((float) ($profile?->total_earnings ?? 0)),
+                    'revenue' => '₪'.number_format((float) ($stats?->revenue ?? 0)),
                     'workingHours' => $this->workingHoursSummary($profile?->working_hours),
                     'operating' => $profile?->is_active ?? true,
                     // Private files: opened through a protected link, not a public /storage URL.

@@ -27,6 +27,67 @@ class AdminNotifier
         ]));
     }
 
+    /**
+     * Where a notification should take the admin: the very item it is about (one payment notice, one order, one withdrawal,
+     * one design, one support request, one account), not just the page that lists them. The pages open an item from
+     * `?open=<id>` (payment notices from `?order=<number>`). Notifications saved before their link carried the id are
+     * matched from the text of the message, so they keep working.
+     */
+    public static function linkFor(Notification $notification): ?string
+    {
+        $link = $notification->link;
+        $message = (string) $notification->message;
+        $title = (string) $notification->title;
+        $page = fn (string $route) => $link === route($route);
+        $orderNumber = preg_match('/رقم\s+([A-Za-z0-9_\-]+)/u', $message, $match) ? $match[1] : null;
+
+        switch ($notification->type) {
+            case 'order.payment_review':
+                if ($page('admin.payment-notices') && $orderNumber) {
+                    return route('admin.payment-notices', ['order' => $orderNumber]);
+                }
+                break;
+
+            case 'order.payment_cancelled':
+            case 'order.refund_needed':
+            case 'order.rejected_by_provider':
+                if ($page('admin.orders') && $orderNumber) {
+                    return route('admin.orders', ['open' => $orderNumber]);
+                }
+                break;
+
+            case 'withdrawal.requested':
+                if ($page('admin.payments') && preg_match('/WDR-[A-Z0-9]+/', $message, $match)
+                    && ($id = \App\Models\WithdrawalRequest::where('reference_id', $match[0])->value('id'))) {
+                    return route('admin.payments', ['open' => $id]);
+                }
+                break;
+
+            case 'approval.pending':
+                if ($page('admin.users') && preg_match('/رقم الطلب:\s*(\S+)/u', $message, $match)
+                    && ($userId = \App\Models\ApprovalRequest::where('request_number', $match[1])->value('user_id'))) {
+                    return route('admin.users', ['open' => $userId]);
+                }
+                break;
+
+            case 'design.submitted':
+                if ($page('admin.designs') && preg_match('/«(.+?)»/u', $message, $match)
+                    && ($id = \App\Models\Design::where('title', $match[1])->latest('id')->value('id'))) {
+                    return route('admin.designs', ['open' => $id]);
+                }
+                break;
+
+            case 'support.new':
+                if ($page('admin.support') && preg_match('/طلب دعم:\s*(.+)$/u', $message, $match)
+                    && ($ticket = SupportTicketStore::all()->firstWhere('subject', trim($match[1])))) {
+                    return route('admin.support', ['open' => $ticket['id']]);
+                }
+                break;
+        }
+
+        return $link;
+    }
+
     public static function categoryOf(?string $type): string
     {
         foreach (self::CATEGORIES as $key => $category) {

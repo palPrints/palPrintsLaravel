@@ -35,9 +35,10 @@ class PrintShopRouter
      * @param  Collection<int, int>  $variantIds  the variants (colour + size) of the line
      * @param  array<int, string>  $studioAreas  the print areas the customer designed on, as the studio names them
      * @param  array<string, mixed>|null  $layout  the studio layout ({areas: {areaId: {objects: [...]}}})
+     * @param  array<string, mixed>|null  $paperJob  a paper printing job (see PaperPricing::normalizeJob()); its price comes from the shop's paper prices
      * @return array{product: Product, variantIds: Collection<int, int>, areas: array<int, array{code: string, widthCm: ?float, heightCm: ?float}>, quantity: int}
      */
-    public function need(Product $product, Collection $variantIds, array $studioAreas, ?array $layout, int $quantity = 1, ?string $method = null): array
+    public function need(Product $product, Collection $variantIds, array $studioAreas, ?array $layout, int $quantity = 1, ?string $method = null, ?array $paperJob = null): array
     {
         $areas = collect($studioAreas)->map(fn (string $area) => $this->studioAreaId($product, $area))->unique()->map(function (string $studioId) use ($product, $layout) {
             $code = $this->databaseArea($product, $studioId);
@@ -46,7 +47,7 @@ class PrintShopRouter
             return ['code' => $code, 'widthCm' => $size['width'] ?? null, 'heightCm' => $size['height'] ?? null];
         })->values()->all();
 
-        return ['product' => $product, 'variantIds' => $variantIds->values(), 'areas' => $areas, 'quantity' => max(1, $quantity), 'method' => $method ?: null];
+        return ['product' => $product, 'variantIds' => $variantIds->values(), 'areas' => $areas, 'quantity' => max(1, $quantity), 'method' => $method ?: null, 'paper' => $paperJob];
     }
 
     /** The same need, read back from a line already in the cart. */
@@ -56,11 +57,12 @@ class PrintShopRouter
 
         return $this->need(
             $item->product,
-            collect($item->variant_id ? [$item->variant_id] : []),
+            collect($options['paper_job']['variant_ids'] ?? ($item->variant_id ? [$item->variant_id] : [])),
             array_values((array) ($options['print_areas'] ?? [])),
             is_array($options['layout'] ?? null) ? $options['layout'] : null,
             (int) $item->quantity,
             $options['printing_method'] ?? null,
+            is_array($options['paper_job'] ?? null) ? $options['paper_job'] : null,
         );
     }
 
@@ -71,11 +73,12 @@ class PrintShopRouter
 
         return $this->need(
             $item->product,
-            collect($item->variant_id ? [$item->variant_id] : []),
+            collect($options['paper_job']['variant_ids'] ?? ($item->variant_id ? [$item->variant_id] : [])),
             array_values((array) ($options['print_areas'] ?? [])),
             is_array($options['layout'] ?? null) ? $options['layout'] : null,
             (int) $item->quantity,
             $options['printing_method'] ?? null,
+            is_array($options['paper_job'] ?? null) ? $options['paper_job'] : null,
         );
     }
 
@@ -206,6 +209,10 @@ class PrintShopRouter
 
         if ((float) $offering->base_price <= 0) {
             return ['rank' => 1, 'text' => 'سعر هذا المنتج لم يُحدَّد عند المطبعة بعد.'];
+        }
+
+        if (! empty($need['paper']) && $this->paperPricing()->quote($offering, $need['paper']) === null) {
+            return ['rank' => 2, 'text' => 'لا توجد مطبعة تقدّم نوع الورق أو لون الطباعة أو التغليف الذي اخترته بهذا الحجم. جرّب نوع ورق أو تغليفًا آخر.'];
         }
 
         foreach ($need['areas'] as $wanted) {
@@ -351,6 +358,10 @@ class PrintShopRouter
             return null;
         }
 
+        if (! empty($need['paper'])) {
+            return $this->paperPricing()->quote($offering, $need['paper'])['total'] ?? null;
+        }
+
         $total = (float) $offering->base_price;
 
         foreach ($need['areas'] as $wanted) {
@@ -384,6 +395,13 @@ class PrintShopRouter
         }
 
         return round($total, 2);
+    }
+
+    private ?PaperPricing $paperPricing = null;
+
+    private function paperPricing(): PaperPricing
+    {
+        return $this->paperPricing ??= app(PaperPricing::class);
     }
 
     private function normalize(?string $value): string

@@ -48,6 +48,35 @@ class PrintFile extends Model
         ];
     }
 
+    /** Where the studio's print-ready pictures live (one PNG per print area); the customer's own uploads are elsewhere. */
+    public const EXPORT_DIR = 'customer-print-files/exports/';
+
+    /** A picture the design studio drew for the print shop, not a file the customer uploaded. */
+    public function isPrintReady(): bool
+    {
+        return str_starts_with((string) $this->stored_path, self::EXPORT_DIR);
+    }
+
+    /** A "print-ready-*" picture left in the temp folder by an earlier export attempt: the real one is in the export folder. */
+    public function isDraftExport(): bool
+    {
+        return ! $this->isPrintReady() && str_starts_with((string) $this->original_name, 'print-ready-');
+    }
+
+    /** "print-ready-<area name>.png" => the area's name, for people to read. */
+    public function areaLabel(): string
+    {
+        return (string) str($this->original_name)->after('print-ready-')->beforeLast('.png');
+    }
+
+    /** The area id kept in the stored name ("front--<uuid>.png"), safe for a file name inside the package. */
+    public function areaSlug(): ?string
+    {
+        $slug = explode('--', basename((string) $this->stored_path), 2)[0];
+
+        return preg_match('/^[a-z0-9_-]{1,30}$/i', $slug) && str_contains(basename((string) $this->stored_path), '--') ? strtolower($slug) : null;
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

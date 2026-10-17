@@ -137,6 +137,21 @@
         return item;
       }));
 
+      // Where the money goes: the account holder, the phone / IBAN and the requester's note.
+      if (kind === "withdrawal") {
+        [["اسم صاحب الحساب", row.dataset.payoutHolder], ["رقم الهاتف / IBAN", row.dataset.payoutAccount], ["ملاحظات", row.dataset.payoutNotes]].forEach(function (pair) {
+          if (!pair[1]) return;
+          const item = document.createElement("div");
+          const term = document.createElement("dt");
+          const value = document.createElement("dd");
+          term.textContent = pair[0];
+          value.textContent = pair[1];
+          if (pair[0] !== "ملاحظات") value.dir = "ltr";
+          item.append(term, value);
+          detailsList.appendChild(item);
+        });
+      }
+
       const reviewable = kind === "withdrawal"
         && Boolean(row.querySelector(".payment-status.pending"))
         && Boolean(row.dataset.reviewUrl);
@@ -145,6 +160,16 @@
 
       detailsDialog.showModal();
     });
+
+    // Arriving from a notification with ?open=<withdrawal id> opens that request's details straight away.
+    (function () {
+      const wanted = new URLSearchParams(window.location.search).get("open");
+      if (!wanted) return;
+      window.history.replaceState(null, "", window.location.pathname + window.location.hash);
+      const row = document.querySelector('tr[data-id="' + wanted + '"]');
+      const button = row && row.querySelector(".details-button[data-detail-kind]");
+      if (button) { row.scrollIntoView({ block: "center" }); button.click(); }
+    })();
 
     function reviewWithdrawal(action) {
       if (!activeRow) return;

@@ -129,6 +129,7 @@ Route::middleware(['auth', 'active', 'role:customer'])->prefix('customer')->name
     Route::post('/cart/catalog', [CustomerCartController::class, 'storeCatalog'])->name('cart.store-catalog');
     Route::post('/cart/custom-design', [CustomerCartController::class, 'storeCustomDesign'])->name('cart.store-custom-design');
     Route::post('/cart/paper',[CustomerCartController::class, 'storePaper'])->name('cart.store-paper');
+    Route::post('/cart/paper/quote', [CustomerCartController::class, 'quotePaper'])->name('cart.quote-paper');
 });
 
 /*
@@ -194,6 +195,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/support/{ticket}/reply', [AdminSupportController::class, 'reply'])->name('support.reply');
         Route::post('/support/{ticket}/status', [AdminSupportController::class, 'updateStatus'])->name('support.status');
         Route::get('/users', [AdminUserController::class, 'index'])->name('users');
+        Route::post('/users/{user}/toggle', [AdminUserController::class, 'toggle'])->name('users.toggle');
         Route::get('/profile', [AdminProfileController::class, 'show'])->name('profile');
         Route::patch('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password', [AdminProfileController::class, 'updatePassword'])->name('profile.password');
@@ -228,6 +230,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/{order}/reject', [PrintProviderOrdersController::class, 'reject'])->name('.reject');
         Route::post('/{order}/ready', [PrintProviderOrdersController::class, 'ready'])->name('.ready');
         Route::get('/{order}/files/{printFile}', [PrintProviderOrdersController::class, 'downloadFile'])->name('.files');
+        Route::get('/{order}/items/{item}/package', [PrintProviderOrdersController::class, 'package'])->name('.package');
+        Route::get('/{order}/items/{item}/sheet', [PrintProviderOrdersController::class, 'sheet'])->name('.sheet');
     });
     Route::get('/print-provider/earnings', PrintProviderEarningsController::class)
         ->middleware(['role:print_provider', 'account.approved'])->name('print-provider.earnings');

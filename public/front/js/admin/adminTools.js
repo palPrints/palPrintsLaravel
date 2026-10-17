@@ -312,6 +312,15 @@
         if (dialog && typeof dialog.showModal === "function") dialog.showModal();
       });
     });
+    // Arriving from a notification with ?open=<request id> opens that support request straight away.
+    (function () {
+      var wanted = new URLSearchParams(window.location.search).get("open");
+      if (!wanted) return;
+      window.history.replaceState(null, "", window.location.pathname);
+      var row = rows.find(function (item) { return item.dataset.id === wanted; });
+      var button = row && row.querySelector(".support-action");
+      if (button) { row.scrollIntoView({ block: "center" }); button.click(); }
+    })();
     var replyButton = document.getElementById("sendTicketReply");
     if (replyButton) replyButton.addEventListener("click", function (event) {
       var reply = document.getElementById("ticketReply");

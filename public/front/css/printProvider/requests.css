@@ -982,3 +982,16 @@ body.sidebar-collapsed .sidebar { transform: translateX(105%); }
 .empty-orders-row td span { font-size: 13px; }
 
 .orders-table th, .orders-table td { padding-inline: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* A paper order: one card per file with a few short lines. */
+.paper-file-cards { display: grid; gap: 10px; margin-top: 10px; }
+.paper-file-card { display: grid; gap: 8px; padding: 12px 14px; background: #f8fbff; border: 1px solid #e1eaf5; border-radius: 12px; }
+.paper-file-card > strong { color: #0b1f3a; font-size: 13px; overflow-wrap: anywhere; }
+.paper-file-card dl { display: grid; gap: 6px; margin: 0; }
+.paper-file-card dl > div { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: start; font-size: 12.5px; line-height: 1.7; }
+.paper-file-card dt { color: #667a96; font-weight: 700; }
+.paper-file-card dd { margin: 0; color: #0b1f3a; font-weight: 700; overflow-wrap: anywhere; }
+html[data-bs-theme="dark"] .paper-file-card { background: #162738; border-color: #2b435a; }
+html[data-bs-theme="dark"] .paper-file-card > strong, html[data-bs-theme="dark"] .paper-file-card dd { color: #e6f0fb; }
+html[data-bs-theme="dark"] .paper-file-card dt { color: #9fb6cc; }
+@media (max-width: 520px) { .paper-file-card dl > div { grid-template-columns: 1fr; gap: 0; } }

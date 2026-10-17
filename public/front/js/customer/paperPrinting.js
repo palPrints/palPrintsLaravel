@@ -22,8 +22,10 @@ document.addEventListener("DOMContentLoaded", function () {
       yourOrder: "طلبك", orderSummary: "ملخص الطباعة", currentStep: "المرحلة الحالية", files: "الملفات", printing: "الطباعة", binding: "التغليف", quantity: "الكمية", priceBreakdown: "تفصيل السعر", shippingNotIncluded: "لا يشمل التوصيل", needHelp: "تحتاج مساعدة؟ تواصل مع الدعم الفني", filePreview: "معاينة الملف", previewUnavailable: "المعاينة المرئية غير متاحة لهذا النوع",
       customize: "تخصيص", customized: "إعدادات مختلفة", removeOverride: "إزالة التخصيص", saveOverride: "حفظ التخصيص", cancel: "إلغاء", edit: "تعديل", pages: "صفحة", ready: "جاهز", processing: "جارٍ تحليل الملف", converting: "جارٍ تحويل الملف", failed: "يحتاج إلى إجراء", retry: "إعادة المحاولة", delete: "حذف", preview: "معاينة", moveUp: "تحريك لأعلى", moveDown: "تحريك لأسفل",
       spiral: "سلك حلزوني", clearCover: "غلاف شفاف", glue: "تجليد حراري", sideStaple: "تدبيس جانبي", cornerStaple: "تدبيس زاوية", none: "بدون تغليف", noBindingFree: "بدون تغليف مجاني", lamination: "تغليف حراري شفاف", free: "مجانًا", glueMin: "يتطلب 20 صفحة على الأقل", spiralMax: "غير متاح لأكثر من 350 صفحة", stapleMax: "عدد الصفحات أكبر من الحد", laminationA3: "غير متاح مع مقاس A3",
-      filesRequired: "أضف ملفًا جاهزًا واحدًا على الأقل.", resolveFiles: "عالج الملفات التي تحتاج إلى إجراء قبل المتابعة.", printRequired: "اختر جميع خصائص الطباعة المطلوبة.", groupingRequired: "اختر دمج الملفات أو فصلها.", bindingRequired: "حدد نوع التغليف المطلوب.", signInRequired: "يجب تسجيل الدخول قبل رفع الملفات.", unsupportedFile: "صيغة الملف غير مدعومة.", fileTooLarge: "حجم الملف يتجاوز 50MB.", tooManyFiles: "يمكن رفع 10 ملفات كحد أقصى.", tooManyPages: "سيؤدي هذا الملف إلى تجاوز حد 500 صفحة.", duplicateFile: "هذا الملف مضاف بالفعل.", deleteConfirm: "سيؤثر حذف هذا الملف على الطلب والسعر. هل تريد المتابعة؟", fileRemoved: "تم حذف الملف.", undo: "استعادة", fileRestored: "تمت استعادة الملف.", settingsConfirmed: "تم حفظ خصائص الطباعة.", bindingConfirmed: "تم حفظ التجميع والتغليف.", orderAdded: "تمت إضافة طلب الطباعة إلى السلة.", addingToCart: "جارٍ إضافة الطلب...", addToCartFailed: "تعذّرت إضافة الطلب إلى السلة، حاول مجددًا.", applyAllConfirm: "سيتم حذف تخصيصات الملفات الفردية. هل تريد المتابعة؟", overridesCleared: "تم تطبيق الإعداد العام على جميع الملفات.", addedNeedsReview: "تمت إضافة الملف. راجع الخصائص قبل المتابعة.", overrideFirst: "أكمل الإعداد العام أولًا.", overrideSaved: "تم حفظ خصائص الملف.", priceCalculating: "يُحسب بعد إكمال الخصائص", printCost: "تكلفة الطباعة", bindingCost: "تكلفة التغليف", orderOutput: "مخرج الطلب", oneBooklet: "ملزمة واحدة", separatePrints: "مطبوعات منفصلة", mixedSettings: "خصائص مختلفة", notSelected: "لم تحدد بعد", oneFile: "ملف واحد", fileCount: "{count} ملفات", pageCount: "{count} صفحة", overridesCount: "{count} ملف بإعداد مختلف", stageReady: "جاهزة",
-      A4: "A4", A5: "A5", A3: "A3", standard: "عادي 80 جم", thick: "فاخر 120 جم", coated: "مصقول 150 جم", bw: "أبيض وأسود", color: "ملون", single: "وجه واحد", double: "وجهين", layout1: "صفحة واحدة", layout2: "صفحتان", layout4: "4 صفحات"
+      filesRequired: "أضف ملفًا جاهزًا واحدًا على الأقل.", resolveFiles: "عالج الملفات التي تحتاج إلى إجراء قبل المتابعة.", printRequired: "اختر جميع خصائص الطباعة المطلوبة.", groupingRequired: "اختر دمج الملفات أو فصلها.", bindingRequired: "حدد نوع التغليف المطلوب.", signInRequired: "يجب تسجيل الدخول قبل رفع الملفات.", unsupportedFile: "ارفع ملف PDF فقط.", fileTooLarge: "حجم الملف يتجاوز 50MB.", tooManyFiles: "يمكن رفع 10 ملفات كحد أقصى.", tooManyPages: "سيؤدي هذا الملف إلى تجاوز حد 500 صفحة.", duplicateFile: "هذا الملف مضاف بالفعل.", deleteConfirm: "سيؤثر حذف هذا الملف على الطلب والسعر. هل تريد المتابعة؟", fileRemoved: "تم حذف الملف.", undo: "استعادة", fileRestored: "تمت استعادة الملف.", settingsConfirmed: "تم حفظ خصائص الطباعة.", bindingConfirmed: "تم حفظ التجميع والتغليف.", orderAdded: "تمت إضافة طلب الطباعة إلى السلة.", addingToCart: "جارٍ إضافة الطلب...", addToCartFailed: "تعذّرت إضافة الطلب إلى السلة، حاول مجددًا.", applyAllConfirm: "سيتم حذف تخصيصات الملفات الفردية. هل تريد المتابعة؟", overridesCleared: "تم تطبيق الإعداد العام على جميع الملفات.", addedNeedsReview: "تمت إضافة الملف. راجع الخصائص قبل المتابعة.", overrideFirst: "أكمل الإعداد العام أولًا.", overrideSaved: "تم حفظ خصائص الملف.", priceCalculating: "يُحسب بعد إكمال الخصائص", printCost: "تكلفة الطباعة", bindingCost: "تكلفة التغليف", orderOutput: "مخرج الطلب", oneBooklet: "ملزمة واحدة", separatePrints: "مطبوعات منفصلة", mixedSettings: "خصائص مختلفة", notSelected: "لم تحدد بعد", oneFile: "ملف واحد", fileCount: "{count} ملفات", pageCount: "{count} صفحة", overridesCount: "{count} ملف بإعداد مختلف", stageReady: "جاهزة",
+      A4: "A4", A5: "A5", A3: "A3", standard: "عادي 80 جم", thick: "فاخر 120 جم", coated: "مصقول 150 جم", bw: "أبيض وأسود", color: "ملون", single: "وجه واحد", double: "وجهين", layout1: "صفحة واحدة", layout2: "صفحتان", layout4: "4 صفحات", layout6: "6 صفحات", layout9: "9 صفحات",
+      paperUnavailable: "الطباعة على الورق غير متاحة حاليًا لأنه لا توجد مطبعة تقدّم أنواع الورق وألوان الطباعة. جرّب لاحقًا.",
+      priceFailed: "تعذّر حساب السعر الآن. حاول مرة أخرى.", from: "من"
     },
   };
 
@@ -41,28 +43,27 @@ document.addEventListener("DOMContentLoaded", function () {
     files: [],
     globalSettings: { size: null, paper: null, color: null, sides: null, layout: null },
     grouping: null,
+    autoGrouping: false,
+    collate: true,
     fileOrder: [],
     combinedBinding: "none",
     separateBindings: {},
     separateQuantities: {},
     quantity: 1,
+    quote: null,
     overrideFileId: null,
     overrideDraft: null
   };
 
-  const supportedExtensions = ["pdf", "jpg", "jpeg", "png", "docx", "pptx"];
+  const supportedExtensions = ["pdf"];
   const settingGroups = ["size", "paper", "color", "sides", "layout"];
   const dbPaper = (window.palPrintsCustomerAssets && window.palPrintsCustomerAssets.paperPrinting) || {};
-  const dbPricing = dbPaper.pricing || {};
-  const bindings = [
-    { id: "spiral", icon: "bi-journal", price: 8 },
-    { id: "clearCover", icon: "bi-file-earmark", price: 3 },
-    { id: "glue", icon: "bi-book", price: 6 },
-    { id: "sideStaple", icon: "bi-distribute-vertical", price: 1.5 },
-    { id: "cornerStaple", icon: "bi-paperclip", price: 0.75 },
-    { id: "none", icon: "bi-slash-circle", price: 0 },
-    { id: "lamination", icon: "bi-layers", price: 12 }
-  ];
+  const bindingIcons = { spiral: "bi-journal", clearCover: "bi-file-earmark", glue: "bi-book", sideStaple: "bi-distribute-vertical", cornerStaple: "bi-paperclip", lamination: "bi-layers" };
+  /* Only the bindings that at least one print shop sells, each with the lowest price among them (the price of the job itself
+     comes from the server); "no binding" is always free. */
+  const bindings = (dbPaper.bindings || []).filter(function (binding) { return bindingIcons[binding.id]; }).map(function (binding) {
+    return { id: binding.id, icon: bindingIcons[binding.id], price: Number(binding.from) || 0 };
+  }).concat([{ id: "none", icon: "bi-slash-circle", price: 0 }]);
 
   const $ = function (selector, scope) { return (scope || document).querySelector(selector); };
   const $$ = function (selector, scope) { return Array.prototype.slice.call((scope || document).querySelectorAll(selector)); };
@@ -118,9 +119,47 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function readyFiles() { return state.files.filter(function (file) { return file.status === "ready"; }); }
-  function totalPages() { return readyFiles().reduce(function (sum, file) { return sum + file.pages; }, 0); }
+  function totalPages() { return readyFiles().reduce(function (sum, file) { return sum + (printedPages(file) || file.pages); }, 0); }
   function globalComplete() { return settingGroups.every(function (group) { return Boolean(state.globalSettings[group]); }); }
-  function effectiveSettings(file) { return Object.assign({}, state.globalSettings, file.override || {}); }
+  // A booklet is printed on both sides, two pages a side: it decides those two choices for its file.
+  function effectiveSettings(file) {
+    const settings = Object.assign({}, state.globalSettings, file.override || {});
+    if (file.booklet) { settings.sides = "double"; settings.layout = "2"; }
+    return settings;
+  }
+
+  /* "1-9, 12" -> how many different pages it holds, or null when it is not a valid range inside a file of `pages` pages. */
+  function parseRange(text, pages) {
+    const marks = { "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4", "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9", "،": ",", "؛": ",", "–": "-", "—": "-" };
+    const clean = String(text).replace(/[٠-٩،؛–—]/g, function (char) { return marks[char]; });
+    const seen = {};
+    const tokens = clean.split(",");
+    for (let index = 0; index < tokens.length; index++) {
+      const match = /^(\d{1,4})(?:\s*-\s*(\d{1,4}))?$/.exec(tokens[index].trim());
+      if (!match) return null;
+      const from = Number(match[1]);
+      const to = Number(match[2] || match[1]);
+      if (from < 1 || to < from || to > pages) return null;
+      for (let page = from; page <= to; page++) seen[page] = true;
+    }
+    return { count: Object.keys(seen).length, pages: Object.keys(seen).map(Number).sort(function (a, b) { return a - b; }) };
+  }
+  /* The pages of a file that are printed: all of them, or those in its range; null while the range is wrong. */
+  function printedPages(file) {
+    let pages;
+    if (!file.range || !file.range.trim()) {
+      pages = [];
+      for (let page = 1; page <= file.pages; page++) pages.push(page);
+    } else {
+      const parsed = parseRange(file.range, file.pages);
+      if (!parsed) return null;
+      pages = parsed.pages;
+    }
+    if (file.subset === "odd" || file.subset === "even") {
+      pages = pages.filter(function (page) { return (page % 2 === 1) === (file.subset === "odd"); });
+    }
+    return pages.length ? pages.length : null;
+  }
 
   function fileIcon(file) {
     if (["jpg", "jpeg", "png"].indexOf(file.ext) !== -1) return { icon: "bi-file-earmark-image", type: "is-image" };
@@ -176,7 +215,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (state.files.length >= 10) { showToast(t("tooManyFiles"), "error"); return; }
       const ext = (file.name.split(".").pop() || "").toLowerCase();
       const duplicate = state.files.some(function (item) { return item.name === file.name && item.size === file.size; });
-      const item = { id: "file-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7), file: file, name: file.name, size: file.size, ext: ext, pages: 0, status: "queued", progress: 0, error: null, override: null };
+      const item = { id: "file-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7), file: file, name: file.name, size: file.size, ext: ext, pages: 0, status: "queued", progress: 0, error: null, override: null, range: "", subset: "all", reverse: false, booklet: false, flip: "long" };
       if (duplicate) { showToast(t("duplicateFile"), "error"); return; }
       if (supportedExtensions.indexOf(ext) === -1) { item.status = "error"; item.error = "unsupportedFile"; state.files.push(item); return; }
       if (file.size > 50 * 1024 * 1024) { item.status = "error"; item.error = "fileTooLarge"; state.files.push(item); return; }
@@ -261,16 +300,78 @@ document.addEventListener("DOMContentLoaded", function () {
     if (typeof el.preview.showModal === "function") el.preview.showModal();
   }
 
+  /* A size, a paper type and a colour must go together at one print shop at least (the colour a shop can print depends on its
+     paper). A choice that does not go with the ones already made is hidden. */
+  const printTogether = ["size", "paper", "color"];
+  function comboAllows(group, value) {
+    const combos = dbPaper.options && dbPaper.options.combinations;
+    if (!combos) return true;
+    const others = printTogether.filter(function (other) { return other !== group && state.globalSettings[other]; });
+    return combos.some(function (combo) { return combo[group] === value && others.every(function (other) { return combo[other] === state.globalSettings[other]; }); });
+  }
+  function pruneSelections() {
+    [0, 1].forEach(function () {
+      printTogether.forEach(function (group) {
+        if (state.globalSettings[group] && !comboAllows(group, state.globalSettings[group])) state.globalSettings[group] = null;
+      });
+    });
+  }
+
   function renderGlobalSelections() {
+    pruneSelections();
     $$("#globalOptions [data-option-group]").forEach(function (groupEl) {
       const group = groupEl.dataset.optionGroup;
-      $$('[data-value]', groupEl).forEach(function (button) { button.classList.toggle("is-selected", state.globalSettings[group] === button.dataset.value); });
+      const offered = [];
+      $$('[data-value]', groupEl).forEach(function (button) {
+        const sold = (optionValues[group] || []).indexOf(button.dataset.value) !== -1 && (printTogether.indexOf(group) === -1 || comboAllows(group, button.dataset.value));
+        button.style.display = sold ? "" : "none";
+        button.classList.toggle("is-selected", sold && state.globalSettings[group] === button.dataset.value);
+        if (sold) offered.push(button);
+      });
+
+      // Only one thing is sold: it looks like any other choice, but it is already selected for the customer.
+      if (offered.length === 1) {
+        state.globalSettings[group] = offered[0].dataset.value;
+        offered[0].classList.add("is-selected");
+      }
+      // The only choice takes the whole row instead of one column with empty space beside it.
+      const grid = $(".choice-grid", groupEl);
+      if (grid) grid.classList.toggle("is-one", offered.length === 1);
     });
   }
 
   function settingsSummary(settings) {
     if (!settingGroups.every(function (key) { return Boolean(settings[key]); })) return t("notSelected");
     return [t(settings.size), t(settings.paper), t(settings.color), t(settings.sides), t("layout" + settings.layout)].join(" • ");
+  }
+
+  /* What a PDF's own print dialog also offers, per file: which pages, booklet, paper direction and how a double-sided sheet is turned. */
+  function fileExtrasMarkup(file) {
+    const hasRange = Boolean(file.range && file.range.trim()) || (file.subset && file.subset !== "all");
+    const wrong = Boolean(file.range && file.range.trim()) && !parseRange(file.range, file.pages);
+    // A booklet is turned the way a booklet must be, so the flip is asked only for ordinary double-sided printing.
+    const double = effectiveSettings(file).sides === "double" && !file.booklet;
+    const choose = function (name, current, choices) {
+      return '<select data-extra="' + name + '">' + choices.map(function (choice) { return '<option value="' + choice[0] + '"' + (current === choice[0] ? ' selected' : '') + '>' + choice[1] + '</option>'; }).join("") + '</select>';
+    };
+    const noPages = !wrong && printedPages(file) === null;
+    const rangeNote = noPages
+      ? '<small class="file-extra-error"><i class="bi bi-exclamation-circle-fill"></i> لا توجد صفحات ' + (file.subset === "odd" ? "فردية" : "زوجية") + ' ضمن هذا النطاق</small>'
+      : wrong
+      ? '<small class="file-extra-error"><i class="bi bi-exclamation-circle-fill"></i> اكتبي أرقامًا من 1 إلى ' + file.pages + '، مثل: 1-9, 12</small>'
+      : '<small>' + (hasRange ? 'سيتم طباعة ' + printedPages(file) + ' صفحة من ' + file.pages : 'اتركيه فاضيًا لطباعة كل الملف (' + file.pages + ' صفحة)') + '</small>';
+    return '<div class="file-extras">' +
+      '<div class="file-extras-title"><i class="bi bi-sliders2" aria-hidden="true"></i><span>خيارات إضافية لهذا الملف</span></div>' +
+      '<div class="file-extras-grid">' +
+        '<label class="file-extra is-wide' + (wrong ? ' has-error' : '') + '"><span>أي صفحات تريد طباعتها؟</span><input type="text" inputmode="numeric" dir="ltr" data-extra="range" value="' + escapeHtml(file.range || "") + '" placeholder="1-9, 12" autocomplete="off">' + rangeNote + '</label>' +
+        '<label class="file-extra"><span>أي صفحات من هذا النطاق؟</span>' + choose("subset", file.subset || "all", [["all", "كلها"], ["odd", "الفردية فقط (1، 3، 5...)"], ["even", "الزوجية فقط (2، 4، 6...)"]]) + '</label>' +
+        '<label class="file-extra is-check' + (file.reverse ? ' is-on' : '') + '"><input type="checkbox" data-extra="reverse"' + (file.reverse ? ' checked' : '') + '><span><strong>ترتيب معكوس</strong><small>من آخر صفحة إلى الأولى</small></span></label>' +
+        '<label class="file-extra"><span>اتجاه الورقة</span>' + choose("orientation", file.orientation || "auto", [["auto", "تلقائي (حسب الملف)"], ["portrait", "طولي"], ["landscape", "عرضي"]]) + '</label>' +
+        '<label class="file-extra"><span>اتجاه القراءة (التجليد)</span>' + choose("direction", file.direction || "auto", [["auto", "حسب الملف"], ["rtl", "من اليمين (عربي)"], ["ltr", "من اليسار (إنجليزي)"]]) + '</label>' +
+        (double ? '<label class="file-extra"><span>قلب الورقة</span>' + choose("flip", file.flip === "short" ? "short" : "long", [["long", "من الطرف الطويل (مثل الكتاب)"], ["short", "من الطرف القصير (مثل التقويم)"]]) + '</label>' : '') +
+        '<label class="file-extra is-check' + (file.booklet ? ' is-on' : '') + '"><input type="checkbox" data-extra="booklet"' + (file.booklet ? ' checked' : '') + '><span><strong>كتيّب</strong><small>' + (file.booklet ? 'وجهين، وصفحتان في كل وجه' : 'تُرتّب الصفحات لتُطوى كتيّبًا') + '</small></span></label>' +
+      '</div>' +
+    '</div>';
   }
 
   function renderCustomization() {
@@ -280,14 +381,12 @@ document.addEventListener("DOMContentLoaded", function () {
     el.applyAll.hidden = count === 0;
     el.customization.innerHTML = ready.map(function (file) {
       const icon = fileIcon(file);
-      return '<div class="customization-item" data-file-id="' + file.id + '"><span class="file-type-icon ' + icon.type + '"><i class="bi ' + icon.icon + '"></i></span><div class="file-info"><strong>' + escapeHtml(file.name) + '</strong><small>' + escapeHtml(file.override ? settingsSummary(effectiveSettings(file)) : t("allFilesUseGeneral")) + '</small></div>' + (file.override ? '<span class="override-badge"><i class="bi bi-stars"></i>' + escapeHtml(t("customized")) + '</span><button type="button" class="icon-button is-danger" data-custom-action="remove" title="' + escapeHtml(t("removeOverride")) + '"><i class="bi bi-arrow-counterclockwise"></i></button>' : '') + '<button type="button" class="paper-button is-soft is-small" data-custom-action="edit"><i class="bi bi-sliders"></i><span>' + escapeHtml(t("customize")) + '</span></button></div>';
+      return '<div class="customization-item" data-file-id="' + file.id + '"><div class="customization-head"><span class="file-type-icon ' + icon.type + '"><i class="bi ' + icon.icon + '"></i></span><div class="file-info"><strong>' + escapeHtml(file.name) + '</strong><small>' + escapeHtml(file.override ? settingsSummary(effectiveSettings(file)) : t("allFilesUseGeneral")) + '</small></div>' + (file.override ? '<span class="override-badge"><i class="bi bi-stars"></i>' + escapeHtml(t("customized")) + '</span><button type="button" class="icon-button is-danger" data-custom-action="remove" title="' + escapeHtml(t("removeOverride")) + '"><i class="bi bi-arrow-counterclockwise"></i></button>' : '') + '<button type="button" class="paper-button is-soft is-small" data-custom-action="edit"><i class="bi bi-sliders"></i><span>' + escapeHtml(t("customize")) + '</span></button></div>' + fileExtrasMarkup(file) + '</div>';
     }).join("");
     if (state.overrideFileId && !state.files.some(function (file) { return file.id === state.overrideFileId; })) closeOverride();
   }
 
-  const defaultOptionValues = {
-    size: ["A5", "A4"], paper: ["standard", "thick", "coated"], color: ["bw", "color"], sides: ["single", "double"], layout: ["1", "2", "4"]
-  };
+  const defaultOptionValues = { size: [], paper: [], color: [], sides: ["single", "double"], layout: ["1", "2", "4", "6", "9"] };
   const optionValues = Object.assign({}, defaultOptionValues, (dbPaper.options && dbPaper.options.availableValues) || {});
   const optionTitles = { size: "paperSize", paper: "paperType", color: "printColor", sides: "printSides", layout: "pageLayout" };
 
@@ -306,7 +405,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const file = state.files.find(function (item) { return item.id === state.overrideFileId; });
     if (!file) return;
     const groups = settingGroups.map(function (group) {
-      return '<fieldset class="option-group"><legend><span>' + escapeHtml(t(optionTitles[group])) + '</span></legend><div class="choice-grid ' + (optionValues[group].length === 2 ? 'is-two' : 'is-three') + '">' + optionValues[group].map(function (value) {
+      return '<fieldset class="option-group"><legend><span>' + escapeHtml(t(optionTitles[group])) + '</span></legend><div class="choice-grid ' + (optionValues[group].length === 1 ? 'is-one' : optionValues[group].length === 2 ? 'is-two' : 'is-three') + '">' + optionValues[group].map(function (value) {
         return '<button type="button" class="choice-card ' + (state.overrideDraft[group] === value ? 'is-selected' : '') + '" data-override-group="' + group + '" data-value="' + value + '"><strong>' + escapeHtml(t(group === "layout" ? "layout" + value : value)) + '</strong></button>';
       }).join("") + '</div></fieldset>';
     }).join("");
@@ -340,14 +439,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function renderBindings() {
     const ready = readyFiles();
+    // One file has nothing to merge or split, so "combine / separate" is not asked: it is picked for the customer.
+    const single = ready.length === 1;
+    if (single) {
+      if (state.grouping !== "combined") { state.grouping = "combined"; state.autoGrouping = true; }
+      if (!state.combinedBinding) state.combinedBinding = "none";
+    } else if (state.autoGrouping) { state.grouping = null; state.autoGrouping = false; }
+    $("#groupingChoice").hidden = single;
+    // No print shop sells any binding: "no binding" is the only choice, so the binding choice is not shown either.
+    const noBinding = bindings.length === 1;
+    let bindingNote = $("#bindingUnavailableNote");
+    if (!bindingNote) { bindingNote = document.createElement("p"); bindingNote.id = "bindingUnavailableNote"; bindingNote.className = "option-fixed"; bindingNote.innerHTML = '<i class="bi bi-info-circle-fill" aria-hidden="true"></i><span>التغليف: غير متوفر حاليًا، ستصلك المطبوعات بدون تغليف.</span>'; el.combinedPanel.before(bindingNote); }
+    bindingNote.hidden = !noBinding || !state.grouping;
     const usesPerFileQuantities = state.grouping === "separate" && ready.length > 1;
     $$("[data-grouping]").forEach(function (button) { button.classList.toggle("is-selected", state.grouping === button.dataset.grouping); });
     el.bindingWorkspace.hidden = !state.grouping;
-    el.reorderPanel.hidden = state.grouping !== "combined";
-    el.combinedPanel.hidden = state.grouping !== "combined";
+    el.reorderPanel.hidden = state.grouping !== "combined" || single;
+    el.combinedPanel.hidden = state.grouping !== "combined" || noBinding;
     el.separatePanel.hidden = state.grouping !== "separate";
     el.quantityPanel.hidden = !state.grouping || usesPerFileQuantities;
     el.quantity.textContent = state.quantity;
+    // How the copies are put together is asked only when there is more than one copy.
+    const copies = usesPerFileQuantities ? Math.max.apply(null, ready.map(function (file) { return Number(state.separateQuantities[file.id]) || 1; })) : state.quantity;
+    const collatePanel = $("#collatePanel");
+    collatePanel.hidden = !state.grouping || copies < 2;
+    $$("[data-collate]", collatePanel).forEach(function (button) { button.classList.toggle("is-selected", (button.dataset.collate === "true") === state.collate); });
     if (!state.grouping) return;
 
     if (state.grouping === "combined") {
@@ -358,7 +474,7 @@ document.addEventListener("DOMContentLoaded", function () {
       el.bindingGrid.innerHTML = bindings.map(function (binding) {
         const availability = bindingAvailability(binding.id, files);
         if (!availability.ok && state.combinedBinding === binding.id) state.combinedBinding = null;
-        return '<button type="button" class="choice-card binding-card ' + (state.combinedBinding === binding.id ? 'is-selected' : '') + '" data-binding="' + binding.id + '" ' + (!availability.ok ? 'disabled' : '') + '><i class="bi ' + binding.icon + '"></i><strong>' + escapeHtml(t(binding.id)) + '</strong><span class="binding-price">' + escapeHtml(binding.price ? "+ " + formatMoney(binding.price) : t("free")) + '</span>' + (!availability.ok ? '<small class="binding-reason">' + escapeHtml(t(availability.reason)) + '</small>' : '') + '</button>';
+        return '<button type="button" class="choice-card binding-card ' + (state.combinedBinding === binding.id ? 'is-selected' : '') + '" data-binding="' + binding.id + '" ' + (!availability.ok ? 'disabled' : '') + '><i class="bi ' + binding.icon + '"></i><strong>' + escapeHtml(t(binding.id)) + '</strong><span class="binding-price">' + escapeHtml(binding.price ? t("from") + " " + formatMoney(binding.price) : t("free")) + '</span>' + (!availability.ok ? '<small class="binding-reason">' + escapeHtml(t(availability.reason)) + '</small>' : '') + '</button>';
       }).join("");
     } else {
       const files = ready;
@@ -372,12 +488,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const icon = fileIcon(file);
         const options = bindings.map(function (binding) {
           const availability = bindingAvailability(binding.id, [file]);
-          const suffix = availability.ok ? (binding.price ? " — " + formatMoney(binding.price) : " — " + t("free")) : " — " + t(availability.reason);
+          const suffix = availability.ok ? (binding.price ? " — " + t("from") + " " + formatMoney(binding.price) : " — " + t("free")) : " — " + t(availability.reason);
           const optionLabel = binding.id === "none" ? t("noBindingFree") : t(binding.id) + suffix;
           return '<option value="' + binding.id + '" ' + (state.separateBindings[file.id] === binding.id ? 'selected' : '') + ' ' + (!availability.ok ? 'disabled' : '') + '>' + escapeHtml(optionLabel) + '</option>';
         }).join("");
         const selectedBinding = state.separateBindings[file.id];
-        const bindingControl = '<label class="binding-select-wrap"><span class="binding-select-title"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>' + escapeHtml(t("chooseBinding")) + '</span><select class="has-selection" data-separate-binding="' + file.id + '" aria-label="' + escapeHtml(t("binding")) + '">' + options + '</select><small>' + escapeHtml(settingsSummary(effectiveSettings(file))) + '</small></label>';
+        const bindingControl = noBinding ? '<small>' + escapeHtml(settingsSummary(effectiveSettings(file))) + '</small>' : '<label class="binding-select-wrap"><span class="binding-select-title"><i class="bi bi-journal-bookmark" aria-hidden="true"></i>' + escapeHtml(t("chooseBinding")) + '</span><select class="has-selection" data-separate-binding="' + file.id + '" aria-label="' + escapeHtml(t("binding")) + '">' + options + '</select><small>' + escapeHtml(settingsSummary(effectiveSettings(file))) + '</small></label>';
         const quantityControl = usesPerFileQuantities ? '<div class="per-file-quantity"><span>' + escapeHtml(t("perFileQuantity")) + '</span><div class="quantity-control"><button type="button" data-file-quantity-action="decrease" aria-label="' + escapeHtml(t("decreaseQuantity")) + '"><i class="bi bi-dash-lg"></i></button><output>' + state.separateQuantities[file.id] + '</output><button type="button" data-file-quantity-action="increase" aria-label="' + escapeHtml(t("increaseQuantity")) + '"><i class="bi bi-plus-lg"></i></button></div></div>' : '';
         return '<div class="separate-binding-item" data-file-id="' + file.id + '"><span class="file-type-icon ' + icon.type + '"><i class="bi ' + icon.icon + '"></i></span><div class="file-info"><strong>' + escapeHtml(file.name) + '</strong><small>' + escapeHtml(t("pageCount", { count: file.pages })) + '</small></div><div class="separate-binding-controls">' + bindingControl + quantityControl + '</div></div>';
       }).join("");
@@ -391,10 +507,21 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!readyFiles().length) message = t("filesRequired");
       else if (state.files.some(function (file) { return file.status !== "ready"; })) message = t("resolveFiles");
     }
-    if (step === 2 && !globalComplete()) {
+    if (step === 2 && dbPaper.available === false) message = t("paperUnavailable");
+    else if (step === 2 && !globalComplete()) {
       message = t("printRequired");
       $$("#globalOptions [data-option-group]").forEach(function (groupEl) { groupEl.classList.toggle("has-error", !state.globalSettings[groupEl.dataset.optionGroup]); });
     }
+    if (step === 2 && !message) {
+      const badRange = readyFiles().find(function (file) { return printedPages(file) === null; });
+      if (badRange) {
+        const rangeIsWrong = Boolean(badRange.range && badRange.range.trim()) && !parseRange(badRange.range, badRange.pages);
+        message = rangeIsWrong
+          ? "نطاق الصفحات غير صحيح في «" + badRange.name + "». اكتبيه ضمن صفحات الملف (من 1 إلى " + badRange.pages + ")، مثل: 1-9, 12."
+          : "لا توجد صفحات " + (badRange.subset === "odd" ? "فردية" : "زوجية") + " ضمن النطاق في «" + badRange.name + "». غيّري النطاق أو اختاري «كلها».";
+      }
+    }
+    if (step === 2 && !message && state.quote && state.quote.status === "error" && state.quote.key === JSON.stringify(currentJob())) message = state.quote.message;
     if (step === 3) {
       if (!state.grouping) message = t("groupingRequired");
       else if (state.grouping === "combined" && !state.combinedBinding) message = t("bindingRequired");
@@ -461,23 +588,6 @@ document.addEventListener("DOMContentLoaded", function () {
     $("#summaryProgressBar").style.width = (state.currentStep * 25) + "%";
   }
 
-  function printCostFor(file) {
-    const settings = effectiveSettings(file);
-    if (!settingGroups.every(function (key) { return settings[key]; })) return 0;
-    const pagesPerSheet = Number(settings.layout) * (settings.sides === "double" ? 2 : 1);
-    const sheets = Math.ceil(file.pages / pagesPerSheet);
-    const sheetBase = (dbPricing.sheetBase || { A5: 0.12, A4: 0.2, A3: 0.42 })[settings.size] || 0.2;
-    const paperMultiplier = (dbPricing.paperMultiplier || { standard: 1, thick: 1.55, coated: 2.1 })[settings.paper] || 1;
-    const inkRates = dbPricing.ink || { bw: 0.09, color: 0.42 };
-    const ink = settings.color === "color" ? (inkRates.color || 0.42) : (inkRates.bw || 0.09);
-    return (sheets * sheetBase * paperMultiplier) + (file.pages * ink);
-  }
-
-  function bindingPrice(id) {
-    const found = bindings.find(function (binding) { return binding.id === id; });
-    return found ? found.price : 0;
-  }
-
   function usesPerFileQuantity() {
     return state.grouping === "separate" && readyFiles().length > 1;
   }
@@ -486,21 +596,73 @@ document.addEventListener("DOMContentLoaded", function () {
     return usesPerFileQuantity() ? Math.max(1, Number(state.separateQuantities[file.id]) || 1) : state.quantity;
   }
 
-  function calculatePrice() {
+  /* The job as the server prices it: what the customer chose, file by file. Null while the choices are not complete. */
+  function currentJob() {
     if (!globalComplete() || !readyFiles().length) return null;
-    const lines = readyFiles().map(function (file) {
-      const quantity = quantityFor(file);
-      return { label: file.name, amount: printCostFor(file) * quantity, quantity: quantity };
-    });
-    let bindingCost = 0;
-    if (state.grouping === "combined" && state.combinedBinding) bindingCost = bindingPrice(state.combinedBinding) * state.quantity;
-    if (state.grouping === "separate") bindingCost = readyFiles().reduce(function (sum, file) { return sum + (bindingPrice(state.separateBindings[file.id]) * quantityFor(file)); }, 0);
-    const rawPrintTotal = lines.reduce(function (sum, line) { return sum + line.amount; }, 0);
-    const minimumPrintTotal = (Number(dbPricing.basePrice) || 0) + (Number(dbPricing.methodAddon) || 0);
-    const printTotal = Math.max(rawPrintTotal, minimumPrintTotal);
-    return { lines: lines, printing: printTotal, binding: bindingCost, total: printTotal + bindingCost };
+    if (readyFiles().some(function (file) { return printedPages(file) === null; })) return null;
+    const separate = state.grouping === "separate";
+    return {
+      grouping: separate ? "separate" : "combined",
+      quantity: state.quantity,
+      combined_binding: separate ? null : (state.combinedBinding || "none"),
+      collate: state.collate,
+      files: readyFiles().map(function (file) {
+        const settings = effectiveSettings(file);
+        return {
+          pages: file.pages, range: file.range ? file.range.trim() : "", subset: file.subset || "all", reverse: Boolean(file.reverse), booklet: Boolean(file.booklet), flip: file.flip || "long", orientation: file.orientation || "auto", direction: file.direction || "auto", size: settings.size, paper: settings.paper, color: settings.color, sides: settings.sides, layout: Number(settings.layout),
+          binding: separate ? (state.separateBindings[file.id] || "none") : null, quantity: quantityFor(file)
+        };
+      })
+    };
   }
 
+  function firstError(data) {
+    const errors = data && data.errors ? Object.values(data.errors)[0] : null;
+    return (errors && errors[0]) || (data && data.message) || t("priceFailed");
+  }
+
+  /* There is no price list in this page. Whenever the choices change the server prices the job with the prices of the
+     print shop that would make it, and the page shows what comes back. */
+  let quoteTimer = null;
+  function ensureQuote() {
+    const job = currentJob();
+    if (!job) { state.quote = null; return; }
+    const key = JSON.stringify(job);
+    if (state.quote && state.quote.key === key) return;
+    state.quote = { key: key, status: "loading" };
+    window.clearTimeout(quoteTimer);
+    quoteTimer = window.setTimeout(function () { fetchQuote(job, key); }, 250);
+  }
+
+  function fetchQuote(job, key) {
+    const settle = function (quote) {
+      if (!state.quote || state.quote.key !== key) return;
+      state.quote = Object.assign({ key: key }, quote);
+      updateSummary();
+      if (state.currentStep === 4) renderReview();
+    };
+    fetch(window.palPrintsCustomerAssets.cartPaperQuoteUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json", "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content },
+      body: JSON.stringify({ job: job }),
+      credentials: "same-origin"
+    }).then(function (response) {
+      return response.json().catch(function () { return {}; }).then(function (data) {
+        settle(response.ok ? { status: "ready", data: data } : { status: "error", message: firstError(data) });
+      });
+    }).catch(function () { settle({ status: "error", message: t("priceFailed") }); });
+  }
+
+  function calculatePrice() {
+    const job = currentJob();
+    const quote = state.quote;
+    if (!job || !quote || quote.status !== "ready" || quote.key !== JSON.stringify(job)) return null;
+    const lines = readyFiles().map(function (file, index) {
+      const line = quote.data.lines[index] || {};
+      return { label: file.name, amount: line.amount || 0, quantity: line.quantity || 1 };
+    });
+    return { lines: lines, printing: quote.data.printing, binding: quote.data.binding, total: quote.data.total };
+  }
   function groupingSummary() {
     if (!state.grouping) return t("notSelected");
     if (state.grouping === "combined") return t("oneBooklet") + (state.combinedBinding ? " • " + bindingLabel(state.combinedBinding) : "");
@@ -509,6 +671,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function updateSummary() {
+    ensureQuote();
     const price = calculatePrice();
     const stepNames = { 1: "filesStep", 2: "printStep", 3: "bindingStep", 4: "reviewStep" };
     $("#summaryCurrentStep").textContent = t(stepNames[state.currentStep]);
@@ -519,6 +682,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const totalText = price ? formatMoney(price.total) : "—";
     el.total.textContent = totalText; el.mobileTotal.textContent = totalText; el.reviewTotal.textContent = totalText;
     $("#priceBreakdown").innerHTML = price ? price.lines.map(function (line) { return '<div class="price-line"><span>' + escapeHtml(line.label) + (usesPerFileQuantity() ? ' × ' + line.quantity : '') + '</span><strong>' + escapeHtml(formatMoney(line.amount)) + '</strong></div>'; }).join("") + '<div class="price-line"><span>' + escapeHtml(t("bindingCost")) + '</span><strong>' + escapeHtml(formatMoney(price.binding)) + '</strong></div>' : '<div class="price-line"><span>' + escapeHtml(t("priceCalculating")) + '</span></div>';
+    if (!price && state.quote && state.quote.status === "error" && state.quote.message) $("#priceBreakdown").textContent = state.quote.message;
     const ctaKeys = { 1: "continueToPrint", 2: "confirmPrint", 3: "continueReview", 4: "addToCart" };
     [el.summaryCta, el.mobileCta].forEach(function (button) {
       $("span", button).textContent = t(ctaKeys[state.currentStep]);
@@ -549,9 +713,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function addToCart() {
     if (!validateStep(3)) { goToStep(3); return; }
-    const price = calculatePrice();
+    const job = currentJob();
     const files = readyFiles();
-    if (!files.length) { showToast(t("filesRequired"), "error"); goToStep(1); return; }
+    if (!files.length || !job) { showToast(t("filesRequired"), "error"); goToStep(1); return; }
 
     const button = document.getElementById("addToCartButton");
     const buttonLabel = button ? $("span", button) : null;
@@ -560,8 +724,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (buttonLabel) buttonLabel.textContent = t("addingToCart");
 
     const formData = new FormData();
-    formData.append("size", state.globalSettings.size || "A4");
-    formData.append("total_price", price ? price.total : 0);
+    formData.append("job", JSON.stringify(job));
     formData.append("settings[paper_size]", state.globalSettings.size || "A4");
     formData.append("settings[paper_type]", state.globalSettings.paper || "standard");
     formData.append("settings[color_mode]", state.globalSettings.color || "bw");
@@ -594,9 +757,10 @@ document.addEventListener("DOMContentLoaded", function () {
         window.setTimeout(function () { window.location.href = "/login"; }, 1200);
         return;
       }
+      if (response.status === 422) return response.json().then(function (data) { throw new Error(firstError(data)); });
       throw new Error("add-to-cart-failed");
-    }).catch(function () {
-      showToast(t("addToCartFailed"), "error");
+    }).catch(function (failure) {
+      showToast(failure && failure.message && failure.message !== "add-to-cart-failed" ? failure.message : t("addToCartFailed"), "error");
       if (button) button.disabled = false;
       if (buttonLabel) buttonLabel.textContent = originalLabel;
     });
@@ -637,6 +801,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const groupEl = button.closest("[data-option-group]");
     state.globalSettings[groupEl.dataset.optionGroup] = button.dataset.value;
     groupEl.classList.remove("has-error");
+    if (state.completedStep >= 2) state.completedStep = 1;
+    renderAll();
+  });
+
+  // The page range, the booklet and the flip are saved when the field is left (change), so typing is not interrupted.
+  el.customization.addEventListener("change", function (event) {
+    const field = event.target.closest("[data-extra]");
+    if (!field) return;
+    const file = state.files.find(function (item) { return item.id === field.closest("[data-file-id]").dataset.fileId; });
+    if (!file) return;
+    if (field.dataset.extra === "range") file.range = field.value.trim();
+    if (field.dataset.extra === "booklet") file.booklet = field.checked;
+    if (field.dataset.extra === "subset") file.subset = field.value;
+    if (field.dataset.extra === "reverse") file.reverse = field.checked;
+    if (field.dataset.extra === "flip") file.flip = field.value;
+    if (field.dataset.extra === "orientation") file.orientation = field.value;
+    if (field.dataset.extra === "direction") file.direction = field.value;
     if (state.completedStep >= 2) state.completedStep = 1;
     renderAll();
   });
@@ -683,6 +864,13 @@ document.addEventListener("DOMContentLoaded", function () {
     state.grouping = button.dataset.grouping;
     if (state.grouping === "combined" && !state.combinedBinding) state.combinedBinding = "none";
     if (state.completedStep >= 3) state.completedStep = 2;
+    renderAll();
+  });
+
+  $("#collatePanel").addEventListener("click", function (event) {
+    const button = event.target.closest("[data-collate]");
+    if (!button) return;
+    state.collate = button.dataset.collate === "true";
     renderAll();
   });
 

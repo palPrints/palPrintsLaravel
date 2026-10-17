@@ -46,6 +46,7 @@
             emptyBasketUrl: @json(route('customer.basket.empty')),
             productPreviewUrl: @json(route('customer.productPreview')),
             cartPaperUrl: @json(route('customer.cart.store-paper')),
+            cartPaperQuoteUrl: @json(route('customer.cart.quote-paper')),
         };
     </script>
     <script src="{{ asset('front/js/customer/storefront.js') }}?v={{ filemtime(public_path('front/js/customer/storefront.js')) }}"></script>

@@ -91,12 +91,13 @@ class PaymentNoticeController extends Controller
 
         // The chosen shop's owner learns about the new order: in the app, and on WhatsApp when the shop opted in.
         if ($providerUserId = $branch->printProvider()->value('user_id')) {
-            OrderNotifier::newOrderForShop((int) $providerUserId, $order->order_number, $order->items->count());
+            OrderNotifier::newOrderForShop((int) $providerUserId, $order->order_number, $order->items->count(), (int) $order->id);
         }
         SendOrderOfferToShop::dispatch($order->id, (int) $branch->print_provider_id);
         $this->audit($request, 'admin.payment_notice_approved', 'الموافقة على إشعار دفع الطلب '.$order->order_number, ['order_id' => $order->id, 'payment_id' => $payment->id, 'branch_id' => $branch->id]);
 
-        return back()
+        // Not back(): from the page of one order (?order=) that would show an empty page; the decision goes to the full list.
+        return redirect()->route('admin.payment-notices')
             ->with('notice_status', 'تمت الموافقة على الطلب '.$order->order_number.' وتوجيهه إلى '.$this->branchLabel($branch).'.')
             ->with('notice_whatsapp', ShopChatLink::forOrder($order->fresh()));
     }
@@ -125,7 +126,7 @@ class PaymentNoticeController extends Controller
         OrderNotifier::paymentReviewed((int) $order->user_id, $order->order_number, false, $validated['reason']);
         $this->audit($request, 'admin.payment_notice_rejected', 'رفض إشعار دفع الطلب '.$order->order_number, ['order_id' => $order->id, 'payment_id' => $payment->id]);
 
-        return back()->with('notice_status', 'تم رفض الطلب '.$order->order_number.' وإبلاغ العميل.');
+        return redirect()->route('admin.payment-notices')->with('notice_status', 'تم رفض الطلب '.$order->order_number.' وإبلاغ العميل.');
     }
 
     /** Streams the receipt the customer uploaded (private storage) to the admin. */

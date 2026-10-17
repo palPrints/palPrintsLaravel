@@ -52,7 +52,7 @@ class SupportTicketStore
             'support.new',
             'طلب دعم جديد',
             sprintf('أرسل %s (%s) طلب دعم: %s', $ticket['name'] ?? '—', $ticket['role_label'] ?? '—', $ticket['subject'] ?? ''),
-            route('admin.support'),
+            route('admin.support', ['open' => $ticket['id']]),
         );
 
         return $ticket;

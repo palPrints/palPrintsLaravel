@@ -198,22 +198,53 @@ document.addEventListener("DOMContentLoaded", function () {
         info.appendChild(options);
       }
 
+      // A paper order: one short card per file (pages, paper, printing, notes) instead of one long line.
+      if ((item.paper_files || []).length) {
+        const cards = element("div", "paper-file-cards");
+        item.paper_files.forEach(function (card) {
+          const box = element("div", "paper-file-card");
+          box.appendChild(element("strong", "", card.title));
+          const list = element("dl", "");
+          card.rows.forEach(function (row) {
+            const line = element("div", "");
+            line.append(element("dt", "", row.label), element("dd", "", row.value));
+            list.appendChild(line);
+          });
+          box.appendChild(list);
+          if (card.url) {
+            const download = element("a", "order-file-link");
+            download.href = card.url;
+            download.innerHTML = '<i class="bi bi-download" aria-hidden="true"></i>';
+            download.append(element("span", "", "تنزيل الملف"));
+            box.appendChild(download);
+          }
+          cards.appendChild(box);
+        });
+        info.appendChild(cards);
+      }
+
       info.appendChild(element("b", "", formatMoney(item.cost)));
 
-      if (item.files.length) {
-        const files = element("div", "order-files");
-        files.appendChild(element("small", "", "ملفات الطباعة"));
-        item.files.forEach(function (file) {
+      // The order sheet (PDF) of a studio design, and the pictures at full quality (or the customer's own files) in a zip.
+      if (item.package_url || item.print_files.length) {
+        const actions = element("div", "order-files");
+        const addLink = function (href, icon, label) {
           const link = element("a", "order-file-link");
-          link.href = file.url;
-          const meta = [file.pages ? file.pages + " صفحة" : "", formatSize(file.size)].filter(Boolean).join(" · ");
-          link.innerHTML = '<i class="bi bi-download" aria-hidden="true"></i>';
-          link.append(element("span", "", file.name));
-          if (meta) link.appendChild(element("em", "", meta));
-          files.appendChild(link);
+          link.href = href;
+          link.innerHTML = '<i class="bi ' + icon + '" aria-hidden="true"></i>';
+          link.append(element("span", "", label));
+          actions.appendChild(link);
+        };
+        if (item.print_files.length) addLink(item.sheet_url, "bi-file-earmark-pdf", "تنزيل ورقة الطلب (PDF)");
+        // Every file has its own direct download (no unzipping); the zip is only a "download all" shortcut.
+        // A paper job has the download inside each file's card, so its files are not listed again here.
+        const direct = item.print_files.length ? item.print_files : ((item.paper_files || []).length ? [] : (item.files || []));
+        direct.forEach(function (file) {
+          addLink(file.url, "bi-download", "تنزيل " + file.name + (file.size ? " (" + formatSize(file.size) + ")" : ""));
         });
-        info.appendChild(files);
-      } else if (item.type === "upload") {
+        if (item.package_url && (direct.length > 1 || (item.paper_files || []).length > 1)) addLink(item.package_url, "bi-file-earmark-zip", "تنزيل الكل (ZIP)");
+        info.appendChild(actions);
+      } else {
         info.appendChild(element("span", "", "لا توجد ملفات مرفقة"));
       }
 
@@ -313,11 +344,8 @@ document.addEventListener("DOMContentLoaded", function () {
     footerButton("إغلاق", "", closeDialog);
   }
 
-  document.querySelectorAll(".details-button").forEach(function (button) {
-    button.addEventListener("click", function () {
-      const order = orders[button.closest("tr").dataset.orderId];
-      if (!order) return;
-
+  function openOrderDialog(order) {
+    {
       dialogTitle.textContent = "#" + order.number;
       dialogContent.replaceChildren();
       dialogContent.append(
@@ -333,8 +361,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (typeof detailsDialog.showModal === "function") detailsDialog.showModal();
       else detailsDialog.setAttribute("open", "");
+    }
+  }
+
+  document.querySelectorAll(".details-button").forEach(function (button) {
+    button.addEventListener("click", function () {
+      const order = orders[button.closest("tr").dataset.orderId];
+      if (order) openOrderDialog(order);
     });
   });
+
+  // A notification links here with ?order=ID: open that order's details straight away.
+  const requestedOrder = orders[new URLSearchParams(window.location.search).get("order")];
+  if (requestedOrder) openOrderDialog(requestedOrder);
 
   detailsDialog.querySelectorAll("[data-dialog-close]").forEach(function (button) {
     button.addEventListener("click", closeDialog);
