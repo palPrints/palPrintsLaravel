@@ -43,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
                 'user.registered',
                 'مستخدم جديد',
                 sprintf('انضم %s (%s) إلى المنصة.', $user->name, $user->email),
-                route('admin.users'),
+                route('admin.users', ['open' => $user->id]),
             );
         });
 
@@ -87,6 +87,17 @@ class AppServiceProvider extends ServiceProvider
                     ? $user->userNotifications()->where('is_read', false)->latest()->limit(3)->get()
                     : collect(),
             ]);
+        });
+
+        // Orders the admin sent to this shop that wait for its accept / reject: the badge on "طلبات الطباعة".
+        View::composer('printProvider.partials.sidebar', function ($view): void {
+            $branchIds = Auth::user()?->printProvider?->branches()->pluck('id') ?? collect();
+
+            $view->with('providerNewOrders', $branchIds->isEmpty() ? 0 : Order::query()
+                ->whereIn('status', ['pending', 'processing'])
+                ->whereNotIn('payment_status', ['pending', 'pending_review', 'failed'])
+                ->whereHas('items', fn ($items) => $items->whereIn('print_provider_branch_id', $branchIds))
+                ->count());
         });
 
         View::composer('printProvider.partials.topbar', function ($view): void {

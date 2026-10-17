@@ -438,8 +438,10 @@
   }
   // What the cart thumbnail needs to redraw the design exactly as previewed: the product picture (and its color tint),
   // the print zone, and the artwork placed inside it.
-  async function cartMockup(piece, withUrls = false) {
-    const areas = selectedAreas(piece), area = areas.find(item => (payload.design.previewByArea?.[item.id]?.images?.length || payload.design.previewByArea?.[item.id]?.texts?.length)) || areas[0];
+  // One mockup per chosen print area, so the print shop sees every side (front, back, sleeves) on the product itself.
+  async function areaMockups(piece) { const list = []; for (const area of selectedAreas(piece)) { const mockup = await cartMockup(piece, false, area); if (mockup) list.push(mockup); } return list; }
+  async function cartMockup(piece, withUrls = false, onlyArea = null) {
+    const areas = selectedAreas(piece), area = onlyArea || areas.find(item => (payload.design.previewByArea?.[item.id]?.images?.length || payload.design.previewByArea?.[item.id]?.texts?.length)) || areas[0];
     if (!area) return null;
     const color = currentColor(piece), source = imageFor(area, color), path = value => { try { return new URL(value, document.baseURI).pathname; } catch (error) { return ""; } };
     const hex = tintHex(color), tint = hex && !color.areaMockups?.[area.id] && await hasTransparentBackground(source) ? hex : null;
@@ -457,7 +459,7 @@
     form.append("product_code", payload.product.code);
     form.append("design_name", payload.design.name || "");
     if (state.printingTechnologyId) form.append("printing_method", state.printingTechnologyId);
-    for (let index = 0; index < groupList.length; index += 1) groupList[index].mockup = await cartMockup(pieces[index]);
+    for (let index = 0; index < groupList.length; index += 1) { groupList[index].mockup = await cartMockup(pieces[index]); groupList[index].mockups = await areaMockups(pieces[index]); }
     form.append("groups", JSON.stringify(groupList));
     form.append("layout", JSON.stringify(save.layout));
     const extensions = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/svg+xml": "svg" };
@@ -466,6 +468,12 @@
       const record = save.assets.find(asset => asset.assetId === id), extension = extensions[blob.type] || "png";
       const base = String(record?.name || id).replace(/\.[a-z0-9]+$/i, "").slice(0, 80) || "design";
       form.append("files[]", blob, base + "." + extension); form.append("file_assets[]", id);
+    }
+    // The studio made one print-ready PNG per area (fonts drawn in); send those of the areas this order prints.
+    const printed = new Map(pieces.flatMap(piece => selectedAreas(piece)).map(area => [area.id, area.name]));
+    for (const [areaId, areaName] of printed) {
+      const blob = await getAssetBlob(save.designId, "printexport:" + areaId);
+      if (blob) { form.append("print_exports[]", blob, "print-" + areaId + ".png"); form.append("print_export_areas[]", areaName); form.append("print_export_ids[]", areaId); }
     }
     return form;
   }
@@ -494,7 +502,7 @@
     const request = custom
       ? customDesignForm(groupList, pieces).then(form => fetch(endpoint, { method: "POST", headers, body: form }))
       // The cart shows the product in the chosen colour with the design on it, so each line carries that picture's description.
-      : Promise.all(groupList.map(async (group, index) => { group.mockup = await cartMockup(pieces[index]); }))
+      : Promise.all(groupList.map(async (group, index) => { group.mockup = await cartMockup(pieces[index]); group.mockups = await areaMockups(pieces[index]); }))
         .then(() => fetch(endpoint, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify(body) }));
     request
       .then(response => response.json().catch(() => ({})).then(data => {

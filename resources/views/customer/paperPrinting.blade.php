@@ -60,13 +60,13 @@
                 </header>
 
                 <div class="upload-zone" id="uploadZone">
-                  <input type="file" id="paperFileInput" accept=".pdf,.jpg,.jpeg,.png,.docx,.pptx" multiple hidden>
+                  <input type="file" id="paperFileInput" accept=".pdf,application/pdf" multiple hidden>
                   <span class="upload-illustration" aria-hidden="true"><i class="bi bi-cloud-arrow-up"></i></span>
                   <h3>اسحب ملفاتك إلى هنا</h3>
                   <p>أو اخترها من جهازك لبدء المعالجة</p>
                   <button type="button" class="paper-button is-primary" id="chooseFilesButton"><i class="bi bi-plus-lg" aria-hidden="true"></i><span>اختيار الملفات</span></button>
                   <div class="upload-rules" aria-label="شروط الرفع">
-                    <span><i class="bi bi-file-earmark-check" aria-hidden="true"></i>PDF, JPG, PNG, DOCX, PPTX</span>
+                    <span><i class="bi bi-file-earmark-check" aria-hidden="true"></i>ملفات PDF فقط</span>
                     <span><i class="bi bi-hdd" aria-hidden="true"></i><span>50MB لكل ملف</span></span>
                     <span><i class="bi bi-layers" aria-hidden="true"></i><span>10 ملفات / 500 صفحة</span></span>
                   </div>
@@ -105,7 +105,7 @@
                   <fieldset class="option-group" data-option-group="paper"><legend><i class="bi bi-stack" aria-hidden="true"></i><span>نوع الورق</span><em>مطلوب</em></legend><div class="choice-grid is-three"><button type="button" class="choice-card" data-value="standard"><i class="bi bi-file-earmark"></i><strong>عادي 80 جم</strong><small>للمستندات اليومية</small></button><button type="button" class="choice-card" data-value="thick"><i class="bi bi-file-earmark-richtext"></i><strong>فاخر 120 جم</strong><small>أكثر سماكة</small></button><button type="button" class="choice-card" data-value="coated"><i class="bi bi-stars"></i><strong>مصقول 150 جم</strong><small>ألوان أوضح</small></button></div></fieldset>
                   <fieldset class="option-group" data-option-group="color"><legend><i class="bi bi-droplet" aria-hidden="true"></i><span>لون الطباعة</span><em>مطلوب</em></legend><div class="choice-grid is-two"><button type="button" class="choice-card" data-value="bw"><span class="choice-swatch is-bw"></span><strong>أبيض وأسود</strong><small>اقتصادي وواضح</small></button><button type="button" class="choice-card" data-value="color"><span class="choice-swatch is-color"></span><strong>ملون</strong><small>للعروض والصور</small></button></div></fieldset>
                   <fieldset class="option-group" data-option-group="sides"><legend><i class="bi bi-files" aria-hidden="true"></i><span>جوانب الطباعة</span><em>مطلوب</em></legend><div class="choice-grid is-two"><button type="button" class="choice-card" data-value="single"><i class="bi bi-file-earmark"></i><strong>وجه واحد</strong><small>كل صفحة على ورقة</small></button><button type="button" class="choice-card" data-value="double"><i class="bi bi-front"></i><strong>وجهين</strong><small>أوراق أقل</small></button></div></fieldset>
-                  <fieldset class="option-group" data-option-group="layout"><legend><i class="bi bi-grid" aria-hidden="true"></i><span>تخطيط الصفحة</span><em>مطلوب</em></legend><div class="choice-grid is-three"><button type="button" class="choice-card" data-value="1"><i class="bi bi-square"></i><strong>صفحة واحدة</strong><small>لكل وجه</small></button><button type="button" class="choice-card" data-value="2"><i class="bi bi-layout-split"></i><strong>صفحتان</strong><small>لكل وجه</small></button><button type="button" class="choice-card" data-value="4"><i class="bi bi-grid"></i><strong>4 صفحات</strong><small>لكل وجه</small></button></div></fieldset>
+                  <fieldset class="option-group" data-option-group="layout"><legend><i class="bi bi-grid" aria-hidden="true"></i><span>تخطيط الصفحة</span><em>مطلوب</em></legend><div class="choice-grid is-three"><button type="button" class="choice-card" data-value="1"><i class="bi bi-square"></i><strong>صفحة واحدة</strong><small>لكل وجه</small></button><button type="button" class="choice-card" data-value="2"><i class="bi bi-layout-split"></i><strong>صفحتان</strong><small>لكل وجه</small></button><button type="button" class="choice-card" data-value="4"><i class="bi bi-grid"></i><strong>4 صفحات</strong><small>لكل وجه</small></button><button type="button" class="choice-card" data-value="6"><i class="bi bi-grid-3x2"></i><strong>6 صفحات</strong><small>لكل وجه</small></button><button type="button" class="choice-card" data-value="9"><i class="bi bi-grid-3x3"></i><strong>9 صفحات</strong><small>لكل وجه</small></button></div></fieldset>
                 </div>
 
                 <div class="file-customization-panel">
@@ -136,6 +136,8 @@
                   <section class="binding-panel" id="separateBindingPanel" hidden><div class="section-label"><span><i class="bi bi-files" aria-hidden="true"></i><strong>تغليف كل ملف</strong></span><small>يمكن أن يختلف التغليف من ملف لآخر.</small></div><div class="separate-binding-list" id="separateBindingList"></div></section>
 
                   <section class="quantity-panel" id="orderQuantityPanel"><div><span class="quantity-icon"><i class="bi bi-copy" aria-hidden="true"></i></span><span><strong>كمية الطلب</strong><small>تطبق الكمية على الطلب الكامل</small></span></div><div class="quantity-control"><button type="button" id="decreaseQuantity" aria-label="تقليل الكمية"><i class="bi bi-dash-lg"></i></button><output id="quantityOutput">1</output><button type="button" id="increaseQuantity" aria-label="زيادة الكمية"><i class="bi bi-plus-lg"></i></button></div></section>
+
+                  <fieldset class="option-group collate-choice" id="collatePanel" hidden><legend><i class="bi bi-files" aria-hidden="true"></i><span>ترتيب النسخ</span></legend><div class="choice-grid is-two"><button type="button" class="choice-card" data-collate="true"><strong>نسخة كاملة بعد نسخة</strong><small>كل نسخة مرتّبة من أول صفحة لآخر صفحة</small></button><button type="button" class="choice-card" data-collate="false"><strong>كل صفحة بنسخها</strong><small>نسخ الصفحة 1، ثم الصفحة 2... مع بعض</small></button></div></fieldset>
                 </div>
 
                 <div class="stage-error" id="stageError3" role="alert" hidden></div>

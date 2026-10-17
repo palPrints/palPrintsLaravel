@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\PrintFile;
 use App\Support\AdminNotifier;
 use App\Support\OrderNotifier;
+use App\Support\PaperJobDetails;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,7 +40,7 @@ class OrdersController extends Controller
     {
         $orders = Order::query()
             ->where('user_id', $request->user()->id)
-            ->with('items.product')
+            ->with(['items.product', 'items.printFiles'])
             ->latest()
             ->get()
             ->map(fn (Order $order) => $this->present($order));
@@ -74,7 +76,7 @@ class OrdersController extends Controller
                     'order.payment_cancelled',
                     'ألغى العميل طلبًا بانتظار مراجعة الدفع',
                     sprintf('ألغى %s الطلب رقم %s قبل مراجعة الدفع، وأُغلق إشعار الدفع الخاص به. إذا حوّل العميل المبلغ فعلًا فيجب إرجاعه له.', $order->user?->name ?? 'العميل', $order->order_number),
-                    route('admin.orders'),
+                    route('admin.orders', ['open' => $order->order_number]),
                 );
             }
             $order->update([
@@ -131,6 +133,11 @@ class OrdersController extends Controller
                 'desc' => $item->product?->description ?: '',
                 'qty' => $item->quantity,
                 'price' => number_format((float) $item->total_price, 0).' شيكل',
+                // What the customer chose for a paper job, file by file (empty for other products).
+                'details' => is_array($job = $item->selected_options['paper_job'] ?? null) && ! empty($job['files']) ? PaperJobDetails::rows($job) : [],
+                'files' => is_array($job) && ! empty($job['files'])
+                    ? PaperJobDetails::files($job, $item->printFiles->where('status', '!=', PrintFile::STATUS_DELETED)->sortBy('id')->pluck('original_name')->values())
+                    : [],
             ])->values(),
         ];
     }

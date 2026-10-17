@@ -30,8 +30,10 @@ class NotificationController extends Controller
             $notification->update(['is_read' => true, 'read_at' => now()]);
         }
 
-        return $notification->link && str_starts_with($notification->link, url('/'))
-            ? redirect()->to($notification->link)
+        $target = AdminNotifier::linkFor($notification);
+
+        return $target && str_starts_with($target, url('/'))
+            ? redirect()->to($target)
             : redirect()->route('admin.notifications');
     }
 

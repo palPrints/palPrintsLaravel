@@ -94,7 +94,7 @@ test('a customer cannot open or decide on payment notices', function () {
 test('approving marks the payment paid, routes the order to the chosen shop and tells the customer', function () {
     $this->actingAs($this->admin)
         ->post(route('admin.payment-notices.approve', $this->payment), ['branch_id' => $this->other->id])
-        ->assertRedirect()
+        ->assertRedirect(route('admin.payment-notices'))
         ->assertSessionHas('notice_status');
 
     expect($this->payment->fresh()->status)->toBe('paid')
@@ -122,7 +122,7 @@ test('approving needs a shop that offers every product of the order', function (
 test('rejecting cancels the order, keeps the reason and tells the customer', function () {
     $this->actingAs($this->admin)
         ->post(route('admin.payment-notices.reject', $this->payment), ['reason' => 'المبلغ لا يطابق قيمة الطلب'])
-        ->assertRedirect();
+        ->assertRedirect(route('admin.payment-notices'));
 
     expect($this->payment->fresh()->status)->toBe('failed')
         ->and($this->payment->fresh()->failure_reason)->toBe('المبلغ لا يطابق قيمة الطلب')
@@ -151,4 +151,39 @@ test('the shop does not see the order until the admin approves its payment notic
     $this->actingAs($this->admin)->post(route('admin.payment-notices.approve', $this->payment), ['branch_id' => $this->suggested->id]);
 
     $this->actingAs($owner)->get(route('print-provider.dashboard'))->assertOk()->assertSee('PP-1001');
+});
+
+test('a payment notification opens that order\'s notice, including notifications saved before the order number was in the link', function () {
+    $old = \App\Models\Notification::create([
+        'user_id' => \App\Models\User::factory()->create()->id, 'type' => 'order.payment_review', 'title' => 'إشعار دفع جديد بانتظار المراجعة',
+        'message' => 'طلب جديد رقم PLP-20261014-GHM5RP من سارة بقيمة 44.00 ₪. راجع إشعار الدفع.', 'link' => route('admin.payment-notices'),
+    ]);
+    $new = \App\Models\Notification::create([
+        'user_id' => $old->user_id, 'type' => 'order.payment_review', 'title' => 'x', 'message' => 'طلب جديد رقم PLP-1', 'link' => route('admin.payment-notices', ['order' => 'PLP-1']),
+    ]);
+    $other = \App\Models\Notification::create(['user_id' => $old->user_id, 'type' => 'support.new', 'title' => 'x', 'message' => 'm', 'link' => route('admin.support')]);
+
+    expect(\App\Support\AdminNotifier::linkFor($old))->toBe(route('admin.payment-notices', ['order' => 'PLP-20261014-GHM5RP']))
+        ->and(\App\Support\AdminNotifier::linkFor($new))->toBe(route('admin.payment-notices', ['order' => 'PLP-1']))
+        ->and(\App\Support\AdminNotifier::linkFor($other))->toBe(route('admin.support'));
+});
+
+test('every kind of admin notification opens the item it is about, old and new', function () {
+    $admin = \App\Models\User::factory()->create();
+    $make = fn (string $type, string $message, string $route, string $title = 't') => \App\Models\Notification::create(['user_id' => $admin->id, 'type' => $type, 'title' => $title, 'message' => $message, 'link' => route($route)]);
+
+    // an order cancelled / refund / turned down by a shop: that order opens
+    foreach (['order.payment_cancelled', 'order.refund_needed', 'order.rejected_by_provider'] as $type) {
+        expect(\App\Support\AdminNotifier::linkFor($make($type, 'أُلغي الطلب رقم PLP-77 بعد اعتماد دفعه. أرجِع المبلغ.', 'admin.orders')))->toBe(route('admin.orders', ['open' => 'PLP-77']));
+    }
+
+    // a withdrawal request: found by its reference
+    $withdrawer = \App\Models\User::factory()->create();
+    $wallet = \App\Models\Wallet::create(['user_id' => $withdrawer->id, 'total_balance' => 50, 'available_balance' => 50, 'pending_balance' => 0, 'total_withdrawn' => 0]);
+    $withdrawal = \App\Models\WithdrawalRequest::create(['user_id' => $withdrawer->id, 'wallet_id' => $wallet->id, 'amount' => 50, 'method' => 'bank', 'status' => 'pending', 'reference_id' => 'WDR-ABC123XYZ9', 'account_details' => '-']);
+    expect(\App\Support\AdminNotifier::linkFor($make('withdrawal.requested', 'طلب سارة سحب 50 ₪. رقم المرجع: WDR-ABC123XYZ9', 'admin.payments')))->toBe(route('admin.payments', ['open' => $withdrawal->id]));
+
+    // notifications that already name the item keep their link
+    $named = \App\Models\Notification::create(['user_id' => $admin->id, 'type' => 'support.new', 'title' => 't', 'message' => 'm', 'link' => route('admin.support', ['open' => 'REQ-1001'])]);
+    expect(\App\Support\AdminNotifier::linkFor($named))->toBe(route('admin.support', ['open' => 'REQ-1001']));
 });

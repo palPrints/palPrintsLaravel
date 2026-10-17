@@ -202,7 +202,7 @@ class OrderController extends Controller
         ['order' => $locked, 'branch' => $branch] = $result;
 
         if ($providerUserId = $branch->printProvider?->user_id) {
-            OrderNotifier::newOrderForShop((int) $providerUserId, $locked->order_number, $locked->items->count());
+            OrderNotifier::newOrderForShop((int) $providerUserId, $locked->order_number, $locked->items->count(), (int) $locked->id);
         }
         if ($locked->user_id) {
             OrderNotifier::statusChanged((int) $locked->user_id, $locked->order_number, 'processing');
@@ -260,7 +260,7 @@ class OrderController extends Controller
                 'order.refund_needed',
                 'طلب ملغى مدفوع: يجب إرجاع المبلغ',
                 sprintf('أُلغي الطلب رقم %s بعد اعتماد دفعه. أرجِع المبلغ للعميل %s.', $record->order_number, DB::table('users')->where('id', $record->user_id)->value('name') ?? ''),
-                route('admin.orders'),
+                route('admin.orders', ['open' => $record->order_number]),
             );
         }
 
@@ -323,6 +323,8 @@ class OrderController extends Controller
         '1' => 'صفحة واحدة لكل وجه',
         '2' => 'صفحتان لكل وجه',
         '4' => '4 صفحات لكل وجه',
+        '6' => '6 صفحات لكل وجه',
+        '9' => '9 صفحات لكل وجه',
         'combined' => 'دمج الملفات',
         'separate' => 'فصل الملفات',
         'none' => 'بدون تغليف',

@@ -49,7 +49,8 @@
                 <ul class="notification-list" id="notificationList">
                     @forelse ($notifications as $notification)
                         <li>
-                            <a class="notification-link" href="{{ $notification->link ?: '#' }}" @if (! $notification->link) tabindex="-1" @endif>
+                            @php($target = \App\Support\AdminNotifier::linkFor($notification))
+                            <a class="notification-link" href="{{ $target ?: '#' }}" @if (! $target) tabindex="-1" @endif>
                                 <span class="notification-item-icon is-blue"><i class="bi {{ \App\Support\AdminNotifier::CATEGORIES[\App\Support\AdminNotifier::categoryOf($notification->type)]['icon'] ?? 'bi-bell' }}" aria-hidden="true"></i></span>
                                 <div><strong>{{ $notification->title }}</strong><small>{{ $notification->created_at->locale('ar')->diffForHumans() }}</small></div>
                             </a>

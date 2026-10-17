@@ -79,7 +79,7 @@
                     </thead>
                     <tbody>
                         @forelse ($withdrawals as $withdrawal)
-                            <tr data-review-url="{{ $withdrawal['reviewUrl'] }}">
+                            <tr data-id="{{ $withdrawal['id'] }}" data-payout-holder="{{ $withdrawal['holder'] }}" data-payout-account="{{ $withdrawal['account'] }}" data-payout-notes="{{ $withdrawal['notes'] }}" data-review-url="{{ $withdrawal['reviewUrl'] }}">
                                 <td><button class="details-button" type="button" data-detail-kind="withdrawal" aria-label="عرض تفاصيل طلب {{ $withdrawal['name'] }}">عرض التفاصيل</button></td>
                                 <td><span class="payment-status {{ $withdrawal['stateClass'] }}">{{ $withdrawal['stateLabel'] }}</span></td>
                                 <td><span class="payment-method"><i class="bi {{ $withdrawal['icon'] }}"></i> {{ $withdrawal['method'] }}</span></td>

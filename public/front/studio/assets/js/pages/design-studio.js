@@ -1266,6 +1266,45 @@
     const areas = app.drafts[app.product.id]?.areas || {};
     return app.product.editor.printAreas.filter(area => areas[area.id]?.overflow).map(area => area.name || area.id);
   }
-  window.PALPRINTS_DESIGN_STUDIO_EXPORT = Object.freeze({ createPrintAreaCanvas: createPrintAreaExport, overflowAreaNames });
+  /**
+   * The print shop gets one ready-to-print picture per print area: a transparent PNG at 300 dpi of the area's real size
+   * (capped so the browser's canvas stays safe) with the pictures, graphics and text already drawn in their fonts.
+   * Fonts only exist in the customer's browser, so this is made here, not on the server. Each area is drawn on its own
+   * off-screen canvas, so the visible canvas and the area the customer is editing are never touched.
+   */
+  const PRINT_EXPORT_PREFIX = "printexport:", PRINT_EXPORT_DPI = 300, PRINT_EXPORT_MAX_SIDE = 5000;
+  async function renderAreaPng(area, models) {
+    const zone = area.printZone || {}, widthCm = Number(zone.widthCm), heightCm = Number(zone.heightCm);
+    if (!(widthCm > 0 && heightCm > 0)) throw new Error(`Print area "${area.id}" has no real size`);
+    const pixelsPerCm = Math.min(PRINT_EXPORT_DPI / 2.54, PRINT_EXPORT_MAX_SIDE / Math.max(widthCm, heightCm));
+    const width = Math.max(1, Math.round(widthCm * pixelsPerCm)), height = Math.max(1, Math.round(heightCm * pixelsPerCm));
+    const canvas = new fabric.StaticCanvas(null, { width, height, backgroundColor: "transparent", renderOnAddRemove: false });
+    try {
+      await Promise.all([...new Set(models.filter(item => item.kind === "text").map(item => item.fontFamily || "Cairo"))].map(loadFont));
+      const objects = (await Promise.all(models.map(model => modelToObject(model, { left: 0, top: 0, width, height })))).filter(Boolean);
+      if (objects.length !== models.length) throw new Error(`Print area "${area.id}" has an element that could not be drawn`);
+      objects.forEach(object => canvas.add(object));
+      // Pictures made from SVG graphics are drawn again at the final size, the same as the live canvas does.
+      await Promise.all(objects.map(object => window.PALPRINTS_STUDIO_SVG.refresh(object, canvas)));
+      canvas.renderAll();
+      const blob = await new Promise(resolve => canvas.toCanvasElement(1).toBlob(resolve, "image/png"));
+      if (!blob) throw new Error(`Print area "${area.id}" could not be turned into a picture`);
+      return blob;
+    } finally { canvas.dispose(); }
+  }
+  /** Makes the print PNG of every area that holds something and keeps it with the design; returns the area ids. */
+  async function exportPrintFiles() {
+    if (!app.canvas || !app.geometryReady || !app.design || !app.product) throw new Error("Studio is not ready");
+    updatePrintZoneFeedback(); saveActiveArea(); commitDesign();
+    const areas = app.drafts[app.product.id]?.areas || {}, exported = [];
+    for (const area of app.product.editor.printAreas) {
+      const models = areas[area.id]?.objects || [];
+      if (!models.length) continue;
+      await app.assetStore.put(PRINT_EXPORT_PREFIX + area.id, await renderAreaPng(area, models));
+      exported.push(area.id);
+    }
+    return exported;
+  }
+  window.PALPRINTS_DESIGN_STUDIO_EXPORT = Object.freeze({ createPrintAreaCanvas: createPrintAreaExport, overflowAreaNames, exportPrintFiles });
   void init();
 })(window, document);

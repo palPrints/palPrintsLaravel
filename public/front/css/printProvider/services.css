@@ -183,3 +183,54 @@
 
 /* Print areas reuse the method cards; the zone limit sits under the name. */
 .print-services-page .services-area-limit { margin-inline-start: 6px; color: #667a96; font-size: 11px; font-weight: 600; }
+
+.services-paper-since { display: block; margin-top: 2px; color: var(--muted, #5b6b82); font-weight: 400; }
+
+/* Paper: "every N sheets/pages cost X" rows */
+.services-paper-type { display: grid; gap: 12px; padding: 14px 16px; }
+.services-paper-block { display: grid; gap: 8px; padding: 10px 12px; border: 1px dashed var(--line, #d9e1ec); border-radius: 10px; }
+.services-paper-title { font-size: 13px; color: var(--muted, #5b6b82); }
+.services-pack { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.services-pack-name { min-width: 64px; font-weight: 600; }
+.services-pack-line { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.services-pack-line input { width: 92px; min-height: 36px; padding: 4px 8px; border: 1px solid var(--line, #d9e1ec); border-radius: 8px; font: inherit; }
+.services-pack-line input:disabled { background: var(--page, #f3f6fb); }
+.services-paper-ink { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.services-paper-ink .services-method-name { min-width: 120px; }
+
+.services-pack-money { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+
+/* The settings error sits right under the dialog title so it is seen without scrolling. */
+.print-services-page .services-settings-dialog #settingsError { margin: 12px 20px 0; }
+
+/* A mistake found on saving: kept a little below the top edge and flashed once so it is noticed. */
+.print-services-page .services-section-error { display: flex; align-items: center; gap: 10px; scroll-margin-top: 16px; margin: 4px 0 14px; padding: 12px 14px; color: #9a4a00; font-size: 13px; font-weight: 800; line-height: 1.6; background: #fff6ed; border: 1px solid #ffd2a6; border-inline-start: 4px solid #e8730c; border-radius: 10px; }
+.print-services-page .services-section-error::before { content: "!"; flex: none; display: grid; place-items: center; width: 22px; height: 22px; color: #fff; font-size: 14px; font-weight: 900; background: #e8730c; border-radius: 50%; }
+.print-services-page .services-section-error.is-flashing { animation: services-error-flash 1.2s ease; }
+@keyframes services-error-flash { 0%, 40% { background: #ffe3c8; box-shadow: 0 0 0 4px rgb(232 115 12 / 22%); } 100% { background: #fff6ed; box-shadow: none; } }
+html[data-bs-theme="dark"] .print-services-page .services-section-error { color: #f3c79d; background: #3b2917; border-color: #6b4524; border-inline-start-color: #e8730c; }
+@media (prefers-reduced-motion: reduce) { .print-services-page .services-section-error.is-flashing { animation: none; } }
+
+/* Paper cards: full width, one tidy line per size / colour. */
+.print-services-page .services-method.services-paper-type { grid-column: 1 / -1; gap: 14px; padding: 16px; }
+.print-services-page .services-paper-type > .services-method-name { font-size: 14px; padding-bottom: 10px; border-bottom: 1px solid #e1eaf5; }
+.print-services-page .services-paper-block { gap: 0; padding: 12px 14px; background: #f8fbff; border: 1px solid #e1eaf5; border-radius: 12px; }
+.print-services-page .services-paper-title { margin-bottom: 8px; color: #0b1f3a; font-size: 13px; font-weight: 800; }
+.print-services-page .services-pack { display: grid; grid-template-columns: 90px 1fr; align-items: center; gap: 4px 12px; padding: 8px 0; border-top: 1px solid #e6eef8; }
+.print-services-page .services-paper-title + .services-pack { border-top: 0; }
+.print-services-page .services-pack-name { min-width: 0; color: #0b1f3a; font-size: 13px; font-weight: 700; }
+.print-services-page .services-pack-line { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; color: #667a96; font-size: 13px; }
+.print-services-page .services-pack-line input { box-sizing: border-box; width: 84px; min-height: 38px; padding: 0 10px; color: #0b1f3a; font: inherit; font-size: 13px; text-align: center; background: #fff; border: 1px solid #d9e4f2; border-radius: 8px; }
+.print-services-page .services-pack-line input:focus { border-color: var(--pp-blue-600); box-shadow: 0 0 0 3px rgb(22 119 255 / 14%); outline: 0; }
+.print-services-page .services-pack-line input:disabled { background: #f1f5fa; }
+.print-services-page .services-pack-money b { color: #667a96; font-size: 14px; font-weight: 700; }
+.print-services-page .services-pack .services-paper-since { grid-column: 2; margin: 0; font-size: 11px; }
+.print-services-page .services-paper-ink { display: grid; grid-template-columns: 130px 1fr; align-items: center; gap: 4px 12px; padding: 8px 0; border-top: 1px solid #e6eef8; }
+.print-services-page .services-paper-title + .services-paper-ink { border-top: 0; }
+.print-services-page .services-paper-ink .services-method-name { min-width: 0; }
+.print-services-page .services-paper-ink .services-pack { display: block; padding: 0; border: 0; }
+@media (max-width: 640px) {
+  .print-services-page .services-pack, .print-services-page .services-paper-ink { grid-template-columns: 1fr; }
+  .print-services-page .services-pack .services-paper-since { grid-column: 1; }
+  .print-services-page .services-pack-line { flex-wrap: wrap; }
+}

@@ -75,7 +75,7 @@ test('withdrawal records a wallet transaction and pending balance', function () 
 
     // The platform's minimum withdrawal is ₪100, so the request has to be at least that.
     $this->actingAs($designer)
-        ->postJson(route('designer.earnings.withdraw'), ['amount' => 120.5, 'method' => 'wallet'])
+        ->postJson(route('designer.earnings.withdraw'), ['amount' => 120.5, 'method' => 'palpay', 'holder' => 'سارة أحمد', 'account' => '0599123456'])
         ->assertCreated();
 
     $transaction = WalletTransaction::where('wallet_id', $wallet->id)->firstOrFail();

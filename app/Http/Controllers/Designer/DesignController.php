@@ -489,7 +489,7 @@ class DesignController extends Controller
                 'type' => 'design.submitted',
                 'title' => 'تصميم جديد بانتظار المراجعة',
                 'message' => 'أرسل '.$designer->name.' التصميم «'.$design->title.'» للمراجعة.',
-                'link' => route('admin.designs'),
+                'link' => route('admin.designs', ['open' => $design->id]),
             ]));
         }
 

@@ -426,11 +426,20 @@
           else if (tries > 50) clearInterval(timer);
         }, 200);
 
-        button.addEventListener("click", function () {
+        button.addEventListener("click", async function () {
           // A design that sticks out of the print zone is cut off in the print file: stop here and say where.
           const overflowing = window.PALPRINTS_DESIGN_STUDIO_EXPORT?.overflowAreaNames?.() || [];
           if (overflowing.length) {
             PalAlert.alert("بعض عناصر التصميم تتجاوز حدود منطقة الطباعة (" + overflowing.join("، ") + "). الأجزاء الخارجة لن تُطبع، لذلك صغّرها أو حرّكها إلى داخل الإطار ثم تابع إلى المعاينة.", { title: "التصميم خارج منطقة الطباعة", icon: "warning" });
+            return;
+          }
+          // The print shop prints from a picture of each area (fonts and all), made here because the fonts live in this browser.
+          button.disabled = true;
+          try { await window.PALPRINTS_DESIGN_STUDIO_EXPORT.exportPrintFiles(); }
+          catch (error) {
+            console.error(error);
+            button.disabled = false;
+            PalAlert.alert("تعذر تجهيز ملف الطباعة من تصميمك. حاول مرة أخرى.", { icon: "error" });
             return;
           }
           // The studio saves edits a moment after each change; wait for the last one.
@@ -440,14 +449,14 @@
               const doc = selection && JSON.parse(localStorage.getItem(DESIGN_PREFIX + selection.designId) || "null");
               const productId = doc && doc.activeProductId;
               const draft = doc && doc.drafts && doc.drafts[productId];
-              if (!draft) { PalAlert.alert("تعذر حفظ التصميم. حاول مرة أخرى.", { icon: "error" }); return; }
+              if (!draft) { button.disabled = false; PalAlert.alert("تعذر حفظ التصميم. حاول مرة أخرى.", { icon: "error" }); return; }
               sessionStorage.setItem("palprintsStudioWorkflowContext", JSON.stringify({
                 schemaVersion: 1, workflowMode: @json($workflowMode ?? 'customer'), source: "design-studio", designId: selection.designId,
                 productId: productId, activeAreaId: draft.activeAreaId,
                 preview: { colorId: draft.colorId || null, sizeId: draft.sizeId || null }, updatedAt: new Date().toISOString()
               }));
               window.location.href = @json($previewUrl ?? route('customer.productPreview'));
-            } catch (error) { PalAlert.alert("تعذر فتح المعاينة. حاول مرة أخرى.", { icon: "error" }); }
+            } catch (error) { button.disabled = false; PalAlert.alert("تعذر فتح المعاينة. حاول مرة أخرى.", { icon: "error" }); }
           }, 400);
         });
       }
