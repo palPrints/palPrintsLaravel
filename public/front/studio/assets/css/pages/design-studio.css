@@ -2176,3 +2176,11 @@ body.sidebar-collapsed .site-content {
     animation: none;
   }
 }
+
+.studio-tool-tab.is-dragging,
+.studio-tools-panel.is-dragging,
+.studio-print-zone.is-dragging {
+  outline: 2px dashed #1a73e8;
+  outline-offset: -4px;
+  background-color: rgba(26, 115, 232, 0.06);
+}

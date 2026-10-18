@@ -312,7 +312,13 @@ class PrintShopRouter
         $match = $definitions->first(fn (array $definition) => $definition['code'] === $area || $definition['name'] === $area);
 
         if (! $match) {
-            return $area;
+            // The studio shows the shop's own area name (e.g. "Back Print"): read its code back from the shop data.
+            $code = BranchPrintArea::query()
+                ->whereHas('branchProductOffering', fn ($query) => $query->where('product_id', $product->id))
+                ->where('name', $area)
+                ->value('code');
+
+            return $code ?: $area;
         }
 
         // The database names the mug's single area "wrap"; the studio calls it "front".
