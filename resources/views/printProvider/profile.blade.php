@@ -83,7 +83,6 @@
                     <div><dt>البريد الإلكتروني</dt><dd dir="ltr">{{ $user->email }}</dd></div>
                     <div><dt>هاتف المطبعة</dt><dd dir="ltr">{{ $provider->phone ?: $dash }}</dd></div>
                     <div><dt>واتساب</dt><dd dir="ltr">{{ $provider->whatsappDisplayNumber() ?: $dash }}</dd></div>
-                    <div><dt>الطلبات على واتساب</dt><dd>{{ $provider->whatsapp_notifications_enabled ? 'مفعّلة' : 'غير مفعّلة' }}</dd></div>
                 </dl>
             </section>
 
@@ -94,6 +93,50 @@
                 </dl>
             </section>
         </div>
+
+        {{-- Where the shop gets its new orders, besides the orders page. --}}
+        <section class="form-card order-channels" aria-labelledby="orderChannelsTitle">
+            <header class="card-title"><span><i class="bi bi-bell"></i></span><h2 id="orderChannelsTitle">استقبال الطلبات الجديدة</h2></header>
+            @if (session('telegram_status'))
+                <p class="channel-flash" role="status"><i class="bi bi-check-circle"></i> {{ session('telegram_status') }}</p>
+            @endif
+            <div class="channel-list">
+                <div class="channel-row">
+                    <span class="channel-icon is-whatsapp"><i class="bi bi-whatsapp"></i></span>
+                    <div class="channel-copy">
+                        <b>واتساب</b>
+                        <small>{{ $provider->whatsapp_notifications_enabled ? 'مفعّل على الرقم '.$provider->whatsappDisplayNumber().'. يرسل لك فريق PALPRINTS تفاصيل الطلب وروابط الملفات.' : 'غير مفعّل. فعّليه من "تعديل البيانات" بإضافة رقم واتساب ووضع علامة على استقبال الطلبات.' }}</small>
+                    </div>
+                    <strong @class(['channel-state', 'is-on' => $provider->whatsapp_notifications_enabled])>{{ $provider->whatsapp_notifications_enabled ? 'مفعّل' : 'غير مفعّل' }}</strong>
+                </div>
+
+                @if (config('telegram.enabled') && filled(config('telegram.bot_username')) && $provider->exists)
+                    <div class="channel-row">
+                        <span class="channel-icon is-telegram"><i class="bi bi-telegram"></i></span>
+                        <div class="channel-copy">
+                            <b>تيليجرام</b>
+                            @if ($provider->telegram_chat_id)
+                                <small>مربوط{{ $provider->telegram_username ? ' بالحساب @'.$provider->telegram_username : '' }}. تصلك الطلبات تلقائيًا مع ملفات الطباعة، وتقبلينها أو ترفضينها من الرسالة.</small>
+                            @else
+                                <small>تصلك الطلبات تلقائيًا مع ملفات الطباعة، وتقبلينها أو ترفضينها من الرسالة. اضغطي "ربط تيليجرام" ثم Start في تيليجرام، وبعدها حدّثي هذه الصفحة.</small>
+                            @endif
+                        </div>
+                        @if ($provider->telegram_chat_id)
+                            <form method="POST" action="{{ route('print-provider.telegram.unlink') }}" onsubmit="return confirm('إلغاء ربط تيليجرام؟ لن تصلك الطلبات هناك بعد الآن.')">
+                                @csrf
+                                @method('DELETE')
+                                <button class="outline-btn" type="submit"><i class="bi bi-x-circle"></i> إلغاء الربط</button>
+                            </form>
+                        @else
+                            <form method="POST" action="{{ route('print-provider.telegram.link') }}" target="_blank">
+                                @csrf
+                                <button class="primary-btn" type="submit"><i class="bi bi-telegram"></i> ربط تيليجرام</button>
+                            </form>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </section>
 
         <div class="three-column profile-section-grid">
             <section class="form-card">

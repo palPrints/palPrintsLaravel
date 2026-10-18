@@ -256,5 +256,9 @@
 .notice-head-meta i { color: var(--blue); margin-inline-end: 4px; }
 .notice-chevron { color: #7a8aa0; transition: transform .18s; }
 .notice-card[open] .notice-chevron { transform: rotate(180deg); }
-.notices-flash:not(.is-success):not(.is-error):not(.is-whatsapp) { color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; }
+.notices-flash:not(.is-success):not(.is-error):not(.is-whatsapp):not(.is-telegram) { color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; }
 .notices-flash a:not(.notice-whatsapp-btn) { color: inherit; font-weight: 800; text-decoration: underline; }
+
+/* Telegram: the order went to the shop automatically. */
+.notices-flash.is-telegram { color: #0c4a6e; background: #f0f9ff; border: 1px solid #7dd3fc; }
+.notices-flash.is-telegram .bi-telegram { color: #0284c7; }

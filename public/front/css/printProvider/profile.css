@@ -183,3 +183,20 @@ body:not(.sidebar-collapsed) main.printshop-main{padding:27px 28px 50px}
 @media(max-width:560px){.service-chips{grid-template-columns:1fr}.is-static:not(.service-chips){grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .fields label.whatsapp-optin{display:flex;font-weight:600}
+
+/* Where new orders reach the shop (WhatsApp / Telegram). Colours come from the palette variables, so dark mode follows. */
+.order-channels{margin-bottom:24px}
+.channel-list{display:grid;gap:12px}
+.channel-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:12px}
+.channel-icon{width:40px;height:40px;flex:0 0 auto;display:grid;place-items:center;border-radius:10px;font-size:20px}
+.channel-icon.is-whatsapp{color:#16a34a;background:#dcfce7}
+.channel-icon.is-telegram{color:#0284c7;background:#e0f2fe}
+.channel-copy{display:grid;gap:4px;flex:1;min-width:0}
+.channel-copy b{color:var(--navy);font-size:14px}
+.channel-copy small{color:var(--muted);font-size:12px;line-height:1.6}
+.channel-state{padding:5px 11px;border-radius:999px;color:var(--muted);background:var(--bg);font-size:11px;white-space:nowrap}
+.channel-state.is-on{color:#087c42;background:#dcfce7}
+.channel-row form{margin:0}
+.channel-row .primary-btn,.channel-row .outline-btn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.channel-flash{display:flex;align-items:center;gap:8px;margin:0 0 14px;padding:10px 14px;border-radius:10px;color:#087c42;background:#dcfce7;font-size:13px;font-weight:700}
+@media(max-width:560px){.channel-row{flex-wrap:wrap}.channel-row form{width:100%}.channel-row form button{width:100%;justify-content:center}}

@@ -54,3 +54,64 @@ Artisan::command('documents:make-private {--dry-run : List what would be moved w
 
     $this->info(($dry ? 'Would move ' : 'Moved ').$moved.' file(s) to the private disk; '.$failed.' failed.');
 })->purpose('Move print-shop documents and support attachments from the public disk to the private one');
+
+// Telegram bot updates on a local machine (no public URL needed): long-polls Telegram and handles the shops' taps and
+// messages. Production uses the webhook instead (telegram:webhook); Telegram allows only one of the two at a time.
+Artisan::command('telegram:poll {--once : Fetch one batch of updates and stop}', function () {
+    $client = app(\App\Services\Telegram\TelegramClient::class);
+    $handler = app(\App\Services\Telegram\TelegramUpdateHandler::class);
+
+    if (blank(config('telegram.bot_token'))) {
+        $this->error('TELEGRAM_BOT_TOKEN is not set in .env.');
+
+        return 1;
+    }
+
+    $client->deleteWebhook();
+    $this->info('Polling @'.($client->getMe()['username'] ?? '?').' for updates. Ctrl+C to stop.');
+
+    do {
+        $offset = (int) \Illuminate\Support\Facades\Cache::get('telegram:poll-offset', 0);
+
+        try {
+            $updates = $client->getUpdates($offset, $this->option('once') ? 0 : 25);
+        } catch (\Throwable $exception) {
+            $this->warn('Telegram unreachable: '.$exception->getMessage());
+            sleep(5);
+
+            continue;
+        }
+
+        foreach ($updates as $update) {
+            $handler->handle($update);
+            \Illuminate\Support\Facades\Cache::forever('telegram:poll-offset', (int) $update['update_id'] + 1);
+            $this->line('handled update '.$update['update_id'].' ('.(isset($update['callback_query']) ? 'button' : 'message').')');
+        }
+    } while (! $this->option('once'));
+
+    return 0;
+})->purpose('Receive Telegram bot updates by polling (local development)');
+
+Artisan::command('telegram:webhook {url? : https URL of /webhooks/telegram} {--delete : Remove the webhook (to poll instead)}', function () {
+    $client = app(\App\Services\Telegram\TelegramClient::class);
+
+    if ($this->option('delete')) {
+        $client->deleteWebhook();
+        $this->info('Webhook removed.');
+
+        return 0;
+    }
+
+    $secret = (string) config('telegram.webhook_secret');
+    if ($secret === '') {
+        $this->error('Set TELEGRAM_WEBHOOK_SECRET in .env first (letters, digits, _ and -).');
+
+        return 1;
+    }
+
+    $url = (string) ($this->argument('url') ?: route('webhooks.telegram'));
+    $client->setWebhook($url, $secret);
+    $this->info('Webhook set to '.$url);
+
+    return 0;
+})->purpose('Point the Telegram bot at this site\'s webhook');
