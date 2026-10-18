@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendOrderOfferToShop;
 use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
@@ -37,7 +38,7 @@ class PaymentNoticeController extends Controller
         $onlyOrder = $request->query('order');
 
         $payments = Payment::query()
-            ->with(['order.user', 'order.items.product'])
+            ->with(['order.user', 'order.items.product', 'order.items.printFiles', 'order.items.printProviderBranch.printProvider'])
             ->whereHas('order', fn ($order) => $onlyOrder ? $order->where('order_number', $onlyOrder) : $order)
             ->latest()
             ->limit(100)
@@ -100,9 +101,13 @@ class PaymentNoticeController extends Controller
         if ($pdfReady && $providerUserId = $branch->printProvider()->value('user_id')) {
             OrderNotifier::newOrderForShop((int) $providerUserId, $order->order_number, $order->items->count());
         }
+        SendOrderOfferToShop::dispatch($order->id, (int) $branch->print_provider_id);
         $this->audit($request, 'admin.payment_notice_approved', 'الموافقة على إشعار دفع الطلب '.$order->order_number, ['order_id' => $order->id, 'payment_id' => $payment->id, 'branch_id' => $branch->id]);
 
-        return back()->with('notice_status', 'تمت الموافقة على الطلب '.$order->order_number.' وتوجيهه إلى '.$this->branchLabel($branch).'.');
+        // Not back(): from the page of one order (?order=) that would show an empty page; the decision goes to the full list.
+        return redirect()->route('admin.payment-notices')
+            ->with('notice_status', 'تمت الموافقة على الطلب '.$order->order_number.' وتوجيهه إلى '.$this->branchLabel($branch).'.')
+            ->with('notice_whatsapp', ShopChatLink::forOrder($order->fresh()));
     }
 
     public function reject(Request $request, Payment $payment): RedirectResponse
@@ -129,7 +134,7 @@ class PaymentNoticeController extends Controller
         OrderNotifier::paymentReviewed((int) $order->user_id, $order->order_number, false, $validated['reason']);
         $this->audit($request, 'admin.payment_notice_rejected', 'رفض إشعار دفع الطلب '.$order->order_number, ['order_id' => $order->id, 'payment_id' => $payment->id]);
 
-        return back()->with('notice_status', 'تم رفض الطلب '.$order->order_number.' وإبلاغ العميل.');
+        return redirect()->route('admin.payment-notices')->with('notice_status', 'تم رفض الطلب '.$order->order_number.' وإبلاغ العميل.');
     }
 
     /** Streams the receipt the customer uploaded (private storage) to the admin. */
@@ -190,6 +195,7 @@ class PaymentNoticeController extends Controller
             'approveUrl' => route('admin.payment-notices.approve', $payment),
             'rejectUrl' => route('admin.payment-notices.reject', $payment),
             'shops' => $withShops ? $this->shopChoices($order) : ['top' => [], 'others' => []],
+            'whatsapp' => $payment->status === 'paid' ? ShopChatLink::forOrder($order) : null,
         ];
     }
 

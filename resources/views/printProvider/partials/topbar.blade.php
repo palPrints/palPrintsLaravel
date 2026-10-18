@@ -27,28 +27,8 @@
                 <i class="bi bi-bell" aria-hidden="true"></i>
                 <span class="counter notification-counter" id="notificationCounter" @if($providerUnreadCount === 0) hidden @endif>{{ $providerUnreadCount > 99 ? '99+' : $providerUnreadCount }}</span>
             </button>
-            <div class="notification-dropdown" id="notificationDropdown" role="menu" aria-label="قائمة الإشعارات" hidden>
-                <div class="notification-dropdown-header"><h3>الإشعارات</h3></div>
-                <ul class="notification-list" id="notificationList">
-                    @forelse($providerLatestNotifications as $notification)
-                        <li>
-                            <form method="POST" action="{{ route('print-provider.notifications.read', $notification) }}">
-                                @csrf
-                                <button type="submit" class="notification-entry is-unread" role="menuitem">
-                                    <span class="notification-entry__icon"><i class="bi {{ $notification->type === 'approval.submitted' ? 'bi-send-check' : (str_starts_with((string) $notification->type, 'order') ? 'bi-bag-check' : 'bi-bell') }}" aria-hidden="true"></i></span>
-                                    <span class="notification-entry__body">
-                                        <strong>{{ $notification->title }}</strong>
-                                        <small>{{ $notification->message }}</small>
-                                        <time datetime="{{ $notification->created_at?->toIso8601String() }}">{{ $notification->created_at?->locale('ar')->diffForHumans() }}</time>
-                                    </span>
-                                </button>
-                            </form>
-                        </li>
-                    @empty
-                        <li class="notification-empty">لا توجد إشعارات جديدة</li>
-                    @endforelse
-                </ul>
-                <a class="notification-dropdown-footer" href="{{ route('print-provider.notifications') }}" role="menuitem">رؤية جميع الإشعارات</a>
+            <div class="notification-dropdown pp-notif-host" id="notificationDropdown" role="menu" aria-label="قائمة الإشعارات" hidden>
+                @include('partials.notification-panel', ['items' => $providerLatestNotifications, 'readRoute' => 'print-provider.notifications.read', 'allUrl' => route('print-provider.notifications'), 'unread' => $providerUnreadCount, 'listId' => 'notificationList'])
             </div>
         </div>
     </div>

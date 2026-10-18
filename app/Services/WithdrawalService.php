@@ -33,7 +33,7 @@ class WithdrawalService
 
             if ($cents < (int) round($minimum * 100)) {
                 throw ValidationException::withMessages([
-                    'amount' => 'الحد الأدنى للسحب هو $'.number_format($minimum, 2).'.',
+                    'amount' => 'الحد الأدنى للسحب هو '.number_format($minimum, 2).' ₪.',
                 ]);
             }
 
@@ -75,7 +75,7 @@ class WithdrawalService
                 'withdrawal.requested',
                 'طلب سحب أرباح جديد',
                 sprintf('طلب %s سحب %s ₪. رقم المرجع: %s', $user->name, number_format($cents / 100, 2), $withdrawal->reference_id),
-                route('admin.payments'),
+                route('admin.payments', ['open' => $withdrawal->id]),
             );
 
             return $withdrawal;

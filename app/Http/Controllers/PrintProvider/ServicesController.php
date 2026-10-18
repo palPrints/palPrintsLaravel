@@ -13,6 +13,7 @@ use App\Models\PrintProviderBranch;
 use App\Models\Product;
 use App\Models\Variant;
 use App\Support\CatalogProductData;
+use App\Support\PaperPrices;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -57,7 +58,11 @@ class ServicesController extends Controller
         $methods = $this->methods($product);
         $areaOptions = $this->areaOptions($product);
 
-        $data = $request->validate([
+        // Paper has no print areas or printing methods: what it sells is paper types, colours and bindings with their prices.
+        $isPaper = $product->code === PaperPrices::PRODUCT;
+        $paper = $this->paperRules($request, $product, $sizeIds);
+
+        $data = $request->validate($paper['rules'] + [
             'price' => ['required', 'numeric', 'min:0.01', 'max:1000000', 'decimal:0,2'],
             'days' => ['required', 'integer', 'min:1', 'max:365'],
             'capacity' => ['required', 'integer', 'min:1', 'max:1000000'],
@@ -65,6 +70,7 @@ class ServicesController extends Controller
             'colors.*' => ['string', 'in:'.implode(',', $colorIds ?: ['-'])],
             'sizes' => ['required', 'array', 'min:1'],
             'sizes.*' => ['string', 'in:'.implode(',', $sizeIds ?: ['-'])],
+        ] + ($isPaper ? [] : [
             'areas' => ['required', 'array', 'min:1'],
             'areas.*.code' => ['required', 'string', 'in:'.$areaOptions->pluck('code')->implode(',')],
             'areas.*.width_cm' => ['required', 'numeric', 'min:1', 'max:200'],
@@ -73,7 +79,7 @@ class ServicesController extends Controller
             'methods.*.id' => ['required', 'integer', 'in:'.$methods->pluck('id')->implode(',')],
             'methods.*.price' => ['required', 'numeric', 'min:0', 'max:100000', 'decimal:0,2'],
             'methods.*.rate' => ['nullable', 'numeric', 'min:0', 'max:1000', 'decimal:0,2'],
-        ], [
+        ]), [
             'price.required' => 'أدخل سعر الطباعة.',
             'price.min' => 'يجب أن يكون السعر أكبر من صفر.',
             'price.decimal' => 'السعر يحتمل خانتين عشريتين كحد أقصى.',
@@ -95,9 +101,13 @@ class ServicesController extends Controller
             'methods.*.rate.min' => 'السعر لكل 100 سم² لا يمكن أن يكون سالبًا.',
             'methods.*.rate.max' => 'السعر لكل 100 سم² كبير جدًا.',
             'methods.*.rate.decimal' => 'السعر لكل 100 سم² يحتمل خانتين عشريتين كحد أقصى.',
-        ]);
+        ] + $paper['messages']);
 
-        foreach ($data['areas'] as $index => $chosen) {
+        if ($isPaper) {
+            $this->checkPaperPrinting($data);
+        }
+
+        foreach ($data['areas'] ?? [] as $index => $chosen) {
             $option = $areaOptions->firstWhere('code', $chosen['code']);
             if ((float) $chosen['width_cm'] > $option['widthCm'] || (float) $chosen['height_cm'] > $option['heightCm']) {
                 throw ValidationException::withMessages([
@@ -134,8 +144,18 @@ class ServicesController extends Controller
                 );
             }
 
-            $offering->ensurePrintAreas();
             $this->saveBasePrice($offering, (float) $data['price']);
+
+            if ($product->code === PaperPrices::PRODUCT) {
+                PaperPrices::save($offering, $variants->pluck('size', 'id')->all(), [
+                    'types' => $data['paper_types'], 'prices' => $data['paper_prices'] ?? [],
+                    'ink' => $data['paper_ink'] ?? [], 'bindings' => $data['paper_bindings'] ?? [],
+                ], $data['sizes']);
+
+                return;
+            }
+
+            $offering->ensurePrintAreas();
             $this->savePrinting($offering, $product, collect($data['areas']), collect($data['methods']));
         });
 
@@ -162,6 +182,72 @@ class ServicesController extends Controller
             'message' => $offering->is_active ? 'تم تشغيل المنتج.' : 'تم إيقاف المنتج مؤقتًا.',
             'product' => $this->catalog($branch, $product->id)->first(),
         ]);
+    }
+
+    /**
+     * What the paper product needs on top of the usual settings. The shop prices the way a print shop talks, "every N sheets
+     * cost X": for each paper type that is on, a pack price for the blank paper in every size it sells and a pack price for
+     * printing in black and white and/or colour; plus a price for each binding it offers. Other products need nothing extra.
+     *
+     * @param  array<int, string>  $sizeIds  the sizes the product has
+     * @return array{rules: array<string, array<int, string>>, messages: array<string, string>}
+     */
+    private function paperRules(Request $request, Product $product, array $sizeIds): array
+    {
+        if ($product->code !== PaperPrices::PRODUCT) {
+            return ['rules' => [], 'messages' => []];
+        }
+
+        $rules = [
+            'paper_types' => ['required', 'array', 'min:1'],
+            'paper_types.*' => ['string', 'in:'.implode(',', array_keys(PaperPrices::TYPES))],
+            'paper_prices' => ['nullable', 'array'],
+            'paper_ink' => ['nullable', 'array'],
+            'paper_bindings' => ['nullable', 'array'],
+        ];
+        $messages = [
+            'paper_types.required' => 'فعّل نوع ورق واحدًا على الأقل.',
+            'paper_types.min' => 'فعّل نوع ورق واحدًا على الأقل.',
+        ];
+
+        // "Every <count> <what> cost <price>": both numbers are needed and must make sense.
+        $pack = function (string $field, string $what) use (&$rules, &$messages) {
+            $rules[$field.'.count'] = ['required', 'integer', 'min:1', 'max:100000'];
+            $rules[$field.'.price'] = ['required', 'numeric', 'min:0.01', 'max:100000', 'decimal:0,2'];
+            $messages[$field.'.count.required'] = $messages[$field.'.count.integer'] = $messages[$field.'.count.min'] = $messages[$field.'.count.max']
+                = 'اكتب عددًا صحيحًا (من 1 إلى 100000) في «'.$what.'».';
+            $messages[$field.'.price.required'] = $messages[$field.'.price.numeric'] = $messages[$field.'.price.min'] = $messages[$field.'.price.max'] = $messages[$field.'.price.decimal']
+                = 'اكتب سعرًا بين 0.01 و100000 بمنزلتين عشريتين كحد أقصى في «'.$what.'».';
+        };
+
+        $chosenSizes = array_values(array_intersect((array) $request->input('sizes'), $sizeIds));
+        foreach (array_intersect((array) $request->input('paper_types'), array_keys(PaperPrices::TYPES)) as $type) {
+            foreach (array_keys(PaperPrices::INK) as $mode) {
+                if (is_array($request->input("paper_ink.$type.$mode"))) {
+                    $pack("paper_ink.$type.$mode", PaperPrices::TYPES[$type].' — طباعة '.PaperPrices::INK[$mode]);
+                }
+            }
+        }
+
+        foreach (PaperPrices::BINDINGS as $binding => $label) {
+            $rules['paper_bindings.'.$binding] = ['nullable', 'numeric', 'min:0', 'max:1000', 'decimal:0,2'];
+            $messages['paper_bindings.'.$binding.'.numeric'] = $messages['paper_bindings.'.$binding.'.min'] = $messages['paper_bindings.'.$binding.'.max'] = $messages['paper_bindings.'.$binding.'.decimal']
+                = 'سعر «'.$label.'» يجب أن يكون رقمًا بين 0 و1000 بمنزلتين عشريتين كحد أقصى.';
+        }
+
+        return ['rules' => $rules, 'messages' => $messages];
+    }
+
+    /** Every paper type that is on needs at least one way of printing on it (black and white or colour) with its price. */
+    private function checkPaperPrinting(array $data): void
+    {
+        foreach ($data['paper_types'] as $type) {
+            if (empty($data['paper_ink'][$type])) {
+                throw ValidationException::withMessages([
+                    'paper_ink.'.$type => 'فعّل طباعة أبيض وأسود أو ملوّن لـ «'.PaperPrices::TYPES[$type].'» واكتب سعرها، أو أطفئ هذا النوع من الورق.',
+                ]);
+            }
+        }
     }
 
     /** The base price also lives as the offering's own "base" pricing rule, like the rest of the pricing. */
@@ -329,6 +415,7 @@ class ServicesController extends Controller
 
                 return [
                     'id' => $product->id,
+                    'code' => $product->code,
                     'name' => $product->name,
                     'category' => $product->category ? CatalogProductData::categoryName($product->category->slug, $product->category->name) : 'منتجات',
                     'image' => filled($product->image) ? asset($product->image) : null,
@@ -336,6 +423,10 @@ class ServicesController extends Controller
                     'sizes' => $sizes->values()->all(),
                     'areas' => $this->areaOptions($product)->all(),
                     'methods' => $this->methods($product)->all(),
+                    // Paper: which paper types the shop has and what one sheet costs for each size.
+                    'paper' => $product->code === PaperPrices::PRODUCT && $offering
+                        ? PaperPrices::overview($offering, $variants->pluck('size', 'id')->all(), $sizes->pluck('id')->all())
+                        : null,
                     'settings' => $settings,
                 ];
             })

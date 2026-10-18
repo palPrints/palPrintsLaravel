@@ -98,10 +98,8 @@ class CatalogController extends Controller
     {
         $product = Product::query()
             ->with([
-                'branchProductOfferings.printProviderBranch',
-                'branchProductOfferings.branchOfferingVariants.variant.values.productAttributeValue.attributeValue',
-                'branchProductOfferings.branchOfferingVariants.variant.values.productAttributeValue.productAttribute.attribute',
-                'branchProductOfferings.branchPricingRules.branchPrintCapability.printingMethod',
+                'branchProductOfferings.printProviderBranch.printProvider',
+                'branchProductOfferings.branchOfferingVariants',
             ])
             ->where('code', 'PAPER-PRINT')
             ->first();
@@ -113,95 +111,76 @@ class CatalogController extends Controller
     }
 
     /**
+     * What the paper printing page offers: only the sizes, paper types, print colours and bindings that at least one live
+     * print shop sells. The prices are not here; the page asks the server for the price of the job (see CartController::quotePaper).
+     *
      * @return array<string, mixed>
      */
     private function paperPrintingData(?Product $product): array
     {
-        if (! $product) {
-            return [
-                'available' => false,
-                'product' => null,
-                'options' => ['sizes' => [], 'availableValues' => ['size' => []]],
-                'pricing' => ['basePrice' => 0, 'methodAddon' => 0, 'currency' => 'ILS'],
-            ];
+        $empty = [
+            'available' => false,
+            'product' => null,
+            'options' => ['availableValues' => ['size' => [], 'paper' => [], 'color' => []]],
+            'bindings' => [],
+        ];
+
+        if (! $product || ! $product->is_active) {
+            return $empty;
         }
 
+        $pricing = app(PaperPricing::class);
+        $sizeByVariant = $pricing->sizeByVariant($product->id);
+
         $offerings = $product->branchProductOfferings
-            ->filter(fn ($offering) => $offering->is_active && $offering->printProviderBranch?->is_active)
-            ->values();
+            ->filter(fn ($offering) => $offering->is_active
+                && (float) $offering->base_price > 0
+                && $offering->printProviderBranch?->is_active
+                && $offering->printProviderBranch->printProvider?->approval_status === 'approved'
+                && $offering->printProviderBranch->printProvider->is_active);
 
-        $branchVariants = $offerings
-            ->flatMap(fn ($offering) => $offering->branchOfferingVariants)
-            ->filter(fn ($branchVariant) => $branchVariant->is_available && $branchVariant->variant?->is_active)
-            ->values();
+        // A job needs a size, a paper type and a colour together: each combination some live shop can print.
+        $combos = [];
+        $bindings = [];
 
-        $sizes = $branchVariants
-            ->map(function ($branchVariant) {
-                $sizeValue = $branchVariant->variant->values
-                    ->map(fn ($value) => $value->productAttributeValue)
-                    ->first(fn ($value) => $value?->productAttribute?->attribute?->code === 'size')
-                    ?->attributeValue;
+        foreach ($offerings as $offering) {
+            $list = $pricing->priceList($offering);
+            $shopSizes = $offering->branchOfferingVariants->where('is_available', true)
+                ->map(fn ($variant) => $sizeByVariant[$variant->variant_id] ?? null)->filter()->unique()->all();
 
-                if (! $sizeValue) {
-                    return null;
+            foreach ($list['ink'] as $type => $byColor) {
+                foreach ($shopSizes as $size) {
+                    foreach (array_keys($byColor) as $color) {
+                        $combos[$size.'|'.$type.'|'.$color] = ['size' => strtoupper($size), 'paper' => $type, 'color' => $color];
+                    }
                 }
+            }
 
-                return [
-                    'id' => strtoupper($sizeValue->value),
-                    'code' => $sizeValue->code,
-                    'name' => $sizeValue->value,
-                    'variant_id' => $branchVariant->variant_id,
-                ];
-            })
-            ->filter()
-            ->unique('id')
-            ->sortBy('id')
-            ->values();
+            foreach ($list['bindings'] as $binding => $price) {
+                $bindings[$binding] = min($bindings[$binding] ?? $price, $price);
+            }
+        }
 
-        $pricingRules = $offerings->flatMap(fn ($offering) => $offering->branchPricingRules)
-            ->filter(fn ($rule) => $rule->is_active)
-            ->values();
-
-        $methodAddon = $pricingRules
-            ->filter(fn ($rule) => $rule->pricing_type === 'print_method_addon')
-            ->filter(fn ($rule) => $rule->branchPrintCapability?->printingMethod?->code === 'digital-paper')
-            ->min('amount');
+        $combos = array_values($combos);
+        $available = $combos !== [];
 
         return [
-            'available' => $product->is_active && $offerings->isNotEmpty() && $sizes->isNotEmpty(),
-            'product' => [
-                'id' => $product->id,
-                'code' => $product->code,
-                'name' => $product->name,
-                'is_active' => $product->is_active,
-            ],
+            'available' => $available,
+            'product' => ['id' => $product->id, 'code' => $product->code, 'name' => $product->name, 'is_active' => $product->is_active],
             'options' => [
-                'sizes' => $sizes->all(),
                 'availableValues' => [
-                    'size' => $sizes->pluck('id')->all(),
+                    'size' => array_values(array_unique(array_column($combos, 'size'))),
+                    'paper' => array_values(array_unique(array_column($combos, 'paper'))),
+                    'color' => array_values(array_unique(array_column($combos, 'color'))),
                 ],
+                // What can be printed together, so the page can hide a choice that does not go with the ones already made.
+                'combinations' => $combos,
             ],
-            'pricing' => [
-                'basePrice' => (float) ($offerings->min('base_price') ?? 0),
-                'methodAddon' => (float) ($methodAddon ?? 0),
-                'currency' => $offerings->first()?->currency ?? 'ILS',
-                'sheetBase' => [
-                    'A5' => 0.12,
-                    'A4' => 0.20,
-                    'A3' => 0.42,
-                ],
-                'paperMultiplier' => [
-                    'standard' => 1,
-                    'thick' => 1.55,
-                    'coated' => 2.1,
-                ],
-                'ink' => [
-                    'bw' => 0.09,
-                    'color' => 0.42,
-                ],
-            ],
+            // The lowest price among the shops that sell each binding, to show on its card ("from").
+            'bindings' => collect($bindings)->map(fn ($price, $id) => ['id' => $id, 'from' => $price])->values()->all(),
         ];
     }
+
     private function productDesigns(string $productCode, string $view, string $fallbackImage): View
     {
         $product = Product::query()

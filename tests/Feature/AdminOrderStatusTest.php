@@ -256,3 +256,21 @@ test('the orders page tells each order where it can go', function () {
         ->and($html)->not->toContain('approvePaymentButton')
         ->and($html)->toContain(route('admin.payment-notices'));
 });
+
+test('re-routing a rejected order queues the WhatsApp offer for the new shop and gives the admin its wa.me message', function () {
+    \Illuminate\Support\Facades\Queue::fake();
+    [$otherOwner, $other] = secondShop('مطبعة الأمل');
+    $other->printProvider->update(['whatsapp_number' => '0599123456']);
+    $order = orderIn('rejected');
+    $order->items()->update(['print_provider_branch_id' => $this->branch->id]);
+
+    $this->actingAs($this->admin)->postJson(route('admin.orders.reroute', $order->id), ['branch_id' => $other->id])->assertOk();
+
+    \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\SendOrderOfferToShop::class, fn ($job) => $job->orderId === $order->id && $job->printProviderId === $other->print_provider_id);
+
+    // after the page reloads, the orders page offers the message for the new shop
+    $this->actingAs($this->admin)->get(route('admin.orders'))
+        ->assertOk()
+        ->assertSee('إرسال للمطبعة')
+        ->assertSee('https://wa.me/970599123456', false);
+});

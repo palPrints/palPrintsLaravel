@@ -165,19 +165,24 @@ class DashboardController extends Controller
             ];
         }
 
+        // Waiting is counted from the day the order reached the shop (the admin approved the payment), not from when it was placed.
+        $cutoff = now()->subDays(2);
         $stale = $orders()
             ->whereIn('status', self::NEW_STATUSES)
-            ->where('created_at', '<=', now()->subDays(2))
-            ->oldest()
-            ->limit(3)
-            ->get();
+            ->where(fn ($query) => $query
+                ->whereHas('payments', fn ($payments) => $payments->where('status', 'paid')->where('paid_at', '<=', $cutoff))
+                ->orWhere(fn ($legacy) => $legacy->whereDoesntHave('payments', fn ($payments) => $payments->where('status', 'paid'))->where('created_at', '<=', $cutoff)))
+            ->with('payments')
+            ->get()
+            ->sortBy(fn (Order $order) => $order->reachedShopAt()->getTimestamp())
+            ->take(3);
 
         foreach ($stale as $order) {
             $alerts[] = [
                 'icon' => 'bi-truck',
                 'tone' => 'is-danger',
-                'title' => 'الطلب #'.$order->order_number.' ينتظر المعالجة منذ '.(int) $order->created_at->diffInDays(now()).' أيام',
-                'text' => 'راجع الطلب وابدأ التنفيذ.',
+                'title' => 'الطلب #'.$order->order_number.' ينتظر ردك منذ '.(int) $order->reachedShopAt()->diffInDays(now()).' أيام',
+                'text' => 'اقبل الطلب أو ارفضه.',
                 'action' => 'عرض الطلب',
                 'url' => route('print-provider.requests'),
             ];

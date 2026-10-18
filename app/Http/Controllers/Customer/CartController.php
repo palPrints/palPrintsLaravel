@@ -10,6 +10,7 @@ use App\Models\BranchProductOffering;
 use App\Models\PrintFile;
 use App\Models\Product;
 use App\Models\Variant;
+use App\Services\PaperPricing;
 use App\Services\PrintShopRouter;
 use App\Support\PrintingMethodOptions;
 use App\Support\CatalogProductData;
@@ -81,40 +82,57 @@ class CartController extends Controller
         ]);
     }
 
+    /**
+     * What printing the customer's paper job costs at the shop that would make it, before anything is added to the cart.
+     * The price is the shop's own paper prices applied to the job (see PaperPricing); nothing comes from the browser.
+     */
+    public function quotePaper(Request $request): JsonResponse
+    {
+        $request->validate(['job' => ['required', 'array']]);
+
+        $plan = $this->planPaper($request, (array) $request->input('job'));
+
+        return response()->json([
+            'total' => $plan['quote']['total'],
+            'printing' => $plan['quote']['printing'],
+            'binding' => $plan['quote']['binding'],
+            'lines' => $plan['quote']['lines'],
+        ]);
+    }
+
     public function storePaper(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'size' => ['required', 'in:A4,A5'],
-            'total_price' => ['required', 'numeric', 'min:0'],
+            'job' => ['required', 'string', 'max:20000'],
             'settings' => ['nullable', 'array'],
-            'files' => ['required', 'array', 'min:1'],
-            'files.*' => ['file', 'mimes:pdf,jpg,jpeg,png,docx,pptx', 'max:51200'],
+            'files' => ['required', 'array', 'min:1', 'max:'.PaperPricing::MAX_FILES],
+            'files.*' => ['file', 'mimes:pdf', 'max:51200'],
         ]);
 
-        $product = Product::where('code', 'PAPER-PRINT')->where('is_active', true)->firstOrFail();
+        $job = json_decode($validated['job'], true);
+        $uploads = array_values($request->file('files'));
 
-        $variant = Variant::where('product_id', $product->id)
-            ->where('sku', 'like', '%-'.$validated['size'])
-            ->first();
-
-        if (! $variant) {
-            throw ValidationException::withMessages([
-                'size' => 'حجم الورق غير متاح حالياً، حاول لاحقاً.',
-            ]);
+        if (! is_array($job) || count((array) ($job['files'] ?? [])) !== count($uploads)) {
+            throw ValidationException::withMessages(['job' => 'بيانات الطباعة لا تطابق الملفات المرفوعة. أعد المحاولة.']);
         }
 
-        $cart = $this->activeCart($request);
-        $router = app(PrintShopRouter::class);
-        $replacing = CartItem::where(['cart_id' => $cart->id, 'product_id' => $product->id, 'variant_id' => $variant->id, 'design_id' => null])->value('id');
+        // The pages the customer's browser counted can only go up from what this server can read in the file itself.
+        $pageCounts = [];
+        foreach ($uploads as $index => $upload) {
+            $extension = strtolower($upload->getClientOriginalExtension() ?: $upload->extension());
+            $pageCounts[$index] = $this->detectPageCount($upload, $extension);
+            $job['files'][$index]['pages'] = max((int) ($job['files'][$index]['pages'] ?? 0), (int) ($pageCounts[$index] ?? 0));
+        }
 
-        // One shop must make the whole cart, this paper job included.
-        $route = $this->routeCart($request, $cart, [$router->need($product, collect([$variant->id]), [], null)], $replacing, 'size');
-        $offering = $route['offerings'][$product->id];
+        $plan = $this->planPaper($request, $job);
+        $product = $plan['product'];
+        $offering = $plan['offering'];
+        $cart = $plan['cart'];
 
         $item = CartItem::firstOrNew([
             'cart_id' => $cart->id,
             'product_id' => $product->id,
-            'variant_id' => $variant->id,
+            'variant_id' => $plan['variant']->id,
             'design_id' => null,
         ]);
 
@@ -123,23 +141,23 @@ class CartController extends Controller
         }
 
         $settings = array_merge($validated['settings'] ?? [], [
-            'paper_size' => $validated['size'],
+            'paper_size' => strtoupper($plan['job']['files'][0]['size']),
             'branch_product_offering_id' => $offering->id,
             'print_provider_branch_id' => $offering->print_provider_branch_id,
+            'paper_job' => $plan['job'],
         ]);
 
         $item->fill([
             'item_type' => CartItem::TYPE_CUSTOMER_UPLOAD,
             'quantity' => 1,
-            'unit_price' => $validated['total_price'],
+            'unit_price' => $plan['quote']['total'],
             'selected_options' => $settings,
         ]);
         $item->save();
-        $this->applyRoute($cart, $route);
+        $this->applyRoute($cart, $plan['route']);
 
-        foreach ($request->file('files') as $file) {
+        foreach ($uploads as $index => $file) {
             $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension());
-            $pageCount = $this->detectPageCount($file, $extension);
             $filename = (string) Str::uuid().($extension ? '.'.$extension : '');
             $path = $file->storeAs('customer-print-files/tmp/'.$request->user()->id, $filename, 'local');
             $preview = $this->createPreview($file, $path, $extension, $request->user()->id);
@@ -156,13 +174,47 @@ class CartController extends Controller
                 'mime_type' => $file->getClientMimeType(),
                 'extension' => $extension,
                 'file_size' => $file->getSize(),
-                'page_count' => $pageCount,
+                'page_count' => $pageCounts[$index],
                 'status' => PrintFile::STATUS_ATTACHED_TO_CART,
                 'uploaded_at' => now(),
             ]);
         }
 
         return redirect()->route('customer.basket')->with('status', 'item-added');
+    }
+
+    /**
+     * Checks a paper job and finds the shop that makes it (one shop makes the whole cart) and what it charges.
+     *
+     * @param  array<string, mixed>  $input  the job as the customer's page sends it
+     * @return array{product: Product, job: array<string, mixed>, variant: Variant, cart: Cart, route: array, offering: BranchProductOffering, quote: array}
+     */
+    private function planPaper(Request $request, array $input): array
+    {
+        $product = Product::where('code', 'PAPER-PRINT')->where('is_active', true)->firstOrFail();
+        $pricing = app(PaperPricing::class);
+        $job = $pricing->normalizeJob($input, $product->id);
+
+        $variant = Variant::where('product_id', $product->id)->whereIn('id', $job['variant_ids'])->orderBy('id')->first();
+
+        if (! $variant) {
+            throw ValidationException::withMessages(['job' => 'حجم الورق غير متاح حالياً، حاول لاحقاً.']);
+        }
+
+        $cart = $this->activeCart($request);
+        $router = app(PrintShopRouter::class);
+        $replacing = CartItem::where(['cart_id' => $cart->id, 'product_id' => $product->id, 'variant_id' => $variant->id, 'design_id' => null])->value('id');
+
+        // One shop must make the whole cart, this paper job included.
+        $route = $this->routeCart($request, $cart, [$router->need($product, collect($job['variant_ids']), [], null, 1, null, $job)], $replacing, 'job');
+        $offering = $route['offerings'][$product->id];
+        $quote = $pricing->quote($offering, $job);
+
+        if ($quote === null) {
+            throw ValidationException::withMessages(['job' => 'المطبعة المختارة لا تقدّم هذه الخيارات حاليًا. جرّب خيارات أخرى.']);
+        }
+
+        return compact('product', 'job', 'variant', 'cart', 'route', 'offering', 'quote');
     }
 
     public function storeCatalog(Request $request): JsonResponse
@@ -180,6 +232,7 @@ class CartController extends Controller
             'groups.*.print_areas' => ['nullable', 'array'],
             'groups.*.print_areas.*' => ['string', 'max:50'],
             'groups.*.mockup' => ['nullable', 'array'],
+            'groups.*.mockups' => ['nullable', 'array', 'max:6'],
         ]);
 
         $product = Product::where('code', $validated['product_code'])->where('is_active', true)->first();
@@ -235,6 +288,7 @@ class CartController extends Controller
                 'printing_method_name' => $method['name'] ?? null,
                 // How the design looked in the preview (colour and print zone), so the cart can redraw it the same way.
                 'mockup' => $this->cleanMockup((array) ($group['mockup'] ?? []), $designFiles),
+                'mockups' => $this->cleanMockups($group['mockups'] ?? [], $designFiles),
             ]);
 
             $item = CartItem::firstOrNew([
@@ -277,6 +331,13 @@ class CartController extends Controller
             'files.*' => ['file', 'mimes:png,jpg,jpeg,webp,svg', 'max:10240'],
             'file_assets' => ['nullable', 'array', 'max:20'],
             'file_assets.*' => ['string', 'max:120'],
+            // One print-ready PNG per print area, drawn by the studio (fonts included); named by the area it prints.
+            'print_exports' => ['nullable', 'array', 'max:12'],
+            'print_exports.*' => ['file', 'mimes:png', 'max:30720'],
+            'print_export_areas' => ['nullable', 'array', 'max:12'],
+            'print_export_areas.*' => ['string', 'max:50'],
+            'print_export_ids' => ['nullable', 'array', 'max:12'],
+            'print_export_ids.*' => ['string', 'regex:/^[a-z0-9_-]{1,30}$/i'],
         ]);
 
         $groups = collect(json_decode($validated['groups'], true) ?: []);
@@ -289,6 +350,7 @@ class CartController extends Controller
             'print_areas' => ['nullable', 'array'],
             'print_areas.*' => ['string', 'max:50'],
             'mockup' => ['nullable', 'array'],
+            'mockups' => ['nullable', 'array', 'max:6'],
         ])->validate());
 
         if ($groups->isEmpty() || $groups->count() > 99) {
@@ -376,9 +438,42 @@ class CartController extends Controller
                 }
             }
 
+            // The print-ready picture of each area this line prints, kept after the customer's own files.
+            foreach ($request->file('print_exports', []) as $index => $export) {
+                $areaName = trim((string) ($validated['print_export_areas'][$index] ?? ''));
+
+                if ($areaName === '' || ! in_array($areaName, (array) ($group['print_areas'] ?? []), true)) {
+                    continue;
+                }
+
+                // The area id leads the stored name ("front--<uuid>.png"): the shop's package names its pictures after it.
+                $areaId = strtolower((string) ($validated['print_export_ids'][$index] ?? 'area'.($index + 1)));
+                $path = $export->storeAs(PrintFile::EXPORT_DIR.$user->id, $areaId.'--'.Str::uuid().'.png', 'local');
+
+                PrintFile::create([
+                    'user_id' => $user->id,
+                    'product_id' => $product->id,
+                    'cart_item_id' => $item->id,
+                    'original_name' => 'print-ready-'.str_replace(['/', '\\'], '-', $areaName).'.png',
+                    'stored_path' => $path,
+                    'disk' => 'local',
+                    'mime_type' => 'image/png',
+                    'extension' => 'png',
+                    'file_size' => $export->getSize(),
+                    'page_count' => 1,
+                    'status' => PrintFile::STATUS_ATTACHED_TO_CART,
+                    'uploaded_at' => now(),
+                ]);
+            }
+
             // How the design looked in the preview, so the cart can redraw it the same way.
-            if ($mockup = $this->cleanMockup((array) ($group['mockup'] ?? []), $assetFiles)) {
-                $item->update(['selected_options' => array_merge($item->selected_options ?? [], ['mockup' => $mockup])]);
+            $extra = array_filter([
+                'mockup' => $this->cleanMockup((array) ($group['mockup'] ?? []), $assetFiles),
+                'mockups' => $this->cleanMockups($group['mockups'] ?? [], $assetFiles),
+            ]);
+
+            if ($extra !== []) {
+                $item->update(['selected_options' => array_merge($item->selected_options ?? [], $extra)]);
             }
         }
 
@@ -418,6 +513,19 @@ class CartController extends Controller
         }
 
         return ['code' => $method['id'], 'name' => $method['name']];
+    }
+
+    /**
+     * One mockup per chosen print area, cleaned the same way as the single one.
+     *
+     * @param  array<string, string>  $assetFiles
+     * @return array<int, array<string, mixed>>
+     */
+    private function cleanMockups(mixed $mockups, array $assetFiles): array
+    {
+        return collect(is_array($mockups) ? $mockups : [])->take(6)
+            ->map(fn ($mockup) => $this->cleanMockup((array) $mockup, $assetFiles))
+            ->filter()->values()->all();
     }
 
     private function cleanMockup(array $mockup, array $assetFiles): ?array
@@ -517,7 +625,18 @@ class CartController extends Controller
             if ($offering && array_key_exists('branch_product_offering_id', $options)) {
                 $options['branch_product_offering_id'] = $offering->id;
                 $options['print_provider_branch_id'] = $offering->print_provider_branch_id;
-                $item->update(['selected_options' => $options]);
+                $update = ['selected_options' => $options];
+
+                // A paper line costs what the shop that makes it charges, so it follows the shop chosen for the whole cart.
+                if (is_array($options['paper_job'] ?? null)) {
+                    $quote = app(PaperPricing::class)->quote($offering, $options['paper_job']);
+
+                    if ($quote !== null) {
+                        $update['unit_price'] = $quote['total'];
+                    }
+                }
+
+                $item->update($update);
             }
         }
     }

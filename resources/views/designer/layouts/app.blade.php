@@ -45,6 +45,7 @@
     @stack('styles')
     <link rel="stylesheet" href="{{ $designerAsset('css/designer-laravel.css') }}">
     <link rel="stylesheet" href="{{ asset('front/shared/interactions.css').'?v='.filemtime(public_path('front/shared/interactions.css')) }}">
+    <link rel="stylesheet" href="{{ asset('front/shared/notificationPanel.css') }}?v={{ filemtime(public_path('front/shared/notificationPanel.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/shared/table-pagination.css') }}?v={{ filemtime(public_path('front/shared/table-pagination.css')) }}">
 </head>
 <body class="profile-page designer-profile-page @yield('body-class')">

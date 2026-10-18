@@ -60,7 +60,7 @@
 
         <div class="admin-nav-separator" aria-hidden="true"></div>
 
-        <a @class(['active' => request()->routeIs('admin.support')]) href="{{ route('admin.support') }}" @if (request()->routeIs('admin.support')) aria-current="page" @endif data-tooltip="الدعم الفني">
+        <a @class(['active' => request()->routeIs('admin.support', 'admin.support.*')]) href="{{ route('admin.support') }}" @if (request()->routeIs('admin.support', 'admin.support.*')) aria-current="page" @endif data-tooltip="الدعم الفني">
             <i class="bi bi-headset" aria-hidden="true"></i>
             <span>الدعم الفني</span>
             @if (($badges['admin.support'] ?? 0) > 0)<b class="admin-nav-badge" aria-label="{{ $badges['admin.support'] }} طلبات دعم جديدة">{{ $badges['admin.support'] }}</b>@endif

@@ -6,7 +6,7 @@ use App\Models\ApprovalRequest;
 use App\Models\Design;
 use App\Models\Order;
 use App\Models\WithdrawalRequest;
-use App\Support\SupportTicketStore;
+use App\Support\SupportTickets;
 use App\Support\AdminNotifier;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -43,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
                 'user.registered',
                 'مستخدم جديد',
                 sprintf('انضم %s (%s) إلى المنصة.', $user->name, $user->email),
-                route('admin.users'),
+                route('admin.users', ['open' => $user->id]),
             );
         });
 
@@ -62,7 +62,7 @@ class AppServiceProvider extends ServiceProvider
                     'admin.payments' => WithdrawalRequest::where('status', 'pending')->count(),
                     'designers' => ApprovalRequest::where('role', 'designer')->where('status', 'submitted')->count(),
                     'printShops' => ApprovalRequest::where('role', 'print_provider')->where('status', 'submitted')->count(),
-                    'admin.support' => SupportTicketStore::all()->where('status', 'new')->count(),
+                    'admin.support' => SupportTickets::pendingAdminCount(),
                 ],
             ]);
         });
@@ -73,7 +73,7 @@ class AppServiceProvider extends ServiceProvider
             $view->with([
                 'adminUnreadCount' => $user?->userNotifications()->where('is_read', false)->count() ?? 0,
                 'adminNotifications' => $user
-                    ? $user->userNotifications()->where('is_read', false)->latest()->limit(3)->get()
+                    ? $user->userNotifications()->where('is_read', false)->latest()->limit(5)->get()
                     : collect(),
             ]);
         });
@@ -84,9 +84,25 @@ class AppServiceProvider extends ServiceProvider
             $view->with([
                 'designerUnreadCount' => $user?->userNotifications()->where('is_read', false)->count() ?? 0,
                 'designerLatestNotifications' => $user
-                    ? $user->userNotifications()->where('is_read', false)->latest()->limit(3)->get()
+                    ? $user->userNotifications()->where('is_read', false)->latest()->limit(5)->get()
                     : collect(),
             ]);
+        });
+
+        // The badge on "مركز المساعدة": answers from the support team that this user has not opened yet.
+        View::composer(['designer.partials.sidebar', 'customer.partials.sidebar', 'printProvider.partials.sidebar'], function ($view): void {
+            $view->with('supportUnread', Auth::user()?->userNotifications()->where('type', 'support.reply')->where('is_read', false)->count() ?? 0);
+        });
+
+        // Orders the admin sent to this shop that wait for its accept / reject: the badge on "طلبات الطباعة".
+        View::composer('printProvider.partials.sidebar', function ($view): void {
+            $branchIds = Auth::user()?->printProvider?->branches()->pluck('id') ?? collect();
+
+            $view->with('providerNewOrders', $branchIds->isEmpty() ? 0 : Order::query()
+                ->whereIn('status', ['pending', 'processing'])
+                ->whereNotIn('payment_status', ['pending', 'pending_review', 'failed'])
+                ->whereHas('items', fn ($items) => $items->whereIn('print_provider_branch_id', $branchIds))
+                ->count());
         });
 
         View::composer('printProvider.partials.topbar', function ($view): void {

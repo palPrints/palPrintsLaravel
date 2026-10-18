@@ -33,7 +33,7 @@ test('print provider can request a withdrawal within the available balance', fun
         ->postJson(route('print-provider.earnings.withdraw'), [
             'amount' => 200,
             'method' => 'palpay',
-            'account' => '0599123456',
+            'holder' => 'مطبعة النور', 'account' => '0599123456',
         ])
         ->assertCreated();
 
@@ -45,12 +45,38 @@ test('print provider can request a withdrawal within the available balance', fun
 
 test('print provider withdrawal rejects amounts below the minimum or above the balance', function () {
     $this->actingAs($this->provider)
-        ->postJson(route('print-provider.earnings.withdraw'), ['amount' => 50, 'method' => 'palpay', 'account' => '0599123456'])
+        ->postJson(route('print-provider.earnings.withdraw'), ['amount' => 50, 'method' => 'palpay', 'holder' => 'مطبعة النور', 'account' => '0599123456'])
         ->assertUnprocessable()->assertJsonValidationErrors('amount');
 
     $this->actingAs($this->provider)
-        ->postJson(route('print-provider.earnings.withdraw'), ['amount' => 900, 'method' => 'palpay', 'account' => '0599123456'])
+        ->postJson(route('print-provider.earnings.withdraw'), ['amount' => 900, 'method' => 'palpay', 'holder' => 'مطبعة النور', 'account' => '0599123456'])
         ->assertUnprocessable()->assertJsonValidationErrors('amount');
 
     expect($this->wallet->fresh()->available_balance)->toEqual('500.00');
+});
+
+test('a withdrawal needs the account holder and a phone number, or an IBAN for the bank, and the admin sees them', function () {
+    $post = fn (array $data) => $this->actingAs($this->provider)
+        ->postJson(route('print-provider.earnings.withdraw'), $data + ['amount' => 100]);
+
+    $post(['method' => 'palpay', 'account' => '0599123456'])->assertUnprocessable()->assertJsonValidationErrors('holder');
+    $post(['method' => 'palpay', 'holder' => 'مطبعة النور', 'account' => 'PS92PALS000000000400123456702'])->assertUnprocessable()->assertJsonValidationErrors('account');
+    $post(['method' => 'jawwal-pay', 'holder' => 'مطبعة النور', 'account' => '12'])->assertUnprocessable()->assertJsonValidationErrors('account');
+    $post(['method' => 'bank-of-palestine', 'holder' => 'مطبعة النور', 'account' => 'عشوائي'])->assertUnprocessable()->assertJsonValidationErrors('account');
+    expect($this->wallet->fresh()->available_balance)->toEqual('500.00');
+
+    // the bank takes a phone number or an IBAN (spaces and small letters are fine)
+    $post(['method' => 'bank-of-palestine', 'holder' => 'مطبعة النور', 'account' => '0599123456'])->assertCreated();
+    $post(['method' => 'bank-of-palestine', 'holder' => 'مطبعة النور', 'account' => 'ps92 pals 0000 0000 0400 1234 5670 2'])->assertCreated();
+
+    $this->assertDatabaseHas('withdrawal_requests', ['user_id' => $this->provider->id, 'method' => 'bank-of-palestine']);
+    expect(\App\Models\WithdrawalRequest::latest('id')->first()->account_details)
+        ->toBe(['account' => 'PS92PALS000000000400123456702', 'holder' => 'مطبعة النور']);
+
+    $admin = User::factory()->create(['is_active' => true]);
+    $admin->assignRole('admin');
+    $this->actingAs($admin)->get(route('admin.payments'))
+        ->assertOk()
+        ->assertSee('data-payout-holder="مطبعة النور"', false)
+        ->assertSee('data-payout-account="PS92PALS000000000400123456702"', false);
 });

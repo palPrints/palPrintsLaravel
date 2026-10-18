@@ -11,6 +11,7 @@
         </a>
         <a href="{{ route('print-provider.requests') }}" @class(['active' => request()->routeIs('print-provider.requests')]) @if(request()->routeIs('print-provider.requests')) aria-current="page" @endif>
             <i class="bi bi-clipboard-check" aria-hidden="true"></i><span>طلبات الطباعة</span>
+            @if (($providerNewOrders ?? 0) > 0)<b class="wallet-nav-badge" aria-label="{{ $providerNewOrders }} طلبات جديدة بانتظار ردك">{{ $providerNewOrders }}</b>@endif
         </a>
         <a href="{{ route('print-provider.earnings') }}" @class(['active' => request()->routeIs('print-provider.earnings')]) @if(request()->routeIs('print-provider.earnings')) aria-current="page" @endif>
             <i class="bi bi-wallet2" aria-hidden="true"></i><span>الأرباح والمحفظة</span>
@@ -21,6 +22,7 @@
         </a>
         <a href="{{ route('print-provider.support') }}" @class(['active' => request()->routeIs('print-provider.support*')]) @if(request()->routeIs('print-provider.support*')) aria-current="page" @endif>
             <i class="bi bi-headphones" aria-hidden="true"></i><span>مركز المساعدة</span>
+            @if (($supportUnread ?? 0) > 0)<b class="wallet-nav-badge" aria-label="{{ $supportUnread }} ردود جديدة من الدعم">{{ $supportUnread > 99 ? '99+' : $supportUnread }}</b>@endif
         </a>
     </nav>
 

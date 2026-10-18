@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\PrintProvider;
 
+use App\Support\PayoutAccount;
 use App\Http\Controllers\Controller;
 use App\Services\WithdrawalService;
 use App\Support\PlatformSettings;
@@ -11,8 +12,6 @@ use Illuminate\View\View;
 
 class EarningsController extends Controller
 {
-    private const METHODS = ['bank-of-palestine', 'palpay', 'jawwal-pay'];
-
     public function __invoke(Request $request): View
     {
         $user = $request->user();
@@ -30,20 +29,13 @@ class EarningsController extends Controller
     {
         $minimum = $this->minimumWithdrawal();
 
-        $validated = $request->validate([
-            'amount' => ['required', 'numeric', 'min:'.$minimum],
-            'method' => ['required', 'in:'.implode(',', self::METHODS)],
-            'account' => ['required', 'string', 'regex:/^[0-9]{6,20}$/'],
-        ], [
-            'amount.min' => 'الحد الأدنى للسحب هو $'.$minimum.'.',
-            'account.regex' => 'رقم الحساب غير صالح.',
-        ]);
+        $validated = PayoutAccount::validate($request, $minimum);
 
         $withdrawal = $withdrawals->request(
             $request->user(),
             (float) $validated['amount'],
             $validated['method'],
-            ['account' => $validated['account']],
+            ['account' => $validated['account'], 'holder' => $validated['holder']],
             $minimum,
         );
 

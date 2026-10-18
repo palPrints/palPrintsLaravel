@@ -35,14 +35,15 @@ class OrderNotifier
     }
 
     /** A paid order was routed to this shop (the admin approved the payment): tells the shop's owner. */
-    public static function newOrderForShop(int $providerUserId, string $orderNumber, int $itemsCount): void
+    public static function newOrderForShop(int $providerUserId, string $orderNumber, int $itemsCount, ?int $orderId = null): void
     {
         Notification::create([
             'user_id' => $providerUserId,
             'type' => 'order.new_for_provider',
             'title' => 'طلب جديد لمطبعتك',
-            'message' => sprintf('وصلك طلب جديد رقم %s (%d منتج). راجعيه من صفحة الطلبات.', $orderNumber, $itemsCount),
-            'link' => route('print-provider.requests'),
+            // The order number is Latin text inside Arabic: isolated (LRI..PDI) so the number and the digits next to it keep their order.
+            'message' => sprintf("وصلك طلب جديد رقم \u{2066}%s\u{2069} ويحتوي على \u{2066}%d\u{2069} منتج. راجعه من صفحة طلبات الطباعة وقرّر قبوله أو رفضه.", $orderNumber, $itemsCount),
+            'link' => route('print-provider.requests', $orderId ? ['order' => $orderId] : []),
         ]);
     }
 
@@ -66,7 +67,7 @@ class OrderNotifier
             'type' => 'order.rejected_by_provider',
             'title' => 'مطبعة رفضت طلبًا',
             'message' => sprintf('رفضت المطبعة %s الطلب رقم %s. السبب: %s', $shopName ?: 'غير معروفة', $orderNumber, $reason),
-            'link' => route('admin.orders'),
+            'link' => route('admin.orders', ['open' => $orderNumber]),
         ]));
     }
 

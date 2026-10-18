@@ -14,24 +14,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 2600);
   }
 
-  document.getElementById("startChatButton")?.addEventListener("click", () => {
-    showToast("سيتم ربطك بأحد موظفي الدعم الآن.");
-  });
-
-  const fileInput = document.querySelector(".support-upload input");
-  const attachmentName = document.getElementById("attachmentName");
-  fileInput?.addEventListener("change", () => {
-    attachmentName.textContent = fileInput.files[0] ? fileInput.files[0].name : "اختيار ملف";
-  });
-
+  // Sends the ticket for real, then opens the new ticket as a chat page.
   const form = document.getElementById("supportTicketForm");
-  form?.addEventListener("reset", () => {
-    window.setTimeout(() => { attachmentName.textContent = "اختيار ملف"; }, 0);
-  });
   form?.addEventListener("submit", (event) => {
     event.preventDefault();
-    if (!form.reportValidity()) return;
-    showToast("تم إرسال طلب الدعم برقم #SUP-1043.");
-    form.reset();
+
+    const submit = form.querySelector('[type="submit"]');
+    submit.disabled = true;
+    fetch(form.dataset.action, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || "",
+      },
+      body: JSON.stringify({
+        category: form.elements.category.value,
+        reference: form.elements.reference.value,
+        subject: form.elements.subject.value,
+        message: form.elements.message.value,
+      }),
+    })
+      .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+      .then((result) => {
+        if (!result.ok) {
+          const errors = result.data.errors ? Object.values(result.data.errors).flat().join(" ") : "";
+          throw new Error(errors || result.data.message || "تعذّر إرسال الطلب.");
+        }
+        showToast(result.data.message);
+        window.setTimeout(() => { window.location.href = result.data.url; }, 900);
+      })
+      .catch((error) => { showToast(error.message || "تعذّر إرسال الطلب."); submit.disabled = false; });
   });
 });

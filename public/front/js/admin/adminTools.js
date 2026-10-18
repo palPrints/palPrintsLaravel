@@ -137,54 +137,22 @@
       });
     }
 
+    // Support inbox: rows are links to each ticket's chat page; this only filters and searches them.
     var supportRequests = Array.from(document.querySelectorAll("[data-support-request]"));
     var requestFilters = Array.from(document.querySelectorAll("[data-request-filter]"));
     var roleFilters = Array.from(document.querySelectorAll("[data-role-filter]"));
     var listStatusFilter = document.getElementById("supportListStatus");
     var requestsEmpty = document.getElementById("supportRequestsEmpty");
     var requestSearch = document.getElementById("dashboardSearch");
-    var activeRequestFilter = "all";
+    var activeRequestFilter = "active";
     var activeRoleFilter = "all";
-    var selectedRequest = supportRequests[0] || null;
 
-    function setText(id, value) { var element = document.getElementById(id); if (element) element.textContent = value; }
-    function openSupportRequest(item) {
-      if (!item) return;
-      selectedRequest = item;
-      supportRequests.forEach(function (request) { request.classList.toggle("active", request === item); });
-      setText("supportDetailAvatar", item.dataset.initials);
-      setText("supportDetailName", item.dataset.name);
-      setText("supportDetailRole", item.dataset.roleLabel);
-      setText("supportDetailId", item.dataset.id);
-      setText("supportDetailCategory", item.dataset.category);
-      setText("supportDetailTime", item.dataset.time);
-      setText("supportDetailSubject", item.dataset.subject);
-      setText("supportMessageSender", item.dataset.name);
-      setText("supportDetailMessage", item.dataset.message);
-      var email = document.getElementById("supportDetailEmail");
-      if (email) { email.textContent = item.dataset.email; email.href = "mailto:" + item.dataset.email; }
-      var status = document.getElementById("supportRequestStatus");
-      if (status) status.value = item.dataset.status;
-      var dialogStatus = document.getElementById("supportDialogStatus");
-      if (dialogStatus) { dialogStatus.className = "is-" + item.dataset.status; dialogStatus.textContent = item.dataset.status === "resolved" ? "تم الحل" : item.dataset.status === "open" ? "قيد المعالجة" : "جديدة"; }
-      var roleBadge = document.getElementById("supportDetailRole");
-      if (roleBadge) roleBadge.className = "request-role is-" + item.dataset.role;
-      var history = document.getElementById("supportReplyHistory");
-      if (history) {
-        if (item.dataset.reply) { setText("supportPreviousReply", item.dataset.reply); history.hidden = false; }
-        else history.hidden = true;
-      }
-      var replyForm = document.getElementById("supportReplyForm");
-      if (replyForm) replyForm.hidden = true;
-      var problemDialog = document.getElementById("supportProblemDialog");
-      if (problemDialog && !problemDialog.open && typeof problemDialog.showModal === "function") problemDialog.showModal();
-    }
     function filterSupportRequests() {
       var query = requestSearch ? requestSearch.value.trim().toLocaleLowerCase("ar") : "";
       var visible = 0;
       supportRequests.forEach(function (item) {
         var statusValue = listStatusFilter ? listStatusFilter.value : activeRequestFilter;
-        var filterMatch = statusValue === "all" || item.dataset.status === statusValue;
+        var filterMatch = statusValue === "all" || (statusValue === "active" ? item.dataset.status !== "resolved" : item.dataset.status === statusValue);
         var roleMatch = activeRoleFilter === "all" || item.dataset.role === activeRoleFilter;
         var haystack = [item.dataset.name, item.dataset.subject, item.dataset.category, item.dataset.message].join(" ").toLocaleLowerCase("ar");
         var match = filterMatch && roleMatch && (!query || haystack.includes(query));
@@ -193,81 +161,12 @@
       });
       if (requestsEmpty) requestsEmpty.hidden = visible !== 0;
     }
-    supportRequests.forEach(function (item) { item.addEventListener("click", function () { openSupportRequest(item); }); });
-    var supportProblemDialog = document.getElementById("supportProblemDialog");
-    var closeSupportDialog = document.getElementById("closeSupportDialog");
-    if (closeSupportDialog && supportProblemDialog) closeSupportDialog.addEventListener("click", function () { supportProblemDialog.close(); });
-    if (supportProblemDialog) supportProblemDialog.addEventListener("click", function (event) { if (event.target === supportProblemDialog) supportProblemDialog.close(); });
     requestFilters.forEach(function (button) { button.addEventListener("click", function () { activeRequestFilter = button.dataset.requestFilter; requestFilters.forEach(function (item) { item.classList.toggle("active", item === button); }); filterSupportRequests(); }); });
     roleFilters.forEach(function (button) { button.addEventListener("click", function () { activeRoleFilter = button.dataset.roleFilter; roleFilters.forEach(function (item) { item.classList.toggle("active", item === button); }); filterSupportRequests(); }); });
     if (listStatusFilter) listStatusFilter.addEventListener("change", filterSupportRequests);
+    // Solved tickets live under their own tab; the list opens on the tickets that still need attention.
+    filterSupportRequests();
     if (requestSearch && supportRequests.length) requestSearch.addEventListener("input", filterSupportRequests);
-    function syncRequestState(item, statusValue) {
-      if (!item) return;
-      item.dataset.status = statusValue;
-      setText("supportNewCount", supportRequests.filter(function (r) { return r.dataset.status === "new"; }).length);
-      var unreadMark = item.querySelector(".request-unread");
-      if (unreadMark) unreadMark.remove();
-      var state = item.querySelector(".request-state");
-      var cleanState = item.querySelector(".support-clean-status");
-      if (cleanState) {
-        cleanState.className = "support-clean-status " + (statusValue === "resolved" ? "is-resolved" : statusValue === "open" ? "is-open" : "is-new");
-        cleanState.textContent = statusValue === "resolved" ? "تم الحل" : statusValue === "open" ? "قيد المعالجة" : "جديدة";
-        var dialogBadge = document.getElementById("supportDialogStatus");
-        if (dialogBadge) { dialogBadge.className = "is-" + statusValue; dialogBadge.textContent = cleanState.textContent; }
-        return;
-      }
-      if (!state) { state = document.createElement("span"); state.className = "request-state"; item.appendChild(state); }
-      state.className = "request-state" + (statusValue === "resolved" ? " is-resolved" : "");
-      state.textContent = statusValue === "resolved" ? "تم الحل" : statusValue === "open" ? "قيد المعالجة" : "جديدة";
-    }
-    function updateTicketStatus(item, statusValue) {
-      if (!item || !item.dataset.statusUrl) return;
-      return postForm(item.dataset.statusUrl, { status: statusValue })
-        .then(function (result) {
-          if (!result.ok) throw new Error(result.data.message || "تعذّر تحديث حالة الطلب.");
-          syncRequestState(item, statusValue);
-          toast(result.data.message);
-          filterSupportRequests();
-        })
-        .catch(function (error) { toast(error.message || "تعذّر تحديث حالة الطلب."); });
-    }
-    var supportStatus = document.getElementById("supportRequestStatus");
-    if (supportStatus) supportStatus.addEventListener("change", function () { updateTicketStatus(selectedRequest, supportStatus.value); });
-    var resolveRequest = document.getElementById("resolveSupportRequest");
-    if (resolveRequest) resolveRequest.addEventListener("click", function () {
-      if (!selectedRequest) return;
-      updateTicketStatus(selectedRequest, "resolved").then(function () { if (supportStatus) supportStatus.value = "resolved"; });
-    });
-    var supportReplyForm = document.getElementById("supportReplyForm");
-    if (supportReplyForm) supportReplyForm.addEventListener("submit", function (event) {
-      event.preventDefault();
-      var reply = document.getElementById("supportReplyText");
-      if (!reply || !reply.value.trim() || !selectedRequest || !selectedRequest.dataset.reviewUrl) return;
-      var message = reply.value.trim();
-      var submitButton = supportReplyForm.querySelector('[type="submit"]');
-      if (submitButton) submitButton.disabled = true;
-      postForm(selectedRequest.dataset.reviewUrl, { message: message })
-        .then(function (result) {
-          if (!result.ok) throw new Error(result.data.message || "تعذّر إرسال الرد.");
-          selectedRequest.dataset.reply = message;
-          setText("supportPreviousReply", message);
-          var history = document.getElementById("supportReplyHistory");
-          if (history) history.hidden = false;
-          syncRequestState(selectedRequest, "open");
-          if (supportStatus) supportStatus.value = "open";
-          reply.value = "";
-          supportReplyForm.hidden = true;
-          toast(result.data.message);
-          filterSupportRequests();
-        })
-        .catch(function (error) { toast(error.message || "تعذّر إرسال الرد."); })
-        .finally(function () { if (submitButton) submitButton.disabled = false; });
-    });
-    var showSupportReply = document.getElementById("showSupportReply");
-    var cancelSupportReply = document.getElementById("cancelSupportReply");
-    if (showSupportReply && supportReplyForm) showSupportReply.addEventListener("click", function () { supportReplyForm.hidden = false; var reply = document.getElementById("supportReplyText"); if (reply) reply.focus(); });
-    if (cancelSupportReply && supportReplyForm) cancelSupportReply.addEventListener("click", function () { supportReplyForm.hidden = true; });
 
     var ticketButtons = Array.from(document.querySelectorAll("[data-ticket-filter]"));
     var priorityFilter = document.getElementById("priorityFilter");
@@ -312,6 +211,15 @@
         if (dialog && typeof dialog.showModal === "function") dialog.showModal();
       });
     });
+    // Arriving from a notification with ?open=<request id> opens that support request straight away.
+    (function () {
+      var wanted = new URLSearchParams(window.location.search).get("open");
+      if (!wanted) return;
+      window.history.replaceState(null, "", window.location.pathname);
+      var row = rows.find(function (item) { return item.dataset.id === wanted; });
+      var button = row && row.querySelector(".support-action");
+      if (button) { row.scrollIntoView({ block: "center" }); button.click(); }
+    })();
     var replyButton = document.getElementById("sendTicketReply");
     if (replyButton) replyButton.addEventListener("click", function (event) {
       var reply = document.getElementById("ticketReply");

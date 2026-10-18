@@ -28,7 +28,9 @@ test('designer withdrawal request is stored and moves wallet balance to pending'
     $this->actingAs($designer)
         ->postJson(route('designer.earnings.withdraw'), [
             'amount' => 100,
-            'method' => 'wallet',
+            'method' => 'palpay',
+            'holder' => 'سارة أحمد',
+            'account' => '0599123456',
             'notes' => 'Demo withdrawal request',
         ])
         ->assertCreated()
@@ -38,7 +40,7 @@ test('designer withdrawal request is stored and moves wallet balance to pending'
         'user_id' => $designer->id,
         'wallet_id' => $wallet->id,
         'amount' => 100,
-        'method' => 'wallet',
+        'method' => 'palpay',
         'status' => 'pending',
     ]);
 

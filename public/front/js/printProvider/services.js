@@ -12,8 +12,11 @@
     const catalogDialog = document.getElementById("catalogDialog");
     const settingsDialog = document.getElementById("settingsDialog");
     const form = document.getElementById("productSettingsForm");
+    form.noValidate = true; // mistakes are shown by our own messages (see the submit handler), not the browser bubble
     const search = document.getElementById("dashboardSearch");
     const error = document.getElementById("settingsError");
+    // Whenever an error is shown, bring the top of the dialog into view so it is not missed.
+    new MutationObserver(function () { if (!error.hidden) error.scrollIntoView({ block: "nearest" }); }).observe(error, { attributes: true, attributeFilter: ["hidden"] });
     const toast = document.getElementById("servicesToast");
     const submit = form.querySelector('[type="submit"]');
     let toastTimer;
@@ -94,6 +97,19 @@
       return settings.active ? { text: "نشط", paused: false } : { text: "موقوف مؤقتًا", paused: true };
     }
 
+    /* What the card of the paper product says: its paper types, print colours and sizes (it has no areas or printing methods). */
+    function paperRows(product, settings) {
+      const paper = product.paper || { types: [] };
+      const on = paper.types.filter(function (type) { return type.enabled; });
+      const colors = ["bw", "color"].filter(function (mode) { return on.some(function (type) { return type.ink && type.ink[mode]; }); }).length;
+      return [
+        ["clock", settings.days + (settings.days === 1 ? " يوم" : " أيام")],
+        ["box", settings.capacity + " طلب يوميًا"],
+        ["stack", on.length ? on.length + (on.length === 1 ? " نوع ورق" : " أنواع ورق") : "لم تحدد أنواع الورق بعد"],
+        ["droplet", colors ? colors + (colors === 1 ? " لون طباعة" : " ألوان طباعة") : "لم تحدد ألوان الطباعة بعد"],
+        ["grid", settings.sizes.length === 1 ? (product.sizes.find(function (size) { return size.id === settings.sizes[0]; }) || {}).label : settings.sizes.length + " مقاسات"]
+      ];
+    }
     function renderProducts() {
       const query = normalize(search ? search.value : "");
       products.replaceChildren();
@@ -116,7 +132,7 @@
         money.append(amount);
         details.append(money);
         const rows = settings.configured
-          ? [["clock", settings.days + (settings.days === 1 ? " يوم" : " أيام")], ["box", settings.capacity + " قطعة يوميًا"], ["palette", settings.colors.length + " ألوان"], ["printer", settings.methods.length + (settings.methods.length === 1 ? " طريقة طباعة" : " طرق طباعة")], ["bounding-box", settings.areas.length + (settings.areas.length === 1 ? " منطقة طباعة" : " مناطق طباعة")], ["grid", settings.sizes.length === 1 ? (product.sizes.find(function (size) { return size.id === settings.sizes[0]; }) || {}).label : settings.sizes.length + " مقاسات"]]
+          ? (product.code === "PAPER-PRINT" ? paperRows(product, settings) : [["clock", settings.days + (settings.days === 1 ? " يوم" : " أيام")], ["box", settings.capacity + " قطعة يوميًا"], ["palette", settings.colors.length + " ألوان"], ["printer", settings.methods.length + (settings.methods.length === 1 ? " طريقة طباعة" : " طرق طباعة")], ["bounding-box", settings.areas.length + (settings.areas.length === 1 ? " منطقة طباعة" : " مناطق طباعة")], ["grid", settings.sizes.length === 1 ? (product.sizes.find(function (size) { return size.id === settings.sizes[0]; }) || {}).label : settings.sizes.length + " مقاسات"]])
           : [["info-circle", "أكمل السعر ومدة الإنتاج والسعة ليظهر للعملاء"]];
         rows.forEach(function (detail) { const item = element("li"); item.append(icon(detail[0]), element("span", "", detail[1])); details.append(item); });
         const edit = element("button", "services-button services-edit"); edit.type = "button"; edit.dataset.editProduct = product.id; edit.setAttribute("aria-label", "تعديل إعدادات " + product.name); edit.append(icon("pencil-square"), element("span", "", settings.configured ? "تعديل الإعدادات" : "إكمال الإعدادات"));
@@ -142,6 +158,7 @@
       const container = document.getElementById("settingsOptions"); container.replaceChildren();
       [["colors", "الألوان المتاحة"], ["sizes", "المقاسات المتاحة"]].forEach(function (group) {
         const fieldset = element("fieldset", "services-options"); fieldset.dataset.optionGroup = group[0];
+        if (product.code === "PAPER-PRINT" && group[0] === "colors") fieldset.hidden = true;
         const legend = element("legend", "", group[1] + " "); legend.append(element("span", "services-required", "*")); fieldset.append(legend);
         product[group[0]].forEach(function (option) {
           const label = element("label", "services-choice");
@@ -152,6 +169,9 @@
         });
         container.append(fieldset);
       });
+
+      // Paper is not printed on areas and has no printing methods: it sells paper types, print colours and bindings.
+      if (product.code === "PAPER-PRINT") { container.append(paperFieldset(product)); return; }
 
       // Print areas: the ones this shop prints on, each with the largest size (cm) it can print there.
       const areas = element("fieldset", "services-options services-methods services-areas"); areas.dataset.optionGroup = "areas";
@@ -223,6 +243,109 @@
       container.append(methods);
     }
 
+    /* The paper section of the settings. A print shop prices the way it talks: "every 100 sheets cost 15 ₪", "every 10 pages
+       cost 5 ₪". For each paper type it has: the price of the blank paper in every size, and the price of printing on it
+       in black and white and/or colour (printing costs differ from one paper to another). Then the bindings it offers.
+       A size that is not ticked above has no price to enter, so its fields are switched off. */
+    function paperFieldset(product) {
+      const paper = product.paper || { types: [], bindings: [] };
+      const wrapper = element("div", "services-paper");
+      const sync = [];
+      const inks = [{ key: "bw", label: "أبيض وأسود" }, { key: "color", label: "ملوّن" }];
+
+      function numberField(min, max, step, value, label) {
+        const input = element("input"); input.type = "number"; input.min = String(min); input.max = String(max); input.step = String(step);
+        input.value = value === null || value === undefined ? "" : value; input.setAttribute("aria-label", label);
+        return input;
+      }
+
+      // "every [count] <unit> cost [price] ₪"
+      function packRow(caption, unit, pack, label) {
+        const row = element("div", "services-pack");
+        row.append(element("span", "services-pack-name", caption));
+        const line = element("span", "services-pack-line");
+        const count = numberField(1, 100000, 1, pack && pack.count, "العدد — " + label);
+        const price = numberField(0.01, 100000, 0.01, pack && pack.amount, "السعر — " + label);
+        const money = element("span", "services-pack-money"); money.append(price, element("b", "", "₪"));
+        line.append(element("span", "", "كل"), count, element("span", "", unit), element("span", "", "بـ"), money);
+        row.append(line);
+        if (pack && pack.since) row.append(element("small", "services-paper-since", "آخر تحديث " + pack.since));
+        return { row: row, inputs: [count, price], count: count, price: price };
+      }
+
+      function section(title, hint, required) {
+        const fieldset = element("fieldset", "services-options services-methods");
+        const legend = element("legend", "", title + " ");
+        if (required) legend.append(element("span", "services-required", "*"));
+        fieldset.append(legend, element("p", "services-methods-hint", hint));
+        wrapper.append(fieldset);
+        return fieldset;
+      }
+
+      // 1. The paper types, each with the blank paper per size and the printing on it per colour.
+      const typesBox = section("أنواع الورق المتوفرة وأسعارها", "فعّل أنواع الورق التي عندك. لكل نوع اكتب سعر الطباعة عليه (مثلًا: كل 10 ورقات مطبوعة بـ 5 ₪) أبيض وأسود و/أو ملوّن، وسعر الطباعة بيختلف من نوع ورق لنوع. السعر يبقى ساريًا حتى تغيّره، وتقدر تحدّثه أي يوم، والأسعار القديمة تبقى محفوظة.", true);
+      paper.types.forEach(function (type) {
+        const card = element("div", "services-method services-paper-type");
+        const head = element("label", "services-method-name");
+        const typeBox = element("input"); typeBox.type = "checkbox"; typeBox.name = "paper_types"; typeBox.value = type.key; typeBox.checked = type.enabled;
+        head.append(typeBox, element("span", "", type.label));
+
+        const printing = element("div", "services-paper-block");
+        printing.append(element("strong", "services-paper-title", "سعر الطباعة على هذا الورق"));
+        const inkRows = inks.map(function (mode) {
+          const saved = type.ink ? type.ink[mode.key] : null;
+          const line = element("div", "services-paper-ink");
+          const label = element("label", "services-method-name");
+          const box = element("input"); box.type = "checkbox"; box.checked = Boolean(saved);
+          label.append(box, element("span", "", mode.label));
+          const made = packRow("", "ورقة مطبوعة", saved, type.label + " — طباعة " + mode.label);
+          made.inputs.forEach(function (input, index) { input.dataset.paperField = "ink"; input.dataset.paperType = type.key; input.dataset.paperKey = mode.key; input.dataset.paperPart = index === 0 ? "count" : "price"; });
+          line.append(label, made.row);
+          printing.append(line);
+          return { box: box, inputs: made.inputs };
+        });
+
+        sync.push(function (ticked) {
+          inkRows.forEach(function (row) { row.inputs.forEach(function (input) { const active = typeBox.checked && row.box.checked; input.disabled = !active; input.required = active; }); row.box.disabled = !typeBox.checked; });
+        });
+
+        card.append(head, printing);
+        typesBox.append(card);
+      });
+
+      // 2. The bindings: one price each (optional).
+      const bindingsBox = section("التغليف المتوفر وسعره", "فعّل أنواع التغليف التي تقدمها واكتب سعر كل واحد. «بدون تغليف» متاح دائمًا ومجاني. إذا ما فعّلت شيئًا فالزبون ما بيشوف أي تغليف عندك.", false);
+      paper.bindings.forEach(function (item) {
+        const row = element("div", "services-method");
+        const label = element("label", "services-method-name");
+        const check = element("input"); check.type = "checkbox"; check.checked = item.enabled;
+        label.append(check, element("span", "", item.label));
+        const prices = element("div", "services-method-prices");
+        const field = element("label", "services-method-price");
+        field.append(element("small", "", "سعر التغليف"));
+        const wrap = element("span", "services-method-input");
+        const input = numberField(0, 1000, 0.01, item.price && item.price.amount, "سعر التغليف — " + item.label);
+        input.dataset.paperBinding = item.key;
+        wrap.append(input, element("b", "", "₪"));
+        field.append(wrap);
+        if (item.price && item.price.since) field.append(element("small", "services-paper-since", "آخر تحديث " + item.price.since));
+        prices.append(field);
+        sync.push(function () { input.disabled = !check.checked; input.required = check.checked; });
+        check.addEventListener("change", function () { if (check.checked && input.value === "") input.focus(); });
+        row.append(label, prices);
+        bindingsBox.append(row);
+      });
+
+      function refresh() {
+        const ticked = new Set(Array.from(form.querySelectorAll('input[name="sizes"]:checked')).map(function (input) { return input.value; }));
+        sync.forEach(function (apply) { apply(ticked); });
+      }
+      wrapper.addEventListener("change", refresh);
+      form.addEventListener("change", function (event) { if (event.target.name === "sizes") refresh(); });
+      refresh();
+      return wrapper;
+    }
+
     function openSettings(id, origin, fromCatalog) {
       const product = find(id);
       const existing = product.settings;
@@ -237,7 +360,9 @@
       if (catalogDialog.open) catalogDialog.close();
       const preview = document.getElementById("settingsPreview"); preview.replaceChildren(artwork(product), element("h3", "", product.name), element("p", "services-category", product.category), element("p", "", "لا يمكن تغيير اسم المنتج أو صورته."));
       form.elements.price.value = draft.price == null ? "" : draft.price; form.elements.days.value = draft.days == null ? "" : draft.days; form.elements.capacity.value = draft.capacity == null ? "" : draft.capacity;
-      error.hidden = true; renderOptions(product, draft); settingsDialog.showModal();
+      // For paper the price field is the least a customer pays for one order (the rest comes from the paper, colour and binding prices).
+      document.getElementById("productPriceLabel").textContent = product.code === "PAPER-PRINT" ? "أقل مبلغ للطلب" : "سعر المنتج الأساسي";
+      error.hidden = true; renderOptions(product, draft); clearSectionErrors(); settingsDialog.showModal();
       form.elements.capacity.focus();
     }
 
@@ -284,22 +409,74 @@
     });
     [catalogDialog, settingsDialog].forEach(function (dialog) { dialog.addEventListener("click", function (event) { const rect = dialog.getBoundingClientRect(); if (event.target !== dialog || (event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom)) return; if (dialog === settingsDialog) closeSettings(); else { dialog.close(); document.getElementById("openCatalog").focus(); } }); });
 
+    // A mistake is shown above the section it belongs to (colours, sizes, areas, methods, one paper type...), not at the bottom.
+    function clearSectionErrors() { form.querySelectorAll(".services-section-error").forEach(function (node) { node.remove(); }); }
+    function sectionError(message, field, before) {
+      const place = before || field.closest("fieldset") || field.parentElement;
+      const note = element("p", "services-form-error services-section-error", message); note.setAttribute("role", "alert");
+      place.before(note);
+      showSectionError(note);
+      field.focus({ preventScroll: true });
+    }
+    // Take the shop to the first mistake: scroll the dialog so the message is at the top, and flash it.
+    function showSectionError(note) {
+      window.requestAnimationFrame(function () {
+        note.scrollIntoView({ block: "start", behavior: "smooth" });
+        note.classList.remove("is-flashing"); void note.offsetWidth; note.classList.add("is-flashing");
+      });
+    }
+
     form.addEventListener("submit", function (event) {
       event.preventDefault();
-      if (!draft || !form.reportValidity()) return;
+      clearSectionErrors(); error.hidden = true;
+      if (!draft) return;
+      // The browser's own little bubble is not used: a required or wrong field gets our message above its row.
+      const bad = form.querySelector("input:invalid:not(:disabled)");
+      if (bad) {
+        const name = bad.getAttribute("aria-label") || (bad.closest("label") && bad.closest("label").firstChild && bad.closest("label").firstChild.textContent.trim()) || "";
+        const what = bad.validity.valueMissing ? "هذا الحقل مطلوب، اكتب قيمته." : bad.validity.stepMismatch || bad.validity.badInput ? "اكتب رقمًا صحيحًا في هذا الحقل." : bad.validity.rangeUnderflow || bad.validity.rangeOverflow ? "القيمة خارج المسموح (من " + bad.min + " إلى " + bad.max + ")." : "قيمة هذا الحقل غير صحيحة.";
+        sectionError((name ? "«" + name + "»: " : "") + what, bad, bad.closest(".services-paper-ink, .services-number-fields") || bad.closest("fieldset") || bad.parentElement);
+        return;
+      }
       const body = { price: Number(form.elements.price.value), days: Number(form.elements.days.value), capacity: Number(form.elements.capacity.value) };
       let emptyGroup = null;
       ["colors", "sizes"].forEach(function (group) { body[group] = Array.from(form.querySelectorAll('input[name="' + group + '"]:checked')).map(function (input) { return input.value; }); if (!body[group].length && !emptyGroup) emptyGroup = group; });
-      if (emptyGroup) { error.textContent = "اختر خيارًا واحدًا على الأقل من كل مجموعة متاحة."; error.hidden = false; form.querySelector('input[name="' + emptyGroup + '"]').focus(); return; }
-      body.areas = Array.from(form.querySelectorAll('input[name="areas"]:checked')).map(function (input) {
-        return { code: input.value, width_cm: Number(form.querySelector('[data-area-width="' + input.value + '"]').value), height_cm: Number(form.querySelector('[data-area-height="' + input.value + '"]').value) };
-      });
-      if (!body.areas.length) { error.textContent = "اختر منطقة طباعة واحدة على الأقل."; error.hidden = false; form.querySelector('input[name="areas"]').focus(); return; }
-      body.methods = Array.from(form.querySelectorAll('input[name="methods"]:checked')).map(function (input) {
-        const price = form.querySelector('[data-method-price="' + input.value + '"]'), rate = form.querySelector('[data-method-rate="' + input.value + '"]');
-        return { id: Number(input.value), price: Number(price.value), rate: Number(rate.value || 0) };
-      });
-      if (!body.methods.length) { error.textContent = "اختر طريقة طباعة واحدة على الأقل وحدد سعرها."; error.hidden = false; form.querySelector('input[name="methods"]').focus(); return; }
+      if (emptyGroup) { sectionError("اختر خيارًا واحدًا على الأقل من هذه المجموعة.", form.querySelector('input[name="' + emptyGroup + '"]')); return; }
+      if (find(draft.id).code === "PAPER-PRINT") {
+        // Paper: for every type that is on, "every N sheets cost X" per size and "every N pages cost X" per colour; and the bindings.
+        body.paper_types = Array.from(form.querySelectorAll('input[name="paper_types"]:checked')).map(function (input) { return input.value; });
+        if (!body.paper_types.length) { sectionError("فعّل نوع ورق واحدًا على الأقل.", form.querySelector('input[name="paper_types"]')); return; }
+        body.paper_prices = {}; body.paper_ink = {}; body.paper_bindings = {};
+        const target = { sheet: body.paper_prices, ink: body.paper_ink };
+        form.querySelectorAll("input[data-paper-field]:not(:disabled)").forEach(function (input) {
+          const group = target[input.dataset.paperField];
+          const pack = (group[input.dataset.paperType] = group[input.dataset.paperType] || {});
+          (pack[input.dataset.paperKey] = pack[input.dataset.paperKey] || {})[input.dataset.paperPart] = Number(input.value);
+        });
+        form.querySelectorAll("input[data-paper-binding]:not(:disabled)").forEach(function (input) { body.paper_bindings[input.dataset.paperBinding] = Number(input.value); });
+        const noPrinting = body.paper_types.filter(function (type) { return !body.paper_ink[type]; });
+        if (noPrinting.length) {
+          // one message above the printing prices of every paper type that has none
+          noPrinting.forEach(function (type) {
+            const box = form.querySelector('input[name="paper_types"][value="' + type + '"]');
+            const block = box.closest(".services-paper-type").querySelector(".services-paper-block");
+            const note = element("p", "services-form-error services-section-error", "فعّل طباعة أبيض وأسود أو ملوّن واكتب سعرها، أو أطفئ هذا النوع من الورق."); note.setAttribute("role", "alert");
+            block.before(note);
+          });
+          showSectionError(form.querySelector(".services-section-error"));
+          return;
+        }
+      } else {
+        body.areas = Array.from(form.querySelectorAll('input[name="areas"]:checked')).map(function (input) {
+          return { code: input.value, width_cm: Number(form.querySelector('[data-area-width="' + input.value + '"]').value), height_cm: Number(form.querySelector('[data-area-height="' + input.value + '"]').value) };
+        });
+        if (!body.areas.length) { sectionError("اختر منطقة طباعة واحدة على الأقل.", form.querySelector('input[name="areas"]')); return; }
+        body.methods = Array.from(form.querySelectorAll('input[name="methods"]:checked')).map(function (input) {
+          const price = form.querySelector('[data-method-price="' + input.value + '"]'), rate = form.querySelector('[data-method-rate="' + input.value + '"]');
+          return { id: Number(input.value), price: Number(price.value), rate: Number(rate.value || 0) };
+        });
+        if (!body.methods.length) { sectionError("اختر طريقة طباعة واحدة على الأقل وحدد سعرها.", form.querySelector('input[name="methods"]')); return; }
+      }
       const id = draft.id, isNew = !find(id).settings;
       submit.disabled = true;
       request("PUT", url(config.saveUrl, id), body).then(function (data) {

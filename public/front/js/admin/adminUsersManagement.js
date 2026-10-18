@@ -267,6 +267,27 @@
       rejectReasonInput.focus();
     }
 
+    /* Suspend / activate is saved on the server; the screen follows the answer. */
+    function toggleAccount(entry, doneMessage) {
+      return window.fetch(entry.toggleUrl, {
+        method: "POST",
+        headers: { "Accept": "application/json", "X-CSRF-TOKEN": csrf ? csrf.content : "" }
+      })
+        .then(function (response) {
+          return response.json().then(function (body) { return { ok: response.ok, body: body }; });
+        })
+        .then(function (result) {
+          if (!result.ok) throw new Error(result.body.message || "تعذّر تنفيذ الإجراء.");
+          entry.status = result.body.status;
+          renderFilters();
+          renderUsers();
+          toast(doneMessage(entry.status));
+        })
+        .catch(function (error) {
+          toast(error.message || "تعذّر تنفيذ الإجراء.");
+        });
+    }
+
     function reviewAccountRequest(entry, action, reason) {
       if (!entry.reviewUrl) return;
 
@@ -314,10 +335,19 @@
     }
 
     const initialHash = window.location.hash.replace("#", "");
-    selectUserType(initialHash === "designers" ? "designers" : initialHash === "print-shops" ? "printShops" : "customers", false);
-
-    // Arriving from the dashboard with ?open=<user id> expands that designer / print shop and scrolls to it.
     const openUserId = new URLSearchParams(window.location.search).get("open");
+    // With ?open=<user id> (from the dashboard or a notification) the list that holds that user is the one shown.
+    const openedType = openUserId ? ["designers", "printShops", "customers"].find(function (key) {
+      return userTypes[key].users.some(function (user) { return String(user.userId) === openUserId; });
+    }) : null;
+    selectUserType(openedType || (initialHash === "designers" ? "designers" : initialHash === "print-shops" ? "printShops" : "customers"), Boolean(openedType));
+
+    // The user is expanded (designer / print shop) or its details opened (customer), and scrolled to.
+    if (openUserId && activeUserType === "customers") {
+      const customerIndex = userTypes.customers.users.findIndex(function (user) { return String(user.userId) === openUserId; });
+      if (customerIndex >= 0) openCustomerDetails(customerIndex);
+      window.history.replaceState(null, "", window.location.pathname + window.location.hash);
+    }
     if (openUserId && (activeUserType === "designers" || activeUserType === "printShops")) {
       const found = userTypes[activeUserType].users.findIndex(function (user) { return String(user.userId) === openUserId; });
       if (found >= 0) {
@@ -365,10 +395,7 @@
       const disablePrintShop = event.target.closest("[data-disable-print-shop]");
       if (disablePrintShop) {
         const shop = userTypes.printShops.users[Number(disablePrintShop.dataset.disablePrintShop)];
-        shop.status = shop.status === "suspended" ? "active" : "suspended";
-        renderFilters();
-        renderUsers();
-        toast(shop.status === "suspended" ? "تم تعطيل حساب المطبعة." : "تم تفعيل حساب المطبعة.");
+        toggleAccount(shop, function (status) { return status === "suspended" ? "تم تعطيل حساب المطبعة." : "تم تفعيل حساب المطبعة."; });
         return;
       }
       const designerTab = event.target.closest("[data-designer-tab]");
@@ -391,10 +418,7 @@
       const disableDesigner = event.target.closest("[data-disable-designer]");
       if (disableDesigner) {
         const designer = userTypes.designers.users[Number(disableDesigner.dataset.disableDesigner)];
-        designer.status = designer.status === "suspended" ? "active" : "suspended";
-        renderFilters();
-        renderUsers();
-        toast(designer.status === "suspended" ? "تم تعطيل حساب المصمم." : "تم تفعيل حساب المصمم.");
+        toggleAccount(designer, function (status) { return status === "suspended" ? "تم تعطيل حساب المصمم." : "تم تفعيل حساب المصمم."; });
         return;
       }
       const row = event.target.closest("[data-customer-index]");
@@ -447,11 +471,8 @@
     });
     customerDisableButton.addEventListener("click", function () {
       const customer = userTypes.customers.users[Number(customerDisableButton.dataset.customerIndex)];
-      customer.status = customer.status === "suspended" ? "active" : "suspended";
       customerDialog.close();
-      renderFilters();
-      renderUsers();
-      toast(customer.status === "suspended" ? "تم تعطيل حساب العميل." : "تم تفعيل حساب العميل.");
+      toggleAccount(customer, function (status) { return status === "suspended" ? "تم تعطيل حساب العميل." : "تم تفعيل حساب العميل."; });
     });
   }
 

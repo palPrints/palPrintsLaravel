@@ -3,95 +3,118 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Notification;
-use App\Models\User;
-use App\Support\SupportTicketStore;
+use App\Models\SupportTicket;
+use App\Support\SupportTickets;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class SupportController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View|RedirectResponse
     {
-        $tickets = SupportTicketStore::all()->map(fn (array $ticket) => $this->present($ticket));
+        // Old notification links open a ticket as ?open=<id>; tickets now have their own page.
+        if ($request->filled('open') && ($ticket = SupportTicket::find($request->query('open')))) {
+            return redirect()->route('admin.support.show', $ticket);
+        }
+
+        $tickets = SupportTicket::with(['user', 'messages'])
+            ->latest('last_reply_at')
+            ->latest('id')
+            ->get()
+            ->map(fn (SupportTicket $ticket) => $this->present($ticket));
 
         return view('admin.support', [
             'tickets' => $tickets,
-            'newCount' => $tickets->where('status', 'new')->count(),
+            'newCount' => SupportTickets::pendingAdminCount(),
+            'counts' => [
+                'active' => $tickets->where('status', '!=', 'resolved')->count(),
+                'all' => $tickets->count(),
+                'new' => $tickets->where('status', 'new')->count(),
+                'open' => $tickets->where('status', 'open')->count(),
+                'resolved' => $tickets->where('status', 'resolved')->count(),
+            ],
         ]);
     }
 
-    public function reply(Request $request, string $ticket): JsonResponse
+    public function show(Request $request, SupportTicket $ticket): View
+    {
+        $ticket->load(['user', 'messages']);
+
+        SupportTickets::markSeen($ticket, $request->user());
+
+        return view('admin.support-chat', [
+            'ticket' => $ticket,
+            'thread' => SupportTickets::thread($ticket),
+            'person' => $this->present($ticket),
+        ]);
+    }
+
+    public function messages(SupportTicket $ticket): JsonResponse
+    {
+        return response()->json(['ticket' => SupportTickets::thread($ticket)]);
+    }
+
+    public function reply(Request $request, SupportTicket $ticket): JsonResponse
     {
         $validated = $request->validate([
             'message' => ['required', 'string', 'max:2000'],
         ]);
 
-        $record = SupportTicketStore::find($ticket);
-        abort_if($record === null, 404);
+        // A solved ticket is reopened on purpose (the status button), not by answering it.
+        if ($ticket->status === SupportTicket::STATUS_CLOSED) {
+            return response()->json(['message' => 'هذه التذكرة محلولة، أعد فتحها أولًا للرد عليها.'], 422);
+        }
 
-        $updated = SupportTicketStore::update($ticket, [
-            'status' => 'open',
-            'reply' => $validated['message'],
-            'replied_at' => now()->toIso8601String(),
+        SupportTickets::replyAsAdmin($ticket, $request->user(), trim($validated['message']));
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'تم إرسال الرد إلى المستخدم.',
+            'ticket' => SupportTickets::thread($ticket->fresh()),
         ]);
-
-        $this->notifyUser($record, 'تم الرد على طلب الدعم', $validated['message']);
-
-        return response()->json(['ok' => true, 'message' => 'تم إرسال الرد إلى المستخدم.', 'ticket' => $this->present($updated)]);
     }
 
-    public function updateStatus(Request $request, string $ticket): JsonResponse
+    public function updateStatus(Request $request, SupportTicket $ticket): JsonResponse
     {
         $validated = $request->validate([
             'status' => ['required', Rule::in(['new', 'open', 'resolved'])],
         ]);
 
-        $record = SupportTicketStore::find($ticket);
-        abort_if($record === null, 404);
+        SupportTickets::setStatus($ticket, $validated['status']);
 
-        $updated = SupportTicketStore::update($ticket, ['status' => $validated['status']]);
-
-        if ($validated['status'] === 'resolved') {
-            $this->notifyUser($record, 'تم حل طلب الدعم', 'تم تحديد طلبك «'.$record['subject'].'» كمحلول من فريق الدعم.');
-        }
-
-        return response()->json(['ok' => true, 'message' => 'تم تحديث حالة الطلب.', 'ticket' => $this->present($updated)]);
-    }
-
-    private function notifyUser(array $ticket, string $title, string $message): void
-    {
-        if (empty($ticket['user_id'])) {
-            return;
-        }
-
-        $recipient = User::find($ticket['user_id']);
-        $route = match (true) {
-            $recipient?->hasRole('customer') => 'customer.support',
-            default => 'designer.support',
-        };
-
-        Notification::create([
-            'user_id' => $ticket['user_id'],
-            'type' => 'support.reply',
-            'title' => $title,
-            'message' => $message,
-            'link' => route($route),
+        return response()->json([
+            'ok' => true,
+            'message' => 'تم تحديث حالة الطلب.',
+            'ticket' => SupportTickets::thread($ticket->fresh()),
         ]);
     }
 
-    private function present(array $ticket): array
+    private function present(SupportTicket $ticket): array
     {
-        $created = Carbon::parse($ticket['created_at']);
+        $role = SupportTickets::roleKey($ticket->user);
+        $name = (string) ($ticket->user?->name ?? '—');
 
-        return array_merge($ticket, [
-            'initials' => mb_substr(trim((string) $ticket['name']), 0, 1) ?: '؟',
-            'time' => $created->locale('ar')->diffForHumans(),
-            'reviewUrl' => route('admin.support.reply', $ticket['id']),
-            'statusUrl' => route('admin.support.status', $ticket['id']),
-        ]);
+        return [
+            'id' => $ticket->id,
+            'number' => $ticket->ticket_number,
+            'role' => $role,
+            'role_label' => SupportTickets::ROLES[$role]['label'],
+            'name' => $name,
+            'initials' => mb_substr(trim($name), 0, 1) ?: '؟',
+            'email' => (string) $ticket->user?->email,
+            'subject' => $ticket->subject,
+            'category' => $ticket->category,
+            'status' => SupportTickets::statusKey($ticket),
+            'message' => (string) $ticket->messages->first()?->message,
+            'time' => $ticket->created_at?->locale('ar')->diffForHumans(),
+            'last' => ($ticket->last_reply_at ?? $ticket->created_at)?->locale('ar')->diffForHumans(),
+            'count' => $ticket->messages->count(),
+            'url' => route('admin.support.show', $ticket),
+            'replyUrl' => route('admin.support.reply', $ticket),
+            'statusUrl' => route('admin.support.status', $ticket),
+        ];
     }
 }

@@ -42,23 +42,8 @@
                 <i class="bi bi-bell" aria-hidden="true"></i>
                 <span class="counter notification-counter" id="notificationCounter" @if ($unreadNotificationsCount === 0) hidden @endif>{{ $unreadNotificationsCount }}</span>
             </button>
-            <div class="notification-dropdown admin-notification-dropdown" id="notificationDropdown" role="menu" aria-label="قائمة الإشعارات" hidden>
-                <div class="notification-dropdown-header">
-                    <h3>الإشعارات</h3>
-                </div>
-                <ul class="notification-list" id="notificationList">
-                    @forelse ($notifications as $notification)
-                        <li>
-                            <a class="notification-link" href="{{ $notification->link ?: '#' }}" @if (! $notification->link) tabindex="-1" @endif>
-                                <span class="notification-item-icon is-blue"><i class="bi {{ \App\Support\AdminNotifier::CATEGORIES[\App\Support\AdminNotifier::categoryOf($notification->type)]['icon'] ?? 'bi-bell' }}" aria-hidden="true"></i></span>
-                                <div><strong>{{ $notification->title }}</strong><small>{{ $notification->created_at->locale('ar')->diffForHumans() }}</small></div>
-                            </a>
-                        </li>
-                    @empty
-                        <li class="notification-empty">لا توجد إشعارات حاليًا.</li>
-                    @endforelse
-                </ul>
-                <a class="notification-view-all" href="{{ route('admin.notifications') }}">عرض كل الإشعارات</a>
+            <div class="notification-dropdown admin-notification-dropdown pp-notif-host" id="notificationDropdown" role="menu" aria-label="قائمة الإشعارات" hidden>
+                @include('partials.notification-panel', ['items' => $notifications, 'readRoute' => 'admin.notifications.read', 'allUrl' => route('admin.notifications'), 'unread' => $unreadNotificationsCount, 'listId' => 'notificationList'])
             </div>
         </div>
     </div>

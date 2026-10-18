@@ -34,6 +34,8 @@ body.sidebar-collapsed .wallet-shell{margin-right:0}
 .wallet-sidebar nav a:hover i{color:var(--blue);transform:scale(1.08)}
 .wallet-sidebar nav a.active{color:#fff;background:linear-gradient(100deg,#5b9fff,#1677ff);box-shadow:0 6px 16px rgb(22 119 255 / 24%)}
 .wallet-sidebar nav a.active i{color:#fff}
+.wallet-nav-badge{min-width:21px;height:21px;display:grid;place-items:center;margin-inline-start:auto;padding-inline:5px;color:#fff;background:#e5484d;border-radius:999px;font-size:11px;font-weight:800}
+.wallet-sidebar nav a.active .wallet-nav-badge{color:#e5484d;background:#fff}
 .wallet-sidebar nav a.active:hover{color:#fff;background:linear-gradient(100deg,#3287ff,#0a68eb);transform:translateY(-3px);box-shadow:0 9px 20px rgb(22 119 255 / 30%)}
 .wallet-sidebar nav a.active:hover i{color:#fff}
 .logout{border-radius:8px;transition:background-color .18s ease,transform .18s ease}
@@ -136,6 +138,8 @@ body.sidebar-collapsed .wallet-shell{margin-right:0}
   body.sidebar-collapsed .logout{justify-content:center;gap:0;padding-inline:0}
   body.sidebar-collapsed .wallet-sidebar nav a span,
   body.sidebar-collapsed .logout span{display:none}
+  body.sidebar-collapsed .wallet-sidebar nav a{position:relative}
+  body.sidebar-collapsed .wallet-nav-badge{position:absolute;inset-block-start:2px;inset-inline-start:2px;min-width:17px;height:17px;margin:0;padding-inline:3px;border:2px solid #fff;font-size:8px}
   body.sidebar-collapsed .wallet-sidebar nav a i,
   body.sidebar-collapsed .logout i{width:24px;font-size:20px}
   body.sidebar-collapsed .wallet-sidebar-divider{margin-inline:4px}
@@ -182,3 +186,8 @@ body.sidebar-collapsed .wallet-shell{margin-right:0}
 }
 
 .empty-row{height:110px;color:#7087a0;text-align:center!important;font-size:13px}.empty-row i{display:block;margin-bottom:6px;color:#a9bdd3;font-size:30px}
+
+.dialog-body .field-error{display:flex;align-items:center;gap:6px;margin-top:2px;padding:7px 10px;border-radius:8px;background:#fff1f0;color:#c0392b;border:1px solid #f5c2bd;font-size:12px;font-weight:700;line-height:1.5}
+.dialog-body .field-error::before{content:"!";display:grid;place-items:center;flex:none;width:16px;height:16px;border-radius:50%;background:#e74c3c;color:#fff;font-size:11px;font-weight:900}
+.dialog-body input[aria-invalid="true"],.payout-account-field:has(input[aria-invalid="true"]),.amount-field:has(input[aria-invalid="true"]){border-color:#e74c3c}
+html[data-bs-theme="dark"] .field-error{background:#3a1f22;border-color:#7a3a3f;color:#ffb4ab}

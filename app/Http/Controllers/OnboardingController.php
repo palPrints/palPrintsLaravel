@@ -82,7 +82,7 @@ class OnboardingController extends Controller
                     'type' => 'approval.pending',
                     'title' => 'طلب اعتماد جديد من '.$roleLabel.': '.$user->name,
                     'message' => 'أرسل '.$user->name.' ('.$roleLabel.') طلب اعتماد بانتظار المراجعة. رقم الطلب: '.$approvalRequest->request_number,
-                    'link' => route('admin.users'),
+                    'link' => route('admin.users', ['open' => $user->id]),
                 ])
             );
 

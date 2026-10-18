@@ -98,7 +98,7 @@ class CheckoutService
                 'order.payment_review',
                 'إشعار دفع جديد بانتظار المراجعة',
                 sprintf('طلب جديد رقم %s من %s بقيمة %s ₪. راجع إشعار الدفع ووجّه الطلب لمطبعة.', $order->order_number, $user->name, number_format($totalAmount, 2)),
-                route('admin.payment-notices'),
+                route('admin.payment-notices', ['order' => $order->order_number]),
             );
 
             $cart->update([

@@ -21,17 +21,8 @@ document.addEventListener("DOMContentLoaded",function(){
     const counterObserver=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){animateCounter(entry.target);counterObserver.unobserve(entry.target)}})},{threshold:.45});
     counters.forEach(function(counter){counterObserver.observe(counter)});
   }
-  const notificationButton=document.getElementById("notificationButton"),notificationDropdown=document.getElementById("notificationDropdown"),notificationCounter=document.getElementById("notificationCounter"),notificationList=document.getElementById("notificationList");
+  const notificationButton=document.getElementById("notificationButton"),notificationDropdown=document.getElementById("notificationDropdown");
   const accountButton=document.getElementById("accountButton"),accountDropdown=document.getElementById("accountDropdown");
-  let unreadNotifications=0;
-  function shakeNotificationBell(){notificationButton.classList.remove("is-shaking");void notificationButton.offsetWidth;notificationButton.classList.add("is-shaking");setTimeout(function(){notificationButton.classList.remove("is-shaking")},600)}
-  function pushNotification(message){
-    if(notificationList.querySelector(".notification-empty"))notificationList.innerHTML="";
-    const item=document.createElement("li");item.className="notification-item";item.textContent=message;notificationList.prepend(item);
-    unreadNotifications+=1;notificationCounter.hidden=false;notificationCounter.textContent=unreadNotifications>9?"9+":String(unreadNotifications);shakeNotificationBell();
-  }
-  window.PalWalletNotification=pushNotification;
-  window.addEventListener("palprints:notification",function(event){pushNotification(event.detail&&event.detail.message?event.detail.message:"لديك إشعار جديد")});
   function closeAccountMenu(){accountDropdown.classList.remove("open");accountDropdown.hidden=true;accountButton.setAttribute("aria-expanded","false")}
   function closeNotificationMenu(){notificationDropdown.classList.remove("open");notificationDropdown.hidden=true;notificationButton.setAttribute("aria-expanded","false")}
   accountButton.addEventListener("click",function(event){event.stopPropagation();const open=!accountDropdown.classList.contains("open");closeNotificationMenu();accountDropdown.classList.toggle("open",open);accountDropdown.hidden=!open;accountButton.setAttribute("aria-expanded",String(open))});
@@ -44,9 +35,9 @@ document.addEventListener("DOMContentLoaded",function(){
   })});
   const dialog=document.getElementById("withdrawDialog"),amount=document.getElementById("withdrawAmount"),payoutAccount=document.getElementById("payoutAccount"),payoutAccountLabel=document.getElementById("payoutAccountLabel"),payoutAccountHint=document.getElementById("payoutAccountHint");
   const payoutMethods={
-    "bank-of-palestine":{label:"رقم حساب بنك فلسطين",placeholder:"أدخل رقم الحساب البنكي",hint:"أدخل رقم الحساب المرتبط بفرع بنك فلسطين.",pattern:"[0-9]{6,20}"},
-    "palpay":{label:"رقم حساب PalPay",placeholder:"أدخل رقم حساب PalPay",hint:"أدخل رقم الحساب المرتبط بمحفظة PalPay.",pattern:"[0-9]{9,10}"},
-    "jawwal-pay":{label:"رقم حساب جوال بي",placeholder:"أدخل رقم حساب جوال بي",hint:"أدخل رقم الحساب المرتبط بمحفظة جوال بي.",pattern:"[0-9]{9,10}"}
+    "bank-of-palestine":{label:"رقم الهاتف أو IBAN",placeholder:"رقم الهاتف أو IBAN (يبدأ بـ PS)",hint:"أدخل رقم هاتفك المرتبط بالحساب، أو رقم الـ IBAN.",pattern:"([0-9]{9,10}|[Pp][Ss][0-9]{2}[A-Za-z0-9 ]{25,35})"},
+    "palpay":{label:"رقم هاتف PalPay",placeholder:"أدخل رقم هاتف PalPay",hint:"أدخل رقم الهاتف المرتبط بمحفظة PalPay.",pattern:"[0-9]{9,10}"},
+    "jawwal-pay":{label:"رقم هاتف جوال بي",placeholder:"أدخل رقم هاتف جوال بي",hint:"أدخل رقم الهاتف المرتبط بمحفظة جوال بي.",pattern:"[0-9]{9,10}"}
   };
   function updatePayoutAccount(){
     const selected=document.querySelector('input[name="method"]:checked'),config=payoutMethods[selected.value];
@@ -69,11 +60,51 @@ document.addEventListener("DOMContentLoaded",function(){
     setTimeout(function () { toast.classList.remove("show"); }, 3000);
   }
 
+  function clearFieldErrors() {
+    withdrawForm.querySelectorAll(".field-error").forEach(function (note) { note.remove(); });
+    withdrawForm.querySelectorAll("[aria-invalid]").forEach(function (input) { input.removeAttribute("aria-invalid"); });
+  }
+
+  function fieldError(input, message) {
+    const label = input.closest("label");
+    if (!label) return;
+    input.setAttribute("aria-invalid", "true");
+    const note = document.createElement("small");
+    note.className = "field-error";
+    note.setAttribute("role", "alert");
+    note.textContent = message;
+    label.appendChild(note);
+  }
+
+  withdrawForm.querySelectorAll("input").forEach(function (input) {
+    input.addEventListener("input", function () {
+      const note = input.closest("label") && input.closest("label").querySelector(".field-error");
+      if (note) note.remove();
+      input.removeAttribute("aria-invalid");
+    });
+  });
+
   withdrawForm.addEventListener("submit", async function (event) {
     event.preventDefault();
     if (sending) return;
-    if (!amount.checkValidity()) { amount.reportValidity(); return; }
-    if (!payoutAccount.checkValidity()) { payoutAccount.reportValidity(); return; }
+    // Our own messages under each field, instead of the browser's pop-up.
+    const payoutHolder = document.getElementById("payoutHolder");
+    clearFieldErrors();
+    const minimum = Number(amount.min) || 0;
+    const maximum = Number(amount.max) || 0;
+    const value = Number(amount.value);
+    let firstInvalid = null;
+    const fail = function (input, message) { fieldError(input, message); firstInvalid = firstInvalid || input; };
+    if (amount.value === "") fail(amount, "اكتب المبلغ اللي بدك تسحبه.");
+    else if (value < minimum) fail(amount, "الحد الأدنى للسحب " + minimum + " ₪.");
+    else if (value > maximum) fail(amount, "المبلغ أكبر من رصيدك المتاح (" + maximum.toFixed(2) + " ₪).");
+    if (payoutHolder.value.trim().length < 3) fail(payoutHolder, "اكتب اسم صاحب الحساب.");
+    if (!new RegExp("^(?:" + payoutAccount.pattern + ")$").test(payoutAccount.value.replace(/[\s-]+/g, ""))) {
+      fail(payoutAccount, document.querySelector('input[name="method"]:checked').value === "bank-of-palestine"
+        ? "أدخل رقم هاتف صحيح (9-10 أرقام) أو IBAN يبدأ بـ PS."
+        : "أدخل رقم هاتف صحيح (9-10 أرقام).");
+    }
+    if (firstInvalid) { firstInvalid.focus(); return; }
 
     sending = true;
     const submitButton = withdrawForm.querySelector("[type=submit]");
@@ -90,14 +121,19 @@ document.addEventListener("DOMContentLoaded",function(){
         body: JSON.stringify({
           amount: amount.value,
           method: document.querySelector('input[name="method"]:checked').value,
+          holder: payoutHolder.value,
           account: payoutAccount.value
         })
       });
 
       if (!response.ok) {
         const error = await response.json().catch(function () { return {}; });
-        const first = error.errors ? Object.values(error.errors)[0] : null;
-        showToast((first && first[0]) || error.message || "تعذر إرسال طلب السحب.");
+        const fields = { amount: amount, holder: payoutHolder, account: payoutAccount };
+        let shown = false;
+        Object.keys(error.errors || {}).forEach(function (key) {
+          if (fields[key]) { fieldError(fields[key], error.errors[key][0]); shown = true; }
+        });
+        if (!shown) showToast(error.message || "تعذر إرسال طلب السحب.");
         return;
       }
 

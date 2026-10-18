@@ -145,7 +145,7 @@
     </section>
 
     <dialog id="withdrawDialog" class="withdraw-dialog">
-        <form id="withdrawForm" data-withdraw-url="{{ route('print-provider.earnings.withdraw') }}">
+        <form id="withdrawForm" novalidate data-withdraw-url="{{ route('print-provider.earnings.withdraw') }}">
             <header>
                 <div>
                     <span class="dialog-icon"><i class="bi bi-wallet2"></i></span>
@@ -156,7 +156,7 @@
 
             <div class="dialog-body">
                 <label>المبلغ المراد سحبه
-                    <span class="amount-field"><b>$</b><input id="withdrawAmount" type="number" min="{{ $minimumWithdrawal }}" max="{{ $available }}" step="0.01" placeholder="{{ $minimumWithdrawal }}" required dir="ltr"></span>
+                    <span class="amount-field"><b>₪</b><input id="withdrawAmount" type="number" min="{{ $minimumWithdrawal }}" max="{{ $available }}" step="0.01" placeholder="{{ $minimumWithdrawal }}" required dir="ltr"></span>
                     <small>الحد الأدنى {{ $minimumWithdrawal }} ₪، والحد الأعلى هو رصيدك المتاح.</small>
                 </label>
 
@@ -185,11 +185,19 @@
                     </label>
                 </fieldset>
 
+                <label class="payout-account-label" for="payoutHolder">
+                    <span>اسم صاحب الحساب</span>
+                    <span class="payout-account-field">
+                        <i class="bi bi-person"></i>
+                        <input id="payoutHolder" name="payoutHolder" type="text" autocomplete="off" minlength="3" maxlength="100" placeholder="الاسم كما هو مسجّل بالحساب" required>
+                    </span>
+                </label>
+
                 <label class="payout-account-label" for="payoutAccount">
                     <span id="payoutAccountLabel">رقم حساب PalPay</span>
                     <span class="payout-account-field">
                         <i class="bi bi-credit-card-2-front"></i>
-                        <input id="payoutAccount" name="payoutAccount" type="text" inputmode="numeric" autocomplete="off" pattern="[0-9]{9,10}" placeholder="أدخل رقم حساب PalPay" required dir="rtl">
+                        <input id="payoutAccount" name="payoutAccount" type="text" inputmode="text" autocomplete="off" pattern="[0-9]{9,10}" placeholder="أدخل رقم حساب PalPay" required dir="rtl">
                     </span>
                     <small id="payoutAccountHint">أدخل رقم الحساب المرتبط بمحفظة PalPay.</small>
                 </label>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Support\PayoutAccount;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Notification;
@@ -43,7 +44,7 @@ class PaymentController extends Controller
     private const METHODS = [
         'bank' => ['bi-bank', 'تحويل بنكي'],
         'wallet' => ['bi-phone', 'محفظة إلكترونية'],
-    ];
+    ] + PayoutAccount::METHODS;
 
     public function index(): View
     {
@@ -68,6 +69,9 @@ class PaymentController extends Controller
                     'pending' => $withdrawal->status === 'pending',
                     'icon' => $icon,
                     'method' => $method,
+                    'holder' => $withdrawal->account_details['holder'] ?? null,
+                    'account' => $withdrawal->account_details['account'] ?? null,
+                    'notes' => $withdrawal->account_details['notes'] ?? null,
                     'reviewUrl' => route('admin.payments.withdrawals.review', $withdrawal),
                 ];
             });

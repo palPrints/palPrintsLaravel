@@ -44,6 +44,8 @@ use App\Http\Controllers\PrintProvider\SupportController as PrintProviderSupport
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleDashboardController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\SharedPrintFileController;
+use App\Http\Controllers\WhatsAppWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -55,6 +57,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('index');
 })->name('home');
+
+// WhatsApp Cloud API webhook (Meta). Public, outside CSRF; the controller checks Meta's signature.
+Route::get('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'verify'])->middleware('throttle:60,1')->name('webhooks.whatsapp.verify');
+Route::post('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'receive'])->middleware('throttle:600,1')->name('webhooks.whatsapp');
+
+// The customer's print file, from the signed, expiring link in the WhatsApp message the admin sends the shop.
+Route::get('/shared/print-files/{printFile}', SharedPrintFileController::class)
+    ->middleware(['signed', 'throttle:30,1'])->name('print-files.shared');
 
 Route::view('/about', 'about')->name('about');
 Route::view('/faq', 'pages.faq')->name('faq');
@@ -193,9 +203,12 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/notifications/read-all', [AdminNotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::post('/notifications/{notification}/read', [AdminNotificationController::class, 'read'])->name('notifications.read');
         Route::get('/support', [AdminSupportController::class, 'index'])->name('support');
+        Route::get('/support/{ticket}', [AdminSupportController::class, 'show'])->name('support.show');
+        Route::get('/support/{ticket}/messages', [AdminSupportController::class, 'messages'])->name('support.messages');
         Route::post('/support/{ticket}/reply', [AdminSupportController::class, 'reply'])->name('support.reply');
         Route::post('/support/{ticket}/status', [AdminSupportController::class, 'updateStatus'])->name('support.status');
         Route::get('/users', [AdminUserController::class, 'index'])->name('users');
+        Route::post('/users/{user}/toggle', [AdminUserController::class, 'toggle'])->name('users.toggle');
         Route::get('/profile', [AdminProfileController::class, 'show'])->name('profile');
         Route::patch('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password', [AdminProfileController::class, 'updatePassword'])->name('profile.password');
@@ -212,6 +225,10 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/designs/{design}/favorite', [CustomerFavoriteController::class, 'toggle'])->name('designs.favorite');
         Route::get('/settings', [CustomerSettingsController::class, 'edit'])->name('settings');
         Route::get('/support', [CustomerSupportController::class, 'edit'])->name('support');
+        Route::post('/support', [CustomerSupportController::class, 'store'])->name('support.store');
+        Route::get('/support/tickets/{ticket}', [CustomerSupportController::class, 'showTicket'])->name('support.show');
+        Route::get('/support/tickets/{ticket}/messages', [CustomerSupportController::class, 'ticketMessages'])->name('support.messages');
+        Route::post('/support/tickets/{ticket}/reply', [CustomerSupportController::class, 'replyTicket'])->name('support.reply');
         Route::get('/notifications', [CustomerNotificationController::class, 'index'])->name('notifications');
         Route::post('/notifications/read-all', [CustomerNotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::post('/notifications/{notification}/read', [CustomerNotificationController::class, 'read'])->name('notifications.read');
@@ -230,6 +247,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/{order}/reject', [PrintProviderOrdersController::class, 'reject'])->name('.reject');
         Route::post('/{order}/ready', [PrintProviderOrdersController::class, 'ready'])->name('.ready');
         Route::get('/{order}/files/{printFile}', [PrintProviderOrdersController::class, 'downloadFile'])->name('.files');
+        Route::get('/{order}/items/{item}/package', [PrintProviderOrdersController::class, 'package'])->name('.package');
+        Route::get('/{order}/items/{item}/sheet', [PrintProviderOrdersController::class, 'sheet'])->name('.sheet');
     });
     Route::get('/print-provider/earnings', PrintProviderEarningsController::class)
         ->middleware(['role:print_provider', 'account.approved'])->name('print-provider.earnings');
@@ -245,6 +264,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::patch('/settings/account', [PrintProviderSettingsController::class, 'updateAccount'])->name('settings.account');
         Route::get('/support', [PrintProviderSupportController::class, 'show'])->name('support');
         Route::post('/support', [PrintProviderSupportController::class, 'store'])->name('support.store');
+        Route::get('/support/tickets/{ticket}', [PrintProviderSupportController::class, 'showTicket'])->name('support.show');
+        Route::get('/support/tickets/{ticket}/messages', [PrintProviderSupportController::class, 'ticketMessages'])->name('support.messages');
+        Route::post('/support/tickets/{ticket}/reply', [PrintProviderSupportController::class, 'replyTicket'])->name('support.reply');
         Route::get('/notifications', [PrintProviderNotificationController::class, 'index'])->name('notifications');
         Route::post('/notifications/read-all', [PrintProviderNotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::post('/notifications/{notification}/read', [PrintProviderNotificationController::class, 'read'])->name('notifications.read');
@@ -273,6 +295,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::patch('/settings/account', [DesignerSettingsController::class, 'updateAccount'])->name('settings.account');
         Route::get('/support', [DesignerSupportController::class, 'show'])->name('support');
         Route::post('/support', [DesignerSupportController::class, 'store'])->name('support.store');
+        Route::get('/support/tickets/{ticket}', [DesignerSupportController::class, 'showTicket'])->name('support.show');
+        Route::get('/support/tickets/{ticket}/messages', [DesignerSupportController::class, 'ticketMessages'])->name('support.messages');
+        Route::post('/support/tickets/{ticket}/reply', [DesignerSupportController::class, 'replyTicket'])->name('support.reply');
         Route::get('/notifications', [DesignerNotificationController::class, 'index'])->name('notifications');
         Route::post('/notifications/read-all', [DesignerNotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::post('/notifications/{notification}/read', [DesignerNotificationController::class, 'read'])->name('notifications.read');

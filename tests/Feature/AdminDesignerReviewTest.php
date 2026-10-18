@@ -46,7 +46,7 @@ test('every active admin is notified when a designer sends an approval request',
         expect($notification)->not->toBeNull()
             ->and($notification->title)->toContain('Lina Designer')
             ->and($notification->title)->toContain('مصمم')
-            ->and($notification->link)->toBe(route('admin.users'))
+            ->and($notification->link)->toBe(route('admin.users', ['open' => $designer->id]))
             ->and($notification->is_read)->toBeFalse();
     }
 
@@ -63,17 +63,25 @@ test('no admin is notified when an incomplete profile is rejected', function () 
     expect(Notification::where('user_id', $admin->id)->count())->toBe(0);
 });
 
-test('the admin bell shows the new request and links to the users page', function () {
+test('the admin bell shows the new request and links to that account on the users page', function () {
     $admin = reviewTestAdmin();
     $designer = completeDesigner();
 
     $this->actingAs($designer)->post(route('onboarding.submit'));
 
+    $notification = Notification::where('user_id', $admin->id)->firstOrFail();
+
     $this->actingAs($admin)
         ->get(route('admin.dashboard'))
         ->assertOk()
         ->assertSee('طلب اعتماد جديد من مصمم: Lina Designer')
-        ->assertSee('href="'.route('admin.users').'"', false);
+        ->assertSee(route('admin.notifications.read', $notification));
+
+    // Opening it from the bell marks it read and lands on that account.
+    $this->actingAs($admin)
+        ->post(route('admin.notifications.read', $notification))
+        ->assertRedirect(route('admin.users', ['open' => $designer->id]));
+    expect($notification->fresh()->is_read)->toBeTrue();
 });
 
 test('the admin users page carries the designer review data and keeps typed html inert', function () {

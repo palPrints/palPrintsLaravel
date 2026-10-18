@@ -53,8 +53,13 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedDetailsButton?.focus();
   }
 
+  const esc = (text) => String(text).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" })[char]);
+
   function itemRow(item) {
-    return `<div class="details-modal__item">${item.thumb ? `<span class="details-modal__thumb">${item.thumb}</span>` : `<img src="${item.image}" alt="${item.title}">`}<div><strong>${item.title}</strong><small>${item.desc} · الكمية: ${item.qty}</small></div><b>${item.price}</b></div>`;
+    const lines = (item.details || []).map((row) => `<div class="details-modal__spec"><span>${esc(row.label)}</span><strong>${esc(row.value)}</strong></div>`).join("");
+    const cards = (item.files || []).map((card) => `<div class="details-modal__file"><strong>${esc(card.title)}</strong>${card.rows.map((row) => `<div class="details-modal__spec"><span>${esc(row.label)}</span><strong>${esc(row.value)}</strong></div>`).join("")}</div>`).join("");
+    const specs = lines || cards ? `<div class="details-modal__specs"><h4>تفاصيل الطباعة</h4>${lines}${cards}</div>` : "";
+    return `<div class="details-modal__item">${item.thumb ? `<span class="details-modal__thumb">${item.thumb}</span>` : `<img src="${item.image}" alt="${item.title}">`}<div><strong>${item.title}</strong><small>${item.desc} · الكمية: ${item.qty}</small></div><b>${item.price}</b></div>${specs}`;
   }
 
   if (detailsModal) {

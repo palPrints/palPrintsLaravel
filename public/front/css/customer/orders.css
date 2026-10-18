@@ -123,3 +123,13 @@ main { padding-block: var(--sp-5) var(--sp-6); }
   .product-cell span { display: none; }
   .modal-actions { flex-direction: column; }
 }
+
+/* The print settings of a paper order, under its line in the details window. */
+.details-modal__specs { display: grid; gap: 8px; margin-top: -2px; padding: 12px 14px; background: var(--pp-navy-50); border: 1px solid var(--pp-border); border-radius: var(--pp-radius-sm); }
+.details-modal__specs h4 { margin: 0 0 2px; color: var(--pp-text-strong); font-size: .85rem; font-weight: 800; }
+.details-modal__spec { display: grid; grid-template-columns: minmax(84px, 130px) 1fr; gap: 10px; align-items: start; font-size: .8rem; line-height: 1.7; }
+.details-modal__spec span { color: var(--pp-text-muted, #667a96); }
+.details-modal__spec strong { color: var(--pp-text-strong); font-weight: 700; overflow-wrap: anywhere; }
+@media (max-width: 520px) { .details-modal__spec { grid-template-columns: 1fr; gap: 0; } }
+.details-modal__file { display: grid; gap: 6px; padding: 10px 12px; background: #fff; border: 1px solid var(--pp-border); border-radius: var(--pp-radius-sm); }
+.details-modal__file > strong { color: var(--pp-text-strong); font-size: .82rem; overflow-wrap: anywhere; }

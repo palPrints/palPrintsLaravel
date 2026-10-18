@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendOrderOfferToShop;
 use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\PrintProvider;
 use App\Services\OrderShopChoices;
+use App\Services\WhatsApp\ShopChatLink;
 use App\Support\OrderNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -202,8 +204,12 @@ class OrderController extends Controller
         ['order' => $locked, 'branch' => $branch] = $result;
 
         if ($providerUserId = $branch->printProvider?->user_id) {
-            OrderNotifier::newOrderForShop((int) $providerUserId, $locked->order_number, $locked->items->count());
+            OrderNotifier::newOrderForShop((int) $providerUserId, $locked->order_number, $locked->items->count(), (int) $locked->id);
         }
+        // The new shop also hears about it on WhatsApp: automatically when the API is on and the shop opted in,
+        // and the admin gets the ready-to-send wa.me message on the orders page after the reload.
+        SendOrderOfferToShop::dispatch($locked->id, (int) $branch->print_provider_id);
+        session()->flash('notice_whatsapp', ShopChatLink::forOrder($locked->fresh()));
         if ($locked->user_id) {
             OrderNotifier::statusChanged((int) $locked->user_id, $locked->order_number, 'processing');
         }
@@ -260,7 +266,7 @@ class OrderController extends Controller
                 'order.refund_needed',
                 'طلب ملغى مدفوع: يجب إرجاع المبلغ',
                 sprintf('أُلغي الطلب رقم %s بعد اعتماد دفعه. أرجِع المبلغ للعميل %s.', $record->order_number, DB::table('users')->where('id', $record->user_id)->value('name') ?? ''),
-                route('admin.orders'),
+                route('admin.orders', ['open' => $record->order_number]),
             );
         }
 
@@ -323,6 +329,8 @@ class OrderController extends Controller
         '1' => 'صفحة واحدة لكل وجه',
         '2' => 'صفحتان لكل وجه',
         '4' => '4 صفحات لكل وجه',
+        '6' => '6 صفحات لكل وجه',
+        '9' => '9 صفحات لكل وجه',
         'combined' => 'دمج الملفات',
         'separate' => 'فصل الملفات',
         'none' => 'بدون تغليف',

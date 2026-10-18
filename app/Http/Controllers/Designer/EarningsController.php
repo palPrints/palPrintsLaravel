@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Designer;
 
+use App\Support\PayoutAccount;
 use App\Http\Controllers\Controller;
 use App\Services\WithdrawalService;
 use App\Support\PlatformSettings;
@@ -27,6 +28,7 @@ class EarningsController extends Controller
             'wallet' => $wallet,
             'transactions' => $transactions,
             'transactionTypes' => self::TRANSACTION_TYPES,
+            'minimumWithdrawal' => (float) PlatformSettings::get('fees', 'minimum_withdrawal', 100),
         ]);
     }
 
@@ -34,19 +36,13 @@ class EarningsController extends Controller
     {
         $minimum = (float) PlatformSettings::get('fees', 'minimum_withdrawal', 100);
 
-        $validated = $request->validate([
-            'amount' => ['required', 'numeric', 'min:'.$minimum],
-            'method' => ['required', 'in:bank,wallet'],
-            'notes' => ['nullable', 'string', 'max:1000'],
-        ], [
-            'amount.min' => 'الحد الأدنى للسحب هو ₪'.$minimum.'.',
-        ]);
+        $validated = PayoutAccount::validate($request, $minimum);
 
         $withdrawal = $withdrawals->request(
             $request->user(),
             (float) $validated['amount'],
             $validated['method'],
-            ['notes' => $validated['notes'] ?? null],
+            ['account' => $validated['account'], 'holder' => $validated['holder'], 'notes' => $request->input('notes')],
             $minimum,
         );
 
