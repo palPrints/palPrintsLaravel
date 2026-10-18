@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\SendOrderOfferToShop;
 use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\Payment;
 use App\Models\PrintProviderBranch;
+use App\Services\Orders\ShopNotifier;
 use App\Services\OrderShopChoices;
 use App\Services\WhatsApp\ShopChatLink;
 use App\Support\OrderNotifier;
@@ -89,17 +89,17 @@ class PaymentNoticeController extends Controller
 
         OrderNotifier::paymentReviewed((int) $order->user_id, $order->order_number, true);
 
-        // The chosen shop's owner learns about the new order: in the app, and on WhatsApp when the shop opted in.
+        // The chosen shop's owner learns about the new order: in the app, and on the WhatsApp / Telegram it chose.
         if ($providerUserId = $branch->printProvider()->value('user_id')) {
             OrderNotifier::newOrderForShop((int) $providerUserId, $order->order_number, $order->items->count(), (int) $order->id);
         }
-        SendOrderOfferToShop::dispatch($order->id, (int) $branch->print_provider_id);
+        $shopNotice = app(ShopNotifier::class)->newOrder($order, (int) $branch->print_provider_id);
         $this->audit($request, 'admin.payment_notice_approved', 'الموافقة على إشعار دفع الطلب '.$order->order_number, ['order_id' => $order->id, 'payment_id' => $payment->id, 'branch_id' => $branch->id]);
 
         // Not back(): from the page of one order (?order=) that would show an empty page; the decision goes to the full list.
         return redirect()->route('admin.payment-notices')
             ->with('notice_status', 'تمت الموافقة على الطلب '.$order->order_number.' وتوجيهه إلى '.$this->branchLabel($branch).'.')
-            ->with('notice_whatsapp', ShopChatLink::forOrder($order->fresh()));
+            ->with('notice_whatsapp', $shopNotice);
     }
 
     public function reject(Request $request, Payment $payment): RedirectResponse

@@ -24,16 +24,7 @@
         @include('admin.partials.breadcrumb', ['label' => 'إدارة الطلبات'])
         <h1 id="ordersTitle">إدارة الطلبات</h1>
 
-        @if ($chat = session('notice_whatsapp'))
-            <div class="notices-flash is-whatsapp">
-                @if ($chat['url'])
-                    <span><i class="bi bi-whatsapp" aria-hidden="true"></i> أبلغ {{ $chat['shop'] }} بالطلب على واتساب، الرسالة جاهزة وتحتاج فقط إلى إرسال.</span>
-                    <a class="notice-whatsapp-btn" href="{{ $chat['url'] }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i> إرسال للمطبعة</a>
-                @else
-                    <span><i class="bi bi-whatsapp" aria-hidden="true"></i> لم تضف {{ $chat['shop'] }} رقم واتساب في ملفها، لذلك سيصلها الطلب في صفحة الطلبات فقط.</span>
-                @endif
-            </div>
-        @endif
+        @include('admin.partials.shop-notice')
 
         <div class="orders-summary" aria-label="ملخص الطلبات">
             <article class="order-stat-card">

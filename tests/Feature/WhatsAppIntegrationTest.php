@@ -230,7 +230,7 @@ test('the wa.me message links each print file, and the signed link downloads it 
 test('without a whatsapp number the admin is told the shop only sees the dashboard', function () {
     $this->provider->update(['whatsapp_number' => null]);
 
-    expect(\App\Services\WhatsApp\ShopChatLink::forOrder($this->order))->toBe(['url' => null, 'shop' => 'مطبعة النور']);
+    expect(\App\Services\WhatsApp\ShopChatLink::forOrder($this->order))->toBe(['url' => null, 'shop' => 'مطبعة النور', 'telegram' => false]);
 });
 
 test('the offer is the approved template with the order details and accept / reject buttons', function () {

@@ -19,6 +19,9 @@ class PrintProvider extends Model
         'whatsapp_number',
         'whatsapp_notifications_enabled',
         'whatsapp_opted_in_at',
+        'telegram_chat_id',
+        'telegram_username',
+        'telegram_linked_at',
         'contact_email',
         'services',
         'working_hours',
@@ -48,6 +51,7 @@ class PrintProvider extends Model
         'is_active' => 'boolean',
         'whatsapp_notifications_enabled' => 'boolean',
         'whatsapp_opted_in_at' => 'datetime',
+        'telegram_linked_at' => 'datetime',
     ];
 
     // ========== ط§ظ„ط¹ظ„ط§ظ‚ط§طھ ==========
@@ -74,6 +78,16 @@ class PrintProvider extends Model
         }
 
         return PhoneNumber::normalize($this->whatsapp_number);
+    }
+
+    /** The Telegram chat that gets the shop's new orders, when it connected the bot and may receive orders, else null. */
+    public function telegramRecipient(): ?string
+    {
+        if (! $this->is_active || $this->approval_status !== 'approved') {
+            return null;
+        }
+
+        return filled($this->telegram_chat_id) ? (string) $this->telegram_chat_id : null;
     }
 
     /** The WhatsApp number as shown to people: +970599123456 once normalised, else as it was typed before normalising existed. */

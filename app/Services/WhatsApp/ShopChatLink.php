@@ -21,7 +21,12 @@ class ShopChatLink
     /** Keeps the wa.me URL a sane length; the rest of the files stay on the shop's orders page. */
     private const MAX_FILES_PER_ITEM = 10;
 
-    /** @return array{url: string|null, shop: string}|null null when the order is not routed to a shop yet */
+    /**
+     * url: the wa.me link, only when the shop chose to get orders on WhatsApp and has a number. telegram: the shop gets
+     * its orders from the bot, so it was sent there automatically.
+     *
+     * @return array{url: string|null, shop: string, telegram: bool}|null null when the order is not routed to a shop yet
+     */
     public static function forOrder(Order $order): ?array
     {
         $order->loadMissing('items.product', 'items.printFiles', 'items.printProviderBranch.printProvider');
@@ -32,11 +37,12 @@ class ShopChatLink
         }
 
         $items = $order->items->filter(fn (OrderItem $item) => $item->printProviderBranch?->print_provider_id === $provider->id);
-        $number = PhoneNumber::normalize($provider->whatsapp_number);
+        $number = $provider->whatsapp_notifications_enabled ? PhoneNumber::normalize($provider->whatsapp_number) : null;
 
         return [
             'url' => $number ? 'https://wa.me/'.$number.'?text='.rawurlencode(self::message($order, $provider, $items)) : null,
             'shop' => (string) $provider->company_name,
+            'telegram' => config('telegram.enabled') && filled($provider->telegram_chat_id),
         ];
     }
 

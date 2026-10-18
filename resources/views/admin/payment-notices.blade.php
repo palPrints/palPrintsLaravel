@@ -31,16 +31,7 @@
         @if (session('notice_status'))
             <p class="notices-flash is-success" role="status"><i class="bi bi-check-circle" aria-hidden="true"></i> {{ session('notice_status') }}</p>
         @endif
-        @if ($chat = session('notice_whatsapp'))
-            <div class="notices-flash is-whatsapp">
-                @if ($chat['url'])
-                    <span><i class="bi bi-whatsapp" aria-hidden="true"></i> أبلغ {{ $chat['shop'] }} بالطلب على واتساب، الرسالة جاهزة وتحتاج فقط إلى إرسال.</span>
-                    <a class="notice-whatsapp-btn" href="{{ $chat['url'] }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i> إرسال للمطبعة</a>
-                @else
-                    <span><i class="bi bi-whatsapp" aria-hidden="true"></i> لم تضف {{ $chat['shop'] }} رقم واتساب في ملفها، لذلك سيصلها الطلب في صفحة الطلبات فقط.</span>
-                @endif
-            </div>
-        @endif
+        @include('admin.partials.shop-notice')
         @if (session('notice_error'))
             <p class="notices-flash is-error" role="alert"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> {{ session('notice_error') }}</p>
         @endif
@@ -191,8 +182,10 @@
                                         <span class="notice-shop">{{ $notice['whatsapp']['shop'] }}</span>
                                         @if ($notice['whatsapp']['url'])
                                             <a class="notice-whatsapp-btn is-small" href="{{ $notice['whatsapp']['url'] }}" target="_blank" rel="noopener" aria-label="إرسال الطلب {{ $notice['orderNumber'] }} إلى {{ $notice['whatsapp']['shop'] }} على واتساب"><i class="bi bi-whatsapp" aria-hidden="true"></i> واتساب</a>
+                                        @elseif ($notice['whatsapp']['telegram'])
+                                            <small class="notice-reason"><i class="bi bi-telegram" aria-hidden="true"></i> على تيليجرام</small>
                                         @else
-                                            <small class="notice-reason">بدون رقم واتساب</small>
+                                            <small class="notice-reason">لا تستقبل على واتساب</small>
                                         @endif
                                     @else
                                         —
