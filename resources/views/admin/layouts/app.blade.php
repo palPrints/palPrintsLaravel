@@ -16,6 +16,7 @@
     <link rel="preload" href="{{ asset('front/shared/icons/fonts/bootstrap-icons.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ $adminAsset('shared/icons/bootstrap-icons.min.css') }}">
     <link rel="stylesheet" href="{{ $adminAsset('css/admin/admin-shell.css') }}">
+    <link rel="stylesheet" href="{{ asset('front/shared/notificationPanel.css') }}?v={{ filemtime(public_path('front/shared/notificationPanel.css')) }}">
     @stack('styles')
     <link rel="stylesheet" href="{{ asset('front/shared/table-pagination.css') }}?v={{ filemtime(public_path('front/shared/table-pagination.css')) }}">
 </head>

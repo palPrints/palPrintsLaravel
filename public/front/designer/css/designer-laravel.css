@@ -42,14 +42,6 @@
   text-align: center;
 }
 
-.designer-profile-page .designer-dropdown-empty {
-  display: block;
-  padding: 12px 11px;
-  color: var(--profile-secondary);
-  font-size: 13px;
-  font-weight: 600;
-}
-
 /* Search in the top bar is a GET form. */
 .designer-profile-page form.designer-printshop-search { margin: 0; }
 

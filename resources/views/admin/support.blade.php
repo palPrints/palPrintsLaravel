@@ -20,57 +20,51 @@
     @include('admin.partials.breadcrumb', ['label' => 'الدعم الفني'])
     <header class="support-clean-title"><div><h1>الدعم الفني</h1><p>إدارة مشاكل العملاء والمصممين والمطابع.</p></div><span><i class="bi bi-chat-dots"></i><b id="supportNewCount">{{ $newCount }}</b> مشاكل جديدة</span></header>
 
-    <section class="support-clean-card support-clean-list" aria-labelledby="incomingProblemsTitle">
-        <header><div><h2 id="incomingProblemsTitle">المشاكل الواردة</h2></div></header>
-        <div class="support-clean-table" role="table" aria-label="جدول المشاكل الواردة">
-        <div class="support-clean-table-head" role="row" aria-hidden="true"><span>المستخدم</span><span>المشكلة</span><span>التصنيف</span><span>الحالة</span><span>وقت الإرسال</span><span>الإجراء</span></div>
-        <div id="supportRequestList" role="rowgroup">
-          @forelse ($tickets as $index => $ticket)
-              <button class="support-clean-row{{ $index === 0 ? ' active' : '' }}" type="button"
-                  data-support-request
-                  data-role="{{ $ticket['role'] }}"
-                  data-status="{{ $ticket['status'] }}"
-                  data-id="{{ $ticket['id'] }}"
-                  data-name="{{ $ticket['name'] }}"
-                  data-role-label="{{ $ticket['role_label'] }}"
-                  data-initials="{{ $ticket['initials'] }}"
-                  data-email="{{ $ticket['email'] }}"
-                  data-subject="{{ $ticket['subject'] }}"
-                  data-category="{{ $ticket['category'] }}"
-                  data-time="{{ $ticket['time'] }}"
-                  data-message="{{ $ticket['message'] }}"
-                  data-reply="{{ $ticket['reply'] }}"
-                  data-review-url="{{ $ticket['reviewUrl'] }}"
-                  data-status-url="{{ $ticket['statusUrl'] }}">
-                  <span class="support-clean-user"><b class="{{ $roleClasses[$ticket['role']] ?? '' }}">{{ $ticket['initials'] }}</b><span><strong>{{ $ticket['name'] }}</strong><small>{{ $ticket['role_label'] }}</small></span></span>
-                  <strong>{{ $ticket['subject'] }}</strong>
-                  <span>{{ $ticket['category'] }}</span>
-                  <span class="support-clean-status is-{{ $ticket['status'] }}">{{ $statusLabels[$ticket['status']] ?? $ticket['status'] }}</span>
-                  <time>{{ $ticket['time'] }}</time>
-                  <i class="bi bi-chevron-left"></i>
-              </button>
-          @empty
-          @endforelse
-        </div></div>
-        <p class="support-list-empty" id="supportRequestsEmpty" @if ($tickets->isNotEmpty()) hidden @endif><i class="bi bi-inbox" aria-hidden="true"></i><span>{{ $tickets->isEmpty() ? 'لا توجد طلبات دعم مرسلة بعد.' : 'لا توجد مشاكل مطابقة.' }}</span></p>
-      </section>
+    <section class="sinbox" aria-label="المشاكل الواردة">
+        @if ($tickets->isEmpty())
+            <div class="sinbox-empty">
+                <span><i class="bi bi-inbox" aria-hidden="true"></i></span>
+                <h2>لا توجد طلبات دعم بعد</h2>
+                <p>لما يرسل عميل أو مصمم أو مطبعة طلب مساعدة بيظهر هنا، وبتوصلك إشعار فورًا.</p>
+            </div>
+        @else
+            <header class="sinbox-bar">
+                <div class="sinbox-tabs" role="tablist" aria-label="تصفية الحالة">
+                    @foreach ([['active', 'النشطة'], ['new', 'جديدة'], ['open', 'قيد المعالجة'], ['resolved', 'تم الحل'], ['all', 'الكل']] as [$key, $label])
+                        <button type="button" class="{{ $loop->first ? 'active' : '' }}" data-request-filter="{{ $key }}" role="tab">{{ $label }} <b>{{ $counts[$key] }}</b></button>
+                    @endforeach
+                </div>
+            </header>
 
-      <dialog class="support-reference-dialog" id="supportProblemDialog" aria-labelledby="problemDetailsTitle">
-        <div class="support-reference-content">
-          <header><h2 id="problemDetailsTitle">تفاصيل المشكلة</h2><button type="button" id="closeSupportDialog" aria-label="إغلاق"><i class="bi bi-x-lg"></i></button></header>
-          <section class="support-reference-heading"><div><h3 id="supportDetailSubject"></h3><div><span id="supportDetailCategory"></span><code id="supportDetailId"></code></div></div><span id="supportDialogStatus"></span></section>
-          <dl class="support-reference-metadata">
-            <div><dt>المستخدم</dt><dd><span id="supportDetailAvatar"></span><b id="supportDetailName"></b><em id="supportDetailRole" class="request-role"></em></dd></div>
-            <div><dt>البريد الإلكتروني</dt><dd><a id="supportDetailEmail" href="#"></a></dd></div>
-            <div><dt>وقت الإرسال</dt><dd id="supportDetailTime"></dd></div>
-          </dl>
-          <section class="support-reference-message"><h3>وصف المشكلة</h3><p id="supportDetailMessage"></p><span id="supportMessageSender" hidden></span></section>
-          <div class="support-reply-history" id="supportReplyHistory" hidden><span><i class="bi bi-headset"></i></span><div><strong>إدارة PalPrints</strong><p id="supportPreviousReply"></p><time>الآن</time></div></div>
-          <form class="support-reference-reply" id="supportReplyForm" hidden><label for="supportReplyText">الرد على المستخدم</label><textarea id="supportReplyText" rows="4" placeholder="اكتب الرد هنا..." required></textarea><div><button type="button" id="cancelSupportReply">إلغاء</button><button type="submit"><i class="bi bi-send"></i>إرسال الرد</button></div></form>
-          <footer><button class="support-resolve-button" id="resolveSupportRequest" type="button"><i class="bi bi-check-circle"></i>تحديد كمحلولة</button><button class="support-reply-button" id="showSupportReply" type="button"><i class="bi bi-reply"></i>الرد على المستخدم</button></footer>
-          <select id="supportRequestStatus" hidden><option value="new">جديدة</option><option value="open">قيد المعالجة</option><option value="resolved">تم الحل</option></select>
-        </div>
-      </dialog>
+            <div class="sinbox-table" role="table" aria-label="جدول المشاكل الواردة">
+                <div class="sinbox-head" role="row" aria-hidden="true"><span>المستخدم</span><span>المشكلة</span><span>الحالة</span><span>آخر نشاط</span><span></span></div>
+                <div id="supportRequestList" role="rowgroup">
+                    @foreach ($tickets as $ticket)
+                        <a class="sinbox-row{{ $ticket['status'] === 'new' ? ' is-unread' : '' }}" href="{{ $ticket['url'] }}"
+                            data-support-request
+                            data-role="{{ $ticket['role'] }}"
+                            data-status="{{ $ticket['status'] }}"
+                            data-name="{{ $ticket['name'] }}"
+                            data-subject="{{ $ticket['subject'] }}"
+                            data-category="{{ $ticket['category'] }}"
+                            data-message="{{ $ticket['message'] }}">
+                            <span class="sinbox-user"><b class="{{ $roleClasses[$ticket['role']] ?? '' }}">{{ $ticket['initials'] }}</b><span><strong>{{ $ticket['name'] }}</strong><small>{{ $ticket['role_label'] }}</small></span></span>
+                            <span class="sinbox-subject"><strong>{{ $ticket['subject'] }}</strong><small>{{ $ticket['category'] }} · #{{ $ticket['number'] }}</small></span>
+                            <span class="sinbox-status is-{{ $ticket['status'] }}">{{ $statusLabels[$ticket['status']] ?? $ticket['status'] }}</span>
+                            <span class="sinbox-time"><time>{{ $ticket['last'] }}</time><small><i class="bi bi-chat-dots" aria-hidden="true"></i> {{ $ticket['count'] }}</small></span>
+                            <span class="sinbox-open">عرض المحادثة <i class="bi bi-chevron-left" aria-hidden="true"></i></span>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="sinbox-empty is-small" id="supportRequestsEmpty" hidden>
+                <span><i class="bi bi-search" aria-hidden="true"></i></span>
+                <h2>لا توجد مشاكل مطابقة</h2>
+                <p>ما في تذاكر بهاي الحالة حاليًا.</p>
+            </div>
+        @endif
+    </section>
 </main>
 @endsection
 

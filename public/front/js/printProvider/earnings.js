@@ -21,17 +21,8 @@ document.addEventListener("DOMContentLoaded",function(){
     const counterObserver=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){animateCounter(entry.target);counterObserver.unobserve(entry.target)}})},{threshold:.45});
     counters.forEach(function(counter){counterObserver.observe(counter)});
   }
-  const notificationButton=document.getElementById("notificationButton"),notificationDropdown=document.getElementById("notificationDropdown"),notificationCounter=document.getElementById("notificationCounter"),notificationList=document.getElementById("notificationList");
+  const notificationButton=document.getElementById("notificationButton"),notificationDropdown=document.getElementById("notificationDropdown");
   const accountButton=document.getElementById("accountButton"),accountDropdown=document.getElementById("accountDropdown");
-  let unreadNotifications=0;
-  function shakeNotificationBell(){notificationButton.classList.remove("is-shaking");void notificationButton.offsetWidth;notificationButton.classList.add("is-shaking");setTimeout(function(){notificationButton.classList.remove("is-shaking")},600)}
-  function pushNotification(message){
-    if(notificationList.querySelector(".notification-empty"))notificationList.innerHTML="";
-    const item=document.createElement("li");item.className="notification-item";item.textContent=message;notificationList.prepend(item);
-    unreadNotifications+=1;notificationCounter.hidden=false;notificationCounter.textContent=unreadNotifications>9?"9+":String(unreadNotifications);shakeNotificationBell();
-  }
-  window.PalWalletNotification=pushNotification;
-  window.addEventListener("palprints:notification",function(event){pushNotification(event.detail&&event.detail.message?event.detail.message:"لديك إشعار جديد")});
   function closeAccountMenu(){accountDropdown.classList.remove("open");accountDropdown.hidden=true;accountButton.setAttribute("aria-expanded","false")}
   function closeNotificationMenu(){notificationDropdown.classList.remove("open");notificationDropdown.hidden=true;notificationButton.setAttribute("aria-expanded","false")}
   accountButton.addEventListener("click",function(event){event.stopPropagation();const open=!accountDropdown.classList.contains("open");closeNotificationMenu();accountDropdown.classList.toggle("open",open);accountDropdown.hidden=!open;accountButton.setAttribute("aria-expanded",String(open))});

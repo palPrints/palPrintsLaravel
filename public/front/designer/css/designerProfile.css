@@ -253,30 +253,22 @@ html[data-bs-theme="dark"] .designer-profile-page { background: #0b1020; }
 .designer-profile-page .designer-header-dropdown .designer-dropdown-danger,
 .designer-profile-page .designer-header-dropdown .designer-dropdown-danger i { color: #dc2626; }
 
-.designer-profile-page .designer-notifications-dropdown { width: min(280px, calc(100vw - 24px)); }
-.designer-profile-page .designer-dropdown-title { display: block; padding: 7px 11px 10px; font-size: 15px; }
-.designer-profile-page .designer-notifications-dropdown a span { display: grid; gap: 2px; }
-.designer-profile-page .designer-notifications-dropdown small { color: var(--profile-muted); font-size: 12px; font-weight: 400; }
-
-.designer-profile-page .designer-notifications-dropdown .designer-dropdown-footer {
-  justify-content: center;
-  min-height: 38px;
-  margin-top: 4px;
-  border-top: 1px solid var(--profile-border);
-  border-radius: 0 0 9px 9px;
-  color: #1677ff;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.designer-profile-page .designer-notification-dot {
+.designer-profile-page .designer-notification-count {
   position: absolute;
-  top: -1px;
-  right: -1px;
-  width: 7px;
-  height: 7px;
-  background: #ff6b00;
-  border-radius: 50%;
+  top: -9px;
+  right: -9px;
+  display: grid;
+  min-width: 20px;
+  height: 20px;
+  place-items: center;
+  padding: 0 4px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  background: #1677ff;
+  border: 2px solid #fff;
+  border-radius: 999px;
 }
 
 .designer-profile-page .designer-notification-button:hover i {
@@ -1167,3 +1159,26 @@ html[data-bs-theme="dark"] .designer-skills-box {
     width: 100%;
   }
 }
+
+/* Count of unread answers from the support team, on the "مركز المساعدة" item. */
+.designer-profile-page .profile-sidebar-link { position: relative; }
+.designer-profile-page .profile-sidebar-badge {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: 14px;
+  display: grid;
+  min-width: 21px;
+  height: 21px;
+  place-items: center;
+  padding: 0 5px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  background: #e5484d;
+  border-radius: 999px;
+  transform: translateY(-50%);
+}
+.designer-profile-page .profile-sidebar-link.active .profile-sidebar-badge,
+.designer-profile-page .profile-sidebar-link[aria-current="page"] .profile-sidebar-badge { color: #e5484d; background: #fff; }
+.designer-profile-page .profile-app.sidebar-collapsed .profile-sidebar-badge { top: 2px; inset-inline-start: 2px; min-width: 17px; height: 17px; padding: 0 3px; font-size: 8px; border: 2px solid #fff; transform: none; }

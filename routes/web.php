@@ -192,6 +192,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/notifications/read-all', [AdminNotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::post('/notifications/{notification}/read', [AdminNotificationController::class, 'read'])->name('notifications.read');
         Route::get('/support', [AdminSupportController::class, 'index'])->name('support');
+        Route::get('/support/{ticket}', [AdminSupportController::class, 'show'])->name('support.show');
+        Route::get('/support/{ticket}/messages', [AdminSupportController::class, 'messages'])->name('support.messages');
         Route::post('/support/{ticket}/reply', [AdminSupportController::class, 'reply'])->name('support.reply');
         Route::post('/support/{ticket}/status', [AdminSupportController::class, 'updateStatus'])->name('support.status');
         Route::get('/users', [AdminUserController::class, 'index'])->name('users');
@@ -212,6 +214,10 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/designs/{design}/favorite', [CustomerFavoriteController::class, 'toggle'])->name('designs.favorite');
         Route::get('/settings', [CustomerSettingsController::class, 'edit'])->name('settings');
         Route::get('/support', [CustomerSupportController::class, 'edit'])->name('support');
+        Route::post('/support', [CustomerSupportController::class, 'store'])->name('support.store');
+        Route::get('/support/tickets/{ticket}', [CustomerSupportController::class, 'showTicket'])->name('support.show');
+        Route::get('/support/tickets/{ticket}/messages', [CustomerSupportController::class, 'ticketMessages'])->name('support.messages');
+        Route::post('/support/tickets/{ticket}/reply', [CustomerSupportController::class, 'replyTicket'])->name('support.reply');
         Route::get('/notifications', [CustomerNotificationController::class, 'index'])->name('notifications');
         Route::post('/notifications/read-all', [CustomerNotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::post('/notifications/{notification}/read', [CustomerNotificationController::class, 'read'])->name('notifications.read');
@@ -247,6 +253,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::patch('/settings/account', [PrintProviderSettingsController::class, 'updateAccount'])->name('settings.account');
         Route::get('/support', [PrintProviderSupportController::class, 'show'])->name('support');
         Route::post('/support', [PrintProviderSupportController::class, 'store'])->name('support.store');
+        Route::get('/support/tickets/{ticket}', [PrintProviderSupportController::class, 'showTicket'])->name('support.show');
+        Route::get('/support/tickets/{ticket}/messages', [PrintProviderSupportController::class, 'ticketMessages'])->name('support.messages');
+        Route::post('/support/tickets/{ticket}/reply', [PrintProviderSupportController::class, 'replyTicket'])->name('support.reply');
         Route::get('/notifications', [PrintProviderNotificationController::class, 'index'])->name('notifications');
         Route::post('/notifications/read-all', [PrintProviderNotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::post('/notifications/{notification}/read', [PrintProviderNotificationController::class, 'read'])->name('notifications.read');
@@ -275,6 +284,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::patch('/settings/account', [DesignerSettingsController::class, 'updateAccount'])->name('settings.account');
         Route::get('/support', [DesignerSupportController::class, 'show'])->name('support');
         Route::post('/support', [DesignerSupportController::class, 'store'])->name('support.store');
+        Route::get('/support/tickets/{ticket}', [DesignerSupportController::class, 'showTicket'])->name('support.show');
+        Route::get('/support/tickets/{ticket}/messages', [DesignerSupportController::class, 'ticketMessages'])->name('support.messages');
+        Route::post('/support/tickets/{ticket}/reply', [DesignerSupportController::class, 'replyTicket'])->name('support.reply');
         Route::get('/notifications', [DesignerNotificationController::class, 'index'])->name('notifications');
         Route::post('/notifications/read-all', [DesignerNotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::post('/notifications/{notification}/read', [DesignerNotificationController::class, 'read'])->name('notifications.read');

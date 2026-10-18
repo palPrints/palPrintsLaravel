@@ -69,11 +69,19 @@ test('the admin bell shows the new request and links to that account on the user
 
     $this->actingAs($designer)->post(route('onboarding.submit'));
 
+    $notification = Notification::where('user_id', $admin->id)->firstOrFail();
+
     $this->actingAs($admin)
         ->get(route('admin.dashboard'))
         ->assertOk()
         ->assertSee('طلب اعتماد جديد من مصمم: Lina Designer')
-        ->assertSee('href="'.route('admin.users', ['open' => $designer->id]).'"', false);
+        ->assertSee(route('admin.notifications.read', $notification));
+
+    // Opening it from the bell marks it read and lands on that account.
+    $this->actingAs($admin)
+        ->post(route('admin.notifications.read', $notification))
+        ->assertRedirect(route('admin.users', ['open' => $designer->id]));
+    expect($notification->fresh()->is_read)->toBeTrue();
 });
 
 test('the admin users page carries the designer review data and keeps typed html inert', function () {

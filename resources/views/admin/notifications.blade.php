@@ -53,7 +53,19 @@
     </section>
 
     @if ($notifications->hasPages())
-        <div class="an-pagination">{{ $notifications->links() }}</div>
+        <nav class="an-pagination" aria-label="صفحات الإشعارات">
+            @if ($notifications->onFirstPage())
+                <button type="button" disabled aria-label="الصفحة السابقة"><i class="bi bi-chevron-right"></i></button>
+            @else
+                <a href="{{ $notifications->previousPageUrl() }}" aria-label="الصفحة السابقة"><i class="bi bi-chevron-right"></i></a>
+            @endif
+            <span class="an-pagination__status">صفحة {{ $notifications->currentPage() }} من {{ $notifications->lastPage() }}</span>
+            @if ($notifications->hasMorePages())
+                <a href="{{ $notifications->nextPageUrl() }}" aria-label="الصفحة التالية"><i class="bi bi-chevron-left"></i></a>
+            @else
+                <button type="button" disabled aria-label="الصفحة التالية"><i class="bi bi-chevron-left"></i></button>
+            @endif
+        </nav>
     @endif
 </main>
 @endsection

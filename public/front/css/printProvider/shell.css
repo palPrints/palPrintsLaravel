@@ -137,8 +137,9 @@ body.sidebar-collapsed .wallet-shell{margin-right:0}
   body.sidebar-collapsed .wallet-sidebar nav a,
   body.sidebar-collapsed .logout{justify-content:center;gap:0;padding-inline:0}
   body.sidebar-collapsed .wallet-sidebar nav a span,
-  body.sidebar-collapsed .wallet-nav-badge,
   body.sidebar-collapsed .logout span{display:none}
+  body.sidebar-collapsed .wallet-sidebar nav a{position:relative}
+  body.sidebar-collapsed .wallet-nav-badge{position:absolute;inset-block-start:2px;inset-inline-start:2px;min-width:17px;height:17px;margin:0;padding-inline:3px;border:2px solid #fff;font-size:8px}
   body.sidebar-collapsed .wallet-sidebar nav a i,
   body.sidebar-collapsed .logout i{width:24px;font-size:20px}
   body.sidebar-collapsed .wallet-sidebar-divider{margin-inline:4px}
