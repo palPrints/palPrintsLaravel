@@ -234,7 +234,17 @@ class DesignController extends Controller
                 $image = 'storage/'.$image;
             }
 
-            $copy->update(['image' => $image, 'design_payload' => ['files' => $files] + $payload]);
+            $exports = [];
+            foreach ($payload['print_exports'] ?? [] as $export) {
+                if (empty($export['path']) || ! Storage::disk('local')->exists($export['path'])) {
+                    continue;
+                }
+                $path = 'designer-designs/'.$copy->designer_id.'/'.$copy->id.'/print-ready/'.($export['area_id'] ?? 'area').'--'.Str::uuid().'.png';
+                Storage::disk('local')->copy($export['path'], $path);
+                $exports[] = ['path' => $path] + $export;
+            }
+
+            $copy->update(['image' => $image, 'design_payload' => ['files' => $files, 'print_exports' => $exports] + $payload]);
 
             return $copy;
         });
@@ -312,6 +322,13 @@ class DesignController extends Controller
             'files.*' => ['file', 'mimes:png,jpg,jpeg,webp,svg', 'max:10240'],
             'file_assets' => ['nullable', 'array', 'max:20'],
             'file_assets.*' => ['string', 'max:120'],
+            // One print-ready PNG per print area, drawn by the studio; the print shop gets these with every order of the design.
+            'print_exports' => ['nullable', 'array', 'max:12'],
+            'print_exports.*' => ['file', 'mimes:png', 'max:30720'],
+            'print_export_areas' => ['nullable', 'array', 'max:12'],
+            'print_export_areas.*' => ['string', 'max:50'],
+            'print_export_ids' => ['nullable', 'array', 'max:12'],
+            'print_export_ids.*' => ['string', 'regex:/^[a-z0-9_-]{1,30}$/i'],
         ]);
 
         $data = Validator::make(json_decode($request->input('data'), true) ?: [], [
@@ -394,8 +411,9 @@ class DesignController extends Controller
 
         $oldImage = $existing?->image;
         $oldFiles = collect($existing?->design_payload['files'] ?? []);
+        $oldExports = collect($existing?->design_payload['print_exports'] ?? []);
 
-        $design = DB::transaction(function () use ($request, $data, $product, $basePrice, $sellingPrice, $status, $designer, $category, $allowedSizeIds, $existing, $oldFiles) {
+        $design = DB::transaction(function () use ($request, $data, $product, $basePrice, $sellingPrice, $status, $designer, $category, $allowedSizeIds, $existing, $oldFiles, $oldExports) {
             $fields = [
                 'designer_id' => $designer->id,
                 'product_id' => $product->id,
@@ -448,6 +466,21 @@ class DesignController extends Controller
                 }
             });
 
+            // The print-ready picture of each area, kept private next to the artwork. A new review replaces the old ones.
+            $exports = [];
+            foreach ($request->file('print_exports', []) as $index => $export) {
+                $areaId = strtolower((string) $request->input('print_export_ids.'.$index, 'area'.($index + 1)));
+                $exports[] = [
+                    'area_id' => $areaId,
+                    'name' => trim((string) $request->input('print_export_areas.'.$index, $areaId)),
+                    'path' => $export->storeAs('designer-designs/'.$designer->id.'/'.$design->id.'/print-ready', $areaId.'--'.Str::uuid().'.png', 'local'),
+                    'size' => $export->getSize(),
+                ];
+            }
+            if ($exports === []) {
+                $exports = $oldExports->all();
+            }
+
             $design->update([
                 'image' => 'storage/'.$previewPath,
                 'design_payload' => [
@@ -457,6 +490,7 @@ class DesignController extends Controller
                     'mockup' => $data['mockup'] ?? null,
                     'assets' => $data['assets'] ?? [],
                     'files' => $files,
+                    'print_exports' => $exports,
                 ],
             ]);
 
@@ -470,6 +504,9 @@ class DesignController extends Controller
             }
             $keptPaths = collect($design->design_payload['files'] ?? [])->pluck('path');
             $oldFiles->pluck('path')->filter()->reject(fn ($path) => $keptPaths->contains($path))
+                ->each(fn ($path) => Storage::disk('local')->delete($path));
+            $keptExports = collect($design->design_payload['print_exports'] ?? [])->pluck('path');
+            $oldExports->pluck('path')->filter()->reject(fn ($path) => $keptExports->contains($path))
                 ->each(fn ($path) => Storage::disk('local')->delete($path));
         }
 

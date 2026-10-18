@@ -351,3 +351,67 @@ test('saving without an editing id still creates a new design', function () {
 
     expect(Design::count())->toBe(2);
 });
+
+test('the designer saves a print-ready picture per area with the design, privately, and a copy gets its own', function () {
+    $payload = studioPayload(['status' => 'submitted', 'rightsConfirmed' => true]) + [
+        'print_exports' => [UploadedFile::fake()->create('print-front.png', 10, 'image/png')],
+        'print_export_areas' => ['أمامي'],
+        'print_export_ids' => ['front'],
+    ];
+
+    $id = $this->actingAs($this->designer)->post(route('designer.designs.store'), $payload, ['Accept' => 'application/json'])
+        ->assertCreated()->json('id');
+
+    $design = Design::findOrFail($id);
+    $export = $design->design_payload['print_exports'][0];
+    expect($export['area_id'])->toBe('front')->and($export['name'])->toBe('أمامي')->and($export['path'])->toStartWith('designer-designs/'.$this->designer->id.'/'.$id.'/print-ready/front--');
+    Storage::disk('local')->assertExists($export['path']);
+
+    $copyId = $this->actingAs($this->designer)->postJson(route('designer.designs.duplicate', $design))->assertCreated()->json('id');
+    $copy = Design::findOrFail($copyId);
+    expect($copy->design_payload['print_exports'][0]['path'])->not->toBe($export['path']);
+    Storage::disk('local')->assertExists($copy->design_payload['print_exports'][0]['path']);
+
+    // a picture that is not a PNG is refused
+    $this->actingAs($this->designer)->post(route('designer.designs.store'), studioPayload() + ['print_exports' => [UploadedFile::fake()->create('x.pdf', 10, 'application/pdf')], 'print_export_areas' => ['أمامي'], 'print_export_ids' => ['front']], ['Accept' => 'application/json'])
+        ->assertUnprocessable();
+});
+
+test('ordering a designer design gives the print shop the print-ready pictures, so it also gets the order sheet', function () {
+    $design = savedDesign($this->designer, $this->product, 'published');
+    $exportPath = 'designer-designs/'.$this->designer->id.'/'.$design->id.'/print-ready/front--abc.png';
+    Storage::disk('local')->put($exportPath, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='));
+    $design->update(['design_payload' => $design->design_payload + ['print_exports' => [['area_id' => 'front', 'name' => 'أمامي', 'path' => $exportPath, 'size' => 3]]]]);
+
+    $buyer = User::factory()->create();
+    $order = Order::create(['user_id' => $buyer->id, 'order_number' => 'D-1', 'status' => 'processing', 'payment_status' => 'paid', 'payment_method' => 'bank', 'subtotal' => 25, 'total_amount' => 25]);
+    $cart = Cart::create(['user_id' => $buyer->id, 'status' => 'active']);
+    $cartItem = CartItem::create(['cart_id' => $cart->id, 'product_id' => $this->product->id, 'variant_id' => $this->variant->id, 'design_id' => $design->id, 'item_type' => CartItem::TYPE_CATALOG_DESIGN, 'quantity' => 1, 'unit_price' => 25]);
+    $cartItem->load('design');
+    $owner = User::factory()->create(['is_active' => true]);
+    $owner->assignRole('print_provider');
+    $branch = $owner->printProvider()->create(['company_name' => 'مطبعة', 'approval_status' => 'approved', 'is_active' => true])->primaryBranch();
+    $offering = $branch->branchProductOfferings()->create(['product_id' => $this->product->id, 'base_price' => 10, 'currency' => 'ILS', 'production_time_min' => 1, 'production_time_max' => 1, 'daily_capacity' => 5, 'is_active' => true]);
+    $item = OrderItem::create(['order_id' => $order->id, 'product_id' => $this->product->id, 'variant_id' => $this->variant->id, 'design_id' => $design->id, 'item_type' => OrderItem::TYPE_CATALOG_DESIGN, 'print_provider_branch_id' => $branch->id, 'branch_product_offering_id' => $offering->id, 'quantity' => 1, 'unit_price' => 25, 'total_price' => 25, 'provider_cost' => 10]);
+
+    $method = new ReflectionMethod(\App\Services\CheckoutService::class, 'attachDesignerFiles');
+    $method->invoke(app(\App\Services\CheckoutService::class), $order, $item, $cartItem);
+
+    $files = $item->fresh()->printFiles;
+    $printReady = $files->filter->isPrintReady();
+    expect($printReady)->toHaveCount(1)
+        ->and($printReady->first()->areaLabel())->toBe('أمامي')
+        ->and($printReady->first()->areaSlug())->toBe('front')
+        ->and($files)->toHaveCount(2); // the print-ready picture and the designer's artwork
+
+    // the shop's page lists the print-ready picture, with the sheet and the package
+    $this->actingAs($owner)->get(route('print-provider.requests'))->assertViewHas('orders', function ($orders) {
+        $line = $orders->first()['items'][0];
+
+        return count($line['print_files']) === 1 && $line['sheet_url'] !== null && $line['package_url'] !== null;
+    });
+
+    // and the sheet (PDF) and the package can really be downloaded
+    $this->actingAs($owner)->get(route('print-provider.requests.sheet', [$order, $item]))->assertOk()->assertHeader('content-type', 'application/pdf');
+    $this->actingAs($owner)->get(route('print-provider.requests.package', [$order, $item]))->assertOk();
+});

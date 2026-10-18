@@ -43,7 +43,9 @@ class OrderSheetPdf
             $designs[] = ['name' => $name, 'src' => $this->dataUri($this->flatten($this->shrink($image, self::DESIGN_MAX_SIDE), 'e9edf3'))];
         }
 
-        $html = view('printProvider.order-pdf', $data + ['previewImages' => $previews, 'designImages' => $designs])->render();
+        // A paper order has no garment or print areas: it gets its own, simpler sheet with a card per file.
+        $view = empty($data['item']['paper_files']) ? 'printProvider.order-pdf' : 'printProvider.order-pdf-paper';
+        $html = view($view, $data + ['previewImages' => $previews, 'designImages' => $designs])->render();
 
         $directory = storage_path('app/mpdf');
         if (! is_dir($directory)) {
