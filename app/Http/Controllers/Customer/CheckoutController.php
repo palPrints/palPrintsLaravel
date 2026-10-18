@@ -113,7 +113,7 @@ class CheckoutController extends Controller
     {
         $options = $item->selected_options ?? [];
 
-        if ($item->item_type === CartItem::TYPE_CUSTOMER_UPLOAD) {
+        if (in_array($item->item_type, [CartItem::TYPE_CUSTOMER_UPLOAD, CartItem::TYPE_STICKER_BUNDLE], true)) {
             $options['files'] = $item->printFiles->map(fn (PrintFile $file) => [
                 'name' => $file->original_name,
                 'preview_url' => $file->preview_path ? route('customer.print-files.preview', $file) : null,

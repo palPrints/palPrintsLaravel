@@ -23,6 +23,7 @@ use App\Http\Controllers\Customer\NotificationController as CustomerNotification
 use App\Http\Controllers\Customer\OrdersController as CustomerOrdersController;
 use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
 use App\Http\Controllers\Customer\SettingsController as CustomerSettingsController;
+use App\Http\Controllers\Customer\StickerBundleController as CustomerStickerBundleController;
 use App\Http\Controllers\Customer\SupportController as CustomerSupportController;
 use App\Http\Controllers\DashboardRedirectController;
 use App\Http\Controllers\Designer\DashboardController as DesignerDashboardController;
@@ -64,6 +65,7 @@ Route::view('/shipping', 'pages.shipping')->name('shipping');
 Route::view('/terms', 'pages.terms')->name('terms');
 
 Route::view('/privacy', 'pages.privacy')->name('privacy');
+Route::get('/stickers/library/{stickerLibraryItem}/image', [CustomerStickerBundleController::class, 'libraryImage'])->name('stickers.library-image');
 
 /*
 |--------------------------------------------------------------------------
@@ -105,6 +107,7 @@ Route::middleware('shopper')->prefix('customer')->name('customer.')->group(funct
     Route::get('/mugs', [CustomerCatalogController::class, 'mugs'])->name('mugs');
     Route::get('/tshirts', [CustomerCatalogController::class, 'tshirts'])->name('tshirts');
     Route::get('/stickers', [CustomerCatalogController::class, 'stickers'])->name('stickers');
+    Route::post('/stickers/preview', [CustomerStickerBundleController::class, 'preview'])->name('stickers.preview');
     Route::get('/paper-printing', [CustomerCatalogController::class, 'paperPrinting'])->name('paperPrinting');
     Route::get('/basket', [CustomerCartController::class, 'index'])->name('basket');
     Route::get('/print-files/{printFile}/preview', [CustomerCartController::class, 'printFilePreview'])->name('print-files.preview');
@@ -119,6 +122,8 @@ Route::middleware(['auth', 'active', 'role:customer'])->prefix('customer')->name
     Route::post('/cart/catalog', [CustomerCartController::class, 'storeCatalog'])->name('cart.store-catalog');
     Route::post('/cart/custom-design', [CustomerCartController::class, 'storeCustomDesign'])->name('cart.store-custom-design');
     Route::post('/cart/paper',[CustomerCartController::class, 'storePaper'])->name('cart.store-paper');
+    Route::post('/cart/sticker-bundle', [CustomerStickerBundleController::class, 'store'])->name('cart.store-sticker-bundle');
+    Route::post('/cart/sticker-bundle/{cartItem}', [CustomerStickerBundleController::class, 'update'])->name('cart.update-sticker-bundle');
 });
 
 /*
@@ -154,6 +159,13 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
 
         Route::get('/stickers', [AdminStickerController::class, 'index'])->name('stickers');
+        Route::post('/stickers/categories', [AdminStickerController::class, 'storeCategory'])->name('stickers.categories.store');
+        Route::patch('/stickers/categories/{stickerCategory}', [AdminStickerController::class, 'updateCategory'])->name('stickers.categories.update');
+        Route::delete('/stickers/categories/{stickerCategory}', [AdminStickerController::class, 'destroyCategory'])->name('stickers.categories.destroy');
+        Route::post('/stickers/items', [AdminStickerController::class, 'storeItem'])->name('stickers.items.store');
+        Route::patch('/stickers/items/{stickerLibraryItem}', [AdminStickerController::class, 'updateItem'])->name('stickers.items.update');
+        Route::delete('/stickers/items/{stickerLibraryItem}', [AdminStickerController::class, 'destroyItem'])->name('stickers.items.destroy');
+        Route::post('/stickers/settings', [AdminStickerController::class, 'updateSettings'])->name('stickers.settings.update');
 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders');
         Route::patch('/orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');

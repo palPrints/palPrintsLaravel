@@ -33,7 +33,7 @@ class CartController extends Controller
 
             $designImage = null;
 
-            if ($item->item_type === CartItem::TYPE_CUSTOMER_UPLOAD) {
+            if (in_array($item->item_type, [CartItem::TYPE_CUSTOMER_UPLOAD, CartItem::TYPE_STICKER_BUNDLE], true)) {
                 // The customer's own artwork (private storage) is shown on top of the product picture.
                 $artwork = $item->printFiles
                     ->where('status', '!=', PrintFile::STATUS_DELETED)
@@ -57,7 +57,7 @@ class CartController extends Controller
 
             // Catalog lines are a design printed on a product, so show the design the customer picked;
             // paper-print lines only carry a placeholder design, so they keep the product's name and image.
-            $design = $item->item_type === CartItem::TYPE_CUSTOMER_UPLOAD || $item->product?->code === 'PAPER-PRINT'
+            $design = in_array($item->item_type, [CartItem::TYPE_CUSTOMER_UPLOAD, CartItem::TYPE_STICKER_BUNDLE], true) || $item->product?->code === 'PAPER-PRINT'
                 ? null
                 : $item->design;
 

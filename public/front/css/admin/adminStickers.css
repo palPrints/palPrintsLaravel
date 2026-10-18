@@ -29,3 +29,99 @@
 .sticker-actions button { min-height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1.5px solid transparent; border-radius: 9px; cursor: pointer; font: 700 12px "Cairo", sans-serif; transition: transform .16s ease, color .16s ease, background-color .16s ease, border-color .16s ease; }
 .sticker-actions button:hover { transform: translateY(-1px); }
 .sticker-actions .delete-action { padding: 0; }
+/* Persistent sticker admin additions. */
+.admin-sticker-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  gap: 20px;
+  align-items: start;
+}
+
+.admin-sticker-settings {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, .06);
+}
+
+.admin-sticker-settings h2 {
+  margin: 0 0 14px;
+  color: #0f172a;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-sticker-settings label {
+  display: grid;
+  gap: 6px;
+  color: #334155;
+  font-weight: 700;
+}
+
+.admin-sticker-settings input,
+.admin-sticker-settings textarea,
+.admin-sticker-settings select {
+  width: 100%;
+  border: 1px solid #d8e0ea;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.sizes-field {
+  margin-top: 12px;
+}
+
+.sizes-field small {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.admin-a4-preview {
+  display: grid;
+  place-items: center;
+  padding: 16px 0;
+}
+
+.admin-a4-sheet {
+  position: relative;
+  width: min(210px, 75%);
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 16px 30px rgba(15, 23, 42, .12);
+}
+
+.admin-a4-sheet span {
+  position: absolute;
+  border: 1px dashed #cbd5e1;
+}
+
+.admin-a4-sheet b {
+  position: absolute;
+  top: 12%;
+  right: 12%;
+  border: 2px dashed #00a3a3;
+  background: #f8fafc;
+}
+
+.check-row {
+  display: flex !important;
+  grid-template-columns: none !important;
+  align-items: center;
+  gap: 8px;
+}
+
+.check-row input {
+  width: auto;
+}
+
+@media (max-width: 1100px) {
+  .admin-sticker-layout {
+    grid-template-columns: 1fr;
+  }
+}

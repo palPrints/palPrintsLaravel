@@ -11,6 +11,7 @@ class OrderItem extends Model
 
     public const TYPE_CATALOG_DESIGN = 'catalog_design';
     public const TYPE_CUSTOMER_UPLOAD = 'customer_upload';
+    public const TYPE_STICKER_BUNDLE = 'sticker_bundle';
 
     protected $fillable = [
         'order_id',
@@ -77,5 +78,10 @@ class OrderItem extends Model
     public function printFiles()
     {
         return $this->hasMany(PrintFile::class);
+    }
+
+    public function stickerBundleLines()
+    {
+        return $this->hasMany(StickerBundleLine::class);
     }
 }

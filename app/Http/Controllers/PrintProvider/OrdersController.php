@@ -52,6 +52,8 @@ class OrdersController extends Controller
         'printing_method_name' => 'تقنية الطباعة',
         'size' => 'القياس',
         'color' => 'اللون',
+        'sticker_quantity' => 'عدد الملصقات',
+        'sticker_page_count' => 'عدد صفحات A4',
     ];
 
     /** Human labels for the option values saved by the cart. */

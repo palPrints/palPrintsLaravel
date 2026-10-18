@@ -9,6 +9,7 @@ use App\Models\OrderStatusHistory;
 use App\Models\Payment;
 use App\Models\PrintProviderBranch;
 use App\Services\OrderShopChoices;
+use App\Services\Stickers\StickerPdfService;
 use App\Support\OrderNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -81,14 +82,22 @@ class PaymentNoticeController extends Controller
             }
 
             $before = $order->status;
-            $order->update(['payment_status' => 'paid', 'status' => 'processing']);
+            $hasStickerBundle = $order->items->contains(fn ($item) => $item->item_type === \App\Models\OrderItem::TYPE_STICKER_BUNDLE);
+            $order->update(['payment_status' => 'paid', 'status' => $hasStickerBundle ? 'processing-pdf' : 'processing']);
             $this->record($order, $request, $before, 'تمت الموافقة على إشعار الدفع وتوجيه الطلب إلى '.$this->branchLabel($branch), ['branch_id' => $branch->id]);
         });
 
         OrderNotifier::paymentReviewed((int) $order->user_id, $order->order_number, true);
 
+        $pdfReady = $this->generateStickerPdfs($order);
+        if ($pdfReady && $order->fresh()->status === 'processing-pdf') {
+            $before = 'processing-pdf';
+            $order->update(['status' => 'processing']);
+            $this->record($order, $request, $before, 'طھظ… طھظˆظ„ظٹط¯ ظ…ظ„ظپط§طھ PDF ظ„ط­ط²ظ…ط© ط§ظ„ظ…ظ„طµظ‚ط§طھ.', ['pdf_generated' => true]);
+        }
+
         // The chosen shop's owner learns about the new order.
-        if ($providerUserId = $branch->printProvider()->value('user_id')) {
+        if ($pdfReady && $providerUserId = $branch->printProvider()->value('user_id')) {
             OrderNotifier::newOrderForShop((int) $providerUserId, $order->order_number, $order->items->count());
         }
         $this->audit($request, 'admin.payment_notice_approved', 'الموافقة على إشعار دفع الطلب '.$order->order_number, ['order_id' => $order->id, 'payment_id' => $payment->id, 'branch_id' => $branch->id]);
@@ -211,5 +220,21 @@ class PaymentNoticeController extends Controller
             'user_agent' => $request->userAgent(),
             'new_values' => $values,
         ]);
+    }
+
+    private function generateStickerPdfs(Order $order): bool
+    {
+        $order->loadMissing('items.order', 'items.stickerBundleLines.libraryItem', 'items.stickerBundleLines.printFile');
+        $pdf = app(StickerPdfService::class);
+
+        foreach ($order->items->where('item_type', \App\Models\OrderItem::TYPE_STICKER_BUNDLE) as $item) {
+            try {
+                $pdf->generateForOrderItem($item);
+            } catch (\Throwable) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\PrintFile;
+use App\Models\StickerBundleLine;
 use App\Models\User;
 use App\Support\AdminNotifier;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +40,7 @@ class CheckoutService
                 'items.variant',
                 'items.design',
                 'items.printFiles' => fn ($query) => $query->where('status', '!=', PrintFile::STATUS_DELETED),
+                'items.stickerBundleLines',
             ]);
 
             if ($cart->items->isEmpty()) {
@@ -136,7 +138,83 @@ class CheckoutService
             return $this->createCustomerUploadOrderItem($order, $cartItem);
         }
 
+        if ($cartItem->item_type === CartItem::TYPE_STICKER_BUNDLE) {
+            return $this->createStickerBundleOrderItem($order, $cartItem);
+        }
+
         return $this->createCatalogDesignOrderItem($order, $cartItem);
+    }
+
+    private function createStickerBundleOrderItem(Order $order, CartItem $cartItem): OrderItem
+    {
+        $options = $cartItem->selected_options ?? [];
+
+        if ($cartItem->design_id !== null || ! $cartItem->product || $cartItem->product->code !== 'STICKER-CUSTOM') {
+            throw ValidationException::withMessages(['cart' => 'ط¹ظ†طµط± ط§ظ„ظ…ظ„طµظ‚ط§طھ ظپظٹ ط§ظ„ط³ظ„ط© ط؛ظٹط± طµط­ظٹط­.']);
+        }
+
+        if ($cartItem->stickerBundleLines->isEmpty() || ! is_array($options['layout_snapshot'] ?? null)) {
+            throw ValidationException::withMessages(['cart' => 'طھظپط§طµظٹظ„ ط­ط²ظ…ط© ط§ظ„ظ…ظ„طµظ‚ط§طھ ط؛ظٹط± ظ…ظƒطھظ…ظ„ط©.']);
+        }
+
+        $offering = $this->activeOffering(
+            (int) ($options['branch_product_offering_id'] ?? 0),
+            (int) ($options['print_provider_branch_id'] ?? 0),
+            $cartItem
+        );
+
+        $quantity = 1;
+        $unitPrice = (float) $cartItem->unit_price;
+        $totalPrice = $unitPrice;
+        $stickerQuantity = (int) ($options['sticker_quantity'] ?? $cartItem->stickerBundleLines->sum('quantity'));
+        $providerCost = (float) $offering->base_price * max(1, $stickerQuantity);
+
+        $filesSnapshot = $cartItem->printFiles->map(fn (PrintFile $file) => [
+            'name' => $file->original_name,
+            'path' => $file->stored_path,
+            'disk' => $file->disk,
+            'size' => $file->file_size,
+            'page_count' => $file->page_count,
+            'mime_type' => $file->mime_type,
+        ])->values()->all();
+
+        $orderItem = OrderItem::create([
+            'order_id' => $order->id,
+            'product_id' => $cartItem->product_id,
+            'variant_id' => $cartItem->variant_id,
+            'design_id' => null,
+            'designer_id' => null,
+            'item_type' => OrderItem::TYPE_STICKER_BUNDLE,
+            'print_provider_branch_id' => $offering->print_provider_branch_id,
+            'branch_product_offering_id' => $offering->id,
+            'quantity' => $quantity,
+            'unit_price' => $unitPrice,
+            'total_price' => $totalPrice,
+            'provider_cost' => $providerCost,
+            'designer_profit' => 0,
+            'platform_commission' => max(0, $totalPrice - $providerCost),
+            'selected_options' => array_merge($options, ['files' => $filesSnapshot]),
+        ]);
+
+        PrintFile::query()
+            ->where('cart_item_id', $cartItem->id)
+            ->where('status', '!=', PrintFile::STATUS_DELETED)
+            ->update([
+                'cart_item_id' => null,
+                'order_item_id' => $orderItem->id,
+                'status' => PrintFile::STATUS_ATTACHED_TO_ORDER,
+                'attached_to_order_at' => now(),
+            ]);
+
+        StickerBundleLine::query()
+            ->where('cart_item_id', $cartItem->id)
+            ->update([
+                'cart_item_id' => null,
+                'order_item_id' => $orderItem->id,
+                'updated_at' => now(),
+            ]);
+
+        return $orderItem;
     }
 
     private function createCustomerUploadOrderItem(Order $order, CartItem $cartItem): OrderItem

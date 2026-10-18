@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Design;
 use App\Models\DesignFavorite;
 use App\Models\Product;
+use App\Models\StickerCategory;
+use App\Services\Stickers\StickerSettingsService;
 use App\Support\CatalogProductData;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
@@ -61,9 +63,35 @@ class CatalogController extends Controller
         return $this->productDesigns('MUG-CERAMIC', 'customer.mugs', 'front/assets/images/customer/cup.webp');
     }
 
-    public function stickers(): View
+    public function stickers(StickerSettingsService $settings): View
     {
-        return $this->productDesigns('STICKER-CUSTOM', 'customer.stickers', 'front/assets/images/customer/icons8-sticker-48.png');
+        $view = $this->productDesigns('STICKER-CUSTOM', 'customer.stickers', 'front/assets/images/customer/icons8-sticker-48.png');
+
+        return $view->with([
+            'stickerCategories' => StickerCategory::query()
+                ->where('is_active', true)
+                ->with(['stickers' => fn ($query) => $query->where('is_active', true)->orderBy('sort_order')->orderBy('id')])
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get()
+                ->map(fn (StickerCategory $category) => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'stickers' => $category->stickers->map(fn ($item) => [
+                        'id' => $item->id,
+                        'name' => $item->name,
+                        'image_url' => $item->imageUrl(),
+                    ])->values(),
+                ])->values(),
+            'stickerSettings' => $settings->get(),
+            'stickerRoutes' => [
+                'preview' => route('customer.stickers.preview'),
+                'store' => route('customer.cart.store-sticker-bundle'),
+                'login' => route('login'),
+            ],
+            'stickerUser' => ['authenticated' => auth()->check()],
+        ]);
     }
 
     public function paperPrinting(): View

@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             DesignerDashboardSeeder::class,
             AdminUserSeeder::class,
             FullDemoScenarioSeeder::class,
+            StickerDemoSeeder::class,
         ]);
     }
 }

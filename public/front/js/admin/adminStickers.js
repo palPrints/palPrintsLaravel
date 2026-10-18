@@ -1,357 +1,321 @@
-/* Admin stickers page: add / rename / delete categories and add / delete sticker images (front end only, nothing is saved yet). */
-(function (window, document) {
+(function () {
   "use strict";
 
-  function initialize() {
-    const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
-    const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+  const config = window.PalPrintsAdminStickers || {};
+  const csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
+  let categories = config.categories || [];
+  let activeCategory = "all";
+  let editingCategory = null;
+  let editingSticker = null;
+  let settings = config.settings || {};
 
-    const bar = document.getElementById("categoriesBar");
-    const grid = document.getElementById("stickersGrid");
-    const empty = document.getElementById("stickersEmpty");
-    const emptyTitle = document.getElementById("stickersEmptyTitle");
-    const emptyText = document.getElementById("stickersEmptyText");
+  const $ = (id) => document.getElementById(id);
+  const els = {
+    bar: $("categoriesBar"),
+    grid: $("stickersGrid"),
+    empty: $("stickersEmpty"),
+    categoryDialog: $("categoryDialog"),
+    categoryForm: $("categoryForm"),
+    categoryTitle: $("categoryDialogTitle"),
+    categoryName: $("categoryNameInput"),
+    categoryOrder: $("categoryOrderInput"),
+    categoryActive: $("categoryActiveInput"),
+    categoryError: $("categoryError"),
+    stickerDialog: $("stickerDialog"),
+    stickerForm: $("stickerForm"),
+    stickerTitle: $("stickerDialogTitle"),
+    stickerImage: $("stickerImageInput"),
+    stickerName: $("stickerNameInput"),
+    stickerCategory: $("stickerCategoryInput"),
+    stickerOrder: $("stickerOrderInput"),
+    stickerActive: $("stickerActiveInput"),
+    stickerError: $("stickerError"),
+    settingsForm: $("settingsForm"),
+    sizesInput: $("sizesInput"),
+    preview: $("adminA4Preview")
+  };
 
-    const categoryDialog = document.getElementById("categoryDialog");
-    const categoryForm = document.getElementById("categoryForm");
-    const categoryTitle = document.getElementById("categoryDialogTitle");
-    const categoryName = document.getElementById("categoryNameInput");
-    const categoryError = document.getElementById("categoryError");
+  function toast(message) {
+    if (window.PalAdmin?.toast) window.PalAdmin.toast(message);
+    else alert(message);
+  }
 
-    const stickerDialog = document.getElementById("stickerDialog");
-    const stickerForm = document.getElementById("stickerForm");
-    const stickerImage = document.getElementById("stickerImageInput");
-    const stickerPreview = document.getElementById("stickerPreviewImg");
-    const stickerUploadTitle = document.getElementById("stickerUploadTitle");
-    const stickerName = document.getElementById("stickerNameInput");
-    const stickerCategory = document.getElementById("stickerCategoryInput");
-    const stickerError = document.getElementById("stickerError");
-    const stickerTitle = document.getElementById("stickerDialogTitle");
-    const stickerSubmit = document.getElementById("stickerSubmitButton");
+  function route(template, id) {
+    return template.replace("__ID__", id);
+  }
 
-    let nextId = 1;
-    let categories = [];
-    let stickers = [];
-    let activeCategory = "all";
-    let editingCategory = null;
-    let pendingImage = null;
-    let editingSticker = null;
-
-    function toast(message) {
-      if (window.PalAdmin) window.PalAdmin.toast(message);
-    }
-
-    function el(tag, className, text) {
-      const node = document.createElement(tag);
-      if (className) node.className = className;
-      if (text != null) node.textContent = text;
-      return node;
-    }
-
-    function iconButton(icon, label, dataName, dataValue) {
-      const button = el("button");
-      button.type = "button";
-      button.dataset[dataName] = dataValue;
-      button.setAttribute("aria-label", label);
-      const i = el("i", "bi " + icon);
-      i.setAttribute("aria-hidden", "true");
-      button.append(i);
-      return button;
-    }
-
-    function showError(node, message) {
-      node.textContent = message;
-      node.hidden = !message;
-    }
-
-    function countIn(categoryId) {
-      return stickers.filter(function (sticker) { return sticker.categoryId === categoryId; }).length;
-    }
-
-    function nameTaken(name, exceptId) {
-      const wanted = name.trim().toLowerCase();
-      return categories.some(function (category) { return category.id !== exceptId && category.name.trim().toLowerCase() === wanted; });
-    }
-
-    /* ---------- Rendering ---------- */
-    function renderBar() {
-      const items = [{ id: "all", name: "كل الستيكرات", count: stickers.length }].concat(categories.map(function (category) {
-        return { id: category.id, name: category.name, count: countIn(category.id), tools: true };
-      }));
-
-      bar.replaceChildren(...items.map(function (item) {
-        const wrap = el("span", "sticker-cat" + (item.id === activeCategory ? " is-active" : ""));
-        const pill = el("button", "summary-pill");
-        pill.type = "button";
-        pill.dataset.category = item.id;
-        pill.setAttribute("aria-pressed", String(item.id === activeCategory));
-        pill.append(el("b", null, String(item.count)), " " + item.name);
-        wrap.append(pill);
-
-        if (item.tools) {
-          const tools = el("span", "sticker-cat-tools");
-          tools.append(
-            iconButton("bi-pencil-square", "تعديل التصنيف " + item.name, "rename", item.id),
-            iconButton("bi-trash3", "حذف التصنيف " + item.name, "removeCategory", item.id)
-          );
-          wrap.append(tools);
-        }
-        return wrap;
-      }));
-    }
-
-    function renderGrid() {
-      const visible = stickers.filter(function (sticker) { return activeCategory === "all" || sticker.categoryId === activeCategory; });
-
-      grid.replaceChildren(...visible.map(function (sticker) {
-        const category = categories.find(function (item) { return item.id === sticker.categoryId; });
-        const card = el("article", "sticker-card");
-        const visual = el("div", "sticker-visual");
-        const img = el("img");
-        img.src = sticker.url;
-        img.alt = sticker.name;
-        visual.append(img);
-
-        const info = el("div", "sticker-info");
-        const title = el("h3", null, sticker.name);
-        title.title = sticker.name;
-        info.append(title, el("p", null, category ? category.name : ""));
-
-        const actions = el("div", "sticker-actions");
-        const edit = el("button", "edit-action");
-        edit.type = "button";
-        edit.dataset.editSticker = sticker.id;
-        edit.setAttribute("aria-label", "تعديل " + sticker.name);
-        const editIcon = el("i", "bi bi-pencil-square");
-        editIcon.setAttribute("aria-hidden", "true");
-        edit.append(editIcon, " تعديل");
-        const remove = iconButton("bi-trash3", "حذف " + sticker.name, "removeSticker", sticker.id);
-        remove.className = "delete-action";
-        actions.append(edit, remove);
-
-        card.append(visual, info, actions);
-        return card;
-      }));
-
-      empty.hidden = visible.length > 0;
-      if (visible.length === 0) {
-        if (categories.length === 0) {
-          emptyTitle.textContent = "ابدأ بإضافة تصنيف";
-          emptyText.textContent = "أنشئ تصنيفًا أولًا (مثل: فلسطين)، ثم أضف إليه صور الستيكرات.";
-        } else if (activeCategory === "all") {
-          emptyTitle.textContent = "لا توجد ستيكرات بعد";
-          emptyText.textContent = "اضغط «إضافة ستيكر» لرفع أول صورة.";
-        } else {
-          emptyTitle.textContent = "لا توجد ستيكرات في هذا التصنيف";
-          emptyText.textContent = "أضف ستيكرًا وسيظهر هنا.";
-        }
+  async function request(url, options = {}) {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        "Accept": "application/json",
+        "X-CSRF-TOKEN": csrf,
+        "X-Requested-With": "XMLHttpRequest",
+        ...(options.headers || {})
       }
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message = Object.values(data.errors || {})[0]?.[0] || data.message || "تعذر حفظ التغيير.";
+      throw new Error(message);
     }
+    return data;
+  }
 
-    function render() {
-      if (activeCategory !== "all" && !categories.some(function (category) { return category.id === activeCategory; })) activeCategory = "all";
-      renderBar();
-      renderGrid();
+  function allStickers() {
+    return categories.flatMap((category) => (category.stickers || []).map((item) => ({ ...item, category_name: category.name })));
+  }
+
+  function renderBar() {
+    const stickers = allStickers();
+    const items = [{ id: "all", name: "الكل", count: stickers.length }].concat(categories.map((category) => ({
+      id: String(category.id),
+      name: category.name,
+      count: (category.stickers || []).length,
+      category
+    })));
+    els.bar.replaceChildren(...items.map((item) => {
+      const wrap = document.createElement("span");
+      wrap.className = `sticker-cat ${activeCategory === item.id ? "is-active" : ""}`;
+      const pill = document.createElement("button");
+      pill.className = "summary-pill";
+      pill.type = "button";
+      pill.dataset.category = item.id;
+      pill.innerHTML = `<b>${item.count}</b> ${item.name}`;
+      wrap.append(pill);
+      if (item.category) {
+        const tools = document.createElement("span");
+        tools.className = "sticker-cat-tools";
+        tools.innerHTML = `<button type="button" data-edit-category="${item.id}" aria-label="تعديل"><i class="bi bi-pencil-square"></i></button><button type="button" data-delete-category="${item.id}" aria-label="حذف"><i class="bi bi-trash3"></i></button>`;
+        wrap.append(tools);
+      }
+      return wrap;
+    }));
+  }
+
+  function renderGrid() {
+    const stickers = allStickers().filter((item) => activeCategory === "all" || String(item.sticker_category_id) === activeCategory);
+    els.grid.replaceChildren(...stickers.map((sticker) => {
+      const card = document.createElement("article");
+      card.className = "sticker-card";
+      card.innerHTML = `
+        <div class="sticker-visual"><img src="${sticker.image_url}" alt="${sticker.name}"></div>
+        <div class="sticker-info"><h3 title="${sticker.name}">${sticker.name}</h3><p>${sticker.category_name} · ترتيب ${sticker.sort_order}</p></div>
+        <div class="sticker-actions">
+          <button class="edit-action" type="button" data-edit-sticker="${sticker.id}"><i class="bi bi-pencil-square"></i> تعديل</button>
+          <button class="delete-action" type="button" data-delete-sticker="${sticker.id}"><i class="bi bi-trash3"></i></button>
+        </div>`;
+      return card;
+    }));
+    els.empty.hidden = stickers.length > 0;
+  }
+
+  function render() {
+    if (activeCategory !== "all" && !categories.some((category) => String(category.id) === activeCategory)) activeCategory = "all";
+    renderBar();
+    renderGrid();
+    renderStickerCategoryOptions();
+  }
+
+  function renderStickerCategoryOptions() {
+    els.stickerCategory.replaceChildren(...categories.map((category) => {
+      const option = document.createElement("option");
+      option.value = category.id;
+      option.textContent = category.name;
+      return option;
+    }));
+  }
+
+  function openCategory(category = null) {
+    editingCategory = category;
+    els.categoryTitle.textContent = category ? "تعديل تصنيف" : "إضافة تصنيف";
+    els.categoryName.value = category?.name || "";
+    els.categoryOrder.value = category?.sort_order || 0;
+    els.categoryActive.checked = category ? Boolean(category.is_active) : true;
+    els.categoryError.hidden = true;
+    els.categoryDialog.showModal();
+  }
+
+  function openSticker(sticker = null) {
+    if (!categories.length) {
+      toast("أضف تصنيفا أولا.");
+      openCategory();
+      return;
     }
+    editingSticker = sticker;
+    els.stickerTitle.textContent = sticker ? "تعديل ملصق" : "إضافة ملصق";
+    els.stickerForm.reset();
+    els.stickerName.value = sticker?.name || "";
+    els.stickerCategory.value = sticker?.sticker_category_id || (activeCategory !== "all" ? activeCategory : categories[0].id);
+    els.stickerOrder.value = sticker?.sort_order || 0;
+    els.stickerActive.checked = sticker ? Boolean(sticker.is_active) : true;
+    els.stickerError.hidden = true;
+    els.stickerDialog.showModal();
+  }
 
-    /* ---------- Categories ---------- */
-    function openCategoryDialog(category) {
-      editingCategory = category || null;
-      categoryTitle.textContent = category ? "تعديل التصنيف" : "إضافة تصنيف";
-      categoryName.value = category ? category.name : "";
-      showError(categoryError, "");
-      categoryDialog.showModal();
-      categoryName.focus();
-    }
+  function setError(node, error) {
+    node.textContent = error;
+    node.hidden = !error;
+  }
 
-    // method="dialog" would close the dialog on every submit, so the form is handled by hand and closed only when valid.
-    categoryForm.addEventListener("submit", function (event) {
+  function initDialogs() {
+    $("addCategoryButton").addEventListener("click", () => openCategory());
+    $("addStickerButton").addEventListener("click", () => openSticker());
+    document.querySelectorAll("[data-dialog-close]").forEach((button) => button.addEventListener("click", () => button.closest("dialog").close()));
+
+    els.categoryForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const name = categoryName.value.trim();
-      if (!name) { showError(categoryError, "أدخل اسم التصنيف."); return; }
-      if (nameTaken(name, editingCategory ? editingCategory.id : null)) { showError(categoryError, "يوجد تصنيف بهذا الاسم."); return; }
-
-      if (editingCategory) {
-        editingCategory.name = name;
-        toast("تم تعديل التصنيف.");
-      } else {
-        const category = { id: "c" + nextId++, name: name };
-        categories.push(category);
-        activeCategory = category.id;
-        toast("تمت إضافة التصنيف.");
+      const form = new FormData();
+      form.append("name", els.categoryName.value.trim());
+      form.append("sort_order", els.categoryOrder.value || "0");
+      form.append("is_active", els.categoryActive.checked ? "1" : "0");
+      if (!form.get("name")) return setError(els.categoryError, "أدخل اسم التصنيف.");
+      try {
+        const url = editingCategory ? route(config.routes.categoryUpdate, editingCategory.id) : config.routes.categoryStore;
+        if (editingCategory) form.append("_method", "PATCH");
+        const data = await request(url, { method: "POST", body: form });
+        categories = data.categories;
+        els.categoryDialog.close();
+        render();
+        toast("تم حفظ التصنيف.");
+      } catch (error) {
+        setError(els.categoryError, error.message);
       }
-      categoryDialog.close();
-      render();
     });
 
-    document.getElementById("addCategoryButton").addEventListener("click", function () { openCategoryDialog(); });
+    els.stickerForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = new FormData();
+      form.append("name", els.stickerName.value.trim());
+      form.append("sticker_category_id", els.stickerCategory.value);
+      form.append("sort_order", els.stickerOrder.value || "0");
+      form.append("is_active", els.stickerActive.checked ? "1" : "0");
+      if (els.stickerImage.files[0]) form.append("image", els.stickerImage.files[0]);
+      if (!form.get("name")) return setError(els.stickerError, "أدخل اسم الملصق.");
+      if (!editingSticker && !els.stickerImage.files[0]) return setError(els.stickerError, "اختر صورة الملصق.");
+      try {
+        const url = editingSticker ? route(config.routes.itemUpdate, editingSticker.id) : config.routes.itemStore;
+        if (editingSticker) form.append("_method", "PATCH");
+        const data = await request(url, { method: "POST", body: form });
+        categories = data.categories;
+        activeCategory = String(form.get("sticker_category_id"));
+        els.stickerDialog.close();
+        render();
+        toast("تم حفظ الملصق.");
+      } catch (error) {
+        setError(els.stickerError, error.message);
+      }
+    });
+  }
 
-    bar.addEventListener("click", function (event) {
-      const rename = event.target.closest("[data-rename]");
-      if (rename) {
-        openCategoryDialog(categories.find(function (category) { return category.id === rename.dataset.rename; }));
+  function initGridActions() {
+    els.bar.addEventListener("click", async (event) => {
+      const tab = event.target.closest("[data-category]");
+      if (tab) {
+        activeCategory = tab.dataset.category;
+        render();
         return;
       }
-
-      const remove = event.target.closest("[data-remove-category]");
-      if (remove) {
-        const category = categories.find(function (item) { return item.id === remove.dataset.removeCategory; });
-        const total = countIn(category.id);
-        PalAlert.confirm({
-          title: "حذف التصنيف",
-          text: total > 0
-            ? "سيتم حذف التصنيف «" + category.name + "» مع " + total + " ستيكر بداخله. هل أنت متأكد؟"
-            : "هل تريد حذف التصنيف «" + category.name + "»؟",
-          confirmText: "نعم، احذف",
-          danger: true
-        }).then(function (ok) {
-          if (!ok) return;
-          stickers.filter(function (sticker) { return sticker.categoryId === category.id; }).forEach(function (sticker) { URL.revokeObjectURL(sticker.url); });
-          categories = categories.filter(function (item) { return item.id !== category.id; });
-          stickers = stickers.filter(function (sticker) { return sticker.categoryId !== category.id; });
-          toast("تم حذف التصنيف.");
-          render();
-        });
-        return;
-      }
-
-      const pill = event.target.closest("[data-category]");
-      if (pill) {
-        activeCategory = pill.dataset.category;
+      const edit = event.target.closest("[data-edit-category]");
+      if (edit) openCategory(categories.find((category) => String(category.id) === edit.dataset.editCategory));
+      const del = event.target.closest("[data-delete-category]");
+      if (del && confirm("حذف التصنيف سيحذف ملصقاته. هل أنت متأكد؟")) {
+        const data = await request(route(config.routes.categoryDestroy, del.dataset.deleteCategory), { method: "POST", body: methodForm("DELETE") });
+        categories = data.categories;
         render();
       }
     });
 
-    /* ---------- Stickers ---------- */
-    function resetImageField() {
-      if (pendingImage) URL.revokeObjectURL(pendingImage.url);
-      pendingImage = null;
-      stickerImage.value = "";
-      stickerPreview.hidden = true;
-      stickerPreview.removeAttribute("src");
-      stickerUploadTitle.textContent = "اختر صورة للستيكر";
-    }
-
-    function openStickerDialog(sticker) {
-      if (categories.length === 0) {
-        toast("أضف تصنيفًا أولًا.");
-        openCategoryDialog();
-        return;
-      }
-      editingSticker = sticker || null;
-      stickerForm.reset();
-      resetImageField();
-      showError(stickerError, "");
-      stickerTitle.textContent = sticker ? "تعديل الستيكر" : "إضافة ستيكر";
-      stickerSubmit.textContent = sticker ? "حفظ التعديلات" : "حفظ الستيكر";
-      stickerCategory.replaceChildren(...categories.map(function (category) {
-        const option = el("option", null, category.name);
-        option.value = category.id;
-        return option;
-      }));
-
-      if (sticker) {
-        stickerName.value = sticker.name;
-        stickerCategory.value = sticker.categoryId;
-        stickerPreview.src = sticker.url;
-        stickerPreview.hidden = false;
-        stickerUploadTitle.textContent = "الصورة الحالية (اختر صورة لتغييرها)";
-      } else if (activeCategory !== "all") {
-        stickerCategory.value = activeCategory;
-      }
-      stickerDialog.showModal();
-    }
-
-    stickerImage.addEventListener("change", function () {
-      const file = stickerImage.files[0];
-      if (!file) return;
-      if (IMAGE_TYPES.indexOf(file.type) === -1) { resetImageField(); showError(stickerError, "الصيغة غير مدعومة. استخدم PNG أو JPG أو WEBP أو SVG."); return; }
-      if (file.size > MAX_IMAGE_BYTES) { resetImageField(); showError(stickerError, "حجم الصورة أكبر من 2MB."); return; }
-
-      showError(stickerError, "");
-      if (pendingImage) URL.revokeObjectURL(pendingImage.url);
-      pendingImage = { file: file, url: URL.createObjectURL(file) };
-      stickerPreview.src = pendingImage.url;
-      stickerPreview.hidden = false;
-      stickerUploadTitle.textContent = file.name;
-      if (!stickerName.value.trim()) stickerName.value = file.name.replace(/\.[^.]+$/, "");
-    });
-
-    stickerForm.addEventListener("submit", function (event) {
-      event.preventDefault();
-      const name = stickerName.value.trim();
-      let problem = "";
-      if (!pendingImage && !editingSticker) problem = "اختر صورة الستيكر.";
-      else if (!name) problem = "أدخل اسم الستيكر.";
-      else if (!stickerCategory.value) problem = "اختر التصنيف.";
-
-      if (problem) {
-        showError(stickerError, problem);
-        return;
-      }
-
-      if (editingSticker) {
-        editingSticker.name = name;
-        editingSticker.categoryId = stickerCategory.value;
-        if (pendingImage) {
-          URL.revokeObjectURL(editingSticker.url);
-          editingSticker.url = pendingImage.url;
-          editingSticker.file = pendingImage.file;
-          pendingImage = null; // the preview URL now belongs to the sticker
-        }
-        toast("تم تعديل الستيكر.");
-      } else {
-        stickers.push({ id: "s" + nextId++, name: name, categoryId: stickerCategory.value, url: pendingImage.url, file: pendingImage.file });
-        pendingImage = null; // the preview URL now belongs to the sticker
-        toast("تمت إضافة الستيكر.");
-      }
-      activeCategory = stickerCategory.value;
-      stickerDialog.close();
-      render();
-    });
-
-    document.getElementById("addStickerButton").addEventListener("click", function () { openStickerDialog(); });
-
-    grid.addEventListener("click", function (event) {
+    els.grid.addEventListener("click", async (event) => {
+      const stickers = allStickers();
       const edit = event.target.closest("[data-edit-sticker]");
-      if (edit) {
-        openStickerDialog(stickers.find(function (item) { return item.id === edit.dataset.editSticker; }));
-        return;
-      }
-
-      const remove = event.target.closest("[data-remove-sticker]");
-      if (!remove) return;
-      const sticker = stickers.find(function (item) { return item.id === remove.dataset.removeSticker; });
-      if (!sticker) return;
-      PalAlert.confirm({
-        title: "حذف الستيكر",
-        text: "هل تريد حذف الستيكر «" + sticker.name + "»؟",
-        confirmText: "نعم، احذف",
-        danger: true
-      }).then(function (ok) {
-        if (!ok) return;
-        URL.revokeObjectURL(sticker.url);
-        stickers = stickers.filter(function (item) { return item.id !== sticker.id; });
-        toast("تم حذف الستيكر.");
+      if (edit) openSticker(stickers.find((item) => String(item.id) === edit.dataset.editSticker));
+      const del = event.target.closest("[data-delete-sticker]");
+      if (del && confirm("حذف الملصق؟")) {
+        const data = await request(route(config.routes.itemDestroy, del.dataset.deleteSticker), { method: "POST", body: methodForm("DELETE") });
+        categories = data.categories;
         render();
-      });
+      }
     });
+  }
 
-    /* ---------- Dialog closing ---------- */
-    [categoryDialog, stickerDialog].forEach(function (dialog) {
-      dialog.querySelectorAll("[data-dialog-close]").forEach(function (button) {
-        button.addEventListener("click", function () { dialog.close(); });
-      });
-      dialog.addEventListener("click", function (event) { if (event.target === dialog) dialog.close(); });
+  function methodForm(method) {
+    const form = new FormData();
+    form.append("_method", method);
+    return form;
+  }
+
+  function get(path) {
+    return path.split(".").reduce((carry, key) => carry?.[key], settings);
+  }
+
+  function set(path, value) {
+    const keys = path.split(".");
+    let target = settings;
+    keys.slice(0, -1).forEach((key) => {
+      target[key] = target[key] || {};
+      target = target[key];
     });
-    stickerDialog.addEventListener("close", function () { if (pendingImage) resetImageField(); });
+    target[keys[keys.length - 1]] = value;
+  }
 
+  function fillSettings() {
+    els.settingsForm.querySelectorAll("[name]").forEach((input) => {
+      input.value = get(input.name) ?? "";
+    });
+    els.sizesInput.value = (settings.layout?.sizes || []).map((size) => `${size.key},${size.label},${size.width_mm},${size.height_mm}`).join("\n");
+    renderA4Preview();
+  }
+
+  function collectSettings() {
+    els.settingsForm.querySelectorAll("[name]").forEach((input) => {
+      const value = input.type === "color" ? input.value : Number(input.value);
+      set(input.name, value);
+    });
+    settings.layout.sizes = els.sizesInput.value.split(/\n+/).map((line) => {
+      const [key, label, width, height] = line.split(",").map((part) => part.trim());
+      return { key, label, width_mm: Number(width), height_mm: Number(height) };
+    }).filter((size) => size.key && size.label && size.width_mm && size.height_mm);
+  }
+
+  function renderA4Preview() {
+    const layout = settings.layout || {};
+    const pageW = Number(layout.page_width_mm || 210);
+    const pageH = Number(layout.page_height_mm || 297);
+    const size = (layout.sizes || [])[0] || { width_mm: 50, height_mm: 50 };
+    els.preview.innerHTML = `<div class="admin-a4-sheet" style="aspect-ratio:${pageW}/${pageH}">
+      <span style="inset:${(layout.margin_top_mm / pageH) * 100}% ${(layout.margin_right_mm / pageW) * 100}% ${(layout.margin_bottom_mm / pageH) * 100}% ${(layout.margin_left_mm / pageW) * 100}%"></span>
+      <b style="width:${(size.width_mm / pageW) * 100}%;height:${(size.height_mm / pageH) * 100}%;border-color:${layout.cut_line_color || "#00A3A3"}"></b>
+    </div>`;
+  }
+
+  function initSettings() {
+    fillSettings();
+    els.settingsForm.addEventListener("input", () => {
+      collectSettings();
+      renderA4Preview();
+    });
+    els.settingsForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      collectSettings();
+      const response = await request(config.routes.settings, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings)
+      });
+      settings = response.settings;
+      fillSettings();
+      toast("تم حفظ إعدادات الملصقات.");
+    });
+  }
+
+  function init() {
     render();
+    initDialogs();
+    initGridActions();
+    initSettings();
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initialize, { once: true });
-  } else {
-    initialize();
-  }
-})(window, document);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+  else init();
+})();
