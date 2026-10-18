@@ -243,7 +243,11 @@ document.addEventListener("DOMContentLoaded", function () {
       if (submitting) return;
 
       const value = Number(amount.value);
-      const amountValid = amount.value !== "" && value >= 1 && value <= availableBalance;
+      const minimum = Number(withdrawForm.dataset.minimum || 1);
+      const amountValid = amount.value !== "" && value >= minimum && value <= availableBalance;
+      document.getElementById("withdrawAmountError").textContent = amount.value === ""
+        ? "اكتب المبلغ اللي بدك تسحبه."
+        : (value < minimum ? "الحد الأدنى للسحب " + minimum + " ₪." : "المبلغ أكبر من رصيدك المتاح (" + availableBalance.toFixed(2) + " ₪).");
       const methodValid = Boolean(method.value);
       amount.closest(".profile-field").classList.toggle("has-error", !amountValid);
       method.closest(".profile-field").classList.toggle("has-error", !methodValid);
@@ -287,8 +291,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!response.ok) {
           const error = await response.json().catch(function () { return {}; });
-          const firstError = error.errors ? Object.values(error.errors)[0] : null;
-          Core.toast((firstError && firstError[0]) || error.message || Core.translate("withdrawalFailed"), "error");
+          const fields = { amount: amount, method: method, holder: holder, account: account };
+          let shown = false;
+          Object.keys(error.errors || {}).forEach(function (key) {
+            const input = fields[key];
+            const field = input && input.closest(".profile-field");
+            const note = field && field.querySelector(".profile-field-error");
+            if (!note) return;
+            note.textContent = error.errors[key][0];
+            field.classList.add("has-error");
+            shown = true;
+          });
+          if (!shown) Core.toast(error.message || Core.translate("withdrawalFailed"), "error");
           return;
         }
 

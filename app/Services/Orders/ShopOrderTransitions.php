@@ -64,7 +64,8 @@ class ShopOrderTransitions
             'metadata' => $metadata ?: null,
         ]);
 
-        if ($order->user_id) {
+        // A shop's refusal is the admin's to handle (the order goes to another shop), so the customer is not told.
+        if ($order->user_id && $to !== 'rejected') {
             OrderNotifier::statusChanged((int) $order->user_id, $order->order_number, $to, $note);
         }
 

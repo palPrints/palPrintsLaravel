@@ -210,7 +210,7 @@ test('an order the admin just approved is new for the shop, which can accept it 
         ->and(Notification::where('user_id', $this->customer->id)->where('type', 'order.ready')->exists())->toBeTrue();
 });
 
-test('rejecting needs a reason, tells the customer and the admins, and the order leaves the new tab', function () {
+test('rejecting needs a reason, tells the admins but not the customer, and the order leaves the new tab', function () {
     [$order] = ($this->makeOrder)('REJ-1', 'processing');
 
     $this->actingAs($this->owner)->postJson(route('print-provider.requests.reject', $order), [])->assertUnprocessable();
@@ -219,7 +219,7 @@ test('rejecting needs a reason, tells the customer and the admins, and the order
     $this->actingAs($this->owner)->postJson(route('print-provider.requests.reject', $order), ['reason' => 'لا يتوفر ورق'])->assertOk();
 
     expect($order->fresh()->status)->toBe('rejected')
-        ->and(Notification::where('user_id', $this->customer->id)->where('type', 'order.rejected')->first()->message)->toContain('لا يتوفر ورق')
+        ->and(Notification::where('user_id', $this->customer->id)->where('type', 'order.rejected')->exists())->toBeFalse()
         ->and(Notification::where('user_id', $this->admin->id)->where('type', 'order.rejected_by_provider')->first()->message)->toContain('مطبعة النور', 'REJ-1', 'لا يتوفر ورق');
 
     // a rejected order cannot be accepted afterwards

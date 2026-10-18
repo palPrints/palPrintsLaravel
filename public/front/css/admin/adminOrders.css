@@ -450,3 +450,12 @@
 .order-items-list small { color: var(--muted); font-size: 10px; font-weight: 650; line-height: 1.8; }
 .dialog-customer-details .dialog-wide { grid-column: 1 / -1; }
 .manual-payment-review [hidden] { display: none !important; }
+
+/* The wa.me message for the shop an order was just sent to (same look as on the payment notices page). */
+.notices-flash { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 12px 16px; border-radius: 12px; font-size: 14px; font-weight: 700; }
+.notices-flash.is-whatsapp { justify-content: space-between; flex-wrap: wrap; color: #14532d; background: #f0fdf4; border: 1px solid #86efac; }
+.notices-flash.is-whatsapp > span { display: flex; align-items: center; gap: 8px; }
+.notices-flash.is-whatsapp .bi-whatsapp { color: #16a34a; }
+.notice-whatsapp-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 9px; color: #fff; background: #16a34a; font-size: 13px; font-weight: 800; text-decoration: none; white-space: nowrap; }
+.notice-whatsapp-btn:hover, .notice-whatsapp-btn:focus-visible { background: #15803d; color: #fff; }
+.notices-flash.is-whatsapp .notice-whatsapp-btn .bi-whatsapp { color: #fff; }
