@@ -22,6 +22,7 @@
         </a>
         <a href="{{ route('print-provider.support') }}" @class(['active' => request()->routeIs('print-provider.support*')]) @if(request()->routeIs('print-provider.support*')) aria-current="page" @endif>
             <i class="bi bi-headphones" aria-hidden="true"></i><span>مركز المساعدة</span>
+            @if (($supportUnread ?? 0) > 0)<b class="wallet-nav-badge" aria-label="{{ $supportUnread }} ردود جديدة من الدعم">{{ $supportUnread > 99 ? '99+' : $supportUnread }}</b>@endif
         </a>
     </nav>
 

@@ -1,0 +1,104 @@
+/* Support ticket chat page — self-contained so it looks the same for the admin, customer, designer and print shop. */
+.pp-chat { --chat-blue: #1677ff; --chat-ink: #182941; --chat-muted: #6b7d95; --chat-line: #e3eaf4; display: flex; flex-direction: column; height: min(680px, calc(100dvh - 330px)); min-height: 440px; margin-top: 14px; overflow: hidden; color: var(--chat-ink); background: #fff; border: 1px solid var(--chat-line); border-radius: 18px; box-shadow: 0 6px 24px rgb(11 31 58 / 7%); direction: rtl; text-align: start; }
+
+/* Header */
+.pp-chat__head { display: flex; flex: none; align-items: center; gap: 12px; padding: 12px 16px; background: #fff; border-bottom: 1px solid var(--chat-line); }
+.pp-chat a.pp-chat__back { flex: none; width: 38px; height: 38px; display: grid; place-items: center; color: var(--chat-ink); text-decoration: none; background: #f2f6fc; border-radius: 50%; transition: background .15s ease, color .15s ease; }
+.pp-chat a.pp-chat__back span { display: none; }
+.pp-chat a.pp-chat__back:hover { color: #fff; text-decoration: none; background: var(--chat-blue); }
+.pp-chat__title { flex: 1; min-width: 0; }
+.pp-chat__title h1 { margin: 0; overflow: hidden; font-size: 1rem; font-weight: 800; line-height: 1.5; text-overflow: ellipsis; white-space: nowrap; }
+.pp-chat__title small { display: block; color: var(--chat-muted); font-size: .74rem; }
+.pp-chat__status { flex: none; padding: 4px 11px; color: #995300; background: #fff0bf; border-radius: 999px; font-size: .72rem; font-weight: 700; }
+.pp-chat__status.is-new { color: #0a58ca; background: #dbeafe; }
+.pp-chat__status.is-resolved { color: #15803d; background: #dcfce7; }
+.pp-chat__resolve { flex: none; min-height: 36px; padding: 6px 14px; color: #15803d; font: inherit; font-size: .8rem; font-weight: 800; background: #ecfdf3; border: 1px solid #bbf7d0; border-radius: 999px; cursor: pointer; }
+.pp-chat__resolve.is-reopen { color: var(--chat-ink); background: #f4f6f9; border-color: #d4dfeb; }
+.pp-chat__resolve:disabled { opacity: .6; cursor: wait; }
+.pp-chat__title .pp-chat__peer { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 1px; }
+.pp-chat__peer i { color: var(--chat-blue); font-size: .9rem; }
+.pp-chat__peer strong { color: var(--chat-ink); font-weight: 700; }
+.pp-chat__peer a { color: inherit; text-decoration: none; }
+.pp-chat__peer a:hover { color: var(--chat-blue); }
+
+/* Conversation */
+.pp-chat__messages { display: flex; flex: 1; flex-direction: column; gap: 3px; min-height: 0; padding: 16px 18px 12px; overflow-y: auto; background: #f4f7fc; }
+.pp-chat__day { align-self: center; margin: 12px 0 8px; padding: 3px 12px; color: var(--chat-muted); font-size: .7rem; font-weight: 700; background: #e6edf7; border-radius: 999px; }
+.pp-chat__day:first-child { margin-top: 0; }
+.pp-chat__row { display: flex; align-items: flex-end; gap: 8px; max-width: 100%; }
+.pp-chat__row:not(.is-mine) { flex-direction: row-reverse; }
+.pp-chat__row.is-first { margin-top: 10px; }
+.pp-chat__avatar { flex: none; width: 30px; height: 30px; display: grid; place-items: center; color: #fff; font-size: .8rem; font-weight: 800; background: #6b7d95; border-radius: 50%; }
+.pp-chat__avatar.is-admin { background: #182941; }
+.pp-chat__avatar.is-ghost { visibility: hidden; }
+.pp-chat__bubble { position: relative; display: flex; flex-direction: column; gap: 2px; max-width: min(72%, 560px); padding: 8px 12px 6px; background: #fff; border-radius: 16px; box-shadow: 0 1px 2px rgb(11 31 58 / 8%); }
+.pp-chat__row:not(.is-mine) .pp-chat__bubble { border-end-start-radius: 16px; border-end-end-radius: 4px; }
+.pp-chat__row.is-mine .pp-chat__bubble { color: #fff; background: var(--chat-blue); border-end-start-radius: 4px; border-end-end-radius: 16px; }
+.pp-chat__row.is-cont:not(.is-mine) .pp-chat__bubble, .pp-chat__row.is-cont.is-mine .pp-chat__bubble { border-radius: 16px; }
+.pp-chat__who { color: var(--chat-blue); font-size: .72rem; font-weight: 800; }
+.pp-chat__bubble p { margin: 0; font-size: .92rem; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+.pp-chat__bubble time { align-self: flex-end; font-size: .64rem; opacity: .65; }
+
+/* Composer */
+.pp-chat__composer { display: flex; flex: none; align-items: flex-end; gap: 10px; padding: 10px 14px 14px; background: #fff; border-top: 1px solid var(--chat-line); }
+.pp-chat__composer[hidden], .pp-chat__closed[hidden] { display: none; }
+.pp-chat__composer textarea { box-sizing: border-box; flex: 1; min-height: 44px; max-height: 140px; padding: 11px 18px; resize: none; color: inherit; font: inherit; font-size: .92rem; line-height: 1.6; background: #f2f6fc; border: 1px solid transparent; border-radius: 22px; }
+.pp-chat__composer textarea:focus { background: #fff; border-color: var(--chat-blue); box-shadow: 0 0 0 3px rgb(22 119 255 / 12%); outline: 0; }
+.pp-chat__composer button { flex: none; width: 44px; height: 44px; display: grid; place-items: center; padding: 0; color: #fff; font-size: 1.05rem; background: var(--chat-blue); border: 0; border-radius: 50%; cursor: pointer; transition: background .15s ease; }
+.pp-chat__composer button span { display: none; }
+.pp-chat__composer button i { transform: scaleX(-1); }
+.pp-chat__composer button:hover, .pp-chat__composer button:active { background: #0f5fd1; box-shadow: none; transform: none; }
+.pp-chat__composer button:disabled { opacity: .6; cursor: wait; }
+.pp-chat__closed { margin: 0; padding: 14px 18px; color: #15803d; font-size: .85rem; text-align: center; background: #f0fdf4; border-top: 1px solid #bbf7d0; }
+
+@media (max-width: 560px) {
+  .pp-chat { height: calc(100dvh - 150px); border-radius: 14px; }
+  .pp-chat__head { flex-wrap: wrap; }
+  .pp-chat__bubble { max-width: 84%; }
+}
+
+/* Ticket rows on the support pages are links to the chat; they only change the subtitle colour on hover. */
+a.support-ticket, a.acct-ticket { color: inherit; text-decoration: none; }
+a.support-ticket:hover small, a.acct-ticket:hover small { color: #1677ff; }
+a.support-ticket:hover, a.support-ticket:active, a.support-ticket.is-pressed, a.support-ticket.is-popped,
+a.acct-ticket:hover, a.acct-ticket:active, a.acct-ticket.is-pressed, a.acct-ticket.is-popped {
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  animation: none;
+}
+.support-empty { margin: 0; padding: 12px 0; color: #6b7d95; font-size: .8rem; }
+
+/* "New ticket" button in the chat header, and the link inside the solved-ticket note. */
+.pp-chat a.pp-chat__new { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 16px; color: #fff; font-size: .8rem; font-weight: 800; text-decoration: none; background: #1677ff; border-radius: 999px; transition: background .15s ease; }
+.pp-chat a.pp-chat__new:hover, .pp-chat a.pp-chat__new:focus-visible { color: #fff; text-decoration: none; background: #0f5fd1; }
+.pp-chat a.pp-chat__new i { color: #fff; }
+.pp-chat .pp-chat__closed a { color: #15803d; font-weight: 800; text-decoration: none; }
+.pp-chat .pp-chat__closed a:hover { color: #166534; text-decoration: none; }
+#newTicket { scroll-margin-top: 90px; }
+@media (max-width: 560px) { .pp-chat a.pp-chat__new span { display: none; } .pp-chat a.pp-chat__new { width: 36px; padding: 0; justify-content: center; } }
+
+/* The new-ticket form stays hidden until asked for; with it hidden the tickets and questions take the full width. */
+.support-grid:has(> #newTicket[hidden]), .acct-support-grid:has(> #newTicket[hidden]) { grid-template-columns: minmax(0, 1fr); }
+#newTicket[hidden] { display: none; }
+
+/* Slim rounded scrollbar, no arrow buttons (the standard scrollbar-* properties would switch the ::-webkit ones off). */
+.pp-chat .pp-chat__messages::-webkit-scrollbar { width: 6px; height: 6px; }
+.pp-chat .pp-chat__messages::-webkit-scrollbar-track { background: transparent; }
+.pp-chat .pp-chat__messages::-webkit-scrollbar-thumb { background: #c3d1e3; border-radius: 999px; }
+.pp-chat .pp-chat__messages::-webkit-scrollbar-thumb:hover { background: #a9bbd3; }
+.pp-chat .pp-chat__messages::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+@supports (-moz-appearance: none) { .pp-chat .pp-chat__messages { scrollbar-width: thin; scrollbar-color: #c3d1e3 transparent; } }
+
+/* New-ticket form: close button, and light inline messages instead of the browser's validation bubbles. */
+#newTicket { position: relative; }
+.pp-newticket-close { position: absolute; z-index: 2; inset-block-start: 16px; inset-inline-end: 16px; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; color: #6b7d95; font-size: 1rem; background: #f2f6fc; border: 0; border-radius: 50%; cursor: pointer; transition: color .15s ease, background .15s ease; }
+.pp-newticket-close:hover, .pp-newticket-close:active { color: #dc2626; background: #fee2e2; box-shadow: none; transform: none; }
+
+.pp-field-error { display: flex; align-items: center; justify-content: flex-start; gap: 6px; margin-top: 6px; padding-inline: 2px; color: #d92d20; font-size: .8rem; font-weight: 600; line-height: 1.5; direction: rtl; text-align: start; }
+.pp-field-error i { flex: none; font-size: .9rem; }
+label.has-error .profile-input-shell, label.has-error .pp-input-shell, label.has-error .acct-input,
+label.has-error .profile-input-shell:focus-within, label.has-error .pp-input-shell:focus-within, label.has-error .acct-input:focus-within { border-color: #f97066; background: #fffafa; box-shadow: 0 0 0 3px rgb(249 112 102 / 12%); }
+/* Error text stays red whatever generic <small> colour the page gives its labels. */
+label.has-error > small.pp-field-error, label.has-error > small.pp-field-error i { color: #d92d20; font-size: .8rem; font-weight: 600; }
+label.has-error > small.pp-field-error i { font-size: .9rem; }

@@ -78,9 +78,9 @@ class AdminNotifier
                 break;
 
             case 'support.new':
-                if ($page('admin.support') && preg_match('/طلب دعم:\s*(.+)$/u', $message, $match)
-                    && ($ticket = SupportTicketStore::all()->firstWhere('subject', trim($match[1])))) {
-                    return route('admin.support', ['open' => $ticket['id']]);
+                if ($page('admin.support') && preg_match('/دعم:\s*(.+)$/u', $message, $match)
+                    && ($id = \App\Models\SupportTicket::where('subject', trim($match[1]))->latest('id')->value('id'))) {
+                    return route('admin.support.show', $id);
                 }
                 break;
         }

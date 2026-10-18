@@ -1,12 +1,3 @@
-@php
-    $notificationIcons = [
-        'design_published' => 'bi-patch-check',
-        'design_review' => 'bi-hourglass-split',
-        'design_rejected' => 'bi-x-octagon',
-        'withdrawal' => 'bi-cash-coin',
-    ];
-@endphp
-
 <header class="profile-topbar designer-printshop-topbar">
     <a class="designer-printshop-brand" href="{{ route('home') }}" aria-label="الصفحة الرئيسية">
         <img src="{{ asset('front/assets/images/customer/palprints-wordmark-transparent.png') }}" alt="PalPrints">
@@ -39,19 +30,10 @@
 
         <div class="designer-header-dropdown-wrap">
             <button type="button" class="designer-printshop-icon designer-dropdown-toggle designer-notification-button" id="designerNotificationMenuButton" aria-label="الإشعارات" aria-haspopup="true" aria-expanded="false" aria-controls="designerNotificationMenu" data-no-press>
-                <span class="designer-bell-icon"><i class="bi bi-bell" aria-hidden="true"></i>@if ($designerUnreadCount > 0)<span class="designer-notification-dot" aria-hidden="true"></span>@endif</span>
+                <span class="designer-bell-icon"><i class="bi bi-bell" aria-hidden="true"></i>@if ($designerUnreadCount > 0)<span class="designer-notification-count" aria-label="{{ $designerUnreadCount }} إشعارات غير مقروءة">{{ $designerUnreadCount > 99 ? '99+' : $designerUnreadCount }}</span>@endif</span>
             </button>
-            <div class="designer-header-dropdown designer-notifications-dropdown" id="designerNotificationMenu" role="menu" hidden>
-                <strong class="designer-dropdown-title">الإشعارات</strong>
-                @forelse ($designerLatestNotifications as $notification)
-                    <a href="{{ $notification->link ?: route('designer.notifications') }}" role="menuitem">
-                        <i class="bi {{ $notificationIcons[$notification->type] ?? 'bi-bell' }}"></i>
-                        <span><b>{{ $notification->title }}</b><small>{{ $notification->message }}</small></span>
-                    </a>
-                @empty
-                    <span class="designer-dropdown-empty">لا توجد إشعارات جديدة.</span>
-                @endforelse
-                <a class="designer-dropdown-footer" href="{{ route('designer.notifications') }}" role="menuitem">عرض جميع الإشعارات</a>
+            <div class="designer-header-dropdown designer-notifications-dropdown pp-notif-host" id="designerNotificationMenu" role="menu" hidden>
+                @include('partials.notification-panel', ['items' => $designerLatestNotifications, 'readRoute' => 'designer.notifications.read', 'allUrl' => route('designer.notifications'), 'unread' => $designerUnreadCount])
             </div>
         </div>
     </div>

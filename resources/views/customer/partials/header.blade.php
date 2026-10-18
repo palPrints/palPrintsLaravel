@@ -78,47 +78,13 @@
                         <button type="button" class="profile-dropdown__item profile-dropdown__logout"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>تسجيل الخروج</span></button>
                     </div>
                 </div>
-                @php
-                    $notificationIcons = [
-                        'design_published' => 'bi-patch-check',
-                        'design_review' => 'bi-hourglass-split',
-                        'design_rejected' => 'bi-x-octagon',
-                        'withdrawal_review' => 'bi-cash-coin',
-                        'approval.submitted' => 'bi-send-check',
-                        'support.reply' => 'bi-headset',
-                    ];
-                @endphp
                 <div class="notifications-menu">
                     <button type="button" class="icon-button notifications-button" id="notificationsToggle" aria-label="الإشعارات" aria-expanded="false" aria-controls="notificationsPanel">
                         <i class="bi bi-bell" aria-hidden="true"></i>
                         <span class="icon-badge notifications-badge" aria-hidden="true" @if($customerUnreadCount === 0) hidden @endif>{{ $customerUnreadCount > 99 ? '99+' : $customerUnreadCount }}</span>
                     </button>
-                    <div class="notifications-panel" id="notificationsPanel" hidden>
-                        <div class="notifications-panel__header">
-                            <strong>الإشعارات</strong>
-                        </div>
-                        <div class="notifications-list">
-                            @forelse($customerLatestNotifications as $notification)
-                                <form method="POST" action="{{ route('customer.notifications.read', $notification) }}">
-                                    @csrf
-                                    <button type="submit" data-no-press class="notification-item{{ $notification->is_read ? '' : ' is-unread' }}">
-                                        <span class="notification-item__icon"><i class="bi {{ $notificationIcons[$notification->type] ?? 'bi-bell' }}" aria-hidden="true"></i></span>
-                                        <span class="notification-item__body">
-                                            <strong>{{ $notification->title }}</strong>
-                                            <small>{{ $notification->message }}</small>
-                                            <time datetime="{{ $notification->created_at?->toIso8601String() }}">{{ $notification->created_at?->locale('ar')->diffForHumans() }}</time>
-                                        </span>
-                                    </button>
-                                </form>
-                            @empty
-                                <p class="notifications-empty"><i class="bi bi-bell-slash" aria-hidden="true"></i>لا توجد إشعارات جديدة</p>
-                            @endforelse
-                        </div>
-                        @if(true)
-                            <div class="notifications-panel__footer">
-                                <a href="{{ route('customer.notifications') }}">رؤية جميع الإشعارات</a>
-                            </div>
-                        @endif
+                    <div class="notifications-panel pp-notif-host" id="notificationsPanel" hidden>
+                        @include('partials.notification-panel', ['items' => $customerLatestNotifications, 'readRoute' => 'customer.notifications.read', 'allUrl' => route('customer.notifications'), 'unread' => $customerUnreadCount])
                     </div>
                 </div>
                 @endif

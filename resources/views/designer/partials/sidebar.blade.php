@@ -8,7 +8,7 @@
     ];
     $secondaryItems = [
         ['route' => 'designer.settings', 'active' => ['designer.settings'], 'icon' => 'bi-gear', 'i18n' => 'settings', 'label' => 'الإعدادات'],
-        ['route' => 'designer.support', 'active' => ['designer.support'], 'icon' => 'bi-headset', 'i18n' => 'support', 'label' => 'مركز المساعدة'],
+        ['route' => 'designer.support', 'active' => ['designer.support', 'designer.support.*'], 'icon' => 'bi-headset', 'i18n' => 'support', 'label' => 'مركز المساعدة'],
     ];
 @endphp
 
@@ -27,6 +27,9 @@
             @php($isActive = request()->routeIs(...$item['active']))
             <a href="{{ route($item['route']) }}" @class(['profile-sidebar-link', 'active' => $isActive]) @if ($isActive) aria-current="page" @endif>
                 <i class="bi {{ $item['icon'] }}" aria-hidden="true"></i><span data-i18n="{{ $item['i18n'] }}">{{ $item['label'] }}</span>
+                @if ($item['route'] === 'designer.support')
+                    @if (($supportUnread ?? 0) > 0)<b class="profile-sidebar-badge" aria-label="{{ $supportUnread }} ردود جديدة من الدعم">{{ $supportUnread > 99 ? '99+' : $supportUnread }}</b>@endif
+                @endif
             </a>
         @endforeach
     </nav>

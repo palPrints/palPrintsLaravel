@@ -47,12 +47,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  const chatButton = document.getElementById("startChatButton");
-
-  if (chatButton) {
-    chatButton.addEventListener("click", function () { showToast("سيتم ربطك بأحد موظفي الدعم الآن."); });
-  }
-
   if (settings) {
     const tabs = Array.from(settings.querySelectorAll("[data-acct-tab]"));
     const panels = Array.from(settings.querySelectorAll("[data-acct-panel]"));
@@ -125,14 +119,5 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (deleteDialog.hasAttribute("data-open-on-load")) deleteDialog.showModal();
     }
-  }
-
-  const fileInput = document.getElementById("supportAttachmentInput");
-  const fileLabel = document.getElementById("attachmentName");
-
-  if (fileInput && fileLabel) {
-    fileInput.addEventListener("change", function () {
-      fileLabel.textContent = fileInput.files[0] ? fileInput.files[0].name : "اختيار ملف";
-    });
   }
 });

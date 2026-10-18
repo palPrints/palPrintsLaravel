@@ -79,6 +79,6 @@ class SupportTicket extends Model
 
     public function messages(): HasMany
     {
-        return $this->hasMany(SupportMessage::class);
+        return $this->hasMany(SupportMessage::class)->orderBy('id');
     }
 }

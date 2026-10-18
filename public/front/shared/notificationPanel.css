@@ -1,0 +1,53 @@
+/* The bell menu, one look for every account type (partials/notification-panel.blade.php). */
+
+/* The menu box itself: each account type positions and animates its own, this only gives them the same size and shape. */
+.pp-notif-host.pp-notif-host.pp-notif-host {
+  width: min(340px, calc(100vw - 24px));
+  padding: 0;
+  overflow: visible;
+  text-align: start;
+  direction: rtl;
+  border-radius: 14px;
+}
+
+.pp-notif__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px 10px; border-bottom: 1px solid #eef2f8; }
+.pp-notif__head strong { color: #182941; font-size: 15px; font-weight: 800; }
+.pp-notif__head span { padding: 2px 9px; color: #0a58ca; font-size: 11px; font-weight: 700; background: #dbeafe; border-radius: 999px; }
+
+.pp-notif__list { display: grid; gap: 2px; max-height: 360px; padding: 6px; overflow-y: auto; }
+.pp-notif__list form { margin: 0; }
+
+.pp-notif__item { position: relative; display: flex; align-items: flex-start; gap: 11px; width: 100%; padding: 10px 12px; color: inherit; font: inherit; text-align: start; background: transparent; border: 0; border-radius: 10px; cursor: pointer; transition: background-color .14s ease; }
+.pp-notif__item:hover, .pp-notif__item:focus-visible { background: #f3f8ff; }
+/* The page's generic button effects (lift, shadow, pop) do not apply to menu rows. */
+.pp-notif__item:hover, .pp-notif__item:active, .pp-notif__item.is-pressed, .pp-notif__item.is-popped { box-shadow: none; transform: none; animation: none; }
+.pp-notif__item.is-unread::after { content: ""; position: absolute; inset-block-start: 14px; inset-inline-end: 8px; width: 7px; height: 7px; background: #1677ff; border-radius: 50%; }
+
+.pp-notif__icon { flex: 0 0 36px; width: 36px; height: 36px; display: grid; place-items: center; color: #1677ff; font-size: 1.05rem; background: #eaf3ff; border-radius: 10px; }
+.pp-notif__body { display: grid; flex: 1; gap: 2px; min-width: 0; padding-inline-end: 12px; }
+.pp-notif__body strong { color: #182941; font-size: 12.5px; font-weight: 800; line-height: 1.5; }
+.pp-notif__body small { display: -webkit-box; overflow: hidden; color: #5a6b82; font-size: 11.5px; line-height: 1.6; overflow-wrap: anywhere; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.pp-notif__body time { color: #8ca2c0; font-size: 10.5px; }
+
+.pp-notif__empty { display: grid; justify-items: center; gap: 6px; margin: 0; padding: 28px 16px; color: #6b7d95; font-size: 13px; text-align: center; }
+.pp-notif__empty i { color: #a9bbd3; font-size: 26px; }
+
+/* Doubled class: the pages style every link inside their menus (account menu rules), this must win over them. */
+.pp-notif-host .pp-notif__all.pp-notif__all { display: flex; align-items: center; justify-content: center; min-height: 46px; margin: 0; padding: 12px 16px; color: #1677ff; font-size: 13px; font-weight: 700; text-align: center; text-decoration: none; background: transparent; border-top: 1px solid #eef2f8; border-radius: 0 0 14px 14px; }
+.pp-notif-host .pp-notif__all.pp-notif__all:hover, .pp-notif-host .pp-notif__all.pp-notif__all:focus-visible { color: #0f5fd1; background: #f3f8ff; }
+
+html[data-bs-theme="dark"] .pp-notif__head, html[data-bs-theme="dark"] .pp-notif__all { border-color: #26364f; }
+html[data-bs-theme="dark"] .pp-notif__head strong, html[data-bs-theme="dark"] .pp-notif__body strong { color: #e8eefb; }
+html[data-bs-theme="dark"] .pp-notif__body small, html[data-bs-theme="dark"] .pp-notif__empty { color: #a7b6cd; }
+html[data-bs-theme="dark"] .pp-notif__item:hover, html[data-bs-theme="dark"] .pp-notif__item:focus-visible, html[data-bs-theme="dark"] .pp-notif-host .pp-notif__all.pp-notif__all:hover { background: #1b2a42; }
+html[data-bs-theme="dark"] .pp-notif-host .pp-notif__all.pp-notif__all { color: #7db4ff; }
+html[data-bs-theme="dark"] .pp-notif__icon { color: #7db4ff; background: #17304f; }
+html[data-bs-theme="dark"] .pp-notif__head span { color: #9cc8ff; background: #17304f; }
+
+/* Slim rounded scrollbar, no arrow buttons (the standard scrollbar-* properties would switch the ::-webkit ones off). */
+.pp-notif-host .pp-notif__list::-webkit-scrollbar { width: 6px; height: 6px; }
+.pp-notif-host .pp-notif__list::-webkit-scrollbar-track { background: transparent; }
+.pp-notif-host .pp-notif__list::-webkit-scrollbar-thumb { background: #c3d1e3; border-radius: 999px; }
+.pp-notif-host .pp-notif__list::-webkit-scrollbar-thumb:hover { background: #a9bbd3; }
+.pp-notif-host .pp-notif__list::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+@supports (-moz-appearance: none) { .pp-notif-host .pp-notif__list { scrollbar-width: thin; scrollbar-color: #c3d1e3 transparent; } }
