@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\PrintFile;
 use App\Models\PrintProvider;
+use App\Services\Orders\OrderLineDocuments;
 use Illuminate\Support\Facades\URL;
 
 /**
@@ -55,17 +56,29 @@ class ShopChatLink
         $rtl = "\u{200F}";
         $line = fn (string $text) => $rtl.$text;
 
-        // Each product, then a download link for each of its print files (signed, no login needed, expires).
-        $products = $items->flatMap(fn (OrderItem $item) => [
-            $line('• '.($item->product?->name ?? 'منتج').$rtl.' — الكمية: '.(int) $item->quantity),
-            ...$item->printFiles
-                ->reject(fn (PrintFile $file) => in_array($file->status, [PrintFile::STATUS_DELETED, PrintFile::STATUS_CANCELLED], true))
-                ->take(self::MAX_FILES_PER_ITEM)
-                ->flatMap(fn (PrintFile $file) => [
+        // Each product with its key options, then signed download links (no login, they expire): the details PDF, the design
+        // PDF, and the files the PDFs do not carry (a paper job's own files, or a design's originals with no print-ready picture).
+        $documents = app(OrderLineDocuments::class);
+        $expires = now()->addDays(self::FILE_LINK_DAYS);
+        $products = $items->flatMap(function (OrderItem $item) use ($documents, $order, $line, $rtl, $expires) {
+            $files = $item->printFiles->reject(fn (PrintFile $file) => in_array($file->status, [PrintFile::STATUS_DELETED, PrintFile::STATUS_CANCELLED], true));
+            $specs = $documents->keyDetails($order, $item);
+            $hasDesign = $documents->hasDesign($item);
+            $rawFiles = $documents->isPaper($item) || ! $files->contains->isPrintReady() ? $files->take(self::MAX_FILES_PER_ITEM) : collect();
+
+            return array_filter([
+                $line('• '.($item->product?->name ?? 'منتج').$rtl.' — الكمية: '.(int) $item->quantity),
+                $specs !== '' ? $line('   '.$specs) : null,
+                $line('📋 تفاصيل الطلب (PDF):'),
+                URL::temporarySignedRoute('order-sheets.shared', $expires, ['item' => $item, 'kind' => 'details']),
+                $hasDesign ? $line('🎨 التصميم والمنتج عليه (PDF):') : null,
+                $hasDesign ? URL::temporarySignedRoute('order-sheets.shared', $expires, ['item' => $item, 'kind' => 'design']) : null,
+                ...$rawFiles->flatMap(fn (PrintFile $file) => [
                     $line('📄 '.$file->original_name),
-                    URL::temporarySignedRoute('print-files.shared', now()->addDays(self::FILE_LINK_DAYS), $file),
+                    URL::temporarySignedRoute('print-files.shared', $expires, $file),
                 ])->all(),
-        ]);
+            ]);
+        });
 
         return implode("\n", [
             $line('مرحبًا '.trim((string) $provider->company_name).$rtl.'،'),

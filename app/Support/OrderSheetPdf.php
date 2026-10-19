@@ -6,19 +6,30 @@ use Mpdf\Mpdf;
 use RuntimeException;
 
 /**
- * The one file the print shop gets for an order line: the specifications and the product with the design,
- * what to print (the print-ready pictures are separate files). Pictures are drawn with GD, because the PDF
- * writer cannot tint a garment or place one picture on another by itself.
+ * The two PDFs a print shop gets for an order line (see OrderLineDocuments):
+ *  - details(): the specifications, the notes and the print files — text only;
+ *  - design(): per print area the print-ready picture on its own and the product with the design on it. Pictures are
+ *    drawn with GD, because the PDF writer cannot tint a garment or place one picture on another by itself.
  */
 class OrderSheetPdf
 {
     private const GARMENT_WIDTH = 700;
 
+    /** @param  array<string, mixed>  $data  what OrderLineDocuments::sheetData() returns */
+    public function details(array $data): string
+    {
+        // A paper order has no garment or print areas: it gets its own, simpler sheet with a card per file.
+        $view = empty($data['item']['paper_files']) ? 'printProvider.order-pdf' : 'printProvider.order-pdf-paper';
+
+        return $this->pdf(view($view, $data + ['previewImages' => []])->render(), 'Order '.$data['order']->order_number);
+    }
+
     /**
-     * @param  array<string, mixed>  $data  what OrdersController::sheetData() returns
+     * @param  array<string, mixed>  $data  what OrderLineDocuments::sheetData() returns
      * @param  array<string, string>  $designFiles  area name => path of its print-ready picture
+     * @param  string|null  $designPicture  the design's own picture, shown when there is no print-ready picture
      */
-    public function render(array $data, array $designFiles): string
+    public function design(array $data, array $designFiles, ?string $designPicture = null): string
     {
         if (! extension_loaded('gd')) {
             throw new RuntimeException('The GD extension is required to build the order PDF.');
@@ -35,10 +46,19 @@ class OrderSheetPdf
             ];
         }, $data['previews']);
 
-        // A paper order has no garment or print areas: it gets its own, simpler sheet with a card per file.
-        $view = empty($data['item']['paper_files']) ? 'printProvider.order-pdf' : 'printProvider.order-pdf-paper';
-        $html = view($view, $data + ['previewImages' => $previews])->render();
+        // Each print-ready picture on its own, at full size on a light board (lossless PNG, it is what gets printed).
+        $designs = collect($designFiles)->map(fn (string $path, string $name) => ['name' => $name, 'src' => $this->pngUri($this->load($path))])->values()->all();
+        if ($designs === [] && $designPicture) {
+            $designs[] = ['name' => 'التصميم', 'src' => $this->pngUri($this->load($designPicture))];
+        }
 
+        $html = view('printProvider.order-pdf-design', $data + ['previewImages' => $previews, 'designs' => $designs])->render();
+
+        return $this->pdf($html, 'Design '.$data['order']->order_number);
+    }
+
+    private function pdf(string $html, string $title): string
+    {
         $directory = storage_path('app/mpdf');
         if (! is_dir($directory)) {
             mkdir($directory, 0775, true);
@@ -48,7 +68,7 @@ class OrderSheetPdf
         $pdf->SetDirectionality('rtl');
         $pdf->autoScriptToLang = true;
         $pdf->autoLangToFont = true;
-        $pdf->SetTitle('Order '.$data['order']->order_number);
+        $pdf->SetTitle($title);
         $pdf->WriteHTML($html);
 
         return $pdf->Output('', 'S');
@@ -130,6 +150,15 @@ class OrderSheetPdf
         imagefill($canvas, 0, 0, imagecolorallocatealpha($canvas, 0, 0, 0, 127));
 
         return $canvas;
+    }
+
+    /** A picture as lossless PNG with its transparency kept (the page puts a light board behind it, so white still shows). */
+    private function pngUri(\GdImage $image): string
+    {
+        ob_start();
+        imagepng($image);
+
+        return 'data:image/png;base64,'.base64_encode((string) ob_get_clean());
     }
 
     private function dataUri(\GdImage $image): string
