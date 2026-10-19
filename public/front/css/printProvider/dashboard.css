@@ -898,8 +898,9 @@ img {
 .printshop-toast {
   position: fixed;
   z-index: 300;
+  /* Bottom left of the screen (inline-end in this right-to-left layout). */
   inset-inline-end: 24px;
-  inset-block-start: 86px;
+  inset-block-end: 24px;
   max-width: min(360px, calc(100vw - 32px));
   padding: 11px 16px;
   color: #fff;
@@ -910,8 +911,23 @@ img {
   font-weight: 600;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(-12px);
+  transform: translateY(12px);
   transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* A confirmation (saved, sent): green with a check mark. Other messages keep the neutral colour. */
+.printshop-toast.is-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #15803d;
+}
+
+.printshop-toast.is-success::before {
+  content: "\F26A"; /* bi-check-circle-fill */
+  font-family: "bootstrap-icons";
+  font-size: 16px;
+  line-height: 1;
 }
 
 .printshop-toast.is-visible,
@@ -1165,7 +1181,7 @@ img {
 
   .printshop-toast {
     inset-inline: 16px;
-    inset-block-start: 76px;
+    inset-block-end: 16px;
     max-width: none;
   }
 }
