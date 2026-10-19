@@ -26,7 +26,7 @@ class StickerBundleController extends Controller
 {
     public function libraryImage(StickerLibraryItem $stickerLibraryItem): BinaryFileResponse
     {
-        abort_unless($stickerLibraryItem->is_active, 404);
+        abort_unless(request()->user()?->hasRole('admin') || ($stickerLibraryItem->is_active && $stickerLibraryItem->category?->is_active), 404);
 
         $disk = Storage::disk($stickerLibraryItem->disk ?: 'public');
         abort_unless($disk->exists($stickerLibraryItem->image_path), 404);
@@ -34,7 +34,7 @@ class StickerBundleController extends Controller
         return response()->file($disk->path($stickerLibraryItem->image_path), [
             'Content-Type' => $stickerLibraryItem->mime_type ?: ($disk->mimeType($stickerLibraryItem->image_path) ?: 'image/png'),
             'X-Content-Type-Options' => 'nosniff',
-            'Cache-Control' => 'public, max-age=86400',
+            'Cache-Control' => 'private, no-store',
         ]);
     }
 

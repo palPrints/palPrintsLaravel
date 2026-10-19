@@ -120,6 +120,7 @@ Route::middleware('shopper')->prefix('customer')->name('customer.')->group(funct
     Route::post('/stickers/preview', [CustomerStickerBundleController::class, 'preview'])->name('stickers.preview');
     Route::get('/paper-printing', [CustomerCatalogController::class, 'paperPrinting'])->name('paperPrinting');
     Route::get('/basket', [CustomerCartController::class, 'index'])->name('basket');
+    Route::post('/cart/quote-paper', [CustomerCartController::class, 'quotePaper'])->name('cart.quote-paper');
     Route::get('/print-files/{printFile}/preview', [CustomerCartController::class, 'printFilePreview'])->name('print-files.preview');
     Route::redirect('/basket/empty', '/customer/basket')->name('basket.empty');
     Route::get('/designs/{design}/assets/{assetId}', [CustomerCatalogController::class, 'designAsset'])->name('designs.asset');
@@ -176,6 +177,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::patch('/stickers/items/{stickerLibraryItem}', [AdminStickerController::class, 'updateItem'])->name('stickers.items.update');
         Route::delete('/stickers/items/{stickerLibraryItem}', [AdminStickerController::class, 'destroyItem'])->name('stickers.items.destroy');
         Route::post('/stickers/settings', [AdminStickerController::class, 'updateSettings'])->name('stickers.settings.update');
+        Route::post('/stickers/preview', [AdminStickerController::class, 'preview'])->name('stickers.preview');
 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders');
         Route::patch('/orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');

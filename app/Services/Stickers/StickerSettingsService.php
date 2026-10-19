@@ -13,13 +13,13 @@ class StickerSettingsService
     {
         $saved = StickerSetting::query()->where('key', self::KEY)->first()?->value;
 
-        return array_replace_recursive($this->defaults(), is_array($saved) ? $saved : []);
+        return $this->merge(is_array($saved) ? $saved : []);
     }
 
     /** @param array<string, mixed> $value */
     public function put(array $value): array
     {
-        $settings = array_replace_recursive($this->defaults(), $value);
+        $settings = $this->merge($value);
 
         StickerSetting::query()->updateOrCreate(
             ['key' => self::KEY],
@@ -74,5 +74,14 @@ class StickerSettingsService
                 'final_after_payment' => true,
             ],
         ];
+    }
+
+    private function merge(array $value): array
+    {
+        $settings = array_replace_recursive($this->defaults(), $value);
+        if (isset($value['layout']['sizes'])) {
+            $settings['layout']['sizes'] = array_values($value['layout']['sizes']);
+        }
+        return $settings;
     }
 }

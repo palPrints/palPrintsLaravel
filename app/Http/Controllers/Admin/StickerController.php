@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\StickerCategory;
 use App\Models\StickerLibraryItem;
 use App\Services\Stickers\StickerSettingsService;
+use App\Services\Stickers\StickerLayoutService;
+use App\Models\StickerBundleLine;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -61,8 +64,8 @@ class StickerController extends Controller
 
     public function destroyCategory(StickerCategory $stickerCategory): JsonResponse
     {
-        foreach ($stickerCategory->stickers as $item) {
-            Storage::disk($item->disk ?: 'public')->delete($item->image_path);
+        if ($stickerCategory->stickers()->exists()) {
+            throw ValidationException::withMessages(['category' => 'انقل الملصقات إلى تصنيف آخر قبل حذف التصنيف.']);
         }
 
         $stickerCategory->delete();
@@ -116,6 +119,7 @@ class StickerController extends Controller
         ];
 
         if ($request->hasFile('image')) {
+            $this->ensureUnused($stickerLibraryItem);
             Storage::disk($stickerLibraryItem->disk ?: 'public')->delete($stickerLibraryItem->image_path);
             $file = $request->file('image');
             $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension());
@@ -134,6 +138,7 @@ class StickerController extends Controller
 
     public function destroyItem(StickerLibraryItem $stickerLibraryItem): JsonResponse
     {
+        $this->ensureUnused($stickerLibraryItem);
         Storage::disk($stickerLibraryItem->disk ?: 'public')->delete($stickerLibraryItem->image_path);
         $stickerLibraryItem->delete();
 
@@ -141,6 +146,33 @@ class StickerController extends Controller
     }
 
     public function updateSettings(Request $request, StickerSettingsService $settings): JsonResponse
+    {
+        $data = $this->validatedSettings($request);
+        $updated = array_replace_recursive($settings->get(), $data);
+        $updated['layout']['sizes'] = $data['layout']['sizes'];
+        return response()->json(['ok' => true, 'settings' => $settings->put($updated)]);
+    }
+
+    public function preview(Request $request, StickerSettingsService $settings, StickerLayoutService $layout): JsonResponse
+    {
+        $data = $this->validatedSettings($request);
+        $draft = array_replace_recursive($settings->get(), $data);
+        $draft['layout']['sizes'] = $data['layout']['sizes'];
+        $lines = $layout->normalizeLines([[
+            'source' => 'upload', 'size_key' => $draft['layout']['sizes'][0]['key'],
+            'quantity' => 20, 'cut_type' => 'contour',
+        ]], $draft);
+        return response()->json(['layout' => $layout->arrange($lines, $draft)]);
+    }
+
+    private function ensureUnused(StickerLibraryItem $item): void
+    {
+        if (StickerBundleLine::where('sticker_library_item_id', $item->id)->exists()) {
+            throw ValidationException::withMessages(['image' => 'الملصق مرتبط بحزمة محفوظة. يمكنك إخفاؤه أو إضافة صورة كملصق جديد.']);
+        }
+    }
+
+    private function validatedSettings(Request $request): array
     {
         $data = $request->validate([
             'pricing.min_quantity' => ['required', 'integer', 'min:1', 'max:999'],
@@ -164,15 +196,19 @@ class StickerController extends Controller
             'layout.safe_margin_mm' => ['required', 'numeric', 'min:0', 'max:10'],
             'layout.dpi' => ['required', 'integer', 'min:72', 'max:600'],
             'layout.sizes' => ['required', 'array', 'min:1', 'max:12'],
-            'layout.sizes.*.key' => ['required', 'string', 'max:40'],
+            'layout.sizes.*.key' => ['required', 'string', 'max:40', 'distinct'],
             'layout.sizes.*.label' => ['required', 'string', 'max:80'],
             'layout.sizes.*.width_mm' => ['required', 'numeric', 'min:5', 'max:190'],
             'layout.sizes.*.height_mm' => ['required', 'numeric', 'min:5', 'max:277'],
         ]);
 
-        $updated = $settings->put(array_replace_recursive($settings->get(), $data));
-
-        return response()->json(['ok' => true, 'settings' => $updated]);
+        foreach ($data['layout']['sizes'] as $index => $size) {
+            if ($size['width_mm'] > 210 - $data['layout']['margin_left_mm'] - $data['layout']['margin_right_mm'] ||
+                $size['height_mm'] > 297 - $data['layout']['margin_top_mm'] - $data['layout']['margin_bottom_mm']) {
+                throw ValidationException::withMessages(["layout.sizes.$index.width_mm" => 'المقاس أكبر من مساحة الورقة بعد الهوامش.']);
+            }
+        }
+        return $data;
     }
 
     private function uniqueSlug(string $name): string

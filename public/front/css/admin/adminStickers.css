@@ -1,4 +1,32 @@
 .stickers-header-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.stickers-admin [hidden], #stickerImagePreview[hidden] { display: none !important; }
+.stickers-admin .admin-sticker-layout { display: block; }
+.sticker-admin-tabs { display:flex; gap:24px; border-bottom:1px solid #dbe2ea; margin:24px 0; overflow-x:auto; }
+.sticker-admin-tabs button { flex-shrink:0; background:none; border:0; border-bottom:3px solid transparent; padding:14px 0; color:#475569; font:700 14px Cairo,sans-serif; cursor:pointer; }
+.sticker-admin-tabs [aria-selected="true"] { color:var(--blue); border-bottom-color:var(--blue); }
+.sticker-filters { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:20px; }
+.sticker-filters input,.sticker-filters select { padding:10px 12px; border:1px solid #dbe2ea; border-radius:6px; background:white; min-width:0; font:inherit; }
+.sticker-filters input { flex:1; min-width:180px; }
+.category-table-wrap { overflow-x:auto; }
+.category-table { width:100%; border-collapse:collapse; text-align:start; background:white; }
+.category-table th,.category-table td { padding:16px; border-bottom:1px solid #e5e7eb; text-align:start; }
+.category-table button,.size-row button,.preview-pagination button { width:36px; height:36px; border:1px solid #dbe2ea; background:white; border-radius:6px; cursor:pointer; color:#475569; }
+.stickers-admin .admin-sticker-settings { padding:0; background:none; border:0; box-shadow:none; }
+.stickers-admin .settings-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.stickers-admin .sticker-card { border-radius:8px; box-shadow:none; }
+.stickers-admin .sticker-card:hover { transform:none; }
+.stickers-admin .sticker-info h3 { white-space:normal; overflow-wrap:anywhere; }
+.stickers-admin .sticker-actions { display:flex; justify-content:flex-end; }
+.stickers-admin .sticker-actions button { width:36px; height:36px; background:white; border:1px solid #dbe2ea; color:#475569; }
+.size-row { display:grid; grid-template-columns:2fr 1fr 1fr 36px; gap:12px; align-items:end; margin-bottom:12px; }
+#settingsSaveBar { position:sticky; bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px; background:white; border:1px solid #dbe2ea; margin-top:24px; z-index:5; }
+.field-error,#settingsStatus,#previewError { color:#b42318; font-size:13px; }
+#stickerImagePreview { width:100%; height:180px; object-fit:contain; background:#f8fafc; }
+.admin-sheet-svg { display:block; width:100%; max-width:340px; height:auto; margin:auto; border:1px solid #cbd5e1; }
+.preview-pagination { display:flex; align-items:center; justify-content:center; gap:16px; }
+.stickers-admin h2 { font-size:20px; }
+@media(min-width:1100px) { #panel-printing { display:grid; grid-template-columns:minmax(0,1fr) 350px; gap:20px; } #panel-printing h2,#panel-printing .settings-grid,#panel-printing .sizes-field { grid-column:1; } #panel-printing .settings-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } #adminA4Preview { grid-column:2; grid-row:1 / span 3; align-self:start; position:sticky; top:90px; } #panel-printing .preview-pagination,#previewError { grid-column:2; } }
+@media(max-width:700px) { .stickers-admin .settings-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .size-row { grid-template-columns:1fr 1fr; } .sticker-admin-tabs { gap:18px; } .stickers-admin .stickers-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .sticker-filters select { flex:1; } }
 .stickers-note { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 10px 14px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 9px; font: 600 11px "Cairo", sans-serif; }
 
 /* Category chips: the name and its edit / delete buttons sit inside one rounded group. */

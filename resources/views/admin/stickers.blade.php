@@ -15,7 +15,6 @@
         <header class="products-header">
             <div>
                 <h1 id="stickersTitle">إدارة الستيكرات</h1>
-                <p>تحكم بتصنيفات الملصقات، المكتبة الجاهزة، إعدادات السعر، ومعاينة ورقة A4.</p>
             </div>
             <div class="stickers-header-actions">
                 <button class="secondary-button" id="addCategoryButton" type="button"><i class="bi bi-folder-plus"></i><span>إضافة تصنيف</span></button>
@@ -23,16 +22,30 @@
             </div>
         </header>
 
+        <nav class="sticker-admin-tabs" role="tablist" aria-label="إدارة الملصقات">
+            @foreach(['library' => 'مكتبة الملصقات', 'categories' => 'التصنيفات', 'pricing' => 'الأسعار وحدود الطلب', 'printing' => 'إعدادات الطباعة'] as $key => $label)
+                <button type="button" role="tab" id="tab-{{ $key }}" aria-controls="panel-{{ $key }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" data-admin-tab="{{ $key }}">{{ $label }}</button>
+            @endforeach
+        </nav>
         <div class="admin-sticker-layout">
-            <section class="admin-sticker-library">
-                <div class="products-summary stickers-categories-bar" id="categoriesBar"></div>
+            <section class="admin-sticker-library" id="panel-library" role="tabpanel" aria-labelledby="tab-library">
+                <div class="sticker-filters">
+                    <input id="stickerSearch" type="search" placeholder="البحث عن ملصق" aria-label="البحث عن ملصق">
+                    <select id="categoryFilter" aria-label="التصنيف"></select>
+                    <select id="statusFilter" aria-label="الحالة"><option value="all">كل الحالات</option><option value="1">مفعل</option><option value="0">مخفي</option></select>
+                    <output id="stickerCount"></output>
+                </div>
                 <div class="products-grid stickers-grid" id="stickersGrid"></div>
                 <div class="empty-state" id="stickersEmpty" hidden><i class="bi bi-emoji-smile"></i><h2>لا توجد ملصقات</h2><p>أضف تصنيفا ثم ارفع ملصقات PNG/JPG.</p></div>
+            </section>
+            <section id="panel-categories" role="tabpanel" aria-labelledby="tab-categories" hidden>
+                <div class="category-table-wrap"><table class="category-table"><thead><tr><th>التصنيف</th><th>الملصقات</th><th>الترتيب</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="categoriesBar"></tbody></table></div>
             </section>
 
             <aside class="admin-sticker-settings">
                 <form id="settingsForm">
-                    <h2>إعدادات المنتج و A4</h2>
+                    <section id="panel-pricing" role="tabpanel" aria-labelledby="tab-pricing" hidden>
+                    <h2>الأسعار وحدود الطلب</h2>
                     <div class="settings-grid">
                         <label><span>الحد الأدنى</span><input name="pricing.min_quantity" type="number" min="1"></label>
                         <label><span>تحذير الكمية</span><input name="pricing.warning_quantity" type="number" min="1"></label>
@@ -44,6 +57,11 @@
                         <label><span>أعلى عدد ملفات</span><input name="upload.max_files" type="number" min="1"></label>
                         <label><span>حجم الملف MB</span><input name="upload.max_file_mb" type="number" min="1"></label>
                         <label><span>الحجم الكلي MB</span><input name="upload.max_total_mb" type="number" min="1"></label>
+                    </div>
+                    </section>
+                    <section id="panel-printing" role="tabpanel" aria-labelledby="tab-printing" hidden>
+                    <h2>إعدادات الطباعة</h2>
+                    <div class="settings-grid">
                         <label><span>هامش أعلى mm</span><input name="layout.margin_top_mm" type="number" min="0" step="0.1"></label>
                         <label><span>هامش يمين mm</span><input name="layout.margin_right_mm" type="number" min="0" step="0.1"></label>
                         <label><span>هامش أسفل mm</span><input name="layout.margin_bottom_mm" type="number" min="0" step="0.1"></label>
@@ -55,9 +73,12 @@
                         <label><span>Safe margin mm</span><input name="layout.safe_margin_mm" type="number" min="0" step="0.1"></label>
                         <label><span>DPI</span><input name="layout.dpi" type="number" min="72"></label>
                     </div>
-                    <label class="sizes-field"><span>المقاسات المتاحة</span><textarea id="sizesInput" rows="4"></textarea><small>صيغة: key,label,width_mm,height_mm في كل سطر. مثال: 5x5,5 x 5 cm,50,50</small></label>
+                    <div class="sizes-field"><h3>المقاسات المتاحة</h3><div id="sizesRows"></div><button type="button" class="secondary-button" id="addSize"><i class="bi bi-plus-lg"></i> إضافة مقاس</button></div>
                     <div class="admin-a4-preview" id="adminA4Preview"></div>
-                    <button class="primary-button" type="submit"><i class="bi bi-save"></i><span>حفظ الإعدادات</span></button>
+                    <div class="preview-pagination"><button type="button" id="previewPrev" aria-label="الصفحة السابقة"><i class="bi bi-chevron-right"></i></button><output id="previewPage"></output><button type="button" id="previewNext" aria-label="الصفحة التالية"><i class="bi bi-chevron-left"></i></button></div>
+                    <p id="previewError" role="status"></p>
+                    </section>
+                    <div id="settingsSaveBar" hidden><span id="settingsStatus" role="status"></span><button class="primary-button" type="submit"><i class="bi bi-save"></i><span>حفظ الإعدادات</span></button></div>
                 </form>
             </aside>
         </div>
@@ -82,6 +103,7 @@
         <header><div><span class="dialog-icon"><i class="bi bi-emoji-smile"></i></span><div><h2 id="stickerDialogTitle">إضافة ملصق</h2><p>PNG أو JPG فقط.</p></div></div><button class="dialog-close" type="button" data-dialog-close><i class="bi bi-x-lg"></i></button></header>
         <div class="form-body">
             <label><span>الصورة</span><input id="stickerImageInput" type="file" accept="image/png,image/jpeg"></label>
+            <img id="stickerImagePreview" alt="معاينة الملصق" hidden>
             <label><span>اسم الملصق</span><input id="stickerNameInput" type="text" required maxlength="100"></label>
             <label><span>التصنيف</span><select id="stickerCategoryInput" required></select></label>
             <label><span>الترتيب</span><input id="stickerOrderInput" type="number" min="0" value="0"></label>
@@ -106,6 +128,7 @@
                 itemUpdate: @json(route('admin.stickers.items.update', ['stickerLibraryItem' => '__ID__'])),
                 itemDestroy: @json(route('admin.stickers.items.destroy', ['stickerLibraryItem' => '__ID__'])),
                 settings: @json(route('admin.stickers.settings.update')),
+                preview: @json(route('admin.stickers.preview')),
             }
         };
     </script>
