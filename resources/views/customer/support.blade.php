@@ -37,7 +37,7 @@
             <a class="support-channel" href="#newTicket" data-new-ticket>
                 <i class="bi bi-plus-circle"></i>
                 <span><strong>تذكرة جديدة</strong><small>أرسل مشكلتك وتابع الرد عليها</small></span>
-                <b>فتح تذكرة</b>
+                <b><i class="bi bi-chat-dots" aria-hidden="true"></i> فتح تذكرة</b>
             </a>
             <a class="support-channel" href="mailto:{{ \App\Support\PlatformSettings::get('general', 'admin_email') }}" data-copy="{{ \App\Support\PlatformSettings::get('general', 'admin_email') }}" data-copy-label="نسخ البريد">
                 <i class="bi bi-envelope"></i>

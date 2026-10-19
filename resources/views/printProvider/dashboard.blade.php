@@ -102,7 +102,7 @@
                         <h3>{{ $alert['title'] }}</h3>
                         <p>{{ $alert['text'] }}</p>
                     </div>
-                    <a class="printshop-secondary-button" href="{{ $alert['url'] }}">{{ $alert['action'] }}</a>
+                    <a class="printshop-secondary-button" href="{{ $alert['url'] }}" @isset($alert['activate']) data-activate="{{ $alert['activate'] }}" @endisset>{{ $alert['action'] }}</a>
                 </article>
             @empty
                 <article class="printshop-alert-item">
@@ -140,7 +140,7 @@
                             <td>{{ $order['product'] }}</td>
                             <td><span class="printshop-status {{ $order['status_class'] }}">{{ $order['status_label'] }}</span></td>
                             <td><time datetime="{{ $order['date']->toDateString() }}">{{ $order['date']->translatedFormat('j F Y') }}</time></td>
-                            <td><a class="printshop-view-button" href="{{ route('print-provider.requests') }}"><i class="bi bi-eye" aria-hidden="true"></i> عرض</a></td>
+                            <td><a class="printshop-view-button" href="{{ route('print-provider.requests', ['order' => $order['id']]) }}"><i class="bi bi-eye" aria-hidden="true"></i> عرض</a></td>
                         </tr>
                     @empty
                         <tr class="printshop-empty-search">
@@ -163,3 +163,26 @@
         </div>
     </section>
 @endsection
+
+@push('scripts')
+    <script>
+        // "تفعيل الآن" turns the product on, then opens the services page to finish its other settings (a product without a price cannot be turned on: the page opens with the reason).
+        document.querySelectorAll('[data-activate]').forEach(function (button) {
+            button.addEventListener('click', function (event) {
+                event.preventDefault();
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                const say = function (text, icon) { return window.PalAlert ? window.PalAlert.alert(text, { icon: icon }) : Promise.resolve(window.alert(text)); };
+
+                fetch(button.dataset.activate, { method: 'PATCH', headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' } })
+                    .then(function (response) {
+                        return response.json().catch(function () { return {}; }).then(function (data) { return { ok: response.ok, data: data }; });
+                    })
+                    .then(function (result) {
+                        if (result.ok) return say(result.data.message || 'تم تشغيل المنتج.', 'success').then(function () { window.location.href = button.href; });
+                        return say(result.data.message || 'تعذر تشغيل المنتج.', 'warning').then(function () { window.location.href = button.href; });
+                    })
+                    .catch(function () { return say('تعذر تشغيل المنتج.', 'error'); });
+            });
+        });
+    </script>
+@endpush

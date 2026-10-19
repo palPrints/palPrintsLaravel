@@ -25,15 +25,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll("a[data-copy]").forEach((link) => {
     const label = link.querySelector(":scope > b");
-    if (label) label.textContent = link.dataset.copyLabel || "نسخ";
+    const normal = link.dataset.copyLabel || "نسخ";
+    // A small icon in front of the words: the copy icon, then a tick once it is copied.
+    const show = (text, icon) => {
+      label.replaceChildren();
+      const mark = document.createElement("i");
+      mark.className = "bi " + icon;
+      mark.setAttribute("aria-hidden", "true");
+      label.append(mark, " " + text);
+    };
+    if (label) show(normal, "bi-copy");
 
     link.addEventListener("click", (event) => {
       event.preventDefault();
       copy(link.dataset.copy)
         .then(() => {
           if (!label) return;
-          label.textContent = "تم النسخ ✓";
-          window.setTimeout(() => { label.textContent = link.dataset.copyLabel || "نسخ"; }, 1800);
+          show("تم النسخ", "bi-check2");
+          window.setTimeout(() => { show(normal, "bi-copy"); }, 1800);
         })
         .catch(() => { if (label) label.textContent = link.dataset.copy; });
     });

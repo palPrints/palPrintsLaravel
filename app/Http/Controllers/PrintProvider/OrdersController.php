@@ -459,6 +459,7 @@ class OrdersController extends Controller
             'sheet_url' => route('print-provider.requests.sheet', [$order, $item]),
             'order_number' => $order->order_number,
             'date_label' => $order->reachedShopAt()->translatedFormat('j F Y'),
+            'time_label' => $order->reachedShopAt()->translatedFormat('g:i A'),
             'notes' => $order->notes,
         ];
     }
