@@ -225,7 +225,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       info.appendChild(element("b", "", formatMoney(item.cost)));
 
-      // Two PDFs per line (the details, and the design with the product wearing it), then the files at full quality.
+      // The details PDF of the line, then each file at full quality under its own name (a design: one picture per area).
       if (item.sheet_url || item.package_url || item.print_files.length) {
         const actions = element("div", "order-files");
         const addLink = function (href, icon, label) {
@@ -236,7 +236,6 @@ document.addEventListener("DOMContentLoaded", function () {
           actions.appendChild(link);
         };
         if (item.sheet_url) addLink(item.sheet_url, "bi-file-earmark-text", "تفاصيل الطلب (PDF)");
-        if (item.design_url) addLink(item.design_url, "bi-file-earmark-image", "التصميم (PDF)");
         // Every file has its own direct download (no unzipping); the zip is only a "download all" shortcut.
         // A paper job has the download inside each file's card, so its files are not listed again here.
         const direct = item.print_files.length ? item.print_files : ((item.paper_files || []).length ? [] : (item.files || []));

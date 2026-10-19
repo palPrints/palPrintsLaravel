@@ -95,7 +95,7 @@ class OrdersController extends Controller
         $disk = Storage::disk($printFile->disk ?: 'local');
         abort_unless($disk->exists($printFile->stored_path), 404);
 
-        return $disk->download($printFile->stored_path, $printFile->original_name, [
+        return $disk->download($printFile->stored_path, $printFile->downloadName(), [
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }
@@ -151,25 +151,9 @@ class OrdersController extends Controller
         $order = $this->ownedOrder($request, $order);
         $item = $this->shopItem($request, $order, $item);
 
-        return $this->pdfResponse($documents->detailsPdf($order, $item), $documents->fileName($order, $item, 'details'));
-    }
-
-    /** The design PDF of one line: per print area the print-ready picture and the product with the design on it. */
-    public function design(Request $request, Order $order, OrderItem $item, OrderLineDocuments $documents): Response
-    {
-        $order = $this->ownedOrder($request, $order);
-        $item = $this->shopItem($request, $order, $item);
-        $pdf = $documents->designPdf($order, $item);
-        abort_if($pdf === null, 404);
-
-        return $this->pdfResponse($pdf, $documents->fileName($order, $item, 'design'));
-    }
-
-    private function pdfResponse(string $pdf, string $name): Response
-    {
-        return response($pdf, 200, [
+        return response($documents->detailsPdf($order, $item), 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="'.$name.'"',
+            'Content-Disposition' => 'attachment; filename="'.$documents->fileName($order, $item).'"',
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }

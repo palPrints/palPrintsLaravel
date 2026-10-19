@@ -69,9 +69,9 @@ Route::post('/webhooks/telegram', TelegramWebhookController::class)->middleware(
 // The customer's print file, from the signed, expiring link in the WhatsApp message the admin sends the shop.
 Route::get('/shared/print-files/{printFile}', SharedPrintFileController::class)
     ->middleware(['signed', 'throttle:30,1'])->name('print-files.shared');
-// The details / design PDF of an order line, from the same WhatsApp message.
-Route::get('/shared/order-items/{item}/{kind}', SharedOrderSheetController::class)
-    ->whereIn('kind', ['details', 'design'])->middleware(['signed', 'throttle:30,1'])->name('order-sheets.shared');
+// The details PDF of an order line, from the same WhatsApp message.
+Route::get('/shared/order-items/{item}/details', SharedOrderSheetController::class)
+    ->middleware(['signed', 'throttle:30,1'])->name('order-sheets.shared');
 
 Route::view('/about', 'about')->name('about');
 Route::view('/faq', 'pages.faq')->name('faq');
@@ -250,7 +250,6 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/{order}/files/{printFile}', [PrintProviderOrdersController::class, 'downloadFile'])->name('.files');
         Route::get('/{order}/items/{item}/package', [PrintProviderOrdersController::class, 'package'])->name('.package');
         Route::get('/{order}/items/{item}/sheet', [PrintProviderOrdersController::class, 'sheet'])->name('.sheet');
-        Route::get('/{order}/items/{item}/design', [PrintProviderOrdersController::class, 'design'])->name('.design');
     });
     Route::get('/print-provider/earnings', PrintProviderEarningsController::class)
         ->middleware(['role:print_provider', 'account.approved'])->name('print-provider.earnings');

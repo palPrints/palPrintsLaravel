@@ -88,67 +88,39 @@ class SendOrderToTelegram implements ShouldQueue
     }
 
     /**
-     * One order line: its details PDF, then its design PDF (the print-ready picture of each area and the product wearing
-     * it). A paper line has no design: the customer's own files go instead. Files the PDFs cannot show (a garment line
-     * with no print-ready picture, only the designer's originals) go as they are. If a PDF cannot be made, the line's
-     * files go as they are, so the shop always gets what it needs to print.
+     * One order line: its details PDF, then its files, each under the name it downloads as — a design's print-ready
+     * picture per area ("أمامي.png"), or a paper job's own PDFs. If the details PDF cannot be made, the files still go.
      */
     private function sendLine(TelegramClient $client, OrderLineDocuments $documents, Order $order, PrintProvider $provider, string $chatId, OrderItem $item): void
     {
-        $files = $item->printFiles->whereNotIn('status', [PrintFile::STATUS_DELETED, PrintFile::STATUS_CANCELLED]);
-        $sendFiles = $documents->isPaper($item) || ! $files->contains->isPrintReady();
-
-        foreach (['details', 'design'] as $kind) {
-            try {
-                $sent = $this->sendPdf($client, $documents, $order, $provider, $chatId, $item, $kind);
-            } catch (RequestException $exception) {
-                throw $exception;
-            } catch (Throwable $exception) {
-                // The PDF could not be made (a missing picture, no GD on the server…): the raw files carry the order instead.
-                report($exception);
-                $sent = false;
-            }
-
-            if ($kind === 'design' && ! $sent) {
-                $sendFiles = true;
-            }
+        try {
+            $this->sendDetails($client, $documents, $order, $provider, $chatId, $item);
+        } catch (RequestException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            // The PDF could not be made (the PDF writer missing on the server…): the files still carry the order.
+            report($exception);
         }
 
-        if ($sendFiles) {
-            foreach ($files as $file) {
-                $this->sendFile($client, $order, $provider, $chatId, $file);
-            }
+        foreach ($documents->filesToSend($item) as $file) {
+            $this->sendFile($client, $order, $provider, $chatId, $file);
         }
     }
 
-    /** Sends one of the line's two PDFs once; false when the line has no such PDF (a paper line has no design). */
-    private function sendPdf(TelegramClient $client, OrderLineDocuments $documents, Order $order, PrintProvider $provider, string $chatId, OrderItem $item, string $kind): bool
+    /** The line's details PDF, sent once. */
+    private function sendDetails(TelegramClient $client, OrderLineDocuments $documents, Order $order, PrintProvider $provider, string $chatId, OrderItem $item): void
     {
-        if ($kind === 'design' && ! $documents->hasDesign($item)) {
-            return false;
-        }
-
         $row = TelegramMessage::query()->firstOrCreate(
-            ['order_id' => $order->id, 'print_provider_id' => $provider->id, 'purpose' => $kind.':'.$item->id],
+            ['order_id' => $order->id, 'print_provider_id' => $provider->id, 'purpose' => 'details:'.$item->id],
             ['chat_id' => $chatId, 'status' => 'queued'],
         );
         if ($row->telegram_message_id) {
-            return true;
+            return;
         }
 
-        $pdf = $kind === 'design' ? $documents->designPdf($order, $item) : $documents->detailsPdf($order, $item);
-        if ($pdf === null) {
-            $row->update(['status' => 'failed', 'error' => 'لا يوجد تصميم لهذا البند.']);
-
-            return false;
-        }
-
-        $label = $kind === 'design' ? '🎨 التصميم والمنتج عليه' : '📋 تفاصيل الطلب';
-        $caption = $label.' — '.TelegramClient::e($item->product?->name ?? 'منتج').' — طلب <code>'.TelegramClient::e($order->order_number).'</code>';
-        $sent = $client->sendDocument($chatId, $pdf, $documents->fileName($order, $item, $kind), $caption);
+        $caption = '📋 تفاصيل الطلب — '.TelegramClient::e($item->product?->name ?? 'منتج').' — طلب <code>'.TelegramClient::e($order->order_number).'</code>';
+        $sent = $client->sendDocument($chatId, $documents->detailsPdf($order, $item), $documents->fileName($order, $item), $caption);
         $row->update(['telegram_message_id' => $sent['message_id'] ?? null, 'status' => 'sent', 'error' => null]);
-
-        return true;
     }
 
     private function sendFile(TelegramClient $client, Order $order, PrintProvider $provider, string $chatId, PrintFile $file): void
@@ -162,7 +134,7 @@ class SendOrderToTelegram implements ShouldQueue
         }
 
         $disk = Storage::disk($file->disk ?: 'local');
-        $caption = '📄 '.TelegramClient::e($file->original_name).' — طلب <code>'.TelegramClient::e($order->order_number).'</code>';
+        $caption = '🖼️ '.TelegramClient::e($file->downloadName()).' — طلب <code>'.TelegramClient::e($order->order_number).'</code>';
 
         if (! $disk->exists($file->stored_path)) {
             $row->update(['status' => 'failed', 'error' => 'الملف غير موجود في التخزين.']);
@@ -175,7 +147,7 @@ class SendOrderToTelegram implements ShouldQueue
             $link = URL::temporarySignedRoute('print-files.shared', now()->addDays(7), $file);
             $sent = $client->sendMessage($chatId, $caption."\nالملف كبير، نزّليه من الرابط (صالح 7 أيام):\n".TelegramClient::e($link));
         } else {
-            $sent = $client->sendDocument($chatId, $disk->get($file->stored_path), $file->original_name, $caption);
+            $sent = $client->sendDocument($chatId, $disk->get($file->stored_path), $file->downloadName(), $caption);
         }
 
         $row->update(['telegram_message_id' => $sent['message_id'] ?? null, 'status' => 'sent', 'error' => null]);
@@ -209,7 +181,7 @@ class SendOrderToTelegram implements ShouldQueue
             $products,
             '',
             'مستحقاتك: <b>'.number_format((float) $items->sum('provider_cost'), 2).' ₪</b>',
-            'ملف التفاصيل وملف التصميم مرفقان فوق هذه الرسالة.',
+            'ملف تفاصيل الطلب وملفات الطباعة مرفقة فوق هذه الرسالة.',
             '',
             'صفحة الطلبات: '.TelegramClient::e(route('print-provider.requests')),
         ], fn ($line) => $line !== null));

@@ -12,11 +12,10 @@ use App\Support\PaperJobDetails;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * What a print shop gets for one order line, wherever it reads it: the orders page, the PDFs it downloads, and the
- * messages that go to its Telegram / WhatsApp. Two PDFs per line:
- *  - the details: the order, the options in words (size, colour, print areas…), the notes and the print files;
- *  - the design: for each print area the print-ready picture on its own, and the product with the design on it.
- * A paper line has only the details (its files are the customer's own PDFs).
+ * What a print shop gets for one order line, wherever it reads it: the orders page, the files it downloads, and the
+ * messages that go to its Telegram / WhatsApp. Per line: one details PDF (the order, the options in words — size,
+ * colour, print areas… — the notes and the print files), and beside it the files themselves, each under a name the shop
+ * can read: a design's print-ready picture per area ("أمامي.png"), or a paper job's own PDFs.
  */
 class OrderLineDocuments
 {
@@ -118,7 +117,6 @@ class OrderLineDocuments
                 ])->values()->all(),
             'package_url' => $files->isNotEmpty() ? route('print-provider.requests.package', [$order, $item]) : null,
             'sheet_url' => route('print-provider.requests.sheet', [$order, $item]),
-            'design_url' => $this->hasDesign($item) ? route('print-provider.requests.design', [$order, $item]) : null,
             'order_number' => $order->order_number,
             'date_label' => $order->reachedShopAt()->translatedFormat('j F Y'),
             'notes' => $order->notes,
@@ -151,43 +149,31 @@ class OrderLineDocuments
         return ! empty(data_get($item->selected_options, 'paper_job.files'));
     }
 
-    /** Whether the line has something to draw in the design PDF: a print-ready picture, or at least the design's picture. */
-    public function hasDesign(OrderItem $item): bool
+    /**
+     * The files that go to the shop beside the details PDF, each under the name it downloads as: a design line's
+     * print-ready pictures, one per area ("أمامي.png"), or its originals when it has none; a paper line's own files.
+     *
+     * @return \Illuminate\Support\Collection<int, PrintFile>
+     */
+    public function filesToSend(OrderItem $item)
     {
-        return ! $this->isPaper($item)
-            && ($this->lineFiles($item)->contains->isPrintReady() || $this->designPicture($item) !== null);
+        $files = $this->lineFiles($item)->sortBy('id')->values();
+
+        return $this->isPaper($item) || ! $files->contains->isPrintReady() ? $files : $files->filter->isPrintReady()->values();
     }
 
-    /** The details PDF: the order, the options in words, the notes and the print files (no pictures, no GD needed). */
+    /** The details PDF: the order, the options in words, the notes and the print files (text only, no GD needed). */
     public function detailsPdf(Order $order, OrderItem $item): string
     {
         return (new OrderSheetPdf)->details($this->sheetData($order, $item, $this->areas($item)));
     }
 
-    /**
-     * The design PDF: per print area the print-ready picture on its own and the product with the design on it. A design
-     * with no print-ready picture yet (an older catalogue design) shows the design's own picture. Null when there is
-     * nothing to show (a paper line). Needs GD (the product is tinted and the design placed on it).
-     */
-    public function designPdf(Order $order, OrderItem $item): ?string
-    {
-        if (! $this->hasDesign($item)) {
-            return null;
-        }
-
-        $disk = Storage::disk('local');
-        $designFiles = $this->lineFiles($item)->filter->isPrintReady()->sortBy('id')
-            ->mapWithKeys(fn (PrintFile $file) => [$file->areaLabel() => $disk->path($file->stored_path)])->all();
-
-        return (new OrderSheetPdf)->design($this->sheetData($order, $item, $this->areas($item)), $designFiles, $this->designPicture($item));
-    }
-
-    /** The PDF file names the shop sees, e.g. "PLP-20261019-RCQHTF-1-details.pdf". */
-    public function fileName(Order $order, OrderItem $item, string $kind): string
+    /** The details PDF's file name, e.g. "PLP-20261019-RCQHTF-1-details.pdf" (1 = the line's place in the order). */
+    public function fileName(Order $order, OrderItem $item): string
     {
         $line = $order->items()->orderBy('id')->pluck('id')->search($item->id);
 
-        return $order->order_number.'-'.(($line === false ? 0 : $line) + 1).'-'.($kind === 'design' ? 'design' : 'details').'.pdf';
+        return $order->order_number.'-'.(($line === false ? 0 : $line) + 1).'-details.pdf';
     }
 
     /** The print-ready pictures of a line, one row per print area, for the files table of the details PDF. */
@@ -202,23 +188,6 @@ class OrderLineDocuments
             'size' => 0,
             'src' => '',
         ])->values()->all();
-    }
-
-    /** The design's own picture on this server (the catalogue cover), when the line has one. */
-    private function designPicture(OrderItem $item): ?string
-    {
-        $image = (string) ($item->design?->image ?? '');
-        if ($image === '' || str_starts_with($image, 'http')) {
-            return null;
-        }
-
-        foreach ([public_path(ltrim($image, '/')), Storage::disk('public')->path(ltrim($image, '/'))] as $path) {
-            if (is_file($path)) {
-                return $path;
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -278,43 +247,6 @@ class OrderLineDocuments
             'fonts' => $fonts,
             'packageUrl' => $presented['package_url'],
             'areas' => $areas,
-            'previews' => $this->previews($item, $areas),
         ];
     }
-
-    /**
-     * The product itself in the customer's colour, once bare and once with the print-ready picture of the area placed in
-     * its print zone. Orders placed before the studio saved a mockup per area show the one area that was saved.
-     *
-     * @param  array<int, array{name: string, size: int, src: string}>  $areas
-     * @return array<int, array<string, mixed>>
-     */
-    private function previews(OrderItem $item, array $areas): array
-    {
-        $options = (array) $item->selected_options;
-        $mockups = (array) ($options['mockups'] ?? []);
-        $mockups = $mockups !== [] ? $mockups : array_filter([$options['mockup'] ?? null]);
-        $previews = [];
-
-        foreach ($mockups as $mockup) {
-            $path = ltrim((string) ($mockup['image'] ?? ''), '/');
-
-            if ($path === '' || ! is_file(public_path($path))) {
-                continue;
-            }
-
-            $overlay = collect($areas)->firstWhere('name', $mockup['area_name'] ?? null);
-            $previews[] = [
-                'name' => (string) ($mockup['area_name'] ?? ''),
-                'garment_path' => $path,
-                'garment_src' => asset($path),
-                'tint' => $mockup['tint'] ?? null,
-                'zone' => (array) ($mockup['zone'] ?? []),
-                'overlay_src' => $overlay['src'] ?? null,
-            ];
-        }
-
-        return $previews;
-    }
-
 }
