@@ -235,7 +235,7 @@ document.addEventListener("DOMContentLoaded", function () {
           link.append(element("span", "", label));
           actions.appendChild(link);
         };
-        if (item.print_files.length) addLink(item.sheet_url, "bi-file-earmark-pdf", "تنزيل ورقة الطلب (PDF)");
+        if (item.print_files.length || (item.paper_files || []).length) addLink(item.sheet_url, "bi-file-earmark-pdf", "تنزيل ورقة الطلب (PDF)");
         // Every file has its own direct download (no unzipping); the zip is only a "download all" shortcut.
         // A paper job has the download inside each file's card, so its files are not listed again here.
         const direct = item.print_files.length ? item.print_files : ((item.paper_files || []).length ? [] : (item.files || []));
@@ -288,7 +288,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function runAction(action, order, body, successIcon) {
     return post(action, order, body)
-      .then(function (data) { return showResult(data.message, successIcon).then(function () { window.location.reload(); }); })
+      .then(function (data) { return showResult(data.message, successIcon).then(function () {
+        // Reload without "?order=ID" (a notification link): with it the page would open the same order's dialog again.
+        window.location.replace(window.location.pathname);
+      }); })
       .catch(function (error) { return showResult(error.message, "error"); });
   }
 
@@ -299,6 +302,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function closeDialog() {
     if (typeof detailsDialog.close === "function") detailsDialog.close();
     else detailsDialog.removeAttribute("open");
+
+    if (new URLSearchParams(window.location.search).has("order")) window.history.replaceState(null, "", window.location.pathname);
   }
 
   function footerButton(label, className, onClick) {

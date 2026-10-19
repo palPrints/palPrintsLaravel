@@ -191,7 +191,14 @@ class OrdersController extends Controller
         $disk = Storage::disk('local');
         $designFiles = $this->lineFiles($item)->filter->isPrintReady()->sortBy('id')
             ->mapWithKeys(fn (PrintFile $file) => [$file->areaLabel() => $disk->path($file->stored_path)])->all();
-        $areas = array_map(fn ($name) => ['name' => $name, 'size' => 0, 'src' => ''], array_keys($designFiles));
+        $sizes = $this->designSizes($item);
+        $areas = $this->lineFiles($item)->filter->isPrintReady()->sortBy('id')->map(fn (PrintFile $file) => [
+            'name' => $file->areaLabel(),
+            'file' => $file->original_name,
+            'dimensions' => $sizes[$file->areaSlug()] ?? null,
+            'size' => 0,
+            'src' => '',
+        ])->values()->all();
         $path = tempnam(sys_get_temp_dir(), 'pdf');
         file_put_contents($path, (new OrderSheetPdf)->render($this->sheetData($order, $item, $areas), $designFiles));
 
@@ -210,6 +217,48 @@ class OrdersController extends Controller
             ->filter(fn (PrintFile $file) => ($file->disk ?: 'local') === 'local' && $disk->exists($file->stored_path));
     }
 
+    /**
+     * How big the customer's design is on the product, per studio area, in centimetres ("11.6 × 10"): the box around all
+     * its elements. The studio keeps sizes and positions as fractions of the print area.
+     *
+     * @return array<string, string>
+     */
+    private function designSizes(OrderItem $item): array
+    {
+        $product = $item->product;
+        $router = app(PrintShopRouter::class);
+        $definitions = $product ? collect(CatalogProductData::areaDefinitions($product->code)) : collect();
+        $sizes = [];
+
+        foreach ((array) data_get($item->selected_options, 'layout.areas', []) as $studioId => $area) {
+            $zone = $product ? $definitions->firstWhere('code', $router->databaseArea($product, (string) $studioId)) : null;
+            $objects = (array) ($area['objects'] ?? []);
+
+            if (! $zone || $objects === []) {
+                continue;
+            }
+
+            $edges = [];
+
+            foreach ($objects as $object) {
+                $isText = ($object['kind'] ?? '') === 'text';
+                $width = (float) ($object['width'] ?? 0) * ($isText ? (float) ($object['scaleX'] ?? 1) : 1);
+                $lines = max(1, substr_count((string) ($object['text'] ?? ''), "\n") + 1);
+                $height = $isText
+                    ? (float) ($object['fontSize'] ?? 0) * (float) ($object['scaleY'] ?? 1) * (float) ($object['lineHeight'] ?? 1.2) * $lines
+                    : (float) ($object['height'] ?? 0);
+                $edges[] = [(float) ($object['x'] ?? 0) - $width / 2, (float) ($object['x'] ?? 0) + $width / 2, (float) ($object['y'] ?? 0) - $height / 2, (float) ($object['y'] ?? 0) + $height / 2];
+            }
+
+            $edges = collect($edges);
+            $width = ($edges->max(1) - $edges->min(0)) * $zone['width'] / 10;
+            $height = ($edges->max(3) - $edges->min(2)) * $zone['height'] / 10;
+            $sizes[strtolower((string) $studioId)] = round($width, 1).' × '.round($height, 1);
+        }
+
+        return $sizes;
+    }
+
     /** @param  array<int, array{name: string, size: int, src: string}>  $areas  the print-ready pictures of the line, by area name */
     private function sheetData(Order $order, OrderItem $item, array $areas): array
     {
@@ -223,71 +272,10 @@ class OrdersController extends Controller
             'order' => $order,
             'item' => $presented,
             'fonts' => $fonts,
-            'layout' => $this->layoutDetails($item),
             'packageUrl' => $presented['package_url'],
             'areas' => $areas,
             'previews' => $this->previews($item, $areas),
         ];
-    }
-
-    /**
-     * Every element of the customer's design, area by area, in centimetres: what it is, how big, and where it sits
-     * measured from the top-left corner of the print area. The studio keeps positions as fractions of the area.
-     *
-     * @return array<int, array{name: string, width: float, height: float, objects: array<int, array<string, mixed>>}>
-     */
-    private function layoutDetails(OrderItem $item): array
-    {
-        $product = $item->product;
-        $router = app(PrintShopRouter::class);
-        $definitions = $product ? collect(CatalogProductData::areaDefinitions($product->code)) : collect();
-        $result = [];
-
-        foreach ((array) data_get($item->selected_options, 'layout.areas', []) as $studioId => $area) {
-            $objects = (array) ($area['objects'] ?? []);
-            $zone = $product ? $definitions->firstWhere('code', $router->databaseArea($product, (string) $studioId)) : null;
-
-            if ($objects === [] || ! $zone) {
-                continue;
-            }
-
-            $zoneWidth = $zone['width'] / 10;
-            $zoneHeight = $zone['height'] / 10;
-            $rows = [];
-
-            foreach ($objects as $number => $object) {
-                $kind = $object['kind'] ?? '';
-                $isText = $kind === 'text';
-                $width = (float) ($object['width'] ?? 0) * ($isText ? (float) ($object['scaleX'] ?? 1) : 1) * $zoneWidth;
-                $lines = max(1, substr_count((string) ($object['text'] ?? ''), "\n") + 1);
-                $height = $isText
-                    ? (float) ($object['fontSize'] ?? 0) * (float) ($object['scaleY'] ?? 1) * (float) ($object['lineHeight'] ?? 1.2) * $lines * $zoneHeight
-                    : (float) ($object['height'] ?? 0) * $zoneHeight;
-                $centerX = (float) ($object['x'] ?? 0) * $zoneWidth;
-                $centerY = (float) ($object['y'] ?? 0) * $zoneHeight;
-
-                $rows[] = [
-                    'number' => $number + 1,
-                    'type' => ['text' => 'نص', 'image' => 'صورة رفعها العميل', 'graphic' => 'رسمة من مكتبة الموقع'][$kind] ?? (string) $kind,
-                    'what' => $isText ? (string) ($object['text'] ?? '') : (string) ($object['graphicId'] ?? ''),
-                    'width' => round($width, 1),
-                    'height' => round($height, 1),
-                    'left' => round($centerX - $width / 2, 1),
-                    'top' => round($centerY - $height / 2, 1),
-                    'center_x' => round($centerX, 1),
-                    'center_y' => round($centerY, 1),
-                    'angle' => round((float) ($object['angle'] ?? 0), 1),
-                    'flip' => trim(($object['flipX'] ?? false ? 'مقلوبة أفقيًا ' : '').($object['flipY'] ?? false ? 'مقلوبة عموديًا' : '')),
-                    'font' => $isText ? (string) ($object['fontFamily'] ?? '') : '',
-                    'color' => $isText ? (string) ($object['fill'] ?? '') : (string) ($object['color'] ?? ''),
-                    'bold' => $isText && ($object['fontWeight'] ?? '') !== '' && ($object['fontWeight'] ?? 'normal') !== 'normal',
-                ];
-            }
-
-            $result[] = ['name' => $zone['name'], 'width' => $zoneWidth, 'height' => $zoneHeight, 'objects' => $rows];
-        }
-
-        return $result;
     }
 
     /**

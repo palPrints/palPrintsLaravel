@@ -742,11 +742,12 @@
   }
 
   function uploadFingerprint(file, mimeType) {
-    return [file.name, file.size, file.lastModified || 0, mimeType].join("::");
+    return [file.name, file.size, mimeType].join("::"); // بدون lastModified: الملف المسحوب يأخذ وقتًا جديدًا في كل قراءة
   }
   function hasUploadedFile(file, mimeType, fingerprint) {
+    const byContent = fingerprint.startsWith("hash::");
     return app.assets.some(asset => asset.fingerprint === fingerprint
-      || (!asset.fingerprint && asset.name === file.name && asset.size === file.size && asset.mimeType === mimeType));
+      || (!byContent && asset.name === file.name && asset.size === file.size && asset.mimeType === mimeType));
   }
 
   async function sanitizeUploadedSvg(file) {
@@ -811,12 +812,16 @@
   }
 
   async function handleUploads(files) {
-    let changed = false;
+    let changed = false; const added = [];
     for (const file of files) {
       const extension = file.name.split(".").pop()?.toLowerCase(), mime = file.type || (extension === "svg" ? "image/svg+xml" : extension === "png" ? "image/png" : "image/jpeg");
       if (!ALLOWED_UPLOADS.has(mime) || !["png", "jpg", "jpeg", "svg"].includes(extension)) { showNotice(`الملف «${file.name}» غير مدعوم.`, "error"); continue; }
-      const fingerprint = uploadFingerprint(file, mime);
-      if (app.pendingAssetFingerprints.has(fingerprint) || hasUploadedFile(file, mime, fingerprint)) continue;
+      // بصمة المحتوى نفسه: تمنع تكرار الصورة حتى لو اختلف اسمها أو وقتها
+      let contentHash = "";
+      try { contentHash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", await file.arrayBuffer()))].map(byte => byte.toString(16).padStart(2, "0")).join(""); } catch (error) { contentHash = ""; }
+      const fingerprint = contentHash ? `hash::${contentHash}` : uploadFingerprint(file, mime);
+      if (app.pendingAssetFingerprints.has(fingerprint)) continue;
+      if (hasUploadedFile(file, mime, fingerprint)) { const existing = app.assets.find(asset => asset.fingerprint === fingerprint); if (existing && !added.includes(existing)) added.push(existing); continue; }
       app.pendingAssetFingerprints.add(fingerprint);
       try {
         let blob = file;
@@ -829,7 +834,7 @@
           const dimensions = mime === "image/svg+xml" ? { sourceType: "vector" } : await readRasterDimensions(blob);
           app.assets.push({ assetId, name: file.name, mimeType: mime, size: file.size, lastModified: file.lastModified || 0, fingerprint,
             pixelWidth: dimensions.pixelWidth || null, pixelHeight: dimensions.pixelHeight || null, sourceType: dimensions.sourceType, createdAt: new Date().toISOString() });
-          changed = true;
+          changed = true; added.push(app.assets[app.assets.length - 1]);
         }
       } finally {
         app.pendingAssetFingerprints.delete(fingerprint);
@@ -837,6 +842,31 @@
     }
     if (changed) commitDesign();
     if (app.activeTool === "upload") renderToolPanel("upload");
+    return added;
+  }
+  function imageFiles(event) { return [...(event.dataTransfer?.files || [])].filter(file => /^image\//.test(file.type) || /\.(png|jpe?g|svg)$/i.test(file.name)); }
+  function hasFiles(event) { return [...(event.dataTransfer?.types || [])].includes("Files"); }
+  function setupUploadDropTargets() {
+    const picker = document.createElement("input"); picker.type = "file"; picker.multiple = true; picker.hidden = true;
+    picker.accept = ".png,.jpg,.jpeg,.svg,image/png,image/jpeg,image/svg+xml"; document.body.appendChild(picker);
+    picker.addEventListener("change", () => { void handleUploads([...picker.files]); picker.value = ""; });
+    const uploadTab = document.getElementById("uploadTab");
+    // الضغط على تبويب "رفع صورة" يفتح اختيار الملفات مباشرة
+    uploadTab?.addEventListener("click", () => picker.click());
+    const targets = [uploadTab, elements.toolPanel, document.getElementById("studioStage")].filter(Boolean);
+    targets.forEach(target => {
+      // على لوحة التصميم يظهر التحديد حول منطقة الطباعة وليس حول خلفية المنتج
+      const marked = target.id === "studioStage" ? (elements.printZone || target) : target;
+      ["dragenter", "dragover"].forEach(name => target.addEventListener(name, event => { if (!hasFiles(event)) return; event.preventDefault(); marked.classList.add("is-dragging"); }));
+      target.addEventListener("dragleave", event => { if (!target.contains(event.relatedTarget)) marked.classList.remove("is-dragging"); });
+      target.addEventListener("drop", async event => {
+        if (!hasFiles(event)) return; event.preventDefault(); marked.classList.remove("is-dragging");
+        const files = imageFiles(event); if (!files.length) return;
+        const added = await handleUploads(files);
+        // الإفلات على لوحة التصميم يضيف الصورة للتصميم مباشرة
+        if (target.id === "studioStage") for (const asset of added) await addAssetToCanvas(asset);
+      });
+    });
   }
   function assetUsageCount(assetId) { storeActiveDraft(); return Object.values(app.drafts).reduce((total, draft) => total
     + Object.values(draft.areas).reduce((count, area) => count + area.objects.filter(object => object.kind === "image" && object.assetId === assetId).length, 0), 0); }
@@ -917,7 +947,7 @@
     const input = uploader.querySelector("input"); input.addEventListener("change", () => { void handleUploads([...input.files]); input.value = ""; });
     ["dragenter", "dragover"].forEach(name => uploader.addEventListener(name, event => { event.preventDefault(); uploader.classList.add("is-dragging"); }));
     ["dragleave", "drop"].forEach(name => uploader.addEventListener(name, event => { event.preventDefault(); uploader.classList.remove("is-dragging"); }));
-    uploader.addEventListener("drop", event => { void handleUploads([...event.dataTransfer.files]); }); content.appendChild(uploader);
+    content.appendChild(uploader); // الإفلات تعالجه لوحة الأدوات (setupUploadDropTargets) لتجنب رفع الصورة مرتين
     if (assets.length) {
       const heading = document.createElement("div"); heading.className = "studio-assets-heading"; heading.innerHTML = `<strong>الصور المرفوعة</strong><span>${assets.length}</span>`; content.appendChild(heading);
       const grid = document.createElement("div"); grid.className = "studio-assets-grid";
@@ -1232,7 +1262,7 @@
     app.resizeObserver.observe(elements.stage);
   }
   async function init() {
-    setupSiteShell(); setupToolTabs(); if (!elements.designCanvas || !elements.printZone || !window.fabric?.Canvas) return showError("تعذر تجهيز مساحة التصميم. أعد تحميل الصفحة وحاول مرة أخرى.");
+    setupSiteShell(); setupToolTabs(); setupUploadDropTargets(); if (!elements.designCanvas || !elements.printZone || !window.fabric?.Canvas) return showError("تعذر تجهيز مساحة التصميم. أعد تحميل الصفحة وحاول مرة أخرى.");
     app.selection = readSelection(); if (!app.selection) return showError("اختر منتجًا مهيأ من صفحة اختيار المنتجات أولًا.");
     const validation = validateProduct(app.selection.editorProduct); if (!validation.valid) return showError(validation.message);
     ensureDesignId(app.selection);

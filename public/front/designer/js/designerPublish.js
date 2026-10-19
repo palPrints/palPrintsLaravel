@@ -127,6 +127,14 @@
       form.append("files[]", blob, base + "." + (extensions[blob.type] || "png"));
       form.append("file_assets[]", id);
     }
+    // The studio drew one print-ready picture per area (fonts included): the print shop prints from these.
+    for (const area of stash.printAreas || []) {
+      const blob = await assetBlob("printexport:" + area.id);
+      if (!blob) continue;
+      form.append("print_exports[]", blob, "print-" + area.id + ".png");
+      form.append("print_export_areas[]", area.name || area.id);
+      form.append("print_export_ids[]", area.id);
+    }
     return form;
   }
 
