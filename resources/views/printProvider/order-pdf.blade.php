@@ -43,7 +43,7 @@
 <table class="info">
     <tr>
         <td><div class="l">رقم الطلب</div><div class="v"><b>{{ $order->order_number }}</b></div></td>
-        <td><div class="l">وصل المطبعة</div><div class="v"><b>{{ $item['date_label'] }}</b></div></td>
+        <td><div class="l">وصل المطبعة</div><div class="v"><b>{{ $item['date_label'] }} · {{ $item['time_label'] }}</b></div></td>
         <td><div class="l">الكمية</div><div class="v"><b>{{ $item['quantity'] }}</b></div></td>
     </tr>
 </table>
