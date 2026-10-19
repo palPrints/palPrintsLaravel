@@ -35,7 +35,7 @@
 
     <section class="support-channels" aria-label="قنوات الدعم">
         <a class="support-channel" href="#newTicket" data-new-ticket data-no-press>
-            <i class="bi bi-plus-circle"></i><span><strong>تذكرة جديدة</strong><small>أرسل مشكلتك وتابع الرد عليها</small></span><b>فتح تذكرة</b>
+            <i class="bi bi-plus-circle"></i><span><strong>تذكرة جديدة</strong><small>أرسل مشكلتك وتابع الرد عليها</small></span><b><i class="bi bi-chat-dots" aria-hidden="true"></i> فتح تذكرة</b>
         </a>
         <a class="support-channel" href="mailto:{{ $contactEmail }}" data-copy="{{ $contactEmail }}" data-copy-label="نسخ البريد" data-no-press>
             <i class="bi bi-envelope"></i><span><strong>البريد الإلكتروني</strong><small>{{ $contactEmail }}</small></span><b>إرسال رسالة</b>

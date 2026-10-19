@@ -36,7 +36,7 @@
 
     <section class="acct-channels" aria-label="قنوات الدعم">
         <a class="acct-channel" href="#newTicket" data-new-ticket>
-            <i class="bi bi-plus-circle" aria-hidden="true"></i><span><strong>تذكرة جديدة</strong><small>أرسل مشكلتك وتابع الرد عليها</small></span><b>فتح تذكرة</b>
+            <i class="bi bi-plus-circle" aria-hidden="true"></i><span><strong>تذكرة جديدة</strong><small>أرسل مشكلتك وتابع الرد عليها</small></span><b><i class="bi bi-chat-dots" aria-hidden="true"></i> فتح تذكرة</b>
         </a>
         <a class="acct-channel" href="mailto:{{ $contactEmail }}" data-copy="{{ $contactEmail }}" data-copy-label="نسخ البريد">
             <i class="bi bi-envelope" aria-hidden="true"></i><span><strong>البريد الإلكتروني</strong><small>{{ $contactEmail }}</small></span><b>إرسال رسالة</b>
@@ -83,7 +83,7 @@
                         <span @class(['is-open' => $ticketStatus !== 'resolved'])>{{ ['new' => 'قيد المتابعة', 'open' => 'قيد المعالجة', 'resolved' => 'تم الحل'][$ticketStatus] }}</span>
                     </a>
                 @empty
-                    <p class="acct-empty">لا توجد طلبات دعم أرسلتها بعد.</p>
+                    <p class="acct-empty"><i class="bi bi-inbox" aria-hidden="true"></i><span>لا توجد طلبات دعم أرسلتها بعد.</span></p>
                 @endforelse
             </section>
 
