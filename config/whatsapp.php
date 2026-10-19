@@ -34,6 +34,17 @@ return [
         'language' => env('WHATSAPP_NEW_ORDER_TEMPLATE_LANG', 'ar'),
     ],
 
+    /*
+     * The approved utility template that carries any other platform notification to a shop (payment, approval, support
+     * reply…). Create it in WhatsApp Manager with exactly two body variables:
+     *   Body: إشعار من PALPRINTS: {{1}} — {{2}}
+     * Leave the name empty to send only new orders on WhatsApp.
+     */
+    'notification_template' => [
+        'name' => env('WHATSAPP_NOTIFICATION_TEMPLATE', 'palprints_notification'),
+        'language' => env('WHATSAPP_NOTIFICATION_TEMPLATE_LANG', 'ar'),
+    ],
+
     // How long a shop has to type its rejection reason after tapping "reject".
     'reject_reason_minutes' => 30,
 
