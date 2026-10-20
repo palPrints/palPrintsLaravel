@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\SendOrderOfferToShop;
 use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\PrintProvider;
+use App\Services\Orders\ShopNotifier;
 use App\Services\OrderShopChoices;
-use App\Services\WhatsApp\ShopChatLink;
 use App\Support\OrderNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -178,10 +177,11 @@ class OrderController extends Controller
             }
 
             foreach ($locked->items as $item) {
+                $offering = $branch->branchProductOfferings->firstWhere('product_id', $item->product_id);
                 $item->update([
                     'print_provider_branch_id' => $branch->id,
                     'branch_product_offering_id' => $branch->branchProductOfferings->firstWhere('product_id', $item->product_id)->id,
-                ]);
+                ] + app(\App\Services\Stickers\StickerProviderPricing::class)->assignment($item, $offering));
             }
 
             $locked->update(['status' => 'processing']);
@@ -206,10 +206,9 @@ class OrderController extends Controller
         if ($providerUserId = $branch->printProvider?->user_id) {
             OrderNotifier::newOrderForShop((int) $providerUserId, $locked->order_number, $locked->items->count(), (int) $locked->id);
         }
-        // The new shop also hears about it on WhatsApp: automatically when the API is on and the shop opted in,
-        // and the admin gets the ready-to-send wa.me message on the orders page after the reload.
-        SendOrderOfferToShop::dispatch($locked->id, (int) $branch->print_provider_id);
-        session()->flash('notice_whatsapp', ShopChatLink::forOrder($locked->fresh()));
+        // The new shop also hears about it on the channels it chose: Telegram automatically, WhatsApp automatically when the
+        // API is on, otherwise the admin gets the ready-to-send wa.me message on the orders page after the reload.
+        session()->flash('notice_whatsapp', app(ShopNotifier::class)->newOrder($locked, (int) $branch->print_provider_id));
         if ($locked->user_id) {
             OrderNotifier::statusChanged((int) $locked->user_id, $locked->order_number, 'processing');
         }

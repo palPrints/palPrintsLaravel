@@ -12,6 +12,26 @@ use Illuminate\Support\Facades\Http;
  */
 class WhatsAppClient
 {
+    public function sendPrintFile(string $to, string $bytes, string $filename, string $orderNumber): array
+    {
+        $template = config('whatsapp.print_file_template');
+        if (! $template) {
+            throw new \RuntimeException('Configure an approved WhatsApp DOCUMENT template for print files.');
+        }
+        $url = sprintf('%s/%s/%s/media', rtrim(config('whatsapp.graph_url'), '/'), config('whatsapp.graph_version'), config('whatsapp.phone_number_id'));
+        $media = Http::withToken((string) config('whatsapp.access_token'))->timeout(120)
+            ->attach('file', $bytes, $filename, ['Content-Type' => 'application/pdf'])
+            ->post($url, ['messaging_product' => 'whatsapp', 'type' => 'application/pdf'])->throw()->json('id');
+        if (! $media) throw new \RuntimeException('WhatsApp did not return a media ID.');
+        return $this->send($to, ['type' => 'template', 'template' => [
+            'name' => $template, 'language' => ['code' => config('whatsapp.print_file_template_language')],
+            'components' => [
+                ['type' => 'header', 'parameters' => [['type' => 'document', 'document' => ['id' => $media, 'filename' => $filename]]]],
+                ['type' => 'body', 'parameters' => [['type' => 'text', 'text' => self::templateText($orderNumber)]]],
+            ],
+        ]]);
+    }
+
     /**
      * @param  array<int, string>  $bodyParameters  {{1}}, {{2}}, … of the template body
      * @param  array<int, string>  $quickReplyPayloads  payload of each quick-reply button, by button index

@@ -260,7 +260,7 @@ test('the orders page tells each order where it can go', function () {
 test('re-routing a rejected order queues the WhatsApp offer for the new shop and gives the admin its wa.me message', function () {
     \Illuminate\Support\Facades\Queue::fake();
     [$otherOwner, $other] = secondShop('مطبعة الأمل');
-    $other->printProvider->update(['whatsapp_number' => '0599123456']);
+    $other->printProvider->update(['whatsapp_number' => '0599123456', 'whatsapp_notifications_enabled' => true]);
     $order = orderIn('rejected');
     $order->items()->update(['print_provider_branch_id' => $this->branch->id]);
 

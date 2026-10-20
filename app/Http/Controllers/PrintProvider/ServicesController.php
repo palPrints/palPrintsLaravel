@@ -52,6 +52,10 @@ class ServicesController extends Controller
     {
         abort_unless($product->is_active, 404);
 
+        if ($product->code === 'STICKER-CUSTOM') {
+            return $this->saveStickers($request, $product);
+        }
+
         $variants = $this->variants($product);
         $colorIds = $this->options($variants, 'color')->pluck('id')->all();
         $sizeIds = $this->options($variants, 'size')->pluck('id')->all();
@@ -163,6 +167,38 @@ class ServicesController extends Controller
             'message' => 'تم حفظ إعدادات المنتج.',
             'product' => $this->catalog($branch, $product->id)->first(),
         ]);
+    }
+
+    private function saveStickers(Request $request, Product $product): JsonResponse
+    {
+        $data = $request->validate([
+            'price' => ['required', 'numeric', 'min:0.01', 'max:1000000', 'decimal:0,2'],
+            'days' => ['required', 'integer', 'min:1', 'max:365'],
+            'capacity' => ['required', 'integer', 'min:1', 'max:1000000'],
+            'sticker_materials' => ['required', 'array'],
+            'sticker_materials.paper' => ['required', 'array', 'min:1'],
+            'sticker_materials.paper.*.key' => ['required', 'string', 'max:60'],
+            'sticker_materials.paper.*.label' => ['required', 'string', 'max:100'],
+            'sticker_materials.paper.*.available' => ['required', 'boolean'],
+            'sticker_materials.paper.*.price_per_sheet' => ['required', 'numeric', 'min:0', 'max:100000'],
+            'sticker_materials.protection.available' => ['required', 'boolean'],
+            'sticker_materials.protection.label' => ['required', 'string', 'max:100'],
+            'sticker_materials.protection.price_per_sheet' => ['required', 'numeric', 'min:0', 'max:100000'],
+        ]);
+        $branch = $this->provider($request)->primaryBranch();
+        DB::transaction(function () use ($branch, $product, $data) {
+            $offering = BranchProductOffering::firstOrNew(['print_provider_branch_id' => $branch->id, 'product_id' => $product->id]);
+            $active = ! $offering->exists || (float) $offering->base_price <= 0 ? true : $offering->is_active;
+            $offering->fill(['base_price' => $data['price'], 'currency' => 'ILS',
+                'production_time_min' => $data['days'], 'production_time_max' => $data['days'],
+                'daily_capacity' => $data['capacity'], 'is_active' => $active])->save();
+            $offering->update(['sticker_materials' => $data['sticker_materials']]);
+            foreach ($product->variants()->where('is_active', true)->get() as $variant) {
+                $offering->branchOfferingVariants()->updateOrCreate(['variant_id' => $variant->id], ['is_available' => true]);
+            }
+            $this->saveBasePrice($offering, (float) $data['price']);
+        });
+        return response()->json(['message' => 'تم حفظ سعر قص ورقة A4 واحدة.', 'product' => $this->catalog($branch, $product->id)->first()]);
     }
 
     public function toggle(Request $request, Product $product): JsonResponse
@@ -389,6 +425,7 @@ class ServicesController extends Controller
                         'price' => $configured ? (float) $offering->base_price : null,
                         'days' => $configured ? (int) $offering->production_time_max : null,
                         'capacity' => $configured ? (int) $offering->daily_capacity : null,
+                        'sticker_materials' => $offering->sticker_materials,
                         // A shop that never chose options starts with everything ticked.
                         'colors' => $hasRows ? $chosen->pluck('color')->unique()->values()->all() : $colors->pluck('id')->all(),
                         'sizes' => $hasRows ? $chosen->pluck('size')->unique()->values()->all() : $sizes->pluck('id')->all(),

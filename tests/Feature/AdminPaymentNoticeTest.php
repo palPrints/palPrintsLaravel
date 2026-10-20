@@ -110,6 +110,23 @@ test('approving marks the payment paid, routes the order to the chosen shop and 
         ->and(Notification::where('user_id', $this->suggested->printProvider->user_id)->where('type', 'order.new_for_provider')->exists())->toBeFalse();
 });
 
+test('approving sticker payment recalculates the selected shops cost per A4 sheet', function () {
+    \Illuminate\Support\Facades\Queue::fake();
+    $this->product->update(['code' => 'STICKER-CUSTOM']);
+    $this->item->update(['item_type' => OrderItem::TYPE_STICKER_BUNDLE, 'selected_options' => [
+        'sticker_quantity' => 20,
+        'layout_snapshot' => ['pages' => [['items' => [['copy' => 1]]], ['items' => [['copy' => 2]]]]],
+    ]]);
+    $this->other->branchProductOfferings()->first()->update(['base_price' => 3]);
+    $this->mock(\App\Services\Stickers\StickerPdfService::class)->shouldReceive('generateForOrderItem')->once()->andReturn(new \App\Models\PrintFile);
+    $this->actingAs($this->admin)->post(route('admin.payment-notices.approve', $this->payment), ['branch_id' => $this->other->id])->assertRedirect(route('admin.payment-notices'));
+    $item = $this->item->fresh();
+    expect((float) $item->provider_cost)->toBe(6.0)
+        ->and((float) $item->total_price)->toBe(30.0)
+        ->and($item->selected_options['provider_pricing']['sheets'])->toBe(2)
+        ->and($item->selected_options['provider_pricing']['unit'])->toBe('a4_sheet');
+});
+
 test('approving needs a shop that offers every product of the order', function () {
     $this->actingAs($this->admin)
         ->post(route('admin.payment-notices.approve', $this->payment), ['branch_id' => $this->cannot->id])

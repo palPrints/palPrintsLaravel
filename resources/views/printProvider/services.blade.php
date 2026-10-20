@@ -62,7 +62,7 @@
                 <article class="services-product-preview" id="settingsPreview"></article>
                 <div class="services-settings-fields">
                     <div class="services-number-fields">
-                        <label>السعة الإنتاجية اليومية <span class="services-required">*</span><input id="productCapacity" name="capacity" type="number" min="1" step="1" max="1000000" required /></label>
+                        <label><span id="productCapacityLabel">السعة الإنتاجية اليومية</span> <span class="services-required">*</span><input id="productCapacity" name="capacity" type="number" min="1" step="1" max="1000000" required /></label>
                         <label>مدة الإنتاج المتوقعة (أيام) <span class="services-required">*</span><input id="productDays" name="days" type="number" min="1" step="1" max="365" required /></label>
                         <label><span id="productPriceLabel">سعر المنتج الأساسي</span> <span class="services-required">*</span><span class="services-price-field"><input id="productPrice" name="price" type="number" min="0.01" step="0.01" max="1000000" required /><b aria-hidden="true">₪</b></span></label>
                     </div>

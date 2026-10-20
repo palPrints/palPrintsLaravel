@@ -293,6 +293,12 @@
   margin-top: 14px;
 }
 
+.sticker-page-materials { display: grid; gap: .6rem; margin-top: 1rem; }
+.sticker-page-materials__row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .65rem .75rem; border: 1px solid var(--border-color, #e5e7eb); border-radius: 8px; background: var(--surface, #fff); }
+.sticker-page-materials__row label { display: inline-flex; align-items: center; gap: .45rem; font-size: .9rem; }
+.sticker-page-materials__row select { min-width: 12rem; }
+@media (max-width: 700px) { .sticker-page-materials__row { align-items: flex-start; flex-direction: column; } .sticker-page-materials__row select { width: 100%; } }
+
 .sticker-summary span,
 .sticker-summary strong {
   border: 1px solid #e2e8f0;

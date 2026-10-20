@@ -44,7 +44,9 @@ use App\Http\Controllers\PrintProvider\SupportController as PrintProviderSupport
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleDashboardController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\PrintProvider\TelegramLinkController as PrintProviderTelegramLinkController;
 use App\Http\Controllers\SharedPrintFileController;
+use App\Http\Controllers\TelegramWebhookController;
 use App\Http\Controllers\WhatsAppWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -61,6 +63,8 @@ Route::get('/', function () {
 // WhatsApp Cloud API webhook (Meta). Public, outside CSRF; the controller checks Meta's signature.
 Route::get('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'verify'])->middleware('throttle:60,1')->name('webhooks.whatsapp.verify');
 Route::post('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'receive'])->middleware('throttle:600,1')->name('webhooks.whatsapp');
+// Telegram bot webhook. Public, outside CSRF; the controller checks the secret token Telegram sends back.
+Route::post('/webhooks/telegram', TelegramWebhookController::class)->middleware('throttle:600,1')->name('webhooks.telegram');
 
 // The customer's print file, from the signed, expiring link in the WhatsApp message the admin sends the shop.
 Route::get('/shared/print-files/{printFile}', SharedPrintFileController::class)
@@ -243,6 +247,10 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->middleware('role:print_provider')->name('print-provider.profile');
     Route::patch('/print-provider/profile', [PrintProviderProfileController::class, 'update'])
         ->middleware('role:print_provider')->name('print-provider.profile.update');
+    Route::post('/print-provider/telegram/link', [PrintProviderTelegramLinkController::class, 'link'])
+        ->middleware('role:print_provider')->name('print-provider.telegram.link');
+    Route::delete('/print-provider/telegram/link', [PrintProviderTelegramLinkController::class, 'unlink'])
+        ->middleware('role:print_provider')->name('print-provider.telegram.unlink');
     Route::middleware(['role:print_provider', 'account.approved'])->prefix('print-provider/requests')->name('print-provider.requests')->group(function () {
         Route::get('/', [PrintProviderOrdersController::class, 'index']);
         Route::post('/{order}/accept', [PrintProviderOrdersController::class, 'accept'])->name('.accept');

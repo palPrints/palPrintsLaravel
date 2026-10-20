@@ -130,11 +130,14 @@
         const amount = element("span", "", settings.configured ? settings.price.toFixed(2) + " ₪" : "السعر غير محدد");
         amount.dir = "ltr";
         money.append(amount);
+        if (product.code === "STICKER-CUSTOM") money.append(element("span", "", " قص لكل ورقة A4"));
         details.append(money);
         const rows = settings.configured
           ? (product.code === "PAPER-PRINT" ? paperRows(product, settings) : [["clock", settings.days + (settings.days === 1 ? " يوم" : " أيام")], ["box", settings.capacity + " قطعة يوميًا"], ["palette", settings.colors.length + " ألوان"], ["printer", settings.methods.length + (settings.methods.length === 1 ? " طريقة طباعة" : " طرق طباعة")], ["bounding-box", settings.areas.length + (settings.areas.length === 1 ? " منطقة طباعة" : " مناطق طباعة")], ["grid", settings.sizes.length === 1 ? (product.sizes.find(function (size) { return size.id === settings.sizes[0]; }) || {}).label : settings.sizes.length + " مقاسات"]])
           : [["info-circle", "أكمل السعر ومدة الإنتاج والسعة ليظهر للعملاء"]];
-        rows.forEach(function (detail) { const item = element("li"); item.append(icon(detail[0]), element("span", "", detail[1])); details.append(item); });
+        const visibleRows = product.code === "STICKER-CUSTOM" && settings.configured
+          ? [["clock", settings.days + " أيام"], ["files", settings.capacity + " ورقة A4 يوميًا"], ["scissors", "قص يدوي"], ["file-earmark-pdf", "ملف A4 جاهز"]] : rows;
+        visibleRows.forEach(function (detail) { const item = element("li"); item.append(icon(detail[0]), element("span", "", detail[1])); details.append(item); });
         const edit = element("button", "services-button services-edit"); edit.type = "button"; edit.dataset.editProduct = product.id; edit.setAttribute("aria-label", "تعديل إعدادات " + product.name); edit.append(icon("pencil-square"), element("span", "", settings.configured ? "تعديل الإعدادات" : "إكمال الإعدادات"));
         card.append(details, edit); products.append(card);
       });
@@ -156,6 +159,28 @@
 
     function renderOptions(product, settings) {
       const container = document.getElementById("settingsOptions"); container.replaceChildren();
+      if (product.code === "STICKER-CUSTOM") {
+        const materials = settings.sticker_materials || { paper: [
+          { key: "photo-sticker", label: "فوتو لاصق", available: true, price_per_sheet: 0 },
+          { key: "photo-non-adhesive", label: "فوتو غير لاصق", available: true, price_per_sheet: 0 }
+        ], protection: { label: "طبقة حماية", available: false, price_per_sheet: 0 } };
+        const fieldset = element("fieldset", "services-options sticker-material-options");
+        fieldset.append(element("legend", "", "مواد الملصقات لكل ورقة A4"));
+        (materials.paper || []).forEach(function (paper, index) {
+          const row = element("div", "sticker-material-row");
+          const available = element("input"); available.type = "checkbox"; available.checked = Boolean(paper.available); available.dataset.material = "paper"; available.dataset.index = index;
+          const label = element("input"); label.type = "text"; label.value = paper.label || "نوع ورق"; label.dataset.material = "paper-label"; label.dataset.index = index; label.maxLength = 100;
+          const price = element("input"); price.type = "number"; price.min = 0; price.step = "0.01"; price.value = paper.price_per_sheet || 0; price.dataset.material = "paper-price"; price.dataset.index = index;
+          row.append(available, element("span", "", "متاح"), label, element("span", "", "₪ / ورقة"), price); fieldset.append(row);
+        });
+        const protection = materials.protection || {};
+        const prow = element("div", "sticker-material-row sticker-protection-row");
+        const pavailable = element("input"); pavailable.type = "checkbox"; pavailable.checked = Boolean(protection.available); pavailable.dataset.material = "protection";
+        const plabel = element("input"); plabel.type = "text"; plabel.value = protection.label || "طبقة حماية"; plabel.dataset.material = "protection-label"; plabel.maxLength = 100;
+        const pprice = element("input"); pprice.type = "number"; pprice.min = 0; pprice.step = "0.01"; pprice.value = protection.price_per_sheet || 0; pprice.dataset.material = "protection-price";
+        prow.append(pavailable, element("span", "", "الحماية متاحة"), plabel, element("span", "", "₪ / ورقة"), pprice); fieldset.append(prow);
+        const add = element("button", "services-button services-button--secondary", "إضافة نوع ورق"); add.type = "button"; add.addEventListener("click", function () { const row = element("div", "sticker-material-row"); row.innerHTML = '<input type="checkbox" data-material="paper" data-index="new" checked><span>متاح</span><input type="text" data-material="paper-label" data-index="new" value="نوع ورق جديد"><span>₪ / ورقة</span><input type="number" min="0" step="0.01" data-material="paper-price" data-index="new" value="0">'; fieldset.insertBefore(row, add); }); fieldset.append(add); container.append(fieldset); return;
+      }
       [["colors", "الألوان المتاحة"], ["sizes", "المقاسات المتاحة"]].forEach(function (group) {
         const fieldset = element("fieldset", "services-options"); fieldset.dataset.optionGroup = group[0];
         if (product.code === "PAPER-PRINT" && group[0] === "colors") fieldset.hidden = true;
@@ -350,6 +375,7 @@
       const product = find(id);
       const existing = product.settings;
       draft = { id: id, price: existing && existing.price, days: existing && existing.days, capacity: existing && existing.capacity,
+        sticker_materials: existing && existing.sticker_materials,
         areas: existing ? existing.areas.map(function (area) { return { code: area.code, widthCm: area.widthCm, heightCm: area.heightCm }; }) : product.areas.map(function (area) { return { code: area.code, widthCm: area.widthCm, heightCm: area.heightCm }; }),
         methods: existing ? existing.methods.map(function (method) { return { id: method.id, price: method.price, rate: method.rate }; }) : [],
         colors: existing ? existing.colors.slice() : product.colors.map(function (color) { return color.id; }),
@@ -362,6 +388,8 @@
       form.elements.price.value = draft.price == null ? "" : draft.price; form.elements.days.value = draft.days == null ? "" : draft.days; form.elements.capacity.value = draft.capacity == null ? "" : draft.capacity;
       // For paper the price field is the least a customer pays for one order (the rest comes from the paper, colour and binding prices).
       document.getElementById("productPriceLabel").textContent = product.code === "PAPER-PRINT" ? "أقل مبلغ للطلب" : "سعر المنتج الأساسي";
+      if (product.code === "STICKER-CUSTOM") document.getElementById("productPriceLabel").textContent = "سعر قص ورقة A4 واحدة";
+      document.getElementById("productCapacityLabel").textContent = product.code === "STICKER-CUSTOM" ? "السعة اليومية (أوراق A4)" : "السعة الإنتاجية اليومية";
       error.hidden = true; renderOptions(product, draft); clearSectionErrors(); settingsDialog.showModal();
       form.elements.capacity.focus();
     }
@@ -440,7 +468,8 @@
       }
       const body = { price: Number(form.elements.price.value), days: Number(form.elements.days.value), capacity: Number(form.elements.capacity.value) };
       let emptyGroup = null;
-      ["colors", "sizes"].forEach(function (group) { body[group] = Array.from(form.querySelectorAll('input[name="' + group + '"]:checked')).map(function (input) { return input.value; }); if (!body[group].length && !emptyGroup) emptyGroup = group; });
+      const isSticker = find(draft.id).code === "STICKER-CUSTOM";
+      (isSticker ? [] : ["colors", "sizes"]).forEach(function (group) { body[group] = Array.from(form.querySelectorAll('input[name="' + group + '"]:checked')).map(function (input) { return input.value; }); if (!body[group].length && !emptyGroup) emptyGroup = group; });
       if (emptyGroup) { sectionError("اختر خيارًا واحدًا على الأقل من هذه المجموعة.", form.querySelector('input[name="' + emptyGroup + '"]')); return; }
       if (find(draft.id).code === "PAPER-PRINT") {
         // Paper: for every type that is on, "every N sheets cost X" per size and "every N pages cost X" per colour; and the bindings.
@@ -466,6 +495,16 @@
           showSectionError(form.querySelector(".services-section-error"));
           return;
         }
+      } else if (isSticker) {
+        const paper = [];
+        form.querySelectorAll('[data-material="paper"]').forEach(function (input) {
+          const index = input.dataset.index;
+          const label = form.querySelector('[data-material="paper-label"][data-index="' + index + '"]');
+          const price = form.querySelector('[data-material="paper-price"][data-index="' + index + '"]');
+          if (label && price) paper.push({ key: index === 'new' ? 'custom-' + paper.length : (index === '0' ? 'photo-sticker' : index === '1' ? 'photo-non-adhesive' : 'paper-' + index), label: label.value.trim(), available: input.checked, price_per_sheet: Number(price.value || 0) });
+        });
+        const protection = { available: Boolean(form.querySelector('[data-material="protection"]')?.checked), label: form.querySelector('[data-material="protection-label"]')?.value.trim() || 'طبقة حماية', price_per_sheet: Number(form.querySelector('[data-material="protection-price"]')?.value || 0) };
+        body.sticker_materials = { paper: paper, protection: protection };
       } else {
         body.areas = Array.from(form.querySelectorAll('input[name="areas"]:checked')).map(function (input) {
           return { code: input.value, width_cm: Number(form.querySelector('[data-area-width="' + input.value + '"]').value), height_cm: Number(form.querySelector('[data-area-height="' + input.value + '"]').value) };

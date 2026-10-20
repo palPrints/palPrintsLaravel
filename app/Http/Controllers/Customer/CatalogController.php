@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Design;
 use App\Models\DesignFavorite;
 use App\Models\Product;
+use App\Models\BranchProductOffering;
 use App\Models\StickerCategory;
 use App\Services\Stickers\StickerSettingsService;
 use App\Support\CatalogProductData;
@@ -32,7 +33,7 @@ class CatalogController extends Controller
     /** Product picker for the customer's own uploaded design (same catalog the designer picks from). */
     public function chooseProduct(): View
     {
-        return view('customer.chooseProduct', ['designerCatalog' => CatalogProductData::forDesigner()]);
+        return view('customer.chooseProduct', ['designerCatalog' => CatalogProductData::forDesigner(true)]);
     }
 
     public function store(): View
@@ -63,7 +64,7 @@ class CatalogController extends Controller
         return $this->productDesigns('MUG-CERAMIC', 'customer.mugs', 'front/assets/images/customer/cup.webp');
     }
 
-    public function stickers(StickerSettingsService $settings): View
+    public function stickers(\Illuminate\Http\Request $request, StickerSettingsService $settings): View
     {
         $view = $this->productDesigns('STICKER-CUSTOM', 'customer.stickers', 'front/assets/images/customer/icons8-sticker-48.png');
 
@@ -85,12 +86,14 @@ class CatalogController extends Controller
                     ])->values(),
                 ])->values(),
             'stickerSettings' => $settings->get(),
+            'stickerMaterials' => BranchProductOffering::query()->whereHas('product', fn ($q) => $q->where('code', 'STICKER-CUSTOM'))->where('is_active', true)->orderBy('base_price')->get()->map(fn ($offering) => $offering->sticker_materials ?: [])->filter()->first() ?: [],
             'stickerRoutes' => [
                 'preview' => route('customer.stickers.preview'),
                 'store' => route('customer.cart.store-sticker-bundle'),
                 'login' => route('login'),
             ],
             'stickerUser' => ['authenticated' => auth()->check()],
+            'stickerUploadMode' => $request->string('mode')->toString() === 'upload',
         ]);
     }
 

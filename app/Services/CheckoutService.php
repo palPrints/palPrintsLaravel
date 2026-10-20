@@ -166,8 +166,9 @@ class CheckoutService
         $quantity = 1;
         $unitPrice = (float) $cartItem->unit_price;
         $totalPrice = $unitPrice;
-        $stickerQuantity = (int) ($options['sticker_quantity'] ?? $cartItem->stickerBundleLines->sum('quantity'));
-        $providerCost = (float) $offering->base_price * max(1, $stickerQuantity);
+        $providerQuote = app(\App\Services\Stickers\StickerProviderPricing::class)->quote($offering, $options);
+        $providerCost = $providerQuote['total'];
+        $options['provider_pricing'] = $providerQuote;
 
         $filesSnapshot = $cartItem->printFiles->map(fn (PrintFile $file) => [
             'name' => $file->original_name,

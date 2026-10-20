@@ -89,7 +89,8 @@
     <script>
         window.palPrintsCreateRoutes = {
             studio: @json(route('design-studio')),
-            store: @json(route('customer.store'))
+            store: @json(route('customer.store')),
+            stickers: @json(route('customer.stickers', ['mode' => 'upload']))
         };
         window.palPrintsDesignerCatalogResponse = @json($designerCatalog);
     </script>

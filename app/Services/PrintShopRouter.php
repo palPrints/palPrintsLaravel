@@ -54,6 +54,9 @@ class PrintShopRouter
     public function needFromCartItem(CartItem $item): array
     {
         $options = (array) $item->selected_options;
+        if ($item->item_type === CartItem::TYPE_STICKER_BUNDLE) {
+            return $this->need($item->product, collect($item->variant_id ? [$item->variant_id] : []), [], null, count($options['layout_snapshot']['pages'] ?? []));
+        }
 
         return $this->need(
             $item->product,
@@ -70,6 +73,9 @@ class PrintShopRouter
     public function needFromOrderItem(OrderItem $item): array
     {
         $options = (array) $item->selected_options;
+        if ($item->item_type === OrderItem::TYPE_STICKER_BUNDLE) {
+            return $this->need($item->product, collect($item->variant_id ? [$item->variant_id] : []), [], null, count($options['layout_snapshot']['pages'] ?? []));
+        }
 
         return $this->need(
             $item->product,

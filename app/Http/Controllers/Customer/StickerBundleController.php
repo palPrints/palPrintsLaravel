@@ -57,8 +57,10 @@ class StickerBundleController extends Controller
         ]);
 
         $settingsData = $settings->get();
+        $settingsData['materials'] = $this->customerMaterials();
+        $validated['page_specs'] = $this->pageSpecs($request);
         $lines = $layout->normalizeLines($this->hydrateLibraryImages($validated['lines']), $settingsData);
-        $quote = $pricing->quote($lines, $settingsData);
+        $quote = $pricing->quote($lines, array_merge($settingsData, ['page_specs' => $validated['page_specs']]));
         $snapshot = $layout->arrange($lines, $settingsData);
         $warnings = array_values(array_unique(array_merge($quote['warnings'], $layout->qualityWarnings($lines, $settingsData))));
 
@@ -79,12 +81,13 @@ class StickerBundleController extends Controller
         $validated = $this->validatedStore($request, $settings->get());
 
         return DB::transaction(function () use ($request, $validated, $settings, $layout, $pricing) {
-            $settingsData = $settings->get();
+            $settingsData = $settings->get(); $settingsData['materials'] = $this->customerMaterials();
+            $validated['page_specs'] = $this->pageSpecs($request);
             $product = Product::query()->where('code', 'STICKER-CUSTOM')->where('is_active', true)->firstOrFail();
             $variant = Variant::query()->where('product_id', $product->id)->where('is_active', true)->orderBy('id')->firstOrFail();
             $offering = $this->offering($product, $variant);
             $lines = $layout->normalizeLines($this->hydrateLibraryImages($validated['lines']), $settingsData);
-            $quote = $pricing->quote($lines, $settingsData);
+            $quote = $pricing->quote($lines, array_merge($settingsData, ['page_specs' => $validated['page_specs']]));
 
             if ($quote['quantity'] < (int) $settingsData['pricing']['min_quantity']) {
                 throw ValidationException::withMessages(['lines' => 'ط§ظ„ط­ط¯ ط§ظ„ط£ط¯ظ†ظ‰ ظ„ط·ظ„ط¨ ط§ظ„ظ…ظ„طµظ‚ط§طھ ظ‡ظˆ '.(int) $settingsData['pricing']['min_quantity'].' ظ…ظ„طµظ‚.']);
@@ -108,7 +111,7 @@ class StickerBundleController extends Controller
                     'printing_method_name' => 'Vinyl cut',
                     'branch_product_offering_id' => $offering->id,
                     'print_provider_branch_id' => $offering->print_provider_branch_id,
-                    'sticker_quantity' => $quote['quantity'],
+                    'sticker_quantity' => $quote['quantity'], 'page_specs' => $validated['page_specs'],
                     'sticker_page_count' => $snapshot['page_count'],
                     'sticker_quote' => $quote,
                     'sticker_settings_snapshot' => $settingsData,
@@ -135,9 +138,10 @@ class StickerBundleController extends Controller
         $validated = $this->validatedStore($request, $settings->get());
 
         return DB::transaction(function () use ($request, $validated, $settings, $layout, $pricing, $cartItem) {
-            $settingsData = $settings->get();
+            $settingsData = $settings->get(); $settingsData['materials'] = $this->customerMaterials();
+            $validated['page_specs'] = $this->pageSpecs($request);
             $lines = $layout->normalizeLines($this->hydrateLibraryImages($validated['lines']), $settingsData);
-            $quote = $pricing->quote($lines, $settingsData);
+            $quote = $pricing->quote($lines, array_merge($settingsData, ['page_specs' => $validated['page_specs']]));
 
             if ($quote['quantity'] < (int) $settingsData['pricing']['min_quantity']) {
                 throw ValidationException::withMessages(['lines' => 'ط§ظ„ط­ط¯ ط§ظ„ط£ط¯ظ†ظ‰ ظ„ط·ظ„ط¨ ط§ظ„ظ…ظ„طµظ‚ط§طھ ظ‡ظˆ '.(int) $settingsData['pricing']['min_quantity'].' ظ…ظ„طµظ‚.']);
@@ -150,6 +154,7 @@ class StickerBundleController extends Controller
                 'unit_price' => $quote['total'],
                 'selected_options' => array_merge($options, [
                     'sticker_quantity' => $quote['quantity'],
+                    'page_specs' => $validated['page_specs'],
                     'sticker_page_count' => $snapshot['page_count'],
                     'sticker_quote' => $quote,
                     'sticker_settings_snapshot' => $settingsData,
@@ -296,5 +301,50 @@ class StickerBundleController extends Controller
             }
             $file->update(['status' => PrintFile::STATUS_DELETED, 'deleted_at' => now()]);
         }
+    }
+
+    /** @return array<string, mixed> */
+    private function customerMaterials(): array
+    {
+        $offerings = BranchProductOffering::query()
+            ->with('product')
+            ->where('is_active', true)
+            ->whereHas('product', fn ($q) => $q->where('code', 'STICKER-CUSTOM')->where('is_active', true))
+            ->whereHas('printProviderBranch', fn ($q) => $q->where('is_active', true))
+            ->get();
+
+        $papers = [];
+        $protection = null;
+        foreach ($offerings as $offering) {
+            $materials = $offering->sticker_materials ?: [];
+            foreach (($materials['paper'] ?? []) as $paper) {
+                if (! is_array($paper) || empty($paper['key']) || ! ($paper['available'] ?? false)) continue;
+                $key = (string) $paper['key'];
+                $papers[$key] ??= ['key' => $key, 'label' => (string) ($paper['label'] ?? $key), 'price_per_sheet' => (float) ($paper['price_per_sheet'] ?? 0), 'available' => true];
+            }
+            if (is_array($materials['protection'] ?? null) && ($materials['protection']['available'] ?? false)) {
+                $protection ??= ['label' => (string) ($materials['protection']['label'] ?? 'طبقة حماية'), 'price_per_sheet' => (float) ($materials['protection']['price_per_sheet'] ?? 0), 'available' => true];
+            }
+        }
+
+        return [
+            'paper' => array_values($papers) ?: [
+                ['key' => 'photo-sticker', 'label' => 'فوتو لاصق', 'price_per_sheet' => 0, 'available' => true],
+                ['key' => 'photo-non-adhesive', 'label' => 'فوتو غير لاصق', 'price_per_sheet' => 0, 'available' => true],
+            ],
+            'protection' => $protection ?: ['label' => 'طبقة حماية', 'price_per_sheet' => 0, 'available' => false],
+        ];
+    }
+
+    /** @return array<int, array{paper_key:string, protection:bool}> */
+    private function pageSpecs(Request $request): array
+    {
+        $raw = $request->input('page_specs', []);
+        if (is_string($raw)) $raw = json_decode($raw, true) ?: [];
+        if (! is_array($raw)) return [];
+        return array_values(array_map(fn ($spec) => [
+            'paper_key' => substr((string) ($spec['paper_key'] ?? 'photo-sticker'), 0, 60),
+            'protection' => filter_var($spec['protection'] ?? false, FILTER_VALIDATE_BOOLEAN),
+        ], array_filter($raw, 'is_array')));
     }
 }

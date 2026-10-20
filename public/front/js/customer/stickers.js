@@ -4,7 +4,7 @@
   const config = window.PalPrintsStickers || {};
   const settings = config.settings || {};
   const csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
-  const state = { category: "all", lines: [], layout: null, page: 1, busy: false };
+  const state = { category: "all", lines: [], layout: null, page: 1, busy: false, pageSpecs: {} };
   const el = {
     size: document.getElementById("stickerSizeSelect"),
     quantity: document.getElementById("stickerQuantityInput"),
@@ -25,6 +25,7 @@
     warning: document.getElementById("stickerWarning"),
     add: document.getElementById("addStickerBundle"),
     clear: document.getElementById("clearStickerBundle")
+    ,materials: document.getElementById("stickerPageMaterials")
   };
 
   const categories = config.categories || [];
@@ -58,6 +59,19 @@
       image_height_px: line.image_height_px || null,
       image_url: line.image_url || null
     };
+  }
+
+  function renderPageMaterials() {
+    const pages = state.layout?.pages || [];
+    const materials = config.materials || {};
+    const paper = (materials.paper || []).filter(item => item.available);
+    const protection = materials.protection || {};
+    if (!el.materials) return;
+    el.materials.innerHTML = pages.map((_, index) => {
+      const current = state.pageSpecs[index] || { paper_key: paper[0]?.key || "photo-sticker", protection: false };
+      return `<div class="page-material-row"><strong>ورقة A4 ${index + 1}</strong><select data-page-paper="${index}">${paper.map(item => `<option value="${item.key}" ${item.key === current.paper_key ? "selected" : ""}>${item.label}</option>`).join("")}</select>${protection.available ? `<label><input type="checkbox" data-page-protection="${index}" ${current.protection ? "checked" : ""}> ${protection.label} (+${Number(protection.price_per_sheet || 0).toFixed(2)} شيكل)</label>` : ""}</div>`;
+    }).join("");
+    el.materials.querySelectorAll("select,[data-page-protection]").forEach(input => input.addEventListener("change", () => { const index = Number(input.dataset.pagePaper ?? input.dataset.pageProtection); const current = state.pageSpecs[index] || {}; current.paper_key = el.materials.querySelector(`[data-page-paper="${index}"]`)?.value || current.paper_key; current.protection = Boolean(el.materials.querySelector(`[data-page-protection="${index}"]`)?.checked); state.pageSpecs[index] = current; requestPreview(); }));
   }
 
   function localArrange() {
@@ -167,6 +181,7 @@
     el.pageLabel.textContent = `${state.page} / ${pageCount}`;
     el.prev.disabled = state.page <= 1;
     el.next.disabled = state.page >= pageCount;
+    renderPageMaterials();
 
     if (jumpFrom) animateJump(jumpFrom);
   }
@@ -202,7 +217,7 @@
         const response = await fetch(config.routes.preview, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "application/json", "X-CSRF-TOKEN": csrf, "X-Requested-With": "XMLHttpRequest" },
-          body: JSON.stringify({ lines: state.lines.map(linePayload) })
+          body: JSON.stringify({ lines: state.lines.map(linePayload), page_specs: Object.values(state.pageSpecs) })
         });
         if (!response.ok) return;
         const data = await response.json();
@@ -214,6 +229,7 @@
   }
 
   function renderLibrary() {
+    if (!el.grid || !el.empty || !el.count) return;
     const visible = stickers.filter((item) => state.category === "all" || item.category_id === state.category);
     el.grid.replaceChildren(...visible.map((item) => {
       const card = document.createElement("article");
@@ -263,7 +279,7 @@
 
     [el.size, el.quantity, el.cut].forEach((input) => input.addEventListener("change", requestPreview));
 
-    el.tabs.addEventListener("click", (event) => {
+    if (el.tabs) el.tabs.addEventListener("click", (event) => {
       const button = event.target.closest("[data-category]");
       if (!button) return;
       state.category = button.dataset.category;
@@ -271,7 +287,7 @@
       renderLibrary();
     });
 
-    el.grid.addEventListener("click", (event) => {
+    if (el.grid) el.grid.addEventListener("click", (event) => {
       const button = event.target.closest("[data-sticker]");
       if (!button) return;
       const sticker = stickers.find((item) => String(item.id) === button.dataset.sticker);
@@ -287,7 +303,7 @@
       }, button);
     });
 
-    el.upload.addEventListener("change", () => {
+    if (el.upload) el.upload.addEventListener("change", () => {
       const file = el.upload.files[0];
       el.upload.value = "";
       if (!file) return;
@@ -361,6 +377,7 @@
     state.lines.forEach((line) => {
       if (line.file) form.append(`files[${line.upload_key}]`, line.file);
     });
+    form.append("page_specs", JSON.stringify(Object.values(state.pageSpecs)));
 
     try {
       const response = await fetch(config.routes.store, {

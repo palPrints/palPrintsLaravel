@@ -156,6 +156,12 @@ function selectProduct(productId) {
         return;
     }
 
+    // Stickers use the A4 workspace, which owns upload, layout, materials and pricing.
+    if (product.code === "STICKER-CUSTOM" && window.palPrintsCreateRoutes?.stickers) {
+        window.location.href = window.palPrintsCreateRoutes.stickers;
+        return;
+    }
+
     state.selectedProduct = product;
     state.selectedColor = product.colors.find(color => color.id === product.defaultColor) || product.colors[0] || null;
     state.selectedSize = product.sizes[0] || null;

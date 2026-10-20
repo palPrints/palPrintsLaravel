@@ -19,11 +19,13 @@ class BranchProductOffering extends Model
         'production_time_max',
         'daily_capacity',
         'is_active',
+        'sticker_materials',
     ];
 
     protected $casts = [
         'base_price' => 'decimal:2',
         'is_active' => 'boolean',
+        'sticker_materials' => 'array',
     ];
 
     public function printProviderBranch()

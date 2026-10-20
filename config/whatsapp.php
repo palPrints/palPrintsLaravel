@@ -7,6 +7,9 @@
 return [
 
     'enabled' => (bool) env('WHATSAPP_ENABLED', false),
+    // Approved utility template: DOCUMENT header and one body parameter (order number).
+    'print_file_template' => env('WHATSAPP_PRINT_FILE_TEMPLATE'),
+    'print_file_template_language' => env('WHATSAPP_PRINT_FILE_TEMPLATE_LANG', 'ar'),
 
     'graph_url' => env('WHATSAPP_GRAPH_URL', 'https://graph.facebook.com'),
     'graph_version' => env('WHATSAPP_GRAPH_VERSION', 'v23.0'),

@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\SendOrderOfferToShop;
 use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\Payment;
 use App\Models\PrintProviderBranch;
+use App\Services\Orders\ShopNotifier;
 use App\Services\OrderShopChoices;
 use App\Services\Stickers\StickerPdfService;
 use App\Services\WhatsApp\ShopChatLink;
@@ -80,7 +80,7 @@ class PaymentNoticeController extends Controller
                 $item->update([
                     'print_provider_branch_id' => $branch->id,
                     'branch_product_offering_id' => $offering->id,
-                ]);
+                ] + app(\App\Services\Stickers\StickerProviderPricing::class)->assignment($item, $offering));
             }
 
             $before = $order->status;
@@ -102,13 +102,14 @@ class PaymentNoticeController extends Controller
         if ($pdfReady && $providerUserId = $branch->printProvider()->value('user_id')) {
             OrderNotifier::newOrderForShop((int) $providerUserId, $order->order_number, $order->items->count());
         }
-        SendOrderOfferToShop::dispatch($order->id, (int) $branch->print_provider_id);
+        $shopNotice = $pdfReady ? app(ShopNotifier::class)->newOrder($order, (int) $branch->print_provider_id) : null;
         $this->audit($request, 'admin.payment_notice_approved', 'الموافقة على إشعار دفع الطلب '.$order->order_number, ['order_id' => $order->id, 'payment_id' => $payment->id, 'branch_id' => $branch->id]);
 
         // Not back(): from the page of one order (?order=) that would show an empty page; the decision goes to the full list.
         return redirect()->route('admin.payment-notices')
             ->with('notice_status', 'تمت الموافقة على الطلب '.$order->order_number.' وتوجيهه إلى '.$this->branchLabel($branch).'.')
-            ->with('notice_whatsapp', ShopChatLink::forOrder($order->fresh()));
+            ->with('notice_whatsapp', $shopNotice)
+            ->with('notice_error', $pdfReady ? null : 'تم اعتماد الدفع، لكن تعذر تجهيز PDF. بقي الطلب بانتظار الملف ولم يرسل للمطبعة.');
     }
 
     public function reject(Request $request, Payment $payment): RedirectResponse
@@ -237,7 +238,8 @@ class PaymentNoticeController extends Controller
         foreach ($order->items->where('item_type', \App\Models\OrderItem::TYPE_STICKER_BUNDLE) as $item) {
             try {
                 $pdf->generateForOrderItem($item);
-            } catch (\Throwable) {
+            } catch (\Throwable $exception) {
+                report($exception);
                 return false;
             }
         }

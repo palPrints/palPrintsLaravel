@@ -37,11 +37,14 @@
                     <label><span>نوع القص</span><select id="stickerCutSelect"><option value="circle">قص دائري مجاني</option><option value="contour">خط قص حول التصميم</option></select></label>
                 </section>
 
+                @if ($stickerUploadMode)
                 <section class="upload-panel" aria-labelledby="uploadTitle">
                     <div><h2 id="uploadTitle">ارفع تصميمك</h2><p>PNG أو JPG فقط. ستظهر الصورة مباشرة على ورقة A4.</p></div>
                     <label class="upload-drop"><input id="stickerUploadInput" type="file" accept="image/png,image/jpeg"><i class="bi bi-cloud-arrow-up"></i><span>اختيار صورة</span></label>
                 </section>
+                @endif
 
+                @unless ($stickerUploadMode)
                 <section class="library-panel" aria-labelledby="libraryTitle">
                     <div class="section-title-row"><h2 id="libraryTitle">الملصقات الجاهزة</h2><span id="libraryCount"></span></div>
                     <div class="sticker-tabs" id="stickerTabs">
@@ -53,6 +56,7 @@
                     <div class="sticker-grid" id="stickerGrid"></div>
                     <p class="products-empty" id="stickersEmpty" hidden>لا توجد ملصقات في هذا التصنيف بعد.</p>
                 </section>
+                @endunless
             </div>
 
             <aside class="a4-preview-panel" aria-label="معاينة ورقة A4">
@@ -82,6 +86,7 @@
                         <span><b id="summaryPages">1</b> صفحة A4</span>
                         <strong id="summaryPrice">0 شيكل</strong>
                     </div>
+                    <div class="sticker-page-materials" id="stickerPageMaterials" aria-label="مواد الصفحة"></div>
                     <p class="sticker-warning" id="stickerWarning" hidden></p>
                     <div class="preview-actions">
                         <button type="button" class="secondary-action" id="clearStickerBundle"><i class="bi bi-trash3"></i> مسح</button>
@@ -97,7 +102,9 @@
     <script>
         window.PalPrintsStickers = {
             categories: @json($stickerCategories),
+            uploadMode: @json($stickerUploadMode),
             settings: @json($stickerSettings),
+            materials: @json($stickerMaterials),
             routes: @json($stickerRoutes),
             user: @json($stickerUser),
         };
