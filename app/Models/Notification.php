@@ -30,6 +30,9 @@ class Notification extends Model
     {
         // A notice the admin switched off in Settings > Notifications is simply not created.
         static::creating(fn (Notification $notification) => \App\Support\NotificationPreferences::allows($notification->type));
+
+        // A print shop also gets it on the Telegram / WhatsApp it chose.
+        static::created(fn (Notification $notification) => \App\Jobs\ForwardNotificationToShop::forward($notification));
     }
 
     // ========== العلاقات ==========

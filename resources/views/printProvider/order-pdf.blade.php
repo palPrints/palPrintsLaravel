@@ -27,14 +27,13 @@
     $cells = collect([['label' => 'المنتج', 'value' => $item['name']]])
         ->merge($item['details'])
         ->when($item['design_title'], fn ($all) => $all->push(['label' => 'التصميم', 'value' => $item['design_title']]));
-    $pictures = collect($previewImages)->map(fn ($preview) => ['name' => $preview['name'], 'src' => $preview['with_design'] ?: $preview['bare']]);
 @endphp
 
 <table class="band">
     <tr>
         <td>
-            <div class="title">ورقة طلب طباعة: {{ $item['name'] }}</div>
-            <div class="sub">للاستخدام داخل المطبعة، التصاميم الجاهزة للطباعة ملفات منفصلة تُنزَّل مع الطلب</div>
+            <div class="title">تفاصيل الطلب: {{ $item['name'] }}</div>
+            <div class="sub">للاستخدام داخل المطبعة، صور التصميم ملفات منفصلة باسم كل وجه، مرفقة مع الطلب</div>
         </td>
         <td class="brand" style="width: 28%">PALPRINTS</td>
     </tr>
@@ -75,30 +74,6 @@
                 <td><b>{{ $area['name'] }}</b></td>
                 <td dir="ltr" style="text-align: right">{{ $area['file'] }}</td>
                 <td>{{ $area['dimensions'] ?? '—' }}</td>
-            </tr>
-        @endforeach
-    </table>
-@endif
-
-@if ($pictures->isNotEmpty())
-    <h2>المنتج مع التصميم</h2>
-    <table>
-        @foreach ($pictures->chunk(2) as $row)
-            <tr>
-                @foreach ($row as $picture)
-                    <td class="pic" style="border-bottom: none; padding-bottom: 0"><b>{{ $picture['name'] }}</b></td>
-                @endforeach
-                @if ($row->count() < 2)
-                    <td></td>
-                @endif
-            </tr>
-            <tr>
-                @foreach ($row as $picture)
-                    <td class="pic" style="border-top: none"><img src="{{ $picture['src'] }}" style="width: 7cm"></td>
-                @endforeach
-                @if ($row->count() < 2)
-                    <td></td>
-                @endif
             </tr>
         @endforeach
     </table>

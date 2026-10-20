@@ -200,3 +200,18 @@ body:not(.sidebar-collapsed) main.printshop-main{padding:27px 28px 50px}
 .channel-row .primary-btn,.channel-row .outline-btn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .channel-flash{display:flex;align-items:center;gap:8px;margin:0 0 14px;padding:10px 14px;border-radius:10px;color:#087c42;background:#dcfce7;font-size:13px;font-weight:700}
 @media(max-width:560px){.channel-row{flex-wrap:wrap}.channel-row form{width:100%}.channel-row form button{width:100%;justify-content:center}}
+
+/* The document picked and not saved yet: preview, name, size and a button to take it back. */
+.upload-picked{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.upload-picked[hidden]{display:none}
+.upload-picked-thumb{width:48px;height:48px;flex:0 0 auto;border-radius:8px;object-fit:cover;border:1px solid var(--line);background:#fff}
+.upload-picked-thumb[hidden]{display:none}
+.upload-picked-thumb.is-file{display:grid;place-items:center;color:#dc2626;font-size:24px}
+.upload-picked-copy{display:grid;gap:3px;flex:1;min-width:0}
+.upload-picked-copy b{overflow:hidden;color:var(--navy);font-size:13px;text-overflow:ellipsis;white-space:nowrap}
+.upload-picked-copy small{color:var(--muted);font-size:11.5px}
+.upload-picked.is-too-big{border-color:#fca5a5}
+.upload-picked.is-too-big small{color:#dc2626}
+.upload-clear{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;padding:7px 12px;border:1px solid var(--line);border-radius:8px;color:#b42318;background:#fff;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.upload-clear:hover,.upload-clear:focus-visible{border-color:#fca5a5;background:#fef2f2}
+@media(max-width:560px){.upload-picked{flex-wrap:wrap}.upload-clear{width:100%;justify-content:center}}

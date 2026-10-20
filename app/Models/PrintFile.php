@@ -69,6 +69,18 @@ class PrintFile extends Model
         return (string) str($this->original_name)->after('print-ready-')->beforeLast('.png');
     }
 
+    /** The name the shop downloads it under: a print-ready picture by its area ("أمامي.png"), anything else as uploaded. */
+    public function downloadName(): string
+    {
+        if (! $this->isPrintReady()) {
+            return (string) $this->original_name;
+        }
+
+        $area = trim((string) preg_replace('/[\\\\\/:*?"<>|\x00-\x1f]+/', '-', $this->areaLabel()));
+
+        return ($area === '' ? 'design' : $area).'.png';
+    }
+
     /** The area id kept in the stored name ("front--<uuid>.png"), safe for a file name inside the package. */
     public function areaSlug(): ?string
     {

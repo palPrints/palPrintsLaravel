@@ -261,3 +261,7 @@ html[data-bs-theme="dark"] .print-account-page .acct-note{background:#3b2917;bor
 html[data-bs-theme="dark"] .print-account-page .acct-upload{border:1px dashed #334c6b}
 html[data-bs-theme="dark"] .print-account-page .acct-ticket > span{color:#b0e8c5;background:#1c492c}
 html[data-bs-theme="dark"] .print-account-page .acct-ticket > span.is-open{color:#e7cdae;background:#5c4f24}
+html[data-bs-theme="dark"] .upload-picked-thumb,html[data-bs-theme="dark"] .upload-clear{background:#141b2b}
+html[data-bs-theme="dark"] .upload-clear{color:#fca5a5}
+html[data-bs-theme="dark"] .upload-clear:hover,html[data-bs-theme="dark"] .upload-clear:focus-visible{background:#2a1618}
+html[data-bs-theme="dark"] .printshop-toast.is-success { background: #15803d; }
