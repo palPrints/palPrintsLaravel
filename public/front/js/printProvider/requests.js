@@ -225,8 +225,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       info.appendChild(element("b", "", formatMoney(item.cost)));
 
-      // The order sheet (PDF) of a studio design, and the pictures at full quality (or the customer's own files) in a zip.
-      if (item.package_url || item.print_files.length) {
+      // The details PDF of the line, then each file at full quality under its own name (a design: one picture per area).
+      if (item.sheet_url || item.package_url || item.print_files.length) {
         const actions = element("div", "order-files");
         const addLink = function (href, icon, label) {
           const link = element("a", "order-file-link");
@@ -235,7 +235,7 @@ document.addEventListener("DOMContentLoaded", function () {
           link.append(element("span", "", label));
           actions.appendChild(link);
         };
-        if (item.print_files.length || (item.paper_files || []).length) addLink(item.sheet_url, "bi-file-earmark-pdf", "تنزيل ورقة الطلب (PDF)");
+        if (item.sheet_url) addLink(item.sheet_url, "bi-file-earmark-text", "تفاصيل الطلب (PDF)");
         // Every file has its own direct download (no unzipping); the zip is only a "download all" shortcut.
         // A paper job has the download inside each file's card, so its files are not listed again here.
         const direct = item.print_files.length ? item.print_files : ((item.paper_files || []).length ? [] : (item.files || []));

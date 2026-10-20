@@ -222,6 +222,45 @@
       });
     }
 
+    // The bell keeps itself current: every 30 seconds while the tab is visible (and when it comes back into view) it asks
+    // the feed for the unread count and the menu, and a notification newer than the last one seen shakes the bell and
+    // shows its title. The open menu is left alone until it is closed, so a click is never pulled from under the pointer.
+    const bellWrap = document.querySelector(".notification-wrap[data-feed-url]");
+    const counter = document.getElementById("notificationCounter");
+    if (bellWrap && notificationButton && notificationDropdown) {
+      let latestSeen = Number(bellWrap.dataset.latestId || 0);
+      let busy = false;
+
+      function refreshBell() {
+        if (busy || document.hidden) return;
+        busy = true;
+        fetch(bellWrap.dataset.feedUrl, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, credentials: "same-origin" })
+          .then(function (response) { return response.ok ? response.json() : null; })
+          .then(function (feed) {
+            if (!feed) return;
+            if (counter) {
+              counter.textContent = feed.unread > 99 ? "99+" : String(feed.unread);
+              counter.hidden = feed.unread === 0;
+            }
+            if (!notificationDropdown.classList.contains("open")) notificationDropdown.innerHTML = feed.html;
+            const latest = Number(feed.latest_id || 0);
+            if (latest > latestSeen && feed.newest) {
+              notificationButton.classList.remove("is-shaking");
+              void notificationButton.offsetWidth;
+              notificationButton.classList.add("is-shaking");
+              window.setTimeout(function () { notificationButton.classList.remove("is-shaking"); }, 600);
+              showToast("إشعار جديد: " + feed.newest.title);
+            }
+            latestSeen = Math.max(latestSeen, latest);
+          })
+          .catch(function () { /* offline for a moment: the next round tries again */ })
+          .finally(function () { busy = false; });
+      }
+
+      window.setInterval(refreshBell, 30000);
+      document.addEventListener("visibilitychange", function () { if (!document.hidden) refreshBell(); });
+    }
+
     // Both logout buttons (sidebar and account menu) are real forms: ask first, then submit.
     document.querySelectorAll('form[action$="/logout"]').forEach(function (logoutForm) {
       logoutForm.addEventListener("submit", function (event) {

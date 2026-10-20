@@ -18,7 +18,29 @@ document.addEventListener("DOMContentLoaded",function(){
   const availability=document.getElementById("availabilityToggle"),availabilityText=document.getElementById("availabilityText");
   availability.addEventListener("change",function(){availabilityText.innerHTML=availability.checked?'متاح <i></i>':'غير متاح';availabilityText.classList.toggle("off",!availability.checked)});
 
-  function showToast(message){toast.querySelector("span").textContent=message;toast.classList.add("show");setTimeout(function(){toast.classList.remove("show")},2800)}
+  // A document picked and not saved yet: show a preview (picture) or a PDF icon with its name and size, and let the shop
+  // take it back. Nothing is uploaded until the form is saved; the server checks type and size again.
+  const MAX_BYTES=5*1024*1024;
+  function formatSize(bytes){return bytes<1024*1024?Math.max(1,Math.round(bytes/1024))+" ك.ب":(bytes/1024/1024).toFixed(1)+" م.ب"}
+  document.querySelectorAll("[data-upload-field]").forEach(function(field){
+    const input=field.querySelector("input[type=file]"),panel=field.querySelector("[data-picked]"),image=field.querySelector("[data-picked-image]"),icon=field.querySelector("[data-picked-icon]"),name=field.querySelector("[data-picked-name]"),note=field.querySelector("[data-picked-note]"),clear=field.querySelector("[data-clear]"),hasSaved=field.querySelector("[data-has-saved]").dataset.hasSaved==="1";
+    let previewUrl=null;
+    function reset(){if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null}panel.hidden=true;panel.classList.remove("is-too-big");image.hidden=true;image.removeAttribute("src");icon.hidden=true}
+    input.addEventListener("change",function(){
+      reset();
+      const file=input.files&&input.files[0];
+      if(!file)return;
+      name.textContent=file.name;
+      const tooBig=file.size>MAX_BYTES;
+      panel.classList.toggle("is-too-big",tooBig);
+      note.textContent=tooBig?"الملف أكبر من 5 ميجابايت، اختر ملفًا أصغر.":formatSize(file.size)+(hasSaved?" — سيحلّ محل الملف المرفوع سابقًا عند الحفظ.":" — يُرفع عند حفظ التغييرات.");
+      if(file.type.indexOf("image/")===0){previewUrl=URL.createObjectURL(file);image.src=previewUrl;image.hidden=false}else{icon.hidden=false}
+      panel.hidden=false;
+    });
+    clear.addEventListener("click",function(){input.value="";reset();input.focus()});
+  });
+
+  function showToast(message,success){toast.querySelector("span").textContent=message;toast.classList.toggle("is-success",!!success);toast.classList.add("show");setTimeout(function(){toast.classList.remove("show")},2800)}
   form.addEventListener("submit",function(event){if(!form.reportValidity()){event.preventDefault();return}syncDays()});
-  if(window.printProviderProfileFlash==="updated")showToast("تم حفظ التغييرات بنجاح");
+  if(window.printProviderProfileFlash==="updated")showToast("تم حفظ التغييرات بنجاح",true);
 });
