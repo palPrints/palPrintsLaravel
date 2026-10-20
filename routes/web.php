@@ -48,6 +48,7 @@ use App\Http\Controllers\PrintProvider\TelegramLinkController as PrintProviderTe
 use App\Http\Controllers\SharedPrintFileController;
 use App\Http\Controllers\TelegramWebhookController;
 use App\Http\Controllers\WhatsAppWebhookController;
+use App\Http\Controllers\FontController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -80,6 +81,15 @@ Route::view('/terms', 'pages.terms')->name('terms');
 
 Route::view('/privacy', 'pages.privacy')->name('privacy');
 Route::get('/stickers/library/{stickerLibraryItem}/image', [CustomerStickerBundleController::class, 'libraryImage'])->name('stickers.library-image');
+Route::get('/fonts/{customFont}/file', [FontController::class, 'file'])->name('fonts.file');
+Route::middleware(['auth', 'active', 'role:customer|designer'])->prefix('api')->group(function () {
+    Route::get('/fonts', [FontController::class, 'index'])->name('fonts.index');
+    Route::get('/fonts/{customFont}', [FontController::class, 'show'])->name('fonts.show');
+    Route::post('/fonts', [FontController::class, 'store'])->name('fonts.store');
+});
+Route::middleware(['auth', 'active', 'role:admin'])->prefix('api/admin')->group(function () {
+    Route::patch('/fonts/{customFont}/status', [FontController::class, 'status'])->name('admin.fonts.status');
+});
 
 /*
 |--------------------------------------------------------------------------

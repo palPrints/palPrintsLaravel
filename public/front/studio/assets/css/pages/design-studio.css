@@ -1844,6 +1844,9 @@ body.sidebar-collapsed .site-content {
   scrollbar-color: rgb(111 132 162 / 32%) transparent;
 }
 
+.studio-font-upload { display:flex; align-items:center; gap:.5rem; margin:.5rem; padding:.55rem .7rem; border:1px dashed currentColor; border-radius:6px; cursor:pointer; font-size:.85rem; }
+.studio-font-upload:hover { background:rgba(22,119,255,.08); }
+
 .studio-font-list button {
   width: 100%;
   min-height: 31px;

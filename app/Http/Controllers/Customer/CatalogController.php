@@ -10,6 +10,7 @@ use App\Models\BranchProductOffering;
 use App\Models\StickerCategory;
 use App\Services\Stickers\StickerSettingsService;
 use App\Support\CatalogProductData;
+use App\Services\PaperPricing;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
 
