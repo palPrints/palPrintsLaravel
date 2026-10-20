@@ -255,16 +255,28 @@
                     <div class="upload-fields">
                         @foreach ($documentLabels as $field => $label)
                             @continue(! in_array($field, $documentFields, true))
-                            <label class="upload-field"><span class="upload-title">{{ $label }} <em>*</em></span>
-                                <input type="file" name="{{ $field }}" accept=".jpg,.jpeg,.png,.webp,.pdf,image/*,application/pdf">
-                                <small>
+                            {{-- A div, not a label: a click on the "cancel" button inside a label would open the file picker again. --}}
+                            <div class="upload-field" data-upload-field>
+                                <label class="upload-title" for="upload-{{ $field }}">{{ $label }} <em>*</em></label>
+                                <input type="file" id="upload-{{ $field }}" name="{{ $field }}" accept=".jpg,.jpeg,.png,.webp,.pdf,image/*,application/pdf">
+                                {{-- The file picked and not saved yet: a preview, its name and size, and a way to take it back. --}}
+                                <div class="upload-picked" data-picked hidden>
+                                    <img class="upload-picked-thumb" data-picked-image alt="" hidden>
+                                    <span class="upload-picked-thumb is-file" data-picked-icon hidden><i class="bi bi-file-earmark-pdf"></i></span>
+                                    <span class="upload-picked-copy">
+                                        <b data-picked-name></b>
+                                        <small data-picked-note></small>
+                                    </span>
+                                    <button class="upload-clear" type="button" data-clear aria-label="إلغاء اختيار ملف {{ $label }}"><i class="bi bi-x-lg"></i> إلغاء الاختيار</button>
+                                </div>
+                                <small data-has-saved="{{ filled($provider->$field) ? '1' : '0' }}">
                                     @if (filled($provider->$field))
                                         <i class="bi bi-check-circle-fill"></i> تم رفع ملف سابقًا (<a href="{{ route('print-provider.documents', [$provider, $field]) }}" target="_blank" rel="noopener noreferrer">عرض</a>) — اختر ملفًا جديدًا لاستبداله.
                                     @else
                                         صورة أو ملف PDF، بحجم أقصى 5 ميجابايت.
                                     @endif
                                 </small>
-                            </label>
+                            </div>
                         @endforeach
                         @unless (in_array('id_document', $documentFields, true))
                             <p class="upload-pending"><i class="bi bi-info-circle"></i> رفع صورة الهوية غير متاح بعد: بانتظار إضافة عمود <bdi>id_document</bdi> في قاعدة البيانات.</p>
