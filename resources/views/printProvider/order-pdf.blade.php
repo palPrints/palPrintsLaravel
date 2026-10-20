@@ -1,78 +1,107 @@
 <style>
     body { font-family: dejavusans; font-size: 10pt; color: #0b1f3a; }
-    h1 { font-size: 17pt; margin: 0 0 2pt; }
-    h2 { font-size: 12pt; margin: 14pt 0 4pt; color: #1677ff; }
-    .muted { color: #5b6b82; font-size: 9pt; }
     table { border-collapse: collapse; width: 100%; }
-    th, td { border: 0.5pt solid #c8d2e0; padding: 4pt 6pt; text-align: right; vertical-align: top; }
-    th { background-color: #eef2f8; font-size: 9pt; }
-    .spec td.k { width: 28%; background-color: #f6f8fc; color: #5b6b82; }
-    .pic { text-align: center; border: 0.5pt solid #c8d2e0; padding: 4pt; }
-    .pic img { width: 100%; }
-    .cap { font-weight: bold; padding-bottom: 3pt; }
+    td { text-align: right; vertical-align: middle; }
+    .band td { background-color: #1677ff; color: #ffffff; padding: 10pt 14pt; }
+    .band .title { font-size: 16pt; font-weight: bold; }
+    .band .sub { font-size: 9pt; color: #dbeafe; }
+    .band .brand { font-size: 12pt; font-weight: bold; text-align: left; }
+    .info td { background-color: #f3f6fb; border: 3pt solid #ffffff; padding: 7pt 9pt; width: 25%; }
+    .info .l { font-size: 8pt; color: #5b6b82; }
+    .info .v { font-size: 12pt; font-weight: bold; color: #0b1f3a; }
+    h2 { font-size: 12pt; color: #0b1f3a; margin: 14pt 0 4pt; border-right: 4pt solid #1677ff; padding-right: 6pt; }
+    .note { background-color: #fff8e1; border: 0.8pt solid #f5d78a; padding: 7pt 10pt; margin-top: 8pt; }
+    .note b { color: #8a5a00; }
+    .spec td { border: 0.5pt solid #d5deeb; padding: 6pt 9pt; width: 33.33%; }
+    .spec .l { font-size: 8pt; color: #5b6b82; }
+    .spec .v { font-size: 11pt; font-weight: bold; }
+    .files td, .files th { border: 0.5pt solid #d5deeb; padding: 6pt 9pt; text-align: right; }
+    .files th { background-color: #eaf2ff; font-size: 9pt; color: #5b6b82; }
+    .pic { text-align: center; vertical-align: top; border: 0.5pt solid #d5deeb; padding: 6pt; width: 50%; }
+    .pic .cap { font-size: 11pt; margin: 0 0 6pt; }
+    .pic img { width: 58%; }
+    .footer { margin-top: 12pt; font-size: 8pt; color: #8a97ab; text-align: center; }
 </style>
 
-<h1>ورقة طلب طباعة: {{ $item['name'] }}</h1>
-<div class="muted">الطلب {{ $order->order_number }} · وصل المطبعة {{ $item['date_label'] }}</div>
+@php
+    $cells = collect([['label' => 'المنتج', 'value' => $item['name']]])
+        ->merge($item['details'])
+        ->when($item['design_title'], fn ($all) => $all->push(['label' => 'التصميم', 'value' => $item['design_title']]));
+    $pictures = collect($previewImages)->map(fn ($preview) => ['name' => $preview['name'], 'src' => $preview['with_design'] ?: $preview['bare']]);
+@endphp
+
+<table class="band">
+    <tr>
+        <td>
+            <div class="title">ورقة طلب طباعة: {{ $item['name'] }}</div>
+            <div class="sub">للاستخدام داخل المطبعة، التصاميم الجاهزة للطباعة ملفات منفصلة تُنزَّل مع الطلب</div>
+        </td>
+        <td class="brand" style="width: 28%">PALPRINTS</td>
+    </tr>
+</table>
+
+<table class="info">
+    <tr>
+        <td><div class="l">رقم الطلب</div><div class="v"><b>{{ $order->order_number }}</b></div></td>
+        <td><div class="l">وصل المطبعة</div><div class="v"><b>{{ $item['date_label'] }} · {{ $item['time_label'] }}</b></div></td>
+        <td><div class="l">الكمية</div><div class="v"><b>{{ $item['quantity'] }}</b></div></td>
+    </tr>
+</table>
+
+@if ($item['notes'])
+    <div class="note"><b>ملاحظات العميل:</b> {{ $item['notes'] }}</div>
+@endif
 
 <h2>مواصفات الطلب</h2>
 <table class="spec">
-    <tr><td class="k">المنتج</td><td>{{ $item['name'] }}</td></tr>
-    <tr><td class="k">الكمية</td><td>{{ $item['quantity'] }}</td></tr>
-    @foreach ($item['details'] as $detail)
-        <tr><td class="k">{{ $detail['label'] }}</td><td>{{ $detail['value'] }}</td></tr>
+    @foreach ($cells->chunk(3) as $row)
+        <tr>
+            @foreach ($row as $cell)
+                <td><div class="l">{{ $cell['label'] }}</div><div class="v"><b>{{ $cell['value'] }}</b></div></td>
+            @endforeach
+            @for ($i = $row->count(); $i < 3; $i++)
+                <td></td>
+            @endfor
+        </tr>
     @endforeach
-    @if ($item['design_title'])<tr><td class="k">التصميم</td><td>{{ $item['design_title'] }}</td></tr>@endif
-    @if ($item['notes'])<tr><td class="k">ملاحظات العميل</td><td>{{ $item['notes'] }}</td></tr>@endif
 </table>
 
-@foreach ($item['paper_files'] ?? [] as $card)
-    <h2>{{ $card['title'] }}</h2>
-    <table class="spec">
-        @foreach ($card['rows'] as $row)
-            <tr><td class="k">{{ $row['label'] }}</td><td>{{ $row['value'] }}</td></tr>
-        @endforeach
-    </table>
-@endforeach
-
-@foreach ($previewImages as $preview)
-    <h2>شكل المنتج: {{ $preview['name'] }}</h2>
-    <table>
-        <tr>
-            <td class="pic" style="width: 50%"><div class="cap">المنتج بلونه</div><img src="{{ $preview['bare'] }}"></td>
-            @if ($preview['with_design'])
-                <td class="pic" style="width: 50%"><div class="cap">المنتج مع التصميم</div><img src="{{ $preview['with_design'] }}"></td>
-            @endif
-        </tr>
-    </table>
-@endforeach
-
-@foreach ($designImages as $design)
-    <pagebreak />
-    <h2>صورة الطباعة: {{ $design['name'] }}</h2>
-    <div class="muted">هذي الصورة اللي بتنطبع بالمقاس الحقيقي للمنطقة. الخلفية الرمادية للعرض فقط ولا تنطبع.</div>
-    <div class="pic" style="margin-top: 6pt"><img src="{{ $design['src'] }}" style="width: 60%"></div>
-@endforeach
-
-@foreach ($layout as $area)
-    <h2>تفاصيل التصميم: {{ $area['name'] }}</h2>
-    <div class="muted">مقاس المنطقة {{ $area['width'] }} × {{ $area['height'] }} سم. القياسات بالسنتيمتر من الزاوية العلوية اليسرى للمنطقة.</div>
-    <table style="margin-top: 4pt">
-        <tr><th>#</th><th>العنصر</th><th>المقاس (سم)</th><th>من اليسار</th><th>من الأعلى</th><th>ملاحظات</th></tr>
-        @foreach ($area['objects'] as $row)
+@if (count($areas))
+    <h2>ملفات الطباعة</h2>
+    <table class="files">
+        <tr><th>الوجه</th><th>اسم الصورة</th><th>مقاس الصورة على المنتج (سم)</th></tr>
+        @foreach ($areas as $area)
             <tr>
-                <td>{{ $row['number'] }}</td>
-                <td>{{ $row['type'] }}@if ($row['what'] !== '') <br><span class="muted">{{ $row['what'] }}</span>@endif</td>
-                <td>{{ $row['width'] }} × {{ $row['height'] }}</td>
-                <td>{{ $row['left'] }}</td>
-                <td>{{ $row['top'] }}</td>
-                <td>
-                    @if ($row['angle'] != 0)دوران {{ $row['angle'] }}°<br>@endif
-                    @if ($row['flip'] !== ''){{ $row['flip'] }}<br>@endif
-                    @if ($row['font'] !== ''){{ $row['font'] }}{{ $row['bold'] ? ' (عريض)' : '' }}<br>@endif
-                    @if ($row['color'] !== '')لون {{ $row['color'] }}@endif
-                </td>
+                <td><b>{{ $area['name'] }}</b></td>
+                <td dir="ltr" style="text-align: right">{{ $area['file'] }}</td>
+                <td>{{ $area['dimensions'] ?? '—' }}</td>
             </tr>
         @endforeach
     </table>
-@endforeach
+@endif
+
+@if ($pictures->isNotEmpty())
+    <h2>المنتج مع التصميم</h2>
+    <table>
+        @foreach ($pictures->chunk(2) as $row)
+            <tr>
+                @foreach ($row as $picture)
+                    <td class="pic" style="border-bottom: none; padding-bottom: 0"><b>{{ $picture['name'] }}</b></td>
+                @endforeach
+                @if ($row->count() < 2)
+                    <td></td>
+                @endif
+            </tr>
+            <tr>
+                @foreach ($row as $picture)
+                    <td class="pic" style="border-top: none"><img src="{{ $picture['src'] }}" style="width: 7cm"></td>
+                @endforeach
+                @if ($row->count() < 2)
+                    <td></td>
+                @endif
+            </tr>
+        @endforeach
+    </table>
+@endif
+
+<div class="footer">PALPRINTS · الطلب {{ $order->order_number }}</div>

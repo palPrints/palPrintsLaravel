@@ -350,6 +350,33 @@ class CheckoutService
     {
         $disk = Storage::disk('local');
 
+        // The studio's print-ready picture of each area comes first: the shop prints from these and gets the order sheet.
+        foreach ($cartItem->design->design_payload['print_exports'] ?? [] as $export) {
+            if (empty($export['path']) || ! $disk->exists($export['path'])) {
+                continue;
+            }
+
+            $areaId = preg_match('/^[a-z0-9_-]{1,30}$/i', (string) ($export['area_id'] ?? '')) ? strtolower($export['area_id']) : 'area';
+            $path = PrintFile::EXPORT_DIR.$order->user_id.'/'.$areaId.'--'.Str::uuid().'.png';
+            $disk->copy($export['path'], $path);
+
+            PrintFile::create([
+                'user_id' => $order->user_id,
+                'product_id' => $cartItem->product_id,
+                'order_item_id' => $orderItem->id,
+                'original_name' => 'print-ready-'.str_replace(['/', '\\'], '-', (string) ($export['name'] ?? $areaId)).'.png',
+                'stored_path' => $path,
+                'disk' => 'local',
+                'mime_type' => 'image/png',
+                'extension' => 'png',
+                'file_size' => $export['size'] ?? $disk->size($path),
+                'page_count' => 1,
+                'status' => PrintFile::STATUS_ATTACHED_TO_ORDER,
+                'uploaded_at' => now(),
+                'attached_to_order_at' => now(),
+            ]);
+        }
+
         foreach ($cartItem->design->design_payload['files'] ?? [] as $file) {
             if (empty($file['path']) || ! $disk->exists($file['path'])) {
                 continue;

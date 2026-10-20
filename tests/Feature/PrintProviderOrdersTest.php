@@ -352,3 +352,37 @@ test('full journey: customer file, admin approval, shop notice opens the order, 
     expect($order->fresh()->status)->toBe('ready')
         ->and(Notification::where('user_id', $this->customer->id)->whereIn('type', ['order.confirmed', 'order.ready'])->count())->toBe(2);
 });
+
+test('a paper order has its own order sheet PDF with a card for every file', function () {
+    [$order, $item] = ($this->makeOrder)('PAPER-SHEET-1', 'processing');
+    $item->update(['selected_options' => ['paper_job' => [
+        'grouping' => 'separate', 'quantity' => 1, 'collate' => true,
+        'files' => [
+            ['pages' => 12, 'size' => 'a4', 'paper' => 'plain', 'color' => 'bw', 'sides' => 'double', 'flip' => 'long', 'layout' => '1', 'quantity' => 2, 'binding' => 'spiral', 'printed' => 12],
+            ['pages' => 3, 'size' => 'a3', 'paper' => 'plain', 'color' => 'color', 'sides' => 'single', 'layout' => '1', 'quantity' => 1, 'binding' => 'none', 'printed' => 3],
+        ],
+    ]]]);
+
+    foreach (['عقد-الإيجار.pdf', 'مخطط.pdf'] as $name) {
+        Storage::disk('local')->put('customer-print-files/paper/'.$name, '%PDF-1.4 x');
+        PrintFile::create([
+            'user_id' => $this->customer->id, 'product_id' => $this->product->id, 'order_item_id' => $item->id,
+            'original_name' => $name, 'stored_path' => 'customer-print-files/paper/'.$name, 'disk' => 'local',
+            'mime_type' => 'application/pdf', 'extension' => 'pdf', 'file_size' => 10, 'status' => 'attached_to_order',
+        ]);
+    }
+
+    // the page gives each paper line its sheet link and its cards
+    $this->actingAs($this->owner)->get(route('print-provider.requests'))->assertViewHas('orders', function ($orders) {
+        $line = $orders->first()['items'][0];
+
+        return count($line['paper_files']) === 2 && $line['sheet_url'] !== null;
+    });
+
+    $sheet = $this->actingAs($this->owner)->get(route('print-provider.requests.sheet', [$order, $item]))
+        ->assertOk()->assertHeader('content-type', 'application/pdf');
+    expect(file_get_contents($sheet->baseResponse->getFile()->getPathname()))->toStartWith('%PDF');
+
+    // another shop cannot get it
+    $this->actingAs($this->otherOwner)->get(route('print-provider.requests.sheet', [$order, $item]))->assertNotFound();
+});

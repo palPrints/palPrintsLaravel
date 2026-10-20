@@ -527,6 +527,13 @@
 
     renderProducts();
 
+    // The dashboard sends "?editProduct=ID": open that product's settings straight away.
+    const wantedProduct = Number(new URLSearchParams(window.location.search).get("editProduct"));
+    if (wantedProduct) {
+      try { openSettings(wantedProduct, document.getElementById("openCatalog"), false); } catch (exception) { /* a product this page does not list: just show the page */ }
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+
     if (new URLSearchParams(window.location.search).get("openCatalog")) {
       renderCatalog();
       dialogOrigin = document.getElementById("openCatalog");

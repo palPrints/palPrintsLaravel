@@ -103,6 +103,7 @@ class DashboardController extends Controller
                 $extra = $order->items->count() - 1;
 
                 return [
+                    'id' => $order->id,
                     'number' => $order->order_number,
                     'product' => $extra > 0 ? $first.' +'.$extra : $first,
                     'status_label' => $label,
@@ -161,7 +162,8 @@ class DashboardController extends Controller
                 'title' => 'المنتج "'.($offering->product?->name ?? 'منتج').'" معطل'.($days > 0 ? ' من '.$days.' أيام' : ''),
                 'text' => 'فعّل المنتج ليتاح للعملاء مجددًا.',
                 'action' => 'تفعيل الآن',
-                'url' => route('print-provider.services'),
+                'url' => route('print-provider.services', ['editProduct' => $offering->product_id]),
+                'activate' => route('print-provider.services.toggle', $offering->product_id),
             ];
         }
 
@@ -184,7 +186,7 @@ class DashboardController extends Controller
                 'title' => 'الطلب #'.$order->order_number.' ينتظر ردك منذ '.(int) $order->reachedShopAt()->diffInDays(now()).' أيام',
                 'text' => 'اقبل الطلب أو ارفضه.',
                 'action' => 'عرض الطلب',
-                'url' => route('print-provider.requests'),
+                'url' => route('print-provider.requests', ['order' => $order->id]),
             ];
         }
 

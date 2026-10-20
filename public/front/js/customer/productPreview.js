@@ -556,7 +556,8 @@
       sessionStorage.setItem("palprintsDesignerPublish", JSON.stringify({
         designId: save.designId, designName: payload.design.name, productCode: payload.product.code, productName: payload.product.name,
         colorId: piece.colorId, colorName: color ? color.name : piece.colorId, sizeId: piece.sizeId,
-        allowedColorIds: [...state.allowedColorIds], category: payload.studioSave.category, allowedSizeIds: audience() ? [...state.allowedSizeIds] : [], mockup, preview, layout: save.layout, assetIds: save.assetIds, assets: save.assets
+        allowedColorIds: [...state.allowedColorIds], category: payload.studioSave.category, allowedSizeIds: audience() ? [...state.allowedSizeIds] : [], mockup, preview, layout: save.layout, assetIds: save.assetIds, assets: save.assets,
+        printAreas: selectedAreas(piece).map(area => ({ id: area.id, name: area.name }))
       }));
       window.location.href = assets.reviewUrl;
     } catch (error) {

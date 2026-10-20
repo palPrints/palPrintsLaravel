@@ -6,15 +6,13 @@ use Mpdf\Mpdf;
 use RuntimeException;
 
 /**
- * The one file the print shop gets for an order line: the specifications, the product with and without the design,
- * the print-ready picture of every area and where each element sits. Pictures are drawn with GD, because the PDF
+ * The one file the print shop gets for an order line: the specifications and the product with the design,
+ * what to print (the print-ready pictures are separate files). Pictures are drawn with GD, because the PDF
  * writer cannot tint a garment or place one picture on another by itself.
  */
 class OrderSheetPdf
 {
     private const GARMENT_WIDTH = 700;
-
-    private const DESIGN_MAX_SIDE = 1800;
 
     /**
      * @param  array<string, mixed>  $data  what OrdersController::sheetData() returns
@@ -37,13 +35,9 @@ class OrderSheetPdf
             ];
         }, $data['previews']);
 
-        $designs = [];
-        foreach ($designFiles as $name => $path) {
-            $image = $this->load($path);
-            $designs[] = ['name' => $name, 'src' => $this->dataUri($this->flatten($this->shrink($image, self::DESIGN_MAX_SIDE), 'e9edf3'))];
-        }
-
-        $html = view('printProvider.order-pdf', $data + ['previewImages' => $previews, 'designImages' => $designs])->render();
+        // A paper order has no garment or print areas: it gets its own, simpler sheet with a card per file.
+        $view = empty($data['item']['paper_files']) ? 'printProvider.order-pdf' : 'printProvider.order-pdf-paper';
+        $html = view($view, $data + ['previewImages' => $previews])->render();
 
         $directory = storage_path('app/mpdf');
         if (! is_dir($directory)) {
@@ -115,20 +109,6 @@ class OrderSheetPdf
         imagealphablending($result, false);
 
         return $result;
-    }
-
-    private function shrink(\GdImage $image, int $maxSide): \GdImage
-    {
-        $scale = min(1, $maxSide / max(imagesx($image), imagesy($image)));
-
-        if ($scale === 1) {
-            return $image;
-        }
-
-        $small = $this->canvas(max(1, (int) round(imagesx($image) * $scale)), max(1, (int) round(imagesy($image) * $scale)));
-        imagecopyresampled($small, $image, 0, 0, 0, 0, imagesx($small), imagesy($small), imagesx($image), imagesy($image));
-
-        return $small;
     }
 
     /** A picture on a plain background (the PDF has no use for transparency). */

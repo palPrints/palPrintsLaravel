@@ -327,7 +327,7 @@
 
       function start() {
         const script = document.createElement("script");
-        script.src = "assets/js/pages/design-studio.js";
+        script.src = "assets/js/pages/design-studio.js?v={{ filemtime(public_path('front/studio/assets/js/pages/design-studio.js')) }}";
         document.body.appendChild(script);
         enablePreviewWhenReady();
       }
