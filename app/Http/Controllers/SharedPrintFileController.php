@@ -19,7 +19,7 @@ class SharedPrintFileController extends Controller
         $disk = Storage::disk($printFile->disk ?: 'local');
         abort_unless($disk->exists($printFile->stored_path), 404);
 
-        return $disk->download($printFile->stored_path, $printFile->original_name, [
+        return $disk->download($printFile->stored_path, $printFile->downloadName(), [
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, no-store',
         ]);

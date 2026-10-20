@@ -45,6 +45,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleDashboardController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\PrintProvider\TelegramLinkController as PrintProviderTelegramLinkController;
+use App\Http\Controllers\SharedOrderSheetController;
 use App\Http\Controllers\SharedPrintFileController;
 use App\Http\Controllers\TelegramWebhookController;
 use App\Http\Controllers\WhatsAppWebhookController;
@@ -69,6 +70,9 @@ Route::post('/webhooks/telegram', TelegramWebhookController::class)->middleware(
 // The customer's print file, from the signed, expiring link in the WhatsApp message the admin sends the shop.
 Route::get('/shared/print-files/{printFile}', SharedPrintFileController::class)
     ->middleware(['signed', 'throttle:30,1'])->name('print-files.shared');
+// The details PDF of an order line, from the same WhatsApp message.
+Route::get('/shared/order-items/{item}/details', SharedOrderSheetController::class)
+    ->middleware(['signed', 'throttle:30,1'])->name('order-sheets.shared');
 
 Route::view('/about', 'about')->name('about');
 Route::view('/faq', 'pages.faq')->name('faq');

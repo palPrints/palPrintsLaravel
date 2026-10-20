@@ -7,6 +7,7 @@ use App\Models\OrderItem;
 use App\Models\PrintFile;
 use App\Models\PrintProvider;
 use App\Models\TelegramMessage;
+use App\Services\Orders\OrderLineDocuments;
 use App\Services\Orders\ShopOrderTransitions;
 use App\Services\Telegram\TelegramClient;
 use Illuminate\Bus\Queueable;
@@ -42,7 +43,7 @@ class SendOrderToTelegram implements ShouldQueue
         return [30, 120];
     }
 
-    public function handle(TelegramClient $client): void
+    public function handle(TelegramClient $client, OrderLineDocuments $documents): void
     {
         if (! config('telegram.enabled')) {
             return;
@@ -64,9 +65,7 @@ class SendOrderToTelegram implements ShouldQueue
 
         try {
             foreach ($items as $item) {
-                foreach ($item->printFiles->whereNotIn('status', [PrintFile::STATUS_DELETED, PrintFile::STATUS_CANCELLED]) as $file) {
-                    $this->sendFile($client, $order, $provider, $chatId, $file);
-                }
+                $this->sendLine($client, $documents, $order, $provider, $chatId, $item);
             }
 
             $this->sendOffer($client, $order, $provider, $chatId, $items);
@@ -88,6 +87,42 @@ class SendOrderToTelegram implements ShouldQueue
         $this->markFailed($exception);
     }
 
+    /**
+     * One order line: its details PDF, then its files, each under the name it downloads as — a design's print-ready
+     * picture per area ("أمامي.png"), or a paper job's own PDFs. If the details PDF cannot be made, the files still go.
+     */
+    private function sendLine(TelegramClient $client, OrderLineDocuments $documents, Order $order, PrintProvider $provider, string $chatId, OrderItem $item): void
+    {
+        try {
+            $this->sendDetails($client, $documents, $order, $provider, $chatId, $item);
+        } catch (RequestException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            // The PDF could not be made (the PDF writer missing on the server…): the files still carry the order.
+            report($exception);
+        }
+
+        foreach ($documents->filesToSend($item) as $file) {
+            $this->sendFile($client, $order, $provider, $chatId, $file);
+        }
+    }
+
+    /** The line's details PDF, sent once. */
+    private function sendDetails(TelegramClient $client, OrderLineDocuments $documents, Order $order, PrintProvider $provider, string $chatId, OrderItem $item): void
+    {
+        $row = TelegramMessage::query()->firstOrCreate(
+            ['order_id' => $order->id, 'print_provider_id' => $provider->id, 'purpose' => 'details:'.$item->id],
+            ['chat_id' => $chatId, 'status' => 'queued'],
+        );
+        if ($row->telegram_message_id) {
+            return;
+        }
+
+        $caption = '📋 تفاصيل الطلب — '.TelegramClient::e($item->product?->name ?? 'منتج').' — طلب <code>'.TelegramClient::e($order->order_number).'</code>';
+        $sent = $client->sendDocument($chatId, $documents->detailsPdf($order, $item), $documents->fileName($order, $item), $caption);
+        $row->update(['telegram_message_id' => $sent['message_id'] ?? null, 'status' => 'sent', 'error' => null]);
+    }
+
     private function sendFile(TelegramClient $client, Order $order, PrintProvider $provider, string $chatId, PrintFile $file): void
     {
         $row = TelegramMessage::query()->firstOrCreate(
@@ -99,7 +134,7 @@ class SendOrderToTelegram implements ShouldQueue
         }
 
         $disk = Storage::disk($file->disk ?: 'local');
-        $caption = '📄 '.TelegramClient::e($file->original_name).' — طلب <code>'.TelegramClient::e($order->order_number).'</code>';
+        $caption = '🖼️ '.TelegramClient::e($file->downloadName()).' — طلب <code>'.TelegramClient::e($order->order_number).'</code>';
 
         if (! $disk->exists($file->stored_path)) {
             $row->update(['status' => 'failed', 'error' => 'الملف غير موجود في التخزين.']);
@@ -112,7 +147,7 @@ class SendOrderToTelegram implements ShouldQueue
             $link = URL::temporarySignedRoute('print-files.shared', now()->addDays(7), $file);
             $sent = $client->sendMessage($chatId, $caption."\nالملف كبير، نزّليه من الرابط (صالح 7 أيام):\n".TelegramClient::e($link));
         } else {
-            $sent = $client->sendDocument($chatId, $disk->get($file->stored_path), $file->original_name, $caption);
+            $sent = $client->sendDocument($chatId, $disk->get($file->stored_path), $file->downloadName(), $caption);
         }
 
         $row->update(['telegram_message_id' => $sent['message_id'] ?? null, 'status' => 'sent', 'error' => null]);
@@ -129,8 +164,14 @@ class SendOrderToTelegram implements ShouldQueue
             return;
         }
 
-        $products = $items->map(fn (OrderItem $item) => '• '.TelegramClient::e($item->product?->name ?? 'منتج').' — الكمية: '.(int) $item->quantity)->implode("\n");
-        $hasFiles = $items->contains(fn (OrderItem $item) => $item->printFiles->isNotEmpty());
+        // Each product with the few options the shop needs at a glance (size, colour, print areas); the rest is in the PDFs.
+        $documents = app(OrderLineDocuments::class);
+        $products = $items->map(function (OrderItem $item) use ($documents, $order) {
+            $specs = $documents->keyDetails($order, $item);
+
+            return '• '.TelegramClient::e($item->product?->name ?? 'منتج').' — الكمية: '.(int) $item->quantity
+                .($specs ? "\n   ".TelegramClient::e($specs) : '');
+        })->implode("\n");
 
         $text = implode("\n", array_filter([
             '📦 <b>طلب جديد من PALPRINTS</b>',
@@ -140,7 +181,7 @@ class SendOrderToTelegram implements ShouldQueue
             $products,
             '',
             'مستحقاتك: <b>'.number_format((float) $items->sum('provider_cost'), 2).' ₪</b>',
-            $hasFiles ? 'ملفات الطباعة مرفقة فوق هذه الرسالة.' : null,
+            'ملف تفاصيل الطلب وملفات الطباعة مرفقة فوق هذه الرسالة.',
             '',
             'صفحة الطلبات: '.TelegramClient::e(route('print-provider.requests')),
         ], fn ($line) => $line !== null));
