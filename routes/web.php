@@ -278,6 +278,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/support/tickets/{ticket}/messages', [PrintProviderSupportController::class, 'ticketMessages'])->name('support.messages');
         Route::post('/support/tickets/{ticket}/reply', [PrintProviderSupportController::class, 'replyTicket'])->name('support.reply');
         Route::get('/notifications', [PrintProviderNotificationController::class, 'index'])->name('notifications');
+        Route::get('/notifications/feed', [PrintProviderNotificationController::class, 'feed'])->middleware('throttle:30,1')->name('notifications.feed');
         Route::post('/notifications/read-all', [PrintProviderNotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::post('/notifications/{notification}/read', [PrintProviderNotificationController::class, 'read'])->name('notifications.read');
     });

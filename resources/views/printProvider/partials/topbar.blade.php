@@ -22,7 +22,8 @@
                 </form>
             </div>
         </div>
-        <div class="notification-wrap">
+        {{-- The page asks the feed every little while, so a new notification shows here without a reload. --}}
+        <div class="notification-wrap" data-feed-url="{{ route('print-provider.notifications.feed') }}" data-latest-id="{{ $providerLatestNotifications->max('id') ?? 0 }}">
             <button class="icon-button notification-button" id="notificationButton" type="button" aria-label="الإشعارات" aria-haspopup="true" aria-expanded="false">
                 <i class="bi bi-bell" aria-hidden="true"></i>
                 <span class="counter notification-counter" id="notificationCounter" @if($providerUnreadCount === 0) hidden @endif>{{ $providerUnreadCount > 99 ? '99+' : $providerUnreadCount }}</span>
