@@ -29,8 +29,8 @@
   gap: 14px;
   align-items: center;
   padding: 20px;
-  background: linear-gradient(135deg, #ffffff, #f2faf8);
-  border: 1px solid #dbece8;
+  background: linear-gradient(135deg, #ffffff, var(--store-primary-soft));
+  border: 1px solid var(--store-primary-border);
   border-radius: 8px;
   margin-bottom: 14px;
 }
@@ -41,8 +41,8 @@
   display: grid;
   place-items: center;
   border-radius: 8px;
-  background: #e6f7f3;
-  color: #047b68;
+  background: var(--store-primary-soft);
+  color: var(--store-primary);
   font-size: 24px;
 }
 
@@ -103,11 +103,11 @@
   display: grid;
   place-items: center;
   gap: 3px;
-  border: 1px dashed #41b3a3;
+  border: 1px dashed var(--store-primary-border);
   border-radius: 8px;
-  color: #056b5d;
+  color: var(--store-primary);
   cursor: pointer;
-  background: #f1fbf8;
+  background: var(--store-primary-soft);
 }
 
 .upload-drop input {
@@ -139,9 +139,9 @@
 }
 
 .sticker-tabs button.is-active {
-  background: #073b4c;
+  background: var(--store-primary);
   color: #fff;
-  border-color: #073b4c;
+  border-color: var(--store-primary);
 }
 
 .sticker-grid {
@@ -309,7 +309,7 @@
 }
 
 .sticker-summary strong {
-  color: #047b68;
+  color: var(--store-primary);
 }
 
 .sticker-warning {
@@ -342,7 +342,7 @@
 
 .primary-action {
   flex: 1;
-  background: #073b4c;
+  background: var(--store-primary);
   color: #fff;
 }
 
@@ -384,8 +384,8 @@
   }
 
   .mobile-preview-toggle button.is-active {
-    background: #073b4c;
-    border-color: #073b4c;
+    background: var(--store-primary);
+    border-color: var(--store-primary);
     color: #fff;
   }
 
@@ -407,3 +407,97 @@
     flex-direction: column;
   }
 }
+
+/* ===== Tidy layout: same card language as the rest of the site ===== */
+.stickers-workspace { gap: 22px; }
+.stickers-shop { display: grid; gap: 16px; padding: 0; background: none; border: 0; box-shadow: none; }
+.stickers-shop > * { margin: 0 !important; }
+.upload-panel, .sticker-controls, .library-panel, .a4-preview-card { border-radius: 14px; box-shadow: 0 8px 24px rgba(15, 23, 42, .05); }
+.stickers-hero { border-radius: 14px; padding: 22px; }
+.stickers-hero h1 { font-weight: 800; }
+.stickers-hero p { font-weight: 600; }
+
+/* Controls: three equal fields with a clear label and one border */
+.sticker-controls { padding: 18px; gap: 16px; }
+.sticker-controls label { color: #0f172a; }
+.sticker-controls select, .sticker-controls input { min-height: 46px; border-radius: 10px; border: 1px solid #dbe2ea; background-color: #f8fafc; color: #0f172a; font-weight: 700; transition: border-color .18s ease, background-color .18s ease; }
+.sticker-controls select:focus, .sticker-controls input:focus { outline: 0; border-color: var(--store-primary); background-color: #fff; box-shadow: none; }
+
+/* Library: section header on one line, pill tabs, even tiles */
+.library-panel { padding: 20px; }
+.section-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.section-title-row h2 { font-weight: 800; }
+.section-title-row span { padding: 4px 12px; border-radius: 999px; background: #eef2f7; color: #475569; font-weight: 700; }
+.sticker-tabs { margin: 14px 0 18px; padding-bottom: 14px; border-bottom: 1px solid #eef2f7; }
+.sticker-tabs button { min-height: 38px; padding: 0 16px; font-weight: 700; transition: background-color .18s ease, border-color .18s ease; }
+.sticker-tabs button:not(.is-active):hover { background: #f1f5f9; }
+.sticker-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+.sticker-pick-card button { padding: 10px; border-radius: 12px; gap: 10px; }
+.sticker-pick-card button:hover { border-color: var(--store-primary); }
+.sticker-pick-card span { border-radius: 8px; }
+.sticker-pick-card strong { font-weight: 800; }
+.sticker-pick-card small { font-weight: 600; }
+
+/* Upload panel */
+.upload-panel { padding: 20px; }
+.upload-drop { border-radius: 12px; transition: background-color .18s ease; }
+.upload-drop:hover { background: var(--store-primary-soft); }
+
+/* A4 preview card: smaller sheet so the card fits the screen, tidy tiles and actions */
+.a4-preview-card { padding: 18px; }
+.a4-preview-card header { padding-bottom: 14px; border-bottom: 1px solid #eef2f7; margin-bottom: 16px; }
+.a4-preview-card h2 { font-weight: 800; }
+.a4-sheet-wrap { width: min(100%, 340px); }
+.a4-sheet { border-radius: 4px; }
+.a4-empty strong { font-weight: 700; }
+.sticker-summary { margin-top: 16px; }
+.sticker-summary span, .sticker-summary strong { padding: 10px 6px; border-radius: 10px; font-weight: 700; }
+.sticker-page-materials { margin-top: 14px; }
+.sticker-page-materials__row { border-radius: 10px; background: #f8fafc; }
+.sticker-warning { border: 1px solid #fed7aa; border-radius: 10px; font-weight: 700; }
+.preview-actions { margin-top: 16px; }
+.primary-action, .secondary-action { min-height: 46px; border-radius: 10px; font-weight: 800; transition: background-color .18s ease, transform .18s ease; }
+.primary-action:hover { background: var(--store-primary-hover); }
+.secondary-action:hover { background: #e2e8f0; }
+.page-switcher strong { min-width: 44px; text-align: center; font-weight: 800; }
+
+/* Breadcrumb: same as the hoodies / mugs / t-shirts pages (no underline, muted links, bold current page) */
+.stickers-page .catalog-topline { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 0 8px; }
+.catalog-breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; color: var(--store-muted, #64748b); font-size: .85rem; }
+.catalog-breadcrumb a,
+.catalog-breadcrumb [aria-current="page"] { display: inline-flex; align-items: center; padding: 3px 7px; color: inherit; border-radius: 7px; text-decoration: none; transition: color .18s ease, background-color .18s ease, transform .18s ease; }
+.catalog-breadcrumb a:hover,
+.catalog-breadcrumb a:focus-visible { color: var(--store-primary); background: var(--store-primary-soft); transform: translateY(-2px); }
+.catalog-breadcrumb [aria-current="page"] { color: var(--store-navy, #0f172a); font-weight: 700; cursor: default; }
+
+/* Sticker on the sheet: the picture must fit inside its dashed box. Without this a tall picture overflowed below the box. */
+.a4-sticker { overflow: hidden; box-sizing: border-box; }
+.a4-sticker img { position: absolute; inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); object-fit: contain; }
+
+/* The hint "pick a sticker" must disappear once a sticker is on the sheet: display:grid above was overriding the hidden attribute. */
+.a4-empty[hidden] { display: none; }
+
+/* The dashed guide follows the real print margins from the admin settings (5% is only the fallback). */
+.a4-sheet::before { inset: var(--m-top, 5%) var(--m-right, 5%) var(--m-bottom, 5%) var(--m-left, 5%); }
+
+/* ===== Paper choice per sheet ===== */
+.sticker-page-materials { gap: 10px; margin-top: 16px; }
+.sticker-page-materials:empty { display: none; }
+.page-material-row { display: grid; gap: 8px; padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; }
+.page-material-row strong { display: flex; align-items: center; gap: 8px; color: #0f172a; font-weight: 800; }
+.page-material-row strong i { color: var(--store-primary); }
+.page-material-hint { color: #64748b; font-weight: 600; font-size: .85em; margin-top: -4px; }
+.page-material-row select { width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid #dbe2ea; border-radius: 10px; background-color: #fff; color: #0f172a; font-weight: 700; }
+.page-material-row select:focus { outline: 0; border-color: var(--store-primary); }
+.page-material-row label { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid #dbe2ea; border-radius: 10px; background: #fff; color: #334155; font-weight: 700; cursor: pointer; }
+.page-material-row label input { width: 18px; height: 18px; accent-color: var(--store-primary); }
+
+/* Summary tiles, warning and actions */
+.sticker-summary span, .sticker-summary strong { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 52px; }
+.sticker-summary b { font-weight: 800; }
+.sticker-warning { display: flex; align-items: center; gap: 10px; padding: 12px 14px; line-height: 1.6; }
+.sticker-warning::before { content: "!"; flex: 0 0 auto; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #fb923c; color: #fff; font-weight: 800; }
+.preview-actions { display: flex; gap: 10px; }
+.primary-action { box-shadow: 0 8px 18px rgb(22 119 255 / 24%); }
+.primary-action:hover { transform: translateY(-1px); }
+.secondary-action { padding-inline: 20px; }

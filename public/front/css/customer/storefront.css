@@ -73,18 +73,37 @@ body.storefront-page {
   background: var(--pal-page-bg);
   color: var(--store-navy);
   font-family: "Cairo", sans-serif;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: #b6c4d6 transparent;
 }
 
+/* Page scrollbar: slim and rounded, shown on every storefront page whenever the page scrolls. */
 html:has(body.storefront-page) {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: #b6c4d6 transparent;
 }
 
 body.storefront-page::-webkit-scrollbar,
 html:has(body.storefront-page)::-webkit-scrollbar {
-  display: none;
+  width: 10px;
+  height: 10px;
+}
+
+body.storefront-page::-webkit-scrollbar-track,
+html:has(body.storefront-page)::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body.storefront-page::-webkit-scrollbar-thumb,
+html:has(body.storefront-page)::-webkit-scrollbar-thumb {
+  background: #b6c4d6;
+  border: 2px solid #f6f8fb;
+  border-radius: 999px;
+}
+
+body.storefront-page::-webkit-scrollbar-thumb:hover,
+html:has(body.storefront-page)::-webkit-scrollbar-thumb:hover {
+  background: #8fa3bb;
 }
 
 body.storefront-page::before {
