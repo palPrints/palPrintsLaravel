@@ -439,6 +439,21 @@
     const root = elements.coordinateSystem.getBoundingClientRect(), zone = elements.printZone.getBoundingClientRect(), scale = app.stageScale || 1;
     return { left: (zone.left - root.left) / scale, top: (zone.top - root.top) / scale, width: zone.width / scale, height: zone.height / scale };
   }
+  // Where a new element goes: the middle of the print area, unless something is already there — then the nearest free
+  // spot below or above it inside the area, so a second text box never lands on top of the first. When the area is full,
+  // each new one steps a little to the side so it still shows apart. Positions are centres (objects use origin center).
+  function freeSpot(width, height) {
+    const zone = getZoneRect(), centerX = zone.left + zone.width / 2, centerY = zone.top + zone.height / 2, gap = 8;
+    const boxes = app.canvas.getObjects().map(object => ({ x: object.left, y: object.top, w: object.getScaledWidth(), h: object.getScaledHeight() }));
+    const free = y => boxes.every(box => Math.abs(box.x - centerX) * 2 >= box.w + width || Math.abs(box.y - y) * 2 >= box.h + height + gap);
+    const step = height + gap, room = Math.max(0, (zone.height - height) / 2);
+    for (let offset = 0; offset <= room; offset += step) {
+      if (free(centerY + offset)) return { left: centerX, top: centerY + offset };
+      if (offset > 0 && free(centerY - offset)) return { left: centerX, top: centerY - offset };
+    }
+    const shift = ((boxes.length % 5) + 1) * 14;
+    return { left: centerX + shift, top: centerY + shift };
+  }
   function updatePrintZoneFeedback() {
     if (!app.canvas || !app.geometryReady) return;
     const zone = getZoneRect(), tolerance = 0.75;
@@ -922,7 +937,7 @@
       asset.sourceType = "raster"; commitDesign();
     }
     const scale = Math.min((zone.width * 0.55) / image.width, (zone.height * 0.55) / image.height);
-    configureObject(image, { id: uid("object"), kind: "image" }); image.set({ left: zone.left + zone.width / 2, top: zone.top + zone.height / 2, scaleX: scale, scaleY: scale, assetId: asset.assetId });
+    configureObject(image, { id: uid("object"), kind: "image" }); image.set({ ...freeSpot(image.width * scale, image.height * scale), scaleX: scale, scaleY: scale, assetId: asset.assetId });
     app.canvas.add(image); app.canvas.setActiveObject(image); image.setCoords(); app.canvas.requestRenderAll(); scheduleCommit();
     if (app.activeTool !== "upload") setActiveTool("upload");
   }
@@ -1037,6 +1052,7 @@
       const text = configureObject(new fabric.Textbox(value, { left: zone.left + zone.width / 2, top: zone.top + zone.height / 2, width: zone.width * 0.62,
         fontSize: Math.max(20, Math.min(44, zone.height * 0.13)), fontFamily: "Cairo", fill: "#0b1f3a", textAlign: "center", lineHeight: 1.2,
         direction: /[\u0600-\u06ff]/.test(value) ? "rtl" : "ltr" }), { id: uid("object"), kind: "text" });
+      text.set(freeSpot(text.getScaledWidth(), text.getScaledHeight()));
       app.canvas.add(text); app.canvas.setActiveObject(text); app.canvas.requestRenderAll(); scheduleCommit(); renderTextPanel();
     });
     form.querySelector('[data-prop="fontSize"]').addEventListener("change", event => applyTextProperty("fontSize", Number(event.target.value)));
@@ -1065,7 +1081,7 @@
       if (!image.width || !image.height) throw new Error("Empty graphic");
       const zone = getZoneRect();
       const scale = Math.min((zone.width * 0.45) / image.width, (zone.height * 0.55) / image.height);
-      image.set({ left: zone.left + zone.width / 2, top: zone.top + zone.height / 2, scaleX: scale, scaleY: scale,
+      image.set({ ...freeSpot(image.width * scale, image.height * scale), scaleX: scale, scaleY: scale,
         graphicId: record.id });
       if (record.recolorable) recolorGraphic(image, record.defaultColor);
       configureObject(image, model); app.canvas.add(image); app.canvas.setActiveObject(image); image.setCoords();
