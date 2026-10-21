@@ -7,6 +7,9 @@ use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Product;
 use App\Support\CatalogProductData;
+use App\Support\PaperBindings;
+use App\Support\PaperPrices;
+use App\Support\PaperTypes;
 use App\Support\ProductVariants;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,6 +40,8 @@ class ProductController extends Controller
 
         return view('admin.products', [
             'products' => $products,
+            'paperTypes' => PaperTypes::all(),
+            'paperBindings' => PaperBindings::all(),
             'categories' => Category::where('is_active', true)->orderBy('id')->get(['id', 'name', 'slug'])
                 ->map(fn (Category $category) => [
                     'id' => $category->id,
@@ -48,11 +53,21 @@ class ProductController extends Controller
     public function store(Request $request): JsonResponse
     {
         $options = $this->validatedOptions($request, true);
+        $paperTypes = $this->validatedPaperTypes($request, (string) $request->input('code'));
+        $paperBindings = $this->validatedPaperBindings($request, (string) $request->input('code'));
         $data = $this->validated($request); // stores the image, so only after everything else is valid
 
-        $product = DB::transaction(function () use ($data, $options) {
+        $product = DB::transaction(function () use ($data, $options, $paperTypes, $paperBindings) {
             $product = Product::create($data);
             ProductVariants::sync($product, $options['colors'], $options['sizes']);
+
+            if ($paperTypes !== null) {
+                PaperTypes::save($paperTypes);
+            }
+
+            if ($paperBindings !== null) {
+                PaperBindings::save($paperBindings);
+            }
 
             return $product;
         });
@@ -65,14 +80,24 @@ class ProductController extends Controller
     public function update(Request $request, Product $product): JsonResponse
     {
         $options = $this->validatedOptions($request, false);
+        $paperTypes = $this->validatedPaperTypes($request, (string) $request->input('code', $product->code));
+        $paperBindings = $this->validatedPaperBindings($request, (string) $request->input('code', $product->code));
         $data = $this->validated($request, $product); // stores the image, so only after everything else is valid
         $oldImage = $product->image;
 
-        DB::transaction(function () use ($product, $data, $options) {
+        DB::transaction(function () use ($product, $data, $options, $paperTypes, $paperBindings) {
             $product->update($data);
 
             if ($options) {
                 ProductVariants::sync($product, $options['colors'], $options['sizes']);
+            }
+
+            if ($paperTypes !== null) {
+                PaperTypes::save($paperTypes);
+            }
+
+            if ($paperBindings !== null) {
+                PaperBindings::save($paperBindings);
             }
         });
 
@@ -233,6 +258,82 @@ class ProductController extends Controller
             ])->all(),
             'sizes' => $sizes->all(),
         ];
+    }
+
+    /**
+     * The paper types sent with the paper product (name, short hint, on/off). Only the paper printing product has them; the admin
+     * keeps the list here and each print shop chooses which of them it sells and writes the prices (see PaperTypes).
+     *
+     * @return array<int, array{key: string, label: string, note: string, active: bool}>|null
+     */
+    private function validatedPaperTypes(Request $request, string $code): ?array
+    {
+        if (strtoupper($code) !== PaperPrices::PRODUCT || ! $request->has('paper_types')) {
+            return null;
+        }
+
+        $types = json_decode((string) $request->input('paper_types'), true);
+        $types = is_array($types) ? array_values($types) : [];
+
+        validator(['paper_types' => $types], [
+            'paper_types' => ['required', 'array', 'min:1', 'max:'.PaperTypes::MAX],
+            'paper_types.*.key' => ['nullable', 'string', 'max:12'],
+            'paper_types.*.label' => ['required', 'string', 'max:60'],
+            'paper_types.*.note' => ['nullable', 'string', 'max:60'],
+            'paper_types.*.active' => ['nullable', 'boolean'],
+        ], [
+            'paper_types.required' => 'أضف نوع ورق واحدًا على الأقل.',
+            'paper_types.min' => 'أضف نوع ورق واحدًا على الأقل.',
+            'paper_types.max' => 'الحد الأعلى '.PaperTypes::MAX.' نوعًا من الورق.',
+            'paper_types.*.label.required' => 'اكتب اسم كل نوع ورق.',
+            'paper_types.*.label.max' => 'اسم نوع الورق لا يزيد على 60 حرفًا.',
+            'paper_types.*.note.max' => 'الوصف القصير لا يزيد على 60 حرفًا.',
+        ])->validate();
+
+        $names = collect($types)->map(fn ($type) => mb_strtolower(trim($type['label'])));
+        if ($names->count() !== $names->unique()->count()) {
+            throw ValidationException::withMessages(['paper_types' => 'لا يمكن تكرار اسم نوع الورق.']);
+        }
+
+        if (! collect($types)->contains(fn ($type) => filter_var($type['active'] ?? true, FILTER_VALIDATE_BOOLEAN))) {
+            throw ValidationException::withMessages(['paper_types' => 'يجب أن يبقى نوع ورق واحد مفعّلًا على الأقل.']);
+        }
+
+        return $types;
+    }
+
+    /**
+     * The bindings sent with the paper product (name and on/off). Same idea as the paper types: the admin keeps the list, a print
+     * shop chooses which bindings it offers and writes the price (see PaperBindings). "No binding" is never in the list.
+     *
+     * @return array<int, array{key: string, label: string, active: bool}>|null
+     */
+    private function validatedPaperBindings(Request $request, string $code): ?array
+    {
+        if (strtoupper($code) !== PaperPrices::PRODUCT || ! $request->has('paper_bindings')) {
+            return null;
+        }
+
+        $bindings = json_decode((string) $request->input('paper_bindings'), true);
+        $bindings = is_array($bindings) ? array_values($bindings) : [];
+
+        validator(['paper_bindings' => $bindings], [
+            'paper_bindings' => ['array', 'max:'.PaperBindings::MAX],
+            'paper_bindings.*.key' => ['nullable', 'string', 'max:12'],
+            'paper_bindings.*.label' => ['required', 'string', 'max:60'],
+            'paper_bindings.*.active' => ['nullable', 'boolean'],
+        ], [
+            'paper_bindings.max' => 'الحد الأعلى '.PaperBindings::MAX.' نوعًا من التغليف.',
+            'paper_bindings.*.label.required' => 'اكتب اسم كل نوع تغليف.',
+            'paper_bindings.*.label.max' => 'اسم نوع التغليف لا يزيد على 60 حرفًا.',
+        ])->validate();
+
+        $names = collect($bindings)->map(fn ($binding) => mb_strtolower(trim($binding['label'])));
+        if ($names->count() !== $names->unique()->count()) {
+            throw ValidationException::withMessages(['paper_bindings' => 'لا يمكن تكرار اسم نوع التغليف.']);
+        }
+
+        return $bindings;
     }
 
     private function imageUrl(?string $path): ?string

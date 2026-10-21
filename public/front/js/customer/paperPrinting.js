@@ -61,8 +61,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const bindingIcons = { spiral: "bi-journal", clearCover: "bi-file-earmark", glue: "bi-book", sideStaple: "bi-distribute-vertical", cornerStaple: "bi-paperclip", lamination: "bi-layers" };
   /* Only the bindings that at least one print shop sells, each with the lowest price among them (the price of the job itself
      comes from the server); "no binding" is always free. */
-  const bindings = (dbPaper.bindings || []).filter(function (binding) { return bindingIcons[binding.id]; }).map(function (binding) {
-    return { id: binding.id, icon: bindingIcons[binding.id], price: Number(binding.from) || 0 };
+  /* A binding the admin added later has no picture of its own: it gets a general one. */
+  const bindings = (dbPaper.bindings || []).map(function (binding) {
+    return { id: binding.id, icon: bindingIcons[binding.id] || "bi-journal-bookmark", price: Number(binding.from) || 0 };
   }).concat([{ id: "none", icon: "bi-slash-circle", price: 0 }]);
 
   const $ = function (selector, scope) { return (scope || document).querySelector(selector); };
@@ -73,8 +74,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let toastTimer = null;
 
+  // The paper names the admin keeps (a type added later has no entry in the translation list).
+  const paperNames = {};
+  ((dbPaper.options && dbPaper.options.paperTypes) || []).forEach(function (type) { paperNames[type.key] = type.label; });
+  (dbPaper.bindings || []).forEach(function (binding) { if (binding.label) paperNames[binding.id] = binding.label; });
+
   function t(key, vars) {
-    let value = Core.translate(key) || key;
+    let value = paperNames[key] || Core.translate(key) || key;
     Object.keys(vars || {}).forEach(function (name) {
       value = value.replace("{" + name + "}", vars[name]);
     });

@@ -64,7 +64,7 @@ class OrderLineDocuments
             ->filter(fn ($value, $key) => isset(self::OPTION_LABELS[$key]) && (is_scalar($value) || (is_array($value) && collect($value)->every(fn ($item) => is_scalar($item)))) && $value !== '' && $value !== [])
             ->map(fn ($value, $key) => [
                 'label' => self::OPTION_LABELS[$key],
-                'value' => collect((array) $value)->map(fn ($v) => self::OPTION_VALUES[(string) $v] ?? (string) $v)->implode('، '),
+                'value' => collect((array) $value)->map(fn ($v) => \App\Support\PaperTypes::labels()[(string) $v] ?? self::OPTION_VALUES[(string) $v] ?? (string) $v)->implode('، '),
             ])
             ->values();
 

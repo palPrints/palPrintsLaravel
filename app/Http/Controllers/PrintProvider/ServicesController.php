@@ -13,7 +13,9 @@ use App\Models\PrintProviderBranch;
 use App\Models\Product;
 use App\Models\Variant;
 use App\Support\CatalogProductData;
+use App\Support\PaperBindings;
 use App\Support\PaperPrices;
+use App\Support\PaperTypes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -236,7 +238,7 @@ class ServicesController extends Controller
 
         $rules = [
             'paper_types' => ['required', 'array', 'min:1'],
-            'paper_types.*' => ['string', 'in:'.implode(',', array_keys(PaperPrices::TYPES))],
+            'paper_types.*' => ['string', 'in:'.implode(',', array_keys(PaperTypes::labels()))],
             'paper_prices' => ['nullable', 'array'],
             'paper_ink' => ['nullable', 'array'],
             'paper_bindings' => ['nullable', 'array'],
@@ -257,15 +259,15 @@ class ServicesController extends Controller
         };
 
         $chosenSizes = array_values(array_intersect((array) $request->input('sizes'), $sizeIds));
-        foreach (array_intersect((array) $request->input('paper_types'), array_keys(PaperPrices::TYPES)) as $type) {
+        foreach (array_intersect((array) $request->input('paper_types'), array_keys(PaperTypes::labels())) as $type) {
             foreach (array_keys(PaperPrices::INK) as $mode) {
                 if (is_array($request->input("paper_ink.$type.$mode"))) {
-                    $pack("paper_ink.$type.$mode", PaperPrices::TYPES[$type].' — طباعة '.PaperPrices::INK[$mode]);
+                    $pack("paper_ink.$type.$mode", PaperTypes::labels()[$type].' — طباعة '.PaperPrices::INK[$mode]);
                 }
             }
         }
 
-        foreach (PaperPrices::BINDINGS as $binding => $label) {
+        foreach (PaperBindings::labels() as $binding => $label) {
             $rules['paper_bindings.'.$binding] = ['nullable', 'numeric', 'min:0', 'max:1000', 'decimal:0,2'];
             $messages['paper_bindings.'.$binding.'.numeric'] = $messages['paper_bindings.'.$binding.'.min'] = $messages['paper_bindings.'.$binding.'.max'] = $messages['paper_bindings.'.$binding.'.decimal']
                 = 'سعر «'.$label.'» يجب أن يكون رقمًا بين 0 و1000 بمنزلتين عشريتين كحد أقصى.';
@@ -280,7 +282,7 @@ class ServicesController extends Controller
         foreach ($data['paper_types'] as $type) {
             if (empty($data['paper_ink'][$type])) {
                 throw ValidationException::withMessages([
-                    'paper_ink.'.$type => 'فعّل طباعة أبيض وأسود أو ملوّن لـ «'.PaperPrices::TYPES[$type].'» واكتب سعرها، أو أطفئ هذا النوع من الورق.',
+                    'paper_ink.'.$type => 'فعّل طباعة أبيض وأسود أو ملوّن لـ «'.PaperTypes::labels()[$type].'» واكتب سعرها، أو أطفئ هذا النوع من الورق.',
                 ]);
             }
         }

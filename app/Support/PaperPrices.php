@@ -23,17 +23,8 @@ class PaperPrices
 {
     public const PRODUCT = 'PAPER-PRINT';
 
-    /** The paper types the platform sells. */
-    public const TYPES = ['standard' => 'ورق عادي', 'thick' => 'ورق سميك', 'coated' => 'ورق مغلّف'];
-
     /** The print colours. */
     public const INK = ['bw' => 'أبيض وأسود', 'color' => 'ملوّن'];
-
-    /** The bindings the platform sells. */
-    public const BINDINGS = [
-        'spiral' => 'سلك حلزوني', 'clearCover' => 'غلاف شفاف', 'glue' => 'تجليد حراري',
-        'sideStaple' => 'تدبيس جانبي', 'cornerStaple' => 'تدبيس زاوية', 'lamination' => 'تغليف حراري شفاف',
-    ];
 
     /**
      * What the products page shows: every paper type, colour and binding, on or off, with the shop's current prices.
@@ -51,17 +42,21 @@ class PaperPrices
             ? ['count' => max(1, (int) $rule->min_quantity), 'amount' => (float) $rule->amount, 'since' => $rule->valid_from?->diffForHumans()]
             : null;
 
-        $types = collect(self::TYPES)->map(function (string $label, string $type) use ($sizeCodes, $anchors, $current, $pack) {
+        // The admin's list: what is on offer now, plus any hidden type this shop still sells (so it can see and switch it off).
+        $active = PaperTypes::active();
+        $types = collect(PaperTypes::labels())->map(function (string $label, string $type) use ($current, $pack) {
             $ink = collect(self::INK)->map(fn (string $mode, string $key) => $pack($current->get(self::key('paper_ink_'.$type.'_'.$key, null))))->all();
 
             return ['key' => $type, 'label' => $label, 'enabled' => collect($ink)->filter()->isNotEmpty(), 'ink' => $ink];
-        })->values()->all();
+        })->filter(fn (array $type) => isset($active[$type['key']]) || $type['enabled'])->values()->all();
 
-        $bindings = collect(self::BINDINGS)->map(function (string $label, string $id) use ($current, $pack) {
+        // The admin's list again: what is on offer now, plus any hidden binding this shop still sells (so it can see and switch it off).
+        $activeBindings = PaperBindings::active();
+        $bindings = collect(PaperBindings::labels())->map(function (string $label, string $id) use ($current, $pack) {
             $price = $pack($current->get(self::key('paper_binding_'.$id, null)));
 
             return ['key' => $id, 'label' => $label, 'enabled' => $price !== null, 'price' => $price];
-        })->values()->all();
+        })->filter(fn (array $binding) => isset($activeBindings[$binding['key']]) || $binding['enabled'])->values()->all();
 
         return ['types' => $types, 'bindings' => $bindings];
     }
@@ -79,6 +74,7 @@ class PaperPrices
     {
         $anchors = self::anchors($offering, $sizeByVariant);
         $current = self::current($offering);
+        $active = PaperTypes::active();
         $now = now();
 
         $write = function (string $type, ?int $variantId, ?array $pack) use ($offering, $current, $now) {
@@ -108,8 +104,10 @@ class PaperPrices
 
         $packOf = fn (?array $entry) => $entry === null ? null : ['count' => max(1, (int) $entry['count']), 'price' => round((float) $entry['price'], 2)];
 
-        foreach (array_keys(self::TYPES) as $type) {
-            $on = in_array($type, $paper['types'], true);
+        foreach (array_keys(PaperTypes::labels()) as $type) {
+            // A type the admin has hidden can no longer be switched on; a shop that already sells it may keep or drop it.
+            $sold = collect(self::INK)->keys()->contains(fn ($mode) => $current->has(self::key('paper_ink_'.$type.'_'.$mode, null)));
+            $on = in_array($type, $paper['types'], true) && (isset($active[$type]) || $sold);
 
             // The blank paper is no longer priced: close any sheet price saved earlier.
             foreach ($anchors as $anchor) {
@@ -121,8 +119,15 @@ class PaperPrices
             }
         }
 
-        foreach (array_keys(self::BINDINGS) as $binding) {
+        $activeBindings = PaperBindings::active();
+        foreach (array_keys(PaperBindings::labels()) as $binding) {
             $price = $paper['bindings'][$binding] ?? null;
+
+            // A binding the admin has hidden can no longer be switched on; a shop that already sells it may keep or drop it.
+            if ($price !== null && ! isset($activeBindings[$binding]) && ! $current->has(self::key('paper_binding_'.$binding, null))) {
+                $price = null;
+            }
+
             $write('paper_binding_'.$binding, null, $price === null ? null : ['count' => 1, 'price' => round((float) $price, 2)]);
         }
     }
@@ -148,7 +153,7 @@ class PaperPrices
             $unit = (float) $rule->amount / max(1, (int) $rule->min_quantity);
             $type = $rule->pricing_type;
 
-            if (preg_match('/^paper_ink_([a-z]+)_([a-z]+)$/', $type, $match)) {
+            if (preg_match('/^paper_ink_([a-z0-9]+)_([a-z]+)$/', $type, $match)) {
                 $list['ink'][$match[1]][$match[2]] = $unit;
             } elseif (str_starts_with($type, 'paper_binding_')) {
                 $list['bindings'][substr($type, strlen('paper_binding_'))] = $unit;

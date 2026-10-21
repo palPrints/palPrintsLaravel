@@ -26,7 +26,7 @@ class PaperJobDetails
 
     private static function bindingLabel(?string $id): string
     {
-        return $id && $id !== 'none' ? (PaperPrices::BINDINGS[$id] ?? $id) : 'بدون تغليف';
+        return $id && $id !== 'none' ? (PaperBindings::labels()[$id] ?? $id) : 'بدون تغليف';
     }
 
     private static function separate(array $job): bool
@@ -96,7 +96,7 @@ class PaperJobDetails
 
             $rows = [
                 ['label' => 'الصفحات', 'value' => $pages],
-                ['label' => 'الورق', 'value' => implode(' • ', array_filter([strtoupper((string) ($file['size'] ?? '')), self::VALUES[$file['paper'] ?? ''] ?? PaperPrices::TYPES[$file['paper'] ?? ''] ?? '', PaperPrices::INK[$file['color'] ?? ''] ?? '']))],
+                ['label' => 'الورق', 'value' => implode(' • ', array_filter([strtoupper((string) ($file['size'] ?? '')), PaperTypes::labels()[$file['paper'] ?? ''] ?? self::VALUES[$file['paper'] ?? ''] ?? '', PaperPrices::INK[$file['color'] ?? ''] ?? '']))],
                 ['label' => 'الطباعة', 'value' => implode(' • ', $printing)],
             ];
 

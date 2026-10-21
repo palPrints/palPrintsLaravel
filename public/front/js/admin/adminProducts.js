@@ -215,6 +215,65 @@
       addColorRow().querySelector('input[type="text"]').focus();
     });
 
+    /* ---------- Paper types (only the paper printing product has them) ---------- */
+    const paperField = document.getElementById("paperTypesField");
+    const paperRows = document.getElementById("paperTypeRows");
+    let paperTypes = [];
+    try { paperTypes = JSON.parse(document.getElementById("paperTypesData").textContent || "[]"); } catch (error) { paperTypes = []; }
+
+    function escapeAttr(value) {
+      return String(value || "").replace(/[&<>"']/g, function (ch) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]; });
+    }
+
+    function isPaperProduct() {
+      return codeInput.value.trim().toUpperCase() === "PAPER-PRINT";
+    }
+
+    function syncPaperField() {
+      paperField.hidden = !isPaperProduct();
+      bindingsField.hidden = paperField.hidden;
+    }
+
+    /* A type that already exists keeps its key (it is what prices and orders point at); a new one gets its key from the server. */
+    function addPaperRow(type, container, withNote, placeholder) {
+      const row = document.createElement("div");
+      const active = !type || type.active !== false;
+      row.className = "paper-type-row" + (active ? "" : " is-off") + (withNote ? "" : " no-note");
+      row.dataset.key = type && type.key ? type.key : "";
+      row.innerHTML =
+        '<input class="pt-label" type="text" maxlength="60" placeholder="' + placeholder + '" aria-label="الاسم" value="' + escapeAttr(type && type.label) + '">' +
+        (withNote ? '<input class="pt-note" type="text" maxlength="60" placeholder="وصف قصير للزبون (اختياري)" aria-label="وصف قصير" value="' + escapeAttr(type && type.note) + '">' : "") +
+        '<label class="pt-switch"><input type="checkbox"' + (active ? " checked" : "") + '><span>' + (active ? "مفعّل" : "مخفي") + "</span></label>";
+      row.querySelector(".pt-switch input").addEventListener("change", function (event) {
+        row.classList.toggle("is-off", !event.target.checked);
+        event.target.nextElementSibling.textContent = event.target.checked ? "مفعّل" : "مخفي";
+      });
+      container.appendChild(row);
+      return row;
+    }
+
+    function collectPaperRows(container) {
+      return Array.from(container.children).map(function (row) {
+        const note = row.querySelector(".pt-note");
+        return { key: row.dataset.key || "", label: row.querySelector(".pt-label").value.trim(), note: note ? note.value.trim() : "", active: row.querySelector(".pt-switch input").checked };
+      });
+    }
+
+    const paperTypePlaceholder = "اسم النوع، مثل: كرتون 200 جم";
+    const bindingPlaceholder = "اسم نوع التغليف، مثل: تغليف بلاستيك";
+    const bindingsField = document.getElementById("paperBindingsField");
+    const bindingRows = document.getElementById("paperBindingRows");
+    let paperBindings = [];
+    try { paperBindings = JSON.parse(document.getElementById("paperBindingsData").textContent || "[]"); } catch (error) { paperBindings = []; }
+
+    document.getElementById("addPaperTypeButton").addEventListener("click", function () {
+      addPaperRow(null, paperRows, true, paperTypePlaceholder).querySelector(".pt-label").focus();
+    });
+    document.getElementById("addPaperBindingButton").addEventListener("click", function () {
+      addPaperRow(null, bindingRows, false, bindingPlaceholder).querySelector(".pt-label").focus();
+    });
+    codeInput.addEventListener("input", syncPaperField);
+
     /* ---------- Add / edit dialog ---------- */
     function openDialog(card) {
       editingCard = card || null;
@@ -236,6 +295,12 @@
       }
 
       if (!colorRows.children.length) addColorRow();
+
+      paperRows.replaceChildren();
+      bindingRows.replaceChildren();
+      paperTypes.forEach(function (type) { addPaperRow(type, paperRows, true, paperTypePlaceholder); });
+      paperBindings.forEach(function (binding) { addPaperRow(binding, bindingRows, false, bindingPlaceholder); });
+      syncPaperField();
 
       dialog.showModal();
       nameInput.focus();
@@ -273,6 +338,21 @@
 
       const data = new FormData(form);
       data.append("colors", JSON.stringify(colors));
+
+      if (!paperField.hidden) {
+        const types = collectPaperRows(paperRows);
+        if (types.some(function (type) { return !type.label; })) {
+          toast("اكتب اسم كل نوع ورق.");
+          return;
+        }
+        const bindings = collectPaperRows(bindingRows);
+        if (bindings.some(function (binding) { return !binding.label; })) {
+          toast("اكتب اسم كل نوع تغليف.");
+          return;
+        }
+        data.append("paper_types", JSON.stringify(types));
+        data.append("paper_bindings", JSON.stringify(bindings));
+      }
       const submit = form.querySelector('[type="submit"]');
       let url = form.dataset.storeUrl;
 

@@ -345,7 +345,7 @@ class OrderController extends Controller
         return $order->items->map(function ($item) {
             $details = collect($item->selected_options ?? [])
                 ->filter(fn ($value, $key) => isset(self::OPTION_LABELS[$key]) && is_scalar($value) && $value !== '')
-                ->map(fn ($value, $key) => self::OPTION_LABELS[$key].': '.(self::OPTION_VALUES[(string) $value] ?? $value))
+                ->map(fn ($value, $key) => self::OPTION_LABELS[$key].': '.(\App\Support\PaperTypes::labels()[(string) $value] ?? self::OPTION_VALUES[(string) $value] ?? $value))
                 ->values();
 
             $areas = collect($item->selected_options ?? [])->get('print_areas');

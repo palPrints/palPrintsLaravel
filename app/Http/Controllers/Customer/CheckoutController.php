@@ -169,6 +169,8 @@ class CheckoutController extends Controller
             'separate' => 'فصل الملفات',
             'none' => 'بدون تغليف',
         ];
+        // The paper names the admin keeps (a new type has no entry above).
+        $values = array_merge($values, \App\Support\PaperTypes::labels());
 
         return collect($labels)
             ->map(function (string $label, string $key) use ($options, $values) {
