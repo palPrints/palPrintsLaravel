@@ -45,7 +45,7 @@
 
     <div class="printshop-toast" id="dashboardToast" role="status" aria-live="polite" aria-atomic="true"></div>
 
-    <script src="{{ asset('front/js/printProvider/dashboard.js') }}"></script>
+    <script src="{{ asset('front/js/printProvider/dashboard.js') }}?v={{ filemtime(public_path('front/js/printProvider/dashboard.js')) }}"></script>
     @include('partials.pp-alert')
     <script src="{{ asset('front/shared/table-pagination.js') }}?v={{ filemtime(public_path('front/shared/table-pagination.js')) }}"></script>
     @stack('scripts')

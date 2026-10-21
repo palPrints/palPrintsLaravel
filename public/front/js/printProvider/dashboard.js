@@ -19,8 +19,10 @@
     let toastTimer = 0;
 
     function setupContentMotion() {
+      // A toast inside the main area is not a section: "is-visible" is also what shows a toast, so revealing it would
+      // leave it on screen for good.
       const sections = Array.from(
-        document.querySelectorAll("#printshopDashboardMain > *")
+        document.querySelectorAll("#printshopDashboardMain > *:not(.printshop-toast)")
       );
 
       sections.forEach(function (section, index) {
