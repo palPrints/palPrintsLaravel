@@ -65,7 +65,8 @@ class CatalogController extends Controller
         return $this->productDesigns('MUG-CERAMIC', 'customer.mugs', 'front/assets/images/customer/cup.webp');
     }
 
-    public function stickers(\Illuminate\Http\Request $request, StickerSettingsService $settings): View
+    /** Ready stickers and the customer's own uploads, laid out together on A4 sheets. */
+    public function stickers(StickerSettingsService $settings): View
     {
         $view = $this->productDesigns('STICKER-CUSTOM', 'customer.stickers', 'front/assets/images/customer/icons8-sticker-48.png');
 
@@ -94,7 +95,6 @@ class CatalogController extends Controller
                 'login' => route('login'),
             ],
             'stickerUser' => ['authenticated' => auth()->check()],
-            'stickerUploadMode' => $request->string('mode')->toString() === 'upload',
         ]);
     }
 
