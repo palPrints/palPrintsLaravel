@@ -9,6 +9,37 @@
   padding-block: var(--sp-5) var(--sp-8);
 }
 
+/* ---------- Breadcrumb (design system: muted links, the current page in navy) ---------- */
+.stickers-page .catalog-topline {
+  padding-block-end: var(--sp-3);
+}
+
+.stickers-page .catalog-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--pp-text-placeholder);
+  font-size: .875rem;
+}
+
+.stickers-page .catalog-breadcrumb a {
+  color: var(--pp-text-muted);
+  text-decoration: none;
+  border-radius: var(--pp-radius-xs);
+  transition: color .18s ease;
+}
+
+.stickers-page .catalog-breadcrumb a:hover,
+.stickers-page .catalog-breadcrumb a:focus-visible {
+  color: var(--pp-primary);
+}
+
+.stickers-page .catalog-breadcrumb [aria-current="page"] {
+  color: var(--pp-text-strong);
+  font-weight: 700;
+}
+
 .stickers-workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
