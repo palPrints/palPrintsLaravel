@@ -1,0 +1,99 @@
+/* ============================================================
+   PalPrints Design System — tokens (v1.0, 8 Sep 2026)
+   The values of the design system reference (palprints-design-system.html), in one place for every page.
+   Tokens only: pages build their own components from these values. Component classes (.btn-brand,
+   .product-card…) are not defined here because several pages already use those names with their own styles.
+
+   Rules that go with the values:
+   - Blue (--pp-primary) for actions, links and the active state. One primary button per section.
+   - Navy for all text; no pure black anywhere.
+   - Orange (--pp-accent) only to draw attention (a badge, an alert), never a main button; orange text is
+     --pp-accent-text on --pp-accent-surface / --pp-accent-soft, never on white.
+   - Spacing in multiples of 4px (--sp-*); radius: --pp-radius-sm fields, --pp-radius buttons, --pp-radius-lg cards.
+   - Numbers, prices, dates: LTR inside Arabic (class .ltr).
+   ============================================================ */
+:root {
+  --font-ar: "Cairo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  --pp-blue-50:  #EFF6FF;
+  --pp-blue-100: #DAE9FF;
+  --pp-blue-200: #BED9FF;
+  --pp-blue-300: #91BFFF;
+  --pp-blue-400: #5B9FFF;
+  --pp-blue-500: #3287FF;
+  --pp-blue-600: #1677FF;
+  --pp-blue-700: #0A68EB;
+  --pp-blue-800: #0F58BE;
+  --pp-blue-rgb: 22, 119, 255;
+
+  --pp-navy-50:  #F7FAFD;
+  --pp-navy-100: #EFF4FB;
+  --pp-navy-200: #DFE8F3;
+  --pp-navy-300: #C6D4E6;
+  --pp-navy-400: #8CA2C0;
+  --pp-navy-500: #5B7394;
+  --pp-navy-600: #405470;
+  --pp-navy-700: #2C405C;
+  --pp-navy-800: #182941;
+  --pp-navy-900: #0B1F3A;
+  --pp-navy-rgb: 11, 31, 58;
+
+  --pp-orange-50:  #FFF6ED;
+  --pp-orange-100: #FFE9D5;
+  --pp-orange-400: #FF9738;
+  --pp-orange-500: #FF7A00;
+  --pp-orange-600: #F07606;
+  --pp-orange-700: #B25500;
+  --pp-orange-rgb: 255, 122, 0;
+
+  --pp-success: #16A34A;
+  --pp-warning: #D97706;
+  --pp-danger:  #DC2626;
+  --pp-info:    #1677FF;
+
+  --pp-primary:        var(--pp-blue-600);
+  --pp-primary-hover:  var(--pp-blue-700);
+  --pp-primary-active: var(--pp-blue-800);
+  --pp-primary-soft:   var(--pp-blue-50);
+  --pp-primary-border: var(--pp-blue-200);
+  --pp-on-primary:     #FFFFFF;
+
+  --pp-accent:         var(--pp-orange-500);
+  --pp-accent-soft:    var(--pp-orange-100);
+  --pp-accent-surface: var(--pp-orange-50);
+  --pp-accent-text:    var(--pp-orange-700);
+
+  --pp-bg:             #FFFFFF;
+  --pp-surface:        #FFFFFF;
+  --pp-surface-muted:  var(--pp-navy-50);
+  --pp-border:         var(--pp-navy-200);
+
+  --pp-text-strong:      var(--pp-navy-900);
+  --pp-text-body:        var(--pp-navy-700);
+  --pp-text-muted:       var(--pp-navy-500);
+  --pp-text-placeholder: var(--pp-navy-400);
+
+  --pp-focus-ring: var(--pp-blue-500);
+
+  --pp-radius-xs:   6px;
+  --pp-radius-sm:   8px;
+  --pp-radius:      12px;
+  --pp-radius-lg:   16px;
+  --pp-radius-pill: 999px;
+
+  --pp-shadow-sm:      0 1px 2px rgba(var(--pp-navy-rgb), .06);
+  --pp-shadow:         0 4px 14px rgba(var(--pp-navy-rgb), .08);
+  --pp-shadow-lg:      0 12px 28px rgba(var(--pp-navy-rgb), .12);
+  --pp-shadow-primary: 0 6px 16px rgba(var(--pp-blue-rgb), .24);
+
+  --pp-gradient-brand: linear-gradient(to left, var(--pp-navy-900) 0%, var(--pp-blue-600) 65%);
+
+  /* Spacing scale, 4px base. */
+  --sp-1: .25rem; --sp-2: .5rem; --sp-3: .75rem; --sp-4: 1rem;
+  --sp-5: 1.5rem; --sp-6: 2rem; --sp-7: 2.5rem; --sp-8: 3rem;
+  --sp-10: 4rem; --sp-12: 5rem;
+}
+
+/* Numbers, prices, hex values and dates read left to right inside Arabic text. */
+.ltr { direction: ltr; unicode-bidi: isolate; }

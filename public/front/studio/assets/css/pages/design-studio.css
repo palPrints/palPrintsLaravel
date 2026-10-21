@@ -1861,6 +1861,17 @@ body.sidebar-collapsed .site-content {
   background: var(--studio-primary-soft);
 }
 
+/* The heading over the fonts designers uploaded. */
+.studio-font-group {
+  display: block;
+  margin: 6px 4px 2px;
+  padding: 6px 5px 3px;
+  border-top: 1px solid var(--studio-border);
+  color: var(--studio-muted, #6f84a2);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .studio-bottom-actions {
   direction: ltr;
   display: flex;

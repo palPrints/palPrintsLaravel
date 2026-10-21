@@ -31,3 +31,17 @@ test('the store page offers upload-your-design, which leads to choosing the prod
 test('a visitor who is not signed in can open the catalog pages too', function (string $routeName) {
     $this->get(route($routeName))->assertOk();
 })->with(['customer.store', 'customer.tshirts', 'customer.hoodies', 'customer.mugs', 'customer.stickers']);
+
+test('the customer picks a product for their own design among the T-shirt, the hoodie and the mug, not stickers or paper', function () {
+    $category = \App\Models\Category::firstOrCreate(['slug' => 'products'], ['name' => 'منتجات']);
+    foreach (['PAPER-PRINT', 'STICKER-CUSTOM'] as $code) {
+        \App\Models\Product::firstOrCreate(['code' => $code], ['category_id' => $category->id, 'name' => $code, 'is_active' => true])->update(['is_active' => true]);
+    }
+    $id = fn (string $code) => (string) \App\Models\Product::where('code', $code)->value('id');
+
+    $listed = collect($this->get(route('customer.chooseProduct'))->assertOk()->viewData('designerCatalog')['products'])->pluck('id');
+
+    expect($listed)->toContain($id('TSHIRT-CLASSIC'), $id('HOODIE-PREMIUM'), $id('MUG-CERAMIC'))
+        ->not->toContain($id('PAPER-PRINT'))
+        ->not->toContain($id('STICKER-CUSTOM'));
+});

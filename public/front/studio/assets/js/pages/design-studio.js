@@ -997,8 +997,11 @@
     const details = document.createElement("details"); details.className = "studio-font-picker";
     const summary = document.createElement("summary"); summary.textContent = selectedFamily; summary.style.fontFamily = `"${selectedFamily}", sans-serif`;
     const list = document.createElement("div"); list.className = "studio-font-list";
-    const families = [...FONT_FAMILIES, ...[...app.customFonts.values()].map(font => font.family)];
+    // The studio's own fonts, then the fonts designers uploaded (shown to customers too) under their own heading.
+    const designerFamilies = [...new Set([...app.customFonts.values()].map(font => font.family))].filter(family => !FONT_FAMILIES.includes(family));
+    const families = [...FONT_FAMILIES, ...designerFamilies];
     families.forEach(family => {
+      if (family === designerFamilies[0]) { const heading = document.createElement("span"); heading.className = "studio-font-group"; heading.textContent = "خطوط المصممين"; list.appendChild(heading); }
       const button = document.createElement("button"); button.type = "button"; button.textContent = family; button.dataset.font = family; button.style.fontFamily = `"${family}", sans-serif`;
       const custom = [...app.customFonts.values()].find(font => font.family === family);
       button.addEventListener("click", async () => { await loadFont(family, custom?.id); summary.textContent = family; summary.style.fontFamily = button.style.fontFamily; details.open = false; applyTextProperty("fontFamily", family); if (activeText()) { activeText().set("customFontId", custom?.id || null); scheduleCommit(); } }); list.appendChild(button);
@@ -1023,7 +1026,7 @@
       if (!("IntersectionObserver" in window)) { list.querySelectorAll("button").forEach(button => { void loadFont(button.dataset.font); }); return; }
       const observer = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) void loadFont(entry.target.dataset.font); }), { root: list });
       list.querySelectorAll("button").forEach(button => observer.observe(button));
-    }, { once: true }); details.append(summary, upload, list); return details;
+    }, { once: true }); details.append(summary); if (window.PALPRINTS_STUDIO_FONT_UPLOAD === true) details.append(upload); details.append(list); return details;
   }
   function renderTextPanel() {
     const selected = activeText(); elements.toolPanelContent.innerHTML = ""; elements.toolPanelContent.className = "studio-text-panel";
@@ -1039,7 +1042,8 @@
       <label class="studio-field"><span>ارتفاع السطر</span><input data-prop="lineHeight" type="number" min="0.7" max="3" step="0.1"></label>
       <label class="studio-field studio-field-wide"><span>الدوران</span><input data-prop="angle" type="range" min="-180" max="180" step="1"><output></output></label>`;
     const textarea = form.querySelector("textarea"), fontHost = form.querySelector("[data-font-picker]"); textarea.value = selected?.text || ""; fontHost.appendChild(fontPicker(selected?.fontFamily || "Cairo"));
-    const uploadLabel = document.createElement("label"); uploadLabel.className = "studio-font-upload studio-font-upload--visible"; uploadLabel.innerHTML = '<i class="bi bi-upload" aria-hidden="true"></i><span>رفع خط TTF / OTF</span><input type="file" accept=".ttf,.otf,font/ttf,font/otf" hidden>'; fontHost.parentElement.appendChild(uploadLabel);
+    // Uploading a font is for designers only (the page says so); a customer picks from the fonts already there.
+    const uploadLabel = document.createElement("label"); uploadLabel.className = "studio-font-upload studio-font-upload--visible"; uploadLabel.innerHTML = '<i class="bi bi-upload" aria-hidden="true"></i><span>رفع خط TTF / OTF</span><input type="file" accept=".ttf,.otf,font/ttf,font/otf" hidden>'; if (window.PALPRINTS_STUDIO_FONT_UPLOAD === true) fontHost.parentElement.appendChild(uploadLabel);
     uploadLabel.querySelector("input").addEventListener("change", event => { const file = event.target.files?.[0]; if (!file) return; const input = event.target; const data = new FormData(); data.append("font", file); fetch("/api/fonts", { method: "POST", headers: { Accept: "application/json", "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || "" }, credentials: "same-origin", body: data }).then(response => response.json().then(body => { if (!response.ok) throw new Error(Object.values(body.errors || {})[0]?.[0] || body.message || "تعذر رفع الخط."); return body.data; })).then(async font => { app.customFonts.set(Number(font.id), font); await loadFont(font.family, font.id); applyTextProperty("fontFamily", font.family); if (activeText()) { activeText().set("customFontId", font.id); scheduleCommit(); } renderTextPanel(); }).catch(error => window.PalPrintNotifications?.add?.(error.message, "exclamation-triangle")).finally(() => { input.value = ""; });
     });
     form.querySelector('[data-prop="fontSize"]').value = Math.round(selected?.fontSize || 36); form.querySelector('[data-prop="fill"]').value = typeof selected?.fill === "string" && selected.fill.startsWith("#") ? selected.fill : "#0b1f3a";
