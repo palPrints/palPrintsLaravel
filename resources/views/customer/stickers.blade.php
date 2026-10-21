@@ -37,14 +37,21 @@
                     <label><span>نوع القص</span><select id="stickerCutSelect"><option value="circle">قص دائري مجاني</option><option value="contour">خط قص حول التصميم</option></select></label>
                 </section>
 
-                @if ($stickerUploadMode)
+                {{-- The customer's own design, beside the ready stickers: it lands on the A4 sheet like any sticker. --}}
                 <section class="upload-panel" aria-labelledby="uploadTitle">
-                    <div><h2 id="uploadTitle">ارفع تصميمك</h2><p>PNG أو JPG فقط. ستظهر الصورة مباشرة على ورقة A4.</p></div>
-                    <label class="upload-drop"><input id="stickerUploadInput" type="file" accept="image/png,image/jpeg"><i class="bi bi-cloud-arrow-up"></i><span>اختيار صورة</span></label>
+                    <div class="upload-panel__copy">
+                        <span class="upload-panel__badge">تصميمك الخاص</span>
+                        <h2 id="uploadTitle">ارفعي تصميمك كملصق</h2>
+                        <p>صورة PNG أو JPG، ويُفضّل PNG بخلفية شفافة. تظهر مباشرة على ورقة A4 بالمقاس والكمية ونوع القص المختارة فوق.</p>
+                    </div>
+                    <label class="upload-drop">
+                        <input id="stickerUploadInput" type="file" accept="image/png,image/jpeg">
+                        <i class="bi bi-cloud-arrow-up" aria-hidden="true"></i>
+                        <span>اختيار صورة</span>
+                        <small>PNG · JPG</small>
+                    </label>
                 </section>
-                @endif
 
-                @unless ($stickerUploadMode)
                 <section class="library-panel" aria-labelledby="libraryTitle">
                     <div class="section-title-row"><h2 id="libraryTitle">الملصقات الجاهزة</h2><span id="libraryCount"></span></div>
                     <div class="sticker-tabs" id="stickerTabs">
@@ -54,9 +61,8 @@
                         @endforeach
                     </div>
                     <div class="sticker-grid" id="stickerGrid"></div>
-                    <p class="products-empty" id="stickersEmpty" hidden>لا توجد ملصقات في هذا التصنيف بعد.</p>
+                    <p class="products-empty" id="stickersEmpty" hidden>لا توجد ملصقات جاهزة في هذا التصنيف بعد، ارفعي تصميمك من فوق.</p>
                 </section>
-                @endunless
             </div>
 
             <aside class="a4-preview-panel" aria-label="معاينة ورقة A4">
@@ -102,7 +108,6 @@
     <script>
         window.PalPrintsStickers = {
             categories: @json($stickerCategories),
-            uploadMode: @json($stickerUploadMode),
             settings: @json($stickerSettings),
             materials: @json($stickerMaterials),
             routes: @json($stickerRoutes),

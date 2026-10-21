@@ -48,7 +48,7 @@
 
   const app = {
     selection: null, product: null, color: null, size: null, area: null, design: null, canvas: null, assetStore: null,
-    activeTool: "upload", objectUrls: new Map(), fontPromises: new Map(), suppressCanvasEvents: false,
+    activeTool: "upload", objectUrls: new Map(), fontPromises: new Map(), customFonts: new Map(), suppressCanvasEvents: false,
     geometryReady: false, viewportZone: null, logicalStage: null, baseStageScale: 1, stageScale: 1, viewZoom: 1, areaSwitchToken: 0, snapDrag: null,
     persistTimer: null, resizeObserver: null, resizeFrame: null, noticeTimer: null, panelRenderToken: 0,
     pendingAssetFingerprints: new Set(), graphicsCategory: GRAPHICS.categories[0] || "", graphicsSearch: "", graphicsLimit: GRAPHICS_PAGE_SIZE,
@@ -439,6 +439,21 @@
     const root = elements.coordinateSystem.getBoundingClientRect(), zone = elements.printZone.getBoundingClientRect(), scale = app.stageScale || 1;
     return { left: (zone.left - root.left) / scale, top: (zone.top - root.top) / scale, width: zone.width / scale, height: zone.height / scale };
   }
+  // Where a new element goes: the middle of the print area, unless something is already there — then the nearest free
+  // spot below or above it inside the area, so a second text box never lands on top of the first. When the area is full,
+  // each new one steps a little to the side so it still shows apart. Positions are centres (objects use origin center).
+  function freeSpot(width, height) {
+    const zone = getZoneRect(), centerX = zone.left + zone.width / 2, centerY = zone.top + zone.height / 2, gap = 8;
+    const boxes = app.canvas.getObjects().map(object => ({ x: object.left, y: object.top, w: object.getScaledWidth(), h: object.getScaledHeight() }));
+    const free = y => boxes.every(box => Math.abs(box.x - centerX) * 2 >= box.w + width || Math.abs(box.y - y) * 2 >= box.h + height + gap);
+    const step = height + gap, room = Math.max(0, (zone.height - height) / 2);
+    for (let offset = 0; offset <= room; offset += step) {
+      if (free(centerY + offset)) return { left: centerX, top: centerY + offset };
+      if (offset > 0 && free(centerY - offset)) return { left: centerX, top: centerY - offset };
+    }
+    const shift = ((boxes.length % 5) + 1) * 14;
+    return { left: centerX + shift, top: centerY + shift };
+  }
   function updatePrintZoneFeedback() {
     if (!app.canvas || !app.geometryReady) return;
     const zone = getZoneRect(), tolerance = 0.75;
@@ -479,7 +494,7 @@
     if (object.studioKind === "graphic") return { ...common, graphicId: object.graphicId, color: object.graphicColor || null,
       width: object.getScaledWidth() / zone.width, height: object.getScaledHeight() / zone.height };
     return { ...common, text: object.text || "", width: object.width / zone.width, fontSize: object.fontSize / zone.height, scaleX: object.scaleX, scaleY: object.scaleY,
-      fontFamily: object.fontFamily, fill: object.fill, fontWeight: object.fontWeight, fontStyle: object.fontStyle, textAlign: object.textAlign,
+      fontFamily: object.fontFamily, customFontId: object.customFontId || null, fill: object.fill, fontWeight: object.fontWeight, fontStyle: object.fontStyle, textAlign: object.textAlign,
       charSpacing: object.charSpacing, lineHeight: object.lineHeight };
   }
   function saveActiveArea() {
@@ -522,7 +537,16 @@
     const blob = await app.assetStore.get(assetId); if (!blob) return null;
     const url = URL.createObjectURL(blob); app.objectUrls.set(assetId, url); return url;
   }
-  async function loadFont(family) {
+  async function loadCustomFonts() {
+    try { const response = await fetch("/api/fonts", { headers: { Accept: "application/json" }, credentials: "same-origin" }); if (!response.ok) return; const data = await response.json(); (data.data || []).forEach(font => app.customFonts.set(Number(font.id), font)); } catch (_) {}
+  }
+  async function loadFont(family, customFontId = null) {
+    const custom = customFontId ? app.customFonts.get(Number(customFontId)) : [...app.customFonts.values()].find(font => font.family === family);
+    if (custom) {
+      const key = `custom:${custom.id}`;
+      if (!app.fontPromises.has(key)) app.fontPromises.set(key, new FontFace(custom.family, `url(${custom.file_url})`).load().then(font => { document.fonts.add(font); return font; }).catch(() => null));
+      return app.fontPromises.get(key);
+    }
     if (!family || family === "Cairo") return document.fonts?.load(`16px "${family || "Cairo"}"`) || Promise.resolve();
     if (app.fontPromises.has(family)) return app.fontPromises.get(family);
     const promise = new Promise(resolve => {
@@ -549,9 +573,9 @@
       if (record.recolorable) recolorGraphic(image, model.color || record.defaultColor);
       return configureObject(image, model);
     }
-    await loadFont(model.fontFamily || "Cairo");
+    await loadFont(model.fontFamily || "Cairo", model.customFontId);
     return configureObject(new fabric.Textbox(model.text || "", { ...common, width: Math.max(30, model.width * zone.width), fontSize: Math.max(8, model.fontSize * zone.height),
-      scaleX: model.scaleX || 1, scaleY: model.scaleY || 1, fontFamily: model.fontFamily || "Cairo", fill: model.fill || "#0b1f3a",
+      scaleX: model.scaleX || 1, scaleY: model.scaleY || 1, fontFamily: model.fontFamily || "Cairo", customFontId: model.customFontId || null, fill: model.fill || "#0b1f3a",
       fontWeight: model.fontWeight || "normal", fontStyle: model.fontStyle || "normal", textAlign: model.textAlign || "center",
       charSpacing: model.charSpacing || 0, lineHeight: model.lineHeight || 1.2, direction: /[\u0600-\u06ff]/.test(model.text || "") ? "rtl" : "ltr" }), model);
   }
@@ -913,7 +937,7 @@
       asset.sourceType = "raster"; commitDesign();
     }
     const scale = Math.min((zone.width * 0.55) / image.width, (zone.height * 0.55) / image.height);
-    configureObject(image, { id: uid("object"), kind: "image" }); image.set({ left: zone.left + zone.width / 2, top: zone.top + zone.height / 2, scaleX: scale, scaleY: scale, assetId: asset.assetId });
+    configureObject(image, { id: uid("object"), kind: "image" }); image.set({ ...freeSpot(image.width * scale, image.height * scale), scaleX: scale, scaleY: scale, assetId: asset.assetId });
     app.canvas.add(image); app.canvas.setActiveObject(image); image.setCoords(); app.canvas.requestRenderAll(); scheduleCommit();
     if (app.activeTool !== "upload") setActiveTool("upload");
   }
@@ -973,16 +997,36 @@
     const details = document.createElement("details"); details.className = "studio-font-picker";
     const summary = document.createElement("summary"); summary.textContent = selectedFamily; summary.style.fontFamily = `"${selectedFamily}", sans-serif`;
     const list = document.createElement("div"); list.className = "studio-font-list";
-    FONT_FAMILIES.forEach(family => {
+    // The studio's own fonts, then the fonts designers uploaded (shown to customers too) under their own heading.
+    const designerFamilies = [...new Set([...app.customFonts.values()].map(font => font.family))].filter(family => !FONT_FAMILIES.includes(family));
+    const families = [...FONT_FAMILIES, ...designerFamilies];
+    families.forEach(family => {
+      if (family === designerFamilies[0]) { const heading = document.createElement("span"); heading.className = "studio-font-group"; heading.textContent = "خطوط المصممين"; list.appendChild(heading); }
       const button = document.createElement("button"); button.type = "button"; button.textContent = family; button.dataset.font = family; button.style.fontFamily = `"${family}", sans-serif`;
-      button.addEventListener("click", async () => { await loadFont(family); summary.textContent = family; summary.style.fontFamily = button.style.fontFamily; details.open = false; applyTextProperty("fontFamily", family); }); list.appendChild(button);
+      const custom = [...app.customFonts.values()].find(font => font.family === family);
+      button.addEventListener("click", async () => { await loadFont(family, custom?.id); summary.textContent = family; summary.style.fontFamily = button.style.fontFamily; details.open = false; applyTextProperty("fontFamily", family); if (activeText()) { activeText().set("customFontId", custom?.id || null); scheduleCommit(); } }); list.appendChild(button);
+    });
+    const upload = document.createElement("label"); upload.className = "studio-font-upload"; upload.innerHTML = '<i class="bi bi-upload" aria-hidden="true"></i><span>رفع خط TTF / OTF</span><input type="file" accept=".ttf,.otf,font/ttf,font/otf" hidden>';
+    const uploadInput = upload.querySelector("input");
+    uploadInput.addEventListener("change", async () => {
+      const file = uploadInput.files?.[0]; uploadInput.value = ""; if (!file) return;
+      const form = new FormData(); form.append("font", file);
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
+      try {
+        const response = await fetch("/api/fonts", { method: "POST", headers: { Accept: "application/json", "X-CSRF-TOKEN": csrf, "X-Requested-With": "XMLHttpRequest" }, credentials: "same-origin", body: form });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(Object.values(data.errors || {})[0]?.[0] || data.message || "تعذر رفع الخط.");
+        const font = data.data; app.customFonts.set(Number(font.id), font); await loadFont(font.family, font.id);
+        summary.textContent = font.family; summary.style.fontFamily = `"${font.family}", sans-serif`; details.open = false;
+        applyTextProperty("fontFamily", font.family); if (activeText()) { activeText().set("customFontId", font.id); scheduleCommit(); }
+      } catch (error) { window.PalPrintNotifications?.add?.(error.message, "exclamation-triangle"); }
     });
     details.addEventListener("toggle", () => {
       if (!details.open) return;
       if (!("IntersectionObserver" in window)) { list.querySelectorAll("button").forEach(button => { void loadFont(button.dataset.font); }); return; }
       const observer = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) void loadFont(entry.target.dataset.font); }), { root: list });
       list.querySelectorAll("button").forEach(button => observer.observe(button));
-    }, { once: true }); details.append(summary, list); return details;
+    }, { once: true }); details.append(summary); if (window.PALPRINTS_STUDIO_FONT_UPLOAD === true) details.append(upload); details.append(list); return details;
   }
   function renderTextPanel() {
     const selected = activeText(); elements.toolPanelContent.innerHTML = ""; elements.toolPanelContent.className = "studio-text-panel";
@@ -998,6 +1042,10 @@
       <label class="studio-field"><span>ارتفاع السطر</span><input data-prop="lineHeight" type="number" min="0.7" max="3" step="0.1"></label>
       <label class="studio-field studio-field-wide"><span>الدوران</span><input data-prop="angle" type="range" min="-180" max="180" step="1"><output></output></label>`;
     const textarea = form.querySelector("textarea"), fontHost = form.querySelector("[data-font-picker]"); textarea.value = selected?.text || ""; fontHost.appendChild(fontPicker(selected?.fontFamily || "Cairo"));
+    // Uploading a font is for designers only (the page says so); a customer picks from the fonts already there.
+    const uploadLabel = document.createElement("label"); uploadLabel.className = "studio-font-upload studio-font-upload--visible"; uploadLabel.innerHTML = '<i class="bi bi-upload" aria-hidden="true"></i><span>رفع خط TTF / OTF</span><input type="file" accept=".ttf,.otf,font/ttf,font/otf" hidden>'; if (window.PALPRINTS_STUDIO_FONT_UPLOAD === true) fontHost.parentElement.appendChild(uploadLabel);
+    uploadLabel.querySelector("input").addEventListener("change", event => { const file = event.target.files?.[0]; if (!file) return; const input = event.target; const data = new FormData(); data.append("font", file); fetch("/api/fonts", { method: "POST", headers: { Accept: "application/json", "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || "" }, credentials: "same-origin", body: data }).then(response => response.json().then(body => { if (!response.ok) throw new Error(Object.values(body.errors || {})[0]?.[0] || body.message || "تعذر رفع الخط."); return body.data; })).then(async font => { app.customFonts.set(Number(font.id), font); await loadFont(font.family, font.id); applyTextProperty("fontFamily", font.family); if (activeText()) { activeText().set("customFontId", font.id); scheduleCommit(); } renderTextPanel(); }).catch(error => window.PalPrintNotifications?.add?.(error.message, "exclamation-triangle")).finally(() => { input.value = ""; });
+    });
     form.querySelector('[data-prop="fontSize"]').value = Math.round(selected?.fontSize || 36); form.querySelector('[data-prop="fill"]').value = typeof selected?.fill === "string" && selected.fill.startsWith("#") ? selected.fill : "#0b1f3a";
     form.querySelector('[data-prop="letterSpacing"]').value = selected ? ((selected.charSpacing * selected.fontSize) / 1000).toFixed(1) : 0; form.querySelector('[data-prop="lineHeight"]').value = selected?.lineHeight || 1.2;
     const angle = form.querySelector('[data-prop="angle"]'), output = form.querySelector("output"); angle.value = selected?.angle || 0; output.textContent = `${angle.value}°`;
@@ -1008,6 +1056,7 @@
       const text = configureObject(new fabric.Textbox(value, { left: zone.left + zone.width / 2, top: zone.top + zone.height / 2, width: zone.width * 0.62,
         fontSize: Math.max(20, Math.min(44, zone.height * 0.13)), fontFamily: "Cairo", fill: "#0b1f3a", textAlign: "center", lineHeight: 1.2,
         direction: /[\u0600-\u06ff]/.test(value) ? "rtl" : "ltr" }), { id: uid("object"), kind: "text" });
+      text.set(freeSpot(text.getScaledWidth(), text.getScaledHeight()));
       app.canvas.add(text); app.canvas.setActiveObject(text); app.canvas.requestRenderAll(); scheduleCommit(); renderTextPanel();
     });
     form.querySelector('[data-prop="fontSize"]').addEventListener("change", event => applyTextProperty("fontSize", Number(event.target.value)));
@@ -1036,7 +1085,7 @@
       if (!image.width || !image.height) throw new Error("Empty graphic");
       const zone = getZoneRect();
       const scale = Math.min((zone.width * 0.45) / image.width, (zone.height * 0.55) / image.height);
-      image.set({ left: zone.left + zone.width / 2, top: zone.top + zone.height / 2, scaleX: scale, scaleY: scale,
+      image.set({ ...freeSpot(image.width * scale, image.height * scale), scaleX: scale, scaleY: scale,
         graphicId: record.id });
       if (record.recolorable) recolorGraphic(image, record.defaultColor);
       configureObject(image, model); app.canvas.add(image); app.canvas.setActiveObject(image); image.setCoords();
@@ -1262,6 +1311,7 @@
     app.resizeObserver.observe(elements.stage);
   }
   async function init() {
+    await loadCustomFonts();
     setupSiteShell(); setupToolTabs(); setupUploadDropTargets(); if (!elements.designCanvas || !elements.printZone || !window.fabric?.Canvas) return showError("تعذر تجهيز مساحة التصميم. أعد تحميل الصفحة وحاول مرة أخرى.");
     app.selection = readSelection(); if (!app.selection) return showError("اختر منتجًا مهيأ من صفحة اختيار المنتجات أولًا.");
     const validation = validateProduct(app.selection.editorProduct); if (!validation.valid) return showError(validation.message);
