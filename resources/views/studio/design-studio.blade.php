@@ -326,6 +326,8 @@
       }
 
       function start() {
+        // Only a designer may upload a font file (TTF / OTF); a customer picks from the fonts already there.
+        window.PALPRINTS_STUDIO_FONT_UPLOAD = @json(($workflowMode ?? 'customer') === 'designer');
         const script = document.createElement("script");
         script.src = "assets/js/pages/design-studio.js?v={{ filemtime(public_path('front/studio/assets/js/pages/design-studio.js')) }}";
         document.body.appendChild(script);

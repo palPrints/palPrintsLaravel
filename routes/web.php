@@ -89,7 +89,8 @@ Route::get('/fonts/{customFont}/file', [FontController::class, 'file'])->name('f
 Route::middleware(['auth', 'active', 'role:customer|designer'])->prefix('api')->group(function () {
     Route::get('/fonts', [FontController::class, 'index'])->name('fonts.index');
     Route::get('/fonts/{customFont}', [FontController::class, 'show'])->name('fonts.show');
-    Route::post('/fonts', [FontController::class, 'store'])->name('fonts.store');
+    // Uploading a font file is for designers; customers only use the fonts already there.
+    Route::post('/fonts', [FontController::class, 'store'])->middleware('role:designer')->name('fonts.store');
 });
 Route::middleware(['auth', 'active', 'role:admin'])->prefix('api/admin')->group(function () {
     Route::patch('/fonts/{customFont}/status', [FontController::class, 'status'])->name('admin.fonts.status');
