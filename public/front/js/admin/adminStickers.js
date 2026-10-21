@@ -19,8 +19,22 @@
     return result;
   }
   function errors(form,error){
-    form.querySelectorAll('.field-error').forEach(n=>n.remove());
-    Object.entries(error.fields||{}).forEach(([name,messages])=>{const input=[...form.querySelectorAll('[name]')].find(n=>n.name===name);if(input){const text=document.createElement('small');text.className='field-error';text.textContent=messages[0];input.after(text);}});
+    clearErrors(form);
+    Object.entries(error.fields||{}).forEach(([name,messages])=>{const input=[...form.querySelectorAll('[name]')].find(n=>n.name===name);if(input)markInvalid(input,messages[0]);});
+  }
+  function clearErrors(form){form.querySelectorAll('.field-error').forEach(n=>n.remove());form.querySelectorAll('.is-invalid,.has-error').forEach(n=>n.classList.remove('is-invalid','has-error'));}
+  function markInvalid(input,message){
+    const box=input.closest('.image-upload')||input.closest('.unit-input')||input;
+    box.classList.add(input.closest('.image-upload')?'has-error':'is-invalid');
+    const text=document.createElement('small');text.className='field-error';text.textContent=message;box.after(text);
+    input.addEventListener('input',()=>{box.classList.remove('is-invalid','has-error');text.remove();},{once:true});
+    input.addEventListener('change',()=>{box.classList.remove('is-invalid','has-error');text.remove();},{once:true});
+  }
+  function emptyRequired(form){
+    clearErrors(form);let first=null;
+    form.querySelectorAll('[required]').forEach(input=>{const empty=input.type==='file'?!input.files.length:!String(input.value).trim();if(empty){markInvalid(input,input.type==='file'?'اختر صورة للملصق.':'هذا الحقل مطلوب.');first=first||input;}});
+    if(first&&first.type!=='file')first.focus();
+    return !!first;
   }
   function tab(name){
     currentTab=name;
@@ -39,7 +53,7 @@
     $('categoryFilter').innerHTML='<option value="all">كل التصنيفات</option>'+categories.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
     $('categoryFilter').value=categories.some(c=>String(c.id)===selected)?selected:'all';
     $('stickerCategoryInput').innerHTML=categories.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
-    $('categoriesBar').innerHTML=categories.map(c=>`<tr><td>${esc(c.name)}</td><td>${c.stickers.length}</td><td>${c.sort_order}</td><td>${c.is_active?'مفعل':'مخفي'}</td><td>${icon('pencil','تعديل',`data-category-edit="${c.id}"`)}${icon('trash','حذف',`data-category-delete="${c.id}"`)}</td></tr>`).join('')||'<tr><td colspan="5">لا توجد تصنيفات</td></tr>';
+    $('categoriesBar').innerHTML=categories.map(c=>`<tr><td>${esc(c.name)}</td><td>${c.stickers.length}</td><td>${c.sort_order}</td><td><span class="cat-status ${c.is_active?'is-on':'is-off'}">${c.is_active?'مفعل':'مخفي'}</span></td><td><div class="cat-actions">${icon('pencil','تعديل',`data-category-edit="${c.id}"`)}${icon('trash','حذف',`data-category-delete="${c.id}"`)}</div></td></tr>`).join('')||'<tr class="cat-empty-row"><td colspan="5"><div class="cat-empty"><i class="bi bi-folder2-open"></i><strong>لا توجد تصنيفات</strong><span>اضغط على «إضافة تصنيف» لإنشاء أول تصنيف للملصقات.</span></div></td></tr>';
     grid();
   }
   function grid(){
@@ -50,36 +64,39 @@
   }
   ['stickerSearch','categoryFilter','statusFilter'].forEach(id=>$(id).addEventListener('input',grid));
   function openCategory(item=null){editingCategory=item;$('categoryForm').reset();$('categoryError').hidden=true;$('categoryDialogTitle').textContent=item?'تعديل تصنيف':'إضافة تصنيف';$('categoryNameInput').value=item?.name||'';$('categoryOrderInput').value=item?.sort_order||0;$('categoryActiveInput').checked=item?item.is_active:true;$('categoryDialog').showModal();}
-  function displayImage(url){$('stickerImagePreview').hidden=!url;if(url)$('stickerImagePreview').src=url;else $('stickerImagePreview').removeAttribute('src');}
+  function displayImage(url){$('stickerImagePreview').hidden=!url;$('stickerImageIcon').hidden=!!url;$('stickerImageTitle').textContent=url?'تغيير الصورة':'اختر صورة للملصق';if(url)$('stickerImagePreview').src=url;else $('stickerImagePreview').removeAttribute('src');}
   function openSticker(item=null){
-    if(!categories.length)return openCategory();editingSticker=item;$('stickerForm').reset();$('stickerError').hidden=true;$('stickerDialogTitle').textContent=item?'تعديل ملصق':'إضافة ملصق';$('stickerNameInput').value=item?.name||'';$('stickerCategoryInput').value=item?.sticker_category_id||categories[0].id;$('stickerOrderInput').value=item?.sort_order||0;$('stickerActiveInput').checked=item?item.is_active:true;$('stickerImageInput').required=!item;displayImage(item?.image_url);$('stickerDialog').showModal();
+    const usable=categories.filter(c=>c.is_active||c.id===item?.sticker_category_id);
+    if(!usable.length)return PalAlert.alert(categories.length?'كل التصنيفات مخفية، فعّل تصنيفًا أولًا ثم أضف الملصق.':'لازم تضيف تصنيفًا أولًا قبل إضافة الملصقات.',{title:categories.length?'لا يوجد تصنيف مفعل':'أضف تصنيفًا أولًا',icon:'info'});
+    $('stickerCategoryInput').innerHTML=usable.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    editingSticker=item;$('stickerForm').reset();$('stickerError').hidden=true;$('stickerDialogTitle').textContent=item?'تعديل ملصق':'إضافة ملصق';$('stickerNameInput').value=item?.name||'';$('stickerCategoryInput').value=item?.sticker_category_id||usable[0].id;$('stickerOrderInput').value=item?.sort_order||0;$('stickerActiveInput').checked=item?item.is_active:true;$('stickerImageInput').required=!item;displayImage(item?.image_url);$('stickerDialog').showModal();
   }
   $('stickerImageInput').onchange=()=>{if(imageUrl)URL.revokeObjectURL(imageUrl);imageUrl=$('stickerImageInput').files[0]?URL.createObjectURL($('stickerImageInput').files[0]):null;displayImage(imageUrl||editingSticker?.image_url);};
   $('addCategoryButton').onclick=()=>openCategory();$('addStickerButton').onclick=()=>openSticker();
   document.querySelectorAll('[data-dialog-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
   Object.entries({categoryNameInput:'name',categoryOrderInput:'sort_order',categoryActiveInput:'is_active',stickerNameInput:'name',stickerCategoryInput:'sticker_category_id',stickerOrderInput:'sort_order',stickerActiveInput:'is_active',stickerImageInput:'image'}).forEach(([id,name])=>$(id).name=name);
-  ['category','sticker'].forEach(kind=>{const form=$(kind+'Form');form.onsubmit=async event=>{
-    event.preventDefault();const button=form.querySelector('[type="submit"]');if(button.disabled)return;
+  ['category','sticker'].forEach(kind=>{const form=$(kind+'Form');form.noValidate=true;form.onsubmit=async event=>{
+    event.preventDefault();const button=form.querySelector('[type="submit"]');if(button.disabled)return;if(emptyRequired(form))return;
     const item=kind==='category'?editingCategory:editingSticker,data=new FormData(form);data.set('is_active',$(kind+'ActiveInput').checked?'1':'0');if(kind==='sticker'&&!$('stickerImageInput').files.length)data.delete('image');if(item)data.set('_method','PATCH');button.disabled=true;
     try{const key=kind==='category'?'category':'item';categories=(await request(item?route(key+'Update',item.id):config.routes[key+'Store'],data)).categories;$(kind+'Dialog').close();render();notice('تم الحفظ.');}
     catch(e){$(kind+'Error').textContent=e.message;$(kind+'Error').hidden=false;errors(form,e);}finally{button.disabled=false;}
   };});
-  $('categoriesBar').onclick=async e=>{const edit=e.target.closest('[data-category-edit]'),del=e.target.closest('[data-category-delete]');if(edit)openCategory(categories.find(c=>c.id===Number(edit.dataset.categoryEdit)));if(del&&confirm('حذف هذا التصنيف الفارغ؟')){try{categories=(await request(route('categoryDestroy',del.dataset.categoryDelete),{},'DELETE')).categories;render();}catch(error){notice(error.message);}}};
-  $('stickersGrid').onclick=async e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.edit||b.dataset.preview)openSticker(items().find(s=>s.id===Number(b.dataset.edit||b.dataset.preview)));if(b.dataset.delete&&confirm('حذف الملصق؟')){try{categories=(await request(route('itemDestroy',b.dataset.delete),{},'DELETE')).categories;render();}catch(error){notice(error.message);}}};
+  $('categoriesBar').onclick=async e=>{const edit=e.target.closest('[data-category-edit]'),del=e.target.closest('[data-category-delete]');if(edit)openCategory(categories.find(c=>c.id===Number(edit.dataset.categoryEdit)));if(del&&await PalAlert.confirm({title:'حذف التصنيف',text:'حذف هذا التصنيف الفارغ؟',confirmText:'نعم، احذف'})){try{categories=(await request(route('categoryDestroy',del.dataset.categoryDelete),{},'DELETE')).categories;render();}catch(error){notice(error.message);}}};
+  $('stickersGrid').onclick=async e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.edit||b.dataset.preview)openSticker(items().find(s=>s.id===Number(b.dataset.edit||b.dataset.preview)));if(b.dataset.delete&&await PalAlert.confirm({title:'حذف الملصق',text:'هل تريد حذف هذا الملصق؟',confirmText:'نعم، احذف'})){try{categories=(await request(route('itemDestroy',b.dataset.delete),{},'DELETE')).categories;render();}catch(error){notice(error.message);}}};
   function sizeRows(){
     $('sizesRows').innerHTML=settings.layout.sizes.map((s,i)=>`<div class="size-row" data-size-row><input type="hidden" data-size="key" value="${esc(s.key)}"><label>الاسم<input data-size="label" name="layout.sizes.${i}.label" value="${esc(s.label)}" required maxlength="80"></label><label>العرض mm<input data-size="width_mm" name="layout.sizes.${i}.width_mm" type="number" min="5" max="190" step="0.1" value="${s.width_mm}" required></label><label>الارتفاع mm<input data-size="height_mm" name="layout.sizes.${i}.height_mm" type="number" min="5" max="277" step="0.1" value="${s.height_mm}" required></label>${icon('trash','حذف المقاس',`data-size-delete="${i}"`)}</div>`).join('');
   }
   function fill(){$('settingsForm').querySelectorAll('.settings-grid [name]').forEach(input=>input.value=input.name.split('.').reduce((obj,key)=>obj?.[key],settings)??'');sizeRows();}
   function collect(){const value=structuredClone(settings);$('settingsForm').querySelectorAll('.settings-grid [name]').forEach(input=>{const [group,key]=input.name.split('.');value[group][key]=input.type==='color'?input.value:Number(input.value);});value.layout.sizes=[...document.querySelectorAll('[data-size-row]')].map(row=>Object.fromEntries([...row.querySelectorAll('[data-size]')].map(input=>[input.dataset.size,input.type==='number'?Number(input.value):input.value])));return value;}
-  function changed(){dirty=true;version++;$('settingsSaveBar').hidden=false;$('settingsStatus').textContent='تغييرات غير محفوظة';schedule();}
+  function changed(){dirty=true;version++;$('settingsSaveBar').hidden=false;$('settingsStatus').textContent='تغييرات غير محفوظة';$('settingsStatus').classList.remove('is-error');schedule();}
   $('settingsForm').addEventListener('input',changed);
   $('addSize').onclick=()=>{settings=collect();if(settings.layout.sizes.length>=12)return;settings.layout.sizes.push({key:'size-'+Date.now(),label:'مقاس جديد',width_mm:50,height_mm:50});sizeRows();changed();};
-  $('sizesRows').onclick=e=>{const b=e.target.closest('[data-size-delete]');if(!b)return;settings=collect();if(settings.layout.sizes.length===1)return notice('يجب إبقاء مقاس واحد على الأقل.');settings.layout.sizes.splice(Number(b.dataset.sizeDelete),1);sizeRows();changed();};
-  function schedule(){clearTimeout(timer);if(currentTab!=='printing')return;const revision=++version;$('previewError').textContent='جار تحديث المعاينة…';timer=setTimeout(async()=>{try{const result=await request(config.routes.preview,collect());if(revision!==version)return;preview=result.layout;page=Math.min(page,preview.page_count-1);draw();$('previewError').textContent='';}catch(e){if(revision===version){$('previewError').textContent=e.message;$('adminA4Preview').replaceChildren();}}},350);}
+  $('sizesRows').onclick=async e=>{const b=e.target.closest('[data-size-delete]');if(!b)return;settings=collect();if(settings.layout.sizes.length===1)return notice('يجب إبقاء مقاس واحد على الأقل.');const index=Number(b.dataset.sizeDelete),size=settings.layout.sizes[index];if(!await PalAlert.confirm({title:'حذف المقاس',text:`هل تريد حذف المقاس «${size?.label||''}»؟`,confirmText:'نعم، احذف'}))return;settings.layout.sizes.splice(index,1);sizeRows();changed();};
+  function schedule(){clearTimeout(timer);if(currentTab!=='printing')return;const revision=++version;$('previewError').classList.remove('is-error');$('previewError').textContent='جار تحديث المعاينة…';timer=setTimeout(async()=>{try{const result=await request(config.routes.preview,collect());if(revision!==version)return;preview=result.layout;page=Math.min(page,preview.page_count-1);draw();$('previewError').textContent='';}catch(e){if(revision===version){$('previewError').textContent=e.message;$('previewError').classList.add('is-error');$('adminA4Preview').replaceChildren();}}},350);}
   function draw(){if(!preview)return;const p=preview.page;$('adminA4Preview').innerHTML=`<svg class="admin-sheet-svg" viewBox="0 0 ${p.width_mm} ${p.height_mm}" role="img" aria-label="معاينة A4"><rect width="210" height="297" fill="white"/><rect x="${p.margins_mm.left}" y="${p.margins_mm.top}" width="${p.width_mm-p.margins_mm.left-p.margins_mm.right}" height="${p.height_mm-p.margins_mm.top-p.margins_mm.bottom}" fill="none" stroke="#94a3b8" stroke-width="0.3" stroke-dasharray="2 2"/>${preview.pages[page].items.map(item=>`<rect x="${item.x_mm}" y="${item.y_mm}" width="${item.width_mm}" height="${item.height_mm}" fill="#eff6ff" stroke="${esc(p.cut_line.color)}" stroke-width="${p.cut_line.width_mm}"/>`).join('')}</svg>`;$('previewPage').textContent=`${page+1} / ${preview.page_count}`;$('previewPrev').disabled=page===0;$('previewNext').disabled=page===preview.page_count-1;}
   $('previewPrev').onclick=()=>{page--;draw();};$('previewNext').onclick=()=>{page++;draw();};
   $('settingsForm').noValidate=true;
-  $('settingsForm').onsubmit=async event=>{event.preventDefault();const button=event.submitter;if(button.disabled)return;button.disabled=true;$('settingsForm').querySelectorAll('.field-error').forEach(n=>n.remove());try{const result=await request(config.routes.settings,collect());settings=result.settings;fill();dirty=false;$('settingsSaveBar').hidden=true;notice('تم حفظ الإعدادات.');schedule();}catch(e){$('settingsStatus').textContent=e.message;errors($('settingsForm'),e);const field=Object.keys(e.fields||{})[0];if(field)tab(field.startsWith('layout.')?'printing':'pricing');}finally{button.disabled=false;}};
+  $('settingsForm').onsubmit=async event=>{event.preventDefault();const button=event.submitter;if(button.disabled)return;button.disabled=true;$('settingsForm').querySelectorAll('.field-error').forEach(n=>n.remove());try{const result=await request(config.routes.settings,collect());settings=result.settings;fill();dirty=false;$('settingsSaveBar').hidden=true;notice('تم حفظ الإعدادات.');schedule();}catch(e){$('settingsStatus').textContent=e.message;$('settingsStatus').classList.add('is-error');errors($('settingsForm'),e);const field=Object.keys(e.fields||{})[0];if(field)tab(field.startsWith('layout.')?'printing':'pricing');}finally{button.disabled=false;}};
   window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
   render();fill();tab('library');
 })();
