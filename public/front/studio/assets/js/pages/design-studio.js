@@ -997,8 +997,11 @@
     const details = document.createElement("details"); details.className = "studio-font-picker";
     const summary = document.createElement("summary"); summary.textContent = selectedFamily; summary.style.fontFamily = `"${selectedFamily}", sans-serif`;
     const list = document.createElement("div"); list.className = "studio-font-list";
-    const families = [...FONT_FAMILIES, ...[...app.customFonts.values()].map(font => font.family)];
+    // The studio's own fonts, then the fonts designers uploaded (shown to customers too) under their own heading.
+    const designerFamilies = [...new Set([...app.customFonts.values()].map(font => font.family))].filter(family => !FONT_FAMILIES.includes(family));
+    const families = [...FONT_FAMILIES, ...designerFamilies];
     families.forEach(family => {
+      if (family === designerFamilies[0]) { const heading = document.createElement("span"); heading.className = "studio-font-group"; heading.textContent = "خطوط المصممين"; list.appendChild(heading); }
       const button = document.createElement("button"); button.type = "button"; button.textContent = family; button.dataset.font = family; button.style.fontFamily = `"${family}", sans-serif`;
       const custom = [...app.customFonts.values()].find(font => font.family === family);
       button.addEventListener("click", async () => { await loadFont(family, custom?.id); summary.textContent = family; summary.style.fontFamily = button.style.fontFamily; details.open = false; applyTextProperty("fontFamily", family); if (activeText()) { activeText().set("customFontId", custom?.id || null); scheduleCommit(); } }); list.appendChild(button);
@@ -1023,7 +1026,7 @@
       if (!("IntersectionObserver" in window)) { list.querySelectorAll("button").forEach(button => { void loadFont(button.dataset.font); }); return; }
       const observer = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) void loadFont(entry.target.dataset.font); }), { root: list });
       list.querySelectorAll("button").forEach(button => observer.observe(button));
-    }, { once: true }); details.append(summary, upload, list); return details;
+    }, { once: true }); details.append(summary); if (window.PALPRINTS_STUDIO_FONT_UPLOAD === true) details.append(upload); details.append(list); return details;
   }
   function renderTextPanel() {
     const selected = activeText(); elements.toolPanelContent.innerHTML = ""; elements.toolPanelContent.className = "studio-text-panel";

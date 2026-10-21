@@ -32,6 +32,13 @@ test('a designer can upload a font', function () {
     expect(CustomFont::where('uploaded_by', $this->designer->id)->value('family'))->toBe('Amiri');
 });
 
+test('a font a designer uploads is offered to customers in the studio', function () {
+    $this->actingAs($this->designer)->post(route('fonts.store'), ['font' => ($this->font)()], ['Accept' => 'application/json'])->assertCreated();
+
+    $this->actingAs($this->customer)->getJson(route('fonts.index'))->assertOk()
+        ->assertJsonPath('data.0.family', 'Amiri');
+});
+
 test('the studio shows the upload button to designers only', function () {
     $this->actingAs($this->customer)->get(route('design-studio'))->assertOk()
         ->assertSee('window.PALPRINTS_STUDIO_FONT_UPLOAD = false', false);
