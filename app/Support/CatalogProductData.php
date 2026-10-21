@@ -55,7 +55,7 @@ class CatalogProductData
     /**
      * @return array{categories: array<int, array<string, string>>, products: array<int, array<string, mixed>>}
      */
-    public static function forDesigner(bool $includeStickerUpload = false): array
+    public static function forDesigner(): array
     {
         $products = Product::query()
             ->with([
@@ -68,7 +68,7 @@ class CatalogProductData
                 'variants.values.productAttributeValue.productAttribute.attribute',
             ])
             ->where('is_active', true)
-            ->when(! $includeStickerUpload, fn ($query) => $query->whereNotIn('code', self::NOT_DESIGNABLE))
+            ->whereNotIn('code', self::NOT_DESIGNABLE)
             ->orderBy('id')
             ->get()
             ->sortBy(fn (Product $product) => self::productOrder($product->code))

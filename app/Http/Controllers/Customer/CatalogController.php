@@ -34,7 +34,8 @@ class CatalogController extends Controller
     /** Product picker for the customer's own uploaded design (same catalog the designer picks from). */
     public function chooseProduct(): View
     {
-        return view('customer.chooseProduct', ['designerCatalog' => CatalogProductData::forDesigner(true)]);
+        // Only what takes a design (T-shirt, hoodie, mug): stickers and paper printing have their own pages.
+        return view('customer.chooseProduct', ['designerCatalog' => CatalogProductData::forDesigner()]);
     }
 
     public function store(): View
