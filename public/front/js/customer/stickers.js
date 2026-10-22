@@ -24,6 +24,7 @@
     summaryPrice: document.getElementById("summaryPrice"),
     warning: document.getElementById("stickerWarning"),
     add: document.getElementById("addStickerBundle"),
+    lines: document.getElementById("stickerLines"),
     clear: document.getElementById("clearStickerBundle")
     ,materials: document.getElementById("stickerPageMaterials")
   };
@@ -203,7 +204,7 @@
     const warnings = quote.warnings || [];
     if (warnings.includes("below_minimum")) {
       el.warning.hidden = false;
-      el.warning.textContent = `الحد الأدنى ${settings.pricing?.min_quantity || 20} ملصق. أضيفي المزيد قبل السلة.`;
+      el.warning.textContent = `الحد الأدنى ${settings.pricing?.min_quantity || 20} ملصق. أضف المزيد قبل السلة.`;
     } else if (warnings.includes("large_quantity")) {
       el.warning.hidden = false;
       el.warning.textContent = "الكمية كبيرة، سنعرضها للمطبعة بوضوح داخل ملف الطباعة.";
@@ -249,8 +250,23 @@
     el.count.textContent = `${visible.length} ملصق`;
   }
 
+  const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]));
+
+  /* "Your stickers": every sticker added can still change its size, quantity and cut. Rebuilt only when stickers are added or removed, so typing a quantity keeps its focus. */
+  function renderLines() {
+    if (!el.lines) return;
+    el.lines.hidden = !state.lines.length;
+    el.lines.innerHTML = state.lines.length ? `<h3>ملصقاتك</h3>` + state.lines.map((line, index) => `<div class="sticker-line" data-line="${index}"><div class="sticker-line__head"><img src="${escapeHtml(line.image_url)}" alt=""><strong>${escapeHtml(line.label)}</strong><button type="button" data-line-remove="${index}" aria-label="حذف الملصق"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div><div class="sticker-line__fields"><label><span>المقاس</span><select data-line-field="size_key">${sizes.map((size) => `<option value="${escapeHtml(size.key)}" ${size.key === line.size_key ? "selected" : ""}>${escapeHtml(size.label)}</option>`).join("")}</select></label><label><span>الكمية</span><input type="number" min="1" max="999" inputmode="numeric" data-line-field="quantity" value="${line.quantity}"></label><label><span>نوع القص</span><select data-line-field="cut_type"><option value="circle" ${line.cut_type === "circle" ? "selected" : ""}>قص دائري مجاني</option><option value="contour" ${line.cut_type === "contour" ? "selected" : ""}>خط قص حول التصميم</option></select></label></div></div>`).join("") : "";
+  }
+
+  function askBeforeDelete(title, text, confirmText) {
+    if (window.PalAlert?.confirm) return window.PalAlert.confirm({ title, text, confirmText, danger: true });
+    return Promise.resolve(window.confirm(text));
+  }
+
   function addLine(line, sourceNode) {
     state.lines.push(line);
+    renderLines();
     state.page = 9999;
     requestPreview();
     renderSheet(sourceNode);
@@ -316,7 +332,7 @@
       el.upload.value = "";
       if (!file) return;
       if (!["image/png", "image/jpeg"].includes(file.type)) {
-        toast("الصيغة غير مدعومة. استخدمي PNG أو JPG.", "exclamation-triangle");
+        toast("الصيغة غير مدعومة. استخدم PNG أو JPG.", "exclamation-triangle");
         return;
       }
       const key = `upload-${Date.now()}`;
@@ -346,13 +362,42 @@
 
     el.prev.addEventListener("click", () => { state.page -= 1; renderSheet(); });
     el.next.addEventListener("click", () => { state.page += 1; renderSheet(); });
-    el.clear.addEventListener("click", () => {
+    el.clear.addEventListener("click", async () => {
+      if (!state.lines.length) return;
+      if (!(await askBeforeDelete("مسح كل الملصقات", "سيتم حذف كل الملصقات عن ورقة A4. هل تريد المتابعة؟", "نعم، امسح الكل"))) return;
       state.lines.forEach((line) => { if (line.file && line.image_url) URL.revokeObjectURL(line.image_url); });
       state.lines = [];
       state.layout = null;
       state.page = 1;
+      renderLines();
       requestPreview();
     });
+
+    if (el.lines) {
+      const editLine = (event) => {
+        const field = event.target.closest("[data-line-field]");
+        const row = event.target.closest("[data-line]");
+        const line = row && state.lines[Number(row.dataset.line)];
+        if (!field || !line) return;
+        const key = field.dataset.lineField;
+        line[key] = key === "quantity" ? Math.max(1, Math.min(999, Number(field.value) || 1)) : field.value;
+        requestPreview();
+      };
+      el.lines.addEventListener("input", (event) => { if (event.target.matches("input")) editLine(event); });
+      el.lines.addEventListener("change", (event) => { if (event.target.matches("select")) editLine(event); });
+      el.lines.addEventListener("click", async (event) => {
+        const remove = event.target.closest("[data-line-remove]");
+        if (!remove) return;
+        const target = state.lines[Number(remove.dataset.lineRemove)];
+        if (!target) return;
+        if (!(await askBeforeDelete("حذف الملصق", `هل تريد حذف «${target.label}» من ورقة A4؟`, "نعم، احذف"))) return;
+        const [gone] = state.lines.splice(state.lines.indexOf(target), 1);
+        if (gone?.file && gone.image_url) URL.revokeObjectURL(gone.image_url);
+        if (!state.lines.length) { state.layout = null; state.page = 1; }
+        renderLines();
+        requestPreview();
+      });
+    }
 
     document.querySelectorAll("[data-mobile-view]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -366,7 +411,7 @@
 
   async function submitBundle() {
     if (!state.lines.length) {
-      toast("اختاري ملصقا واحدا على الأقل.", "exclamation-triangle");
+      toast("اختر ملصقا واحدا على الأقل.", "exclamation-triangle");
       return;
     }
     if (!config.user?.authenticated) {

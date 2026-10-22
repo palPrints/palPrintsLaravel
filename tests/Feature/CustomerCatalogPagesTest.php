@@ -32,7 +32,7 @@ test('a visitor who is not signed in can open the catalog pages too', function (
     $this->get(route($routeName))->assertOk();
 })->with(['customer.store', 'customer.tshirts', 'customer.hoodies', 'customer.mugs', 'customer.stickers']);
 
-test('the customer picks a product for their own design among the T-shirt, the hoodie and the mug, not stickers or paper', function () {
+test('the customer picks a product for their own design among the T-shirt, the hoodie, the mug and stickers (upload mode), not paper', function () {
     $category = \App\Models\Category::firstOrCreate(['slug' => 'products'], ['name' => 'منتجات']);
     foreach (['PAPER-PRINT', 'STICKER-CUSTOM'] as $code) {
         \App\Models\Product::firstOrCreate(['code' => $code], ['category_id' => $category->id, 'name' => $code, 'is_active' => true])->update(['is_active' => true]);
@@ -41,7 +41,11 @@ test('the customer picks a product for their own design among the T-shirt, the h
 
     $listed = collect($this->get(route('customer.chooseProduct'))->assertOk()->viewData('designerCatalog')['products'])->pluck('id');
 
-    expect($listed)->toContain($id('TSHIRT-CLASSIC'), $id('HOODIE-PREMIUM'), $id('MUG-CERAMIC'))
-        ->not->toContain($id('PAPER-PRINT'))
-        ->not->toContain($id('STICKER-CUSTOM'));
+    expect($listed)->toContain($id('TSHIRT-CLASSIC'), $id('HOODIE-PREMIUM'), $id('MUG-CERAMIC'), $id('STICKER-CUSTOM'))
+        ->not->toContain($id('PAPER-PRINT'));
+});
+
+test('the sticker page shows ready stickers only, and the upload panel only in upload mode', function () {
+    $this->get(route('customer.stickers'))->assertOk()->assertSee('stickerGrid', false)->assertDontSee('stickerUploadInput', false);
+    $this->get(route('customer.stickers', ['mode' => 'upload']))->assertOk()->assertSee('stickerUploadInput', false)->assertDontSee('stickerGrid', false);
 });

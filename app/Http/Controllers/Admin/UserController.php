@@ -276,7 +276,13 @@ class UserController extends Controller
             return 'suspended';
         }
 
-        return $approvalStatus === 'approved' ? 'active' : 'pending';
+        // draft = has not sent a request yet; pending = sent, waiting for the admin; returned = rejected or sent back for changes.
+        return match ($approvalStatus) {
+            'approved' => 'active',
+            'submitted', 'under_review' => 'pending',
+            'rejected', 'changes_requested' => 'returned',
+            default => 'draft',
+        };
     }
 
     private function reviewable(?ApprovalRequest $request): bool

@@ -724,3 +724,282 @@
   box-shadow: none;
   border-color: var(--pp-primary);
 }
+
+/* ---------- Size / quantity / cut: a tidier arrow and number field ---------- */
+.sticker-controls select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-inline: var(--sp-3) 44px;
+  background-color: var(--pp-surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 16px center;
+  background-size: 14px;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+
+.sticker-controls select:hover,
+.sticker-controls input:hover {
+  border-color: var(--pp-primary);
+}
+
+.sticker-controls input[type="number"] {
+  text-align: center;
+  font-weight: 700;
+}
+
+/* ---------- Hint under the settings, and "Your stickers" beside the sheet ---------- */
+.sticker-controls__hint {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  color: var(--pp-text-muted, #64748b);
+  font-size: .85rem;
+}
+
+.sticker-controls__hint i {
+  color: var(--pp-primary);
+}
+
+.sticker-lines {
+  display: grid;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-4);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  background: var(--pp-surface);
+}
+
+.sticker-lines[hidden] {
+  display: none;
+}
+
+.sticker-lines h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--pp-text-strong);
+}
+
+.sticker-line {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius-sm);
+  background: var(--pp-surface);
+}
+
+.sticker-line__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+.sticker-line__head img {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #f1f5f9;
+}
+
+.sticker-line__head strong {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .9rem;
+}
+
+.sticker-line__head button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: #fff0ef;
+  color: #d92d20;
+  cursor: pointer;
+}
+
+.sticker-line__fields {
+  display: grid;
+  grid-template-columns: 1.2fr .8fr 1.4fr;
+  gap: var(--sp-2);
+}
+
+.sticker-line__fields label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--pp-text-muted, #64748b);
+}
+
+.sticker-line__fields select,
+.sticker-line__fields input {
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius-sm);
+  padding: 0 var(--sp-2);
+  background: var(--pp-surface);
+  color: var(--pp-text-body);
+  font: inherit;
+  font-size: .85rem;
+}
+
+.sticker-line__fields select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-inline: var(--sp-2) 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 10px center;
+  background-size: 12px;
+}
+
+.sticker-line__fields select:focus,
+.sticker-line__fields input:focus {
+  outline: none;
+  border-color: var(--pp-primary);
+}
+
+/* Upload mode: the settings, the upload box and "your stickers" follow the page while the long A4 preview scrolls; a long list scrolls inside the column so its end is always reachable. */
+.stickers-shop--sticky {
+  position: sticky;
+  top: 88px;
+  max-height: calc(100vh - 104px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+@media (max-width: 900px) {
+  .stickers-shop--sticky {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+/* ---------- "Your stickers": polish ---------- */
+.sticker-lines h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--pp-border);
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.sticker-line {
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+  background: #f8fafc;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.sticker-line:hover,
+.sticker-line:focus-within {
+  border-color: var(--pp-primary);
+  box-shadow: 0 4px 14px rgba(var(--pp-blue-rgb), .08);
+}
+
+.sticker-line__head {
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px dashed var(--pp-border);
+}
+
+.sticker-line__head img {
+  width: 52px;
+  height: 52px;
+  padding: 4px;
+  border: 1px solid var(--pp-border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.sticker-line__head strong {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--pp-text-strong);
+}
+
+.sticker-line__head button {
+  width: 34px;
+  height: 34px;
+  transition: background-color .15s ease, color .15s ease;
+}
+
+.sticker-line__head button:hover {
+  background: #d92d20;
+  color: #fff;
+}
+
+.sticker-line__fields {
+  gap: var(--sp-3);
+}
+
+.sticker-line__fields label {
+  gap: 6px;
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--pp-text-strong);
+}
+
+.sticker-line__fields select,
+.sticker-line__fields input {
+  min-height: 42px;
+  background-color: #fff;
+  font-weight: 600;
+}
+
+.sticker-line__fields input {
+  text-align: center;
+}
+
+@media (max-width: 560px) {
+  .sticker-line__fields {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sticker-line__fields label:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- Hint under the settings: a soft note so the order of steps stands out ---------- */
+.sticker-controls__hint {
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 12px 16px;
+  border: 1px solid #fbe9c4;
+  border-radius: 14px;
+  background: #fffaf0;
+  color: #8a5a12;
+  font-size: .88rem;
+  line-height: 1.8;
+}
+
+.sticker-controls__hint i {
+  flex: none;
+  font-size: 1.05rem;
+  color: #e0a03a;
+}
+
+.sticker-controls__hint strong {
+  margin-inline-end: 4px;
+  color: #a4660d;
+  font-weight: 700;
+}
