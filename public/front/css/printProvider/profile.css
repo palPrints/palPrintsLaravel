@@ -214,3 +214,34 @@ body:not(.sidebar-collapsed) main.printshop-main{padding:27px 28px 50px}
 .upload-clear{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;padding:7px 12px;border:1px solid var(--line);border-radius:8px;color:#b42318;background:#fff;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
 .upload-clear:hover,.upload-clear:focus-visible{border-color:#fca5a5;background:#fef2f2}
 @media(max-width:560px){.upload-picked{flex-wrap:wrap}.upload-clear{width:100%;justify-content:center}}
+
+/* One focus line only: the border changes colour, with no second ring or outline around it. */
+.fields input:focus,.fields select:focus,.fields textarea:focus,.hours input:focus,.form-grid input:focus,
+.fields input:focus-visible,.fields select:focus-visible,.fields textarea:focus-visible,.hours input:focus-visible,.form-grid input:focus-visible{outline:0;box-shadow:none;border-color:var(--blue)}
+
+/* After a save attempt, every required field that is still empty or wrong gets a red border. */
+.was-validated .fields input:invalid,.was-validated .fields select:invalid,.was-validated .fields textarea:invalid,.was-validated .hours input:invalid,
+.fields input.is-invalid,.fields textarea.is-invalid{border-color:#dc2626}
+.was-validated .fields input:invalid:focus,.was-validated .fields select:invalid:focus,.was-validated .fields textarea:invalid:focus,
+.fields input.is-invalid:focus,.fields textarea.is-invalid:focus{border-color:#dc2626}
+
+/* The message under a required field that is empty or wrong. */
+.field-error{display:block;margin-top:6px;color:#dc2626;font-size:12px;font-weight:700;line-height:1.5}
+.was-validated .upload-field input[type=file]:invalid,.upload-field input[type=file].is-invalid{border-color:#dc2626;background:#fef2f2}
+
+/* Save and cancel at the top of the page, beside the title. */
+.heading-actions{display:flex;align-items:center;gap:10px;margin-inline-start:auto}
+.heading-actions[hidden]{display:none}
+.heading-actions .primary-btn,.heading-actions .secondary-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:8px 20px;font-size:13px;white-space:nowrap}
+@media (max-width:640px){.page-heading{flex-wrap:wrap}.heading-actions{width:100%}.heading-actions .primary-btn{flex:1}}
+
+/* The warning card shown when a save is blocked: red, with the missing data listed by name. */
+.printshop-toast.is-warning{max-width:min(380px,calc(100vw - 32px));padding:14px 18px;color:#fff;background:#dc2626;border:0;box-shadow:0 14px 40px rgba(185,28,28,.35)}
+.printshop-toast.is-warning span{display:block}
+.printshop-toast.is-warning strong{display:flex;align-items:center;gap:8px;margin-bottom:8px;color:#fff;font-size:14px;font-weight:800}
+.printshop-toast.is-warning strong::before{content:"\F33A";font-family:"bootstrap-icons";font-size:16px;font-weight:400;line-height:1}
+.printshop-toast.is-warning ul{display:grid;gap:5px;margin:0;padding:0;list-style:none}
+.printshop-toast.is-warning li{position:relative;padding-inline-start:16px;color:#fff;font-size:13px;font-weight:600}
+.printshop-toast.is-warning li::before{content:"";position:absolute;inset-inline-start:0;top:.55em;width:6px;height:6px;border-radius:50%;background:#fff}
+.upload-field small.field-error,.fields small.field-error,label small.field-error{color:#dc2626;font-size:12px;font-weight:700}
+.upload-field small.field-error::before,label small.field-error::before{content:"\F33A";font-family:"bootstrap-icons";margin-inline-end:6px;font-weight:400}

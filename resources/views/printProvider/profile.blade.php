@@ -42,6 +42,11 @@
             <p id="providerPageDescription" data-view-text="بيانات مطبعتك كما تظهر في حسابك." data-edit-text="عدّل بيانات مطبعتك ثم احفظ التغييرات.">{{ $startEditing ? 'عدّل بيانات مطبعتك ثم احفظ التغييرات.' : 'بيانات مطبعتك كما تظهر في حسابك.' }}</p>
         </div>
         @if ($canEdit)
+            {{-- Save and cancel sit at the top of the page, beside the title; the button belongs to the form below through its form attribute. --}}
+            <div class="heading-actions" id="providerFormActions" @unless ($startEditing) hidden @endunless>
+                <button class="primary-btn" type="submit" form="printerProfileForm"><i class="bi bi-floppy"></i> حفظ التغييرات</button>
+                <a class="secondary-btn" id="cancelProviderEdit" href="{{ route('print-provider.profile') }}">إلغاء</a>
+            </div>
             <button class="primary-btn heading-action" id="editProviderProfile" type="button" aria-expanded="{{ $startEditing ? 'true' : 'false' }}" @if ($startEditing) hidden @endif>
                 <i class="bi bi-pencil-square"></i> تعديل البيانات
             </button>
@@ -229,10 +234,10 @@
                             <label>اسم المطبعة <em>*</em><input name="company_name" required value="{{ old('company_name', $provider->company_name) }}"></label>
                             <label>البريد الإلكتروني <em>*</em><span class="input-icon"><i class="bi bi-envelope"></i><input name="email" required type="email" value="{{ old('email', $user->email) }}" dir="ltr"></span></label>
                             <label>هاتف المطبعة <em>*</em><span class="input-icon"><i class="bi bi-telephone"></i><input name="phone" required value="{{ old('phone', $provider->phone) }}" dir="ltr"></span></label>
-                            <label>واتساب<span class="input-icon whatsapp"><i class="bi bi-whatsapp"></i><input name="whatsapp_number" value="{{ old('whatsapp_number', $provider->whatsappDisplayNumber()) }}" placeholder="0599123456" dir="ltr"></span></label>
+                            <label>واتساب <em>*</em><span class="input-icon whatsapp"><i class="bi bi-whatsapp"></i><input name="whatsapp_number" required value="{{ old('whatsapp_number', $provider->whatsappDisplayNumber()) }}" placeholder="0599123456" dir="ltr"></span></label>
                             <label class="service-option full whatsapp-optin">
                                 <input type="checkbox" name="whatsapp_notifications" value="1" @checked(old('whatsapp_notifications', $provider->whatsapp_notifications_enabled))>
-                                <span>استقبال الطلبات الجديدة على واتساب، مع إمكانية قبولها أو رفضها من الرسالة</span>
+                                <span>استقبال الطلبات الجديدة على واتساب أو تيليجرام، مع إمكانية قبولها أو رفضها من الرسالة</span>
                             </label>
                         </div>
                     </div>
@@ -257,7 +262,7 @@
                             {{-- A div, not a label: a click on the "cancel" button inside a label would open the file picker again. --}}
                             <div class="upload-field" data-upload-field>
                                 <label class="upload-title" for="upload-{{ $field }}">{{ $label }} <em>*</em></label>
-                                <input type="file" id="upload-{{ $field }}" name="{{ $field }}" accept=".jpg,.jpeg,.png,.webp,.pdf,image/*,application/pdf">
+                                <input type="file" id="upload-{{ $field }}" name="{{ $field }}" @required(! filled($provider->$field)) accept=".jpg,.jpeg,.png,.webp,.pdf,image/*,application/pdf">
                                 {{-- The file picked and not saved yet: a preview, its name and size, and a way to take it back. --}}
                                 <div class="upload-picked" data-picked hidden>
                                     <img class="upload-picked-thumb" data-picked-image alt="" hidden>
@@ -362,10 +367,6 @@
             </div>
         </div>
 
-        <footer class="form-actions" id="providerFormActions" @unless ($startEditing) hidden @endunless>
-            <button class="primary-btn" type="submit"><i class="bi bi-floppy"></i> حفظ التغييرات</button>
-            <a class="secondary-btn" id="cancelProviderEdit" href="{{ route('print-provider.profile') }}">إلغاء</a>
-        </footer>
     </form>
 
         <section class="form-card review-card">
