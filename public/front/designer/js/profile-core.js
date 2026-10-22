@@ -635,7 +635,7 @@
 
   let toastTimer = null;
 
-  function toast(message, type) {
+  function toast(message, type, duration) {
     const element = document.getElementById("profileToast");
 
     if (!element || !message) {
@@ -673,7 +673,7 @@
 
     toastTimer = window.setTimeout(function () {
       element.classList.remove("is-visible");
-    }, 3200);
+    }, duration || 3200);
   }
 
   /* =======================================================

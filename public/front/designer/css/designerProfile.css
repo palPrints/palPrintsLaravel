@@ -1182,3 +1182,65 @@ html[data-bs-theme="dark"] .designer-skills-box {
 .designer-profile-page .profile-sidebar-link.active .profile-sidebar-badge,
 .designer-profile-page .profile-sidebar-link[aria-current="page"] .profile-sidebar-badge { color: #e5484d; background: #fff; }
 .designer-profile-page .profile-app.sidebar-collapsed .profile-sidebar-badge { top: 2px; inset-inline-start: 2px; min-width: 17px; height: 17px; padding: 0 3px; font-size: 8px; border: 2px solid #fff; transform: none; }
+
+/* Save and cancel at the top of the page, beside the title. */
+.designer-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-inline-start: auto;
+}
+
+.designer-heading-actions[hidden] {
+  display: none;
+}
+
+.designer-heading-actions .designer-primary-btn,
+.designer-heading-actions .designer-secondary-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .designer-profile-edit .designer-page-heading {
+    flex-wrap: wrap;
+  }
+
+  .designer-heading-actions {
+    width: 100%;
+  }
+
+  .designer-heading-actions .designer-primary-btn {
+    flex: 1;
+  }
+}
+
+/* The message under a required field that is empty or wrong: red, with a warning mark. */
+.designer-profile-edit .designer-field-error {
+  color: #dc2626;
+}
+
+.designer-profile-edit .designer-field-error[data-client]::before {
+  content: "\F33A";
+  font-family: "bootstrap-icons";
+  margin-inline-end: 6px;
+  font-weight: 400;
+}
+
+/* The card shown when a save is blocked: red, listing every missing field by name (this page only). */
+.designer-profile-edit .profile-toast.is-error {
+  align-items: flex-start;
+  color: #fff;
+  background: #dc2626;
+  border-color: #dc2626;
+  box-shadow: 0 14px 40px rgba(185, 28, 28, 0.35);
+}
+
+.designer-profile-edit .profile-toast.is-error #profileToastMessage {
+  white-space: pre-line;
+  line-height: 1.9;
+}
+
+.designer-profile-edit .profile-toast.is-error .profile-toast-icon {
+  color: #dc2626;
+  background: #fff;
+}

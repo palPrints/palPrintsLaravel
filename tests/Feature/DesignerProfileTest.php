@@ -78,7 +78,7 @@ test('designer can update profile data and upload a profile image', function () 
             'profile_image' => $image,
         ])
         ->assertRedirect(route('designer.profile'))
-        ->assertSessionHas('profile_status', 'updated');
+        ->assertSessionHas('profile_status', 'submitted');
 
     $designer->refresh();
     $profile = $designer->designerProfile()->firstOrFail();
@@ -172,7 +172,7 @@ test('phone is optional', function () {
         ->assertSessionDoesntHaveErrors('phone');
 });
 
-test('complete designer profile can submit an approval request', function () {
+test('saving a complete designer profile sends the approval request to the admins', function () {
     $designer = designerProfileTestUser();
 
     $this->actingAs($designer)
@@ -184,16 +184,12 @@ test('complete designer profile can submit an approval request', function () {
             'skills' => 'تصميم، هوية بصرية',
             'portfolio_url' => 'https://example.com/portfolio',
         ])
-        ->assertRedirect(route('designer.profile'));
+        ->assertRedirect(route('designer.profile'))
+        ->assertSessionHas('profile_status', 'submitted');
 
     $designer->refresh();
-    expect($designer->designerProfile->profile_completed_at)->not->toBeNull();
-
-    $this->actingAs($designer)
-        ->post(route('onboarding.submit'))
-        ->assertRedirect(route('designer.dashboard'));
-
-    expect($designer->fresh()->designerProfile->approval_status)->toBe('submitted')
+    expect($designer->designerProfile->profile_completed_at)->not->toBeNull()
+        ->and($designer->designerProfile->approval_status)->toBe('submitted')
         ->and($designer->approvalRequests()->count())->toBe(1);
 });
 
@@ -237,7 +233,7 @@ test('a stale completed flag cannot be used to submit a profile whose saved data
         ->and($designer->approvalRequests()->count())->toBe(0);
 });
 
-test('the send for approval button only shows once the saved profile is complete', function () {
+test('the profile page has no separate send for approval button any more', function () {
     $incomplete = designerProfileTestUser([], ['bio' => 'نبذة', 'skills' => ['تصميم'], 'profile_completed_at' => now()]);
 
     $this->actingAs($incomplete)
@@ -255,7 +251,7 @@ test('the send for approval button only shows once the saved profile is complete
     $this->actingAs($complete)
         ->get(route('designer.profile'))
         ->assertOk()
-        ->assertSee('إرسال للاعتماد');
+        ->assertDontSee('إرسال للاعتماد');
 });
 
 test('non designer accounts cannot access designer profile routes', function () {
