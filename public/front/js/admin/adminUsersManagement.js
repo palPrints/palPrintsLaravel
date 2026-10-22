@@ -335,6 +335,7 @@
       usersListTitle.innerHTML = '<i class="bi ' + type.icon + '" aria-hidden="true"></i><span>' + type.title + '</span>';
       usersPanel.className = "users-panel theme-" + typeKey;
       usersManagement.className = "users-management theme-" + typeKey;
+      document.getElementById("addPrintShopButton").hidden = typeKey !== "printShops";
       renderFilters();
       renderUsers();
       if (updateHash) window.history.replaceState(null, "", "#" + (typeKey === "printShops" ? "print-shops" : typeKey));
@@ -460,6 +461,60 @@
     document.querySelectorAll("[data-customer-tab]").forEach(function (tab) {
       tab.addEventListener("click", function () { showCustomerTab(tab.dataset.customerTab); });
     });
+    /* Add a print shop: the admin fills the form, the server creates an approved, verified account. */
+    const addShopButton = document.getElementById("addPrintShopButton");
+    const addShopDialog = document.getElementById("addPrintShopDialog");
+    const addShopForm = document.getElementById("addPrintShopForm");
+
+    function showAddShopErrors(errors) {
+      addShopForm.querySelectorAll("[data-error-for]").forEach(function (node) {
+        const messages = errors && errors[node.dataset.errorFor];
+        node.hidden = !messages;
+        node.textContent = messages ? messages[0] : "";
+        const input = node.closest("label").querySelector("input");
+        input.classList.toggle("is-invalid", Boolean(messages));
+      });
+    }
+
+    addShopButton.addEventListener("click", function () {
+      addShopForm.reset();
+      showAddShopErrors(null);
+      addShopDialog.showModal();
+      addShopForm.elements.company_name.focus();
+    });
+    document.getElementById("closeAddPrintShopDialog").addEventListener("click", function () { addShopDialog.close(); });
+    addShopDialog.addEventListener("click", function (event) {
+      if (event.target === addShopDialog) addShopDialog.close();
+    });
+    addShopForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      const submit = document.getElementById("submitAddPrintShop");
+      const body = Object.fromEntries(new window.FormData(addShopForm).entries());
+      showAddShopErrors(null);
+      submit.disabled = true;
+
+      window.fetch(addShopForm.dataset.url, {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": csrf ? csrf.content : ""
+        },
+        body: JSON.stringify(body)
+      })
+        .then(function (response) {
+          return response.json().then(function (data) { return { ok: response.ok, status: response.status, data: data }; });
+        })
+        .then(function (result) {
+          if (result.status === 422) { showAddShopErrors(result.data.errors); return; }
+          if (!result.ok) throw new Error(result.data.message || "تعذّرت إضافة المطبعة.");
+          toast(result.data.message);
+          window.location.href = window.location.pathname + "?open=" + result.data.user_id + "#print-shops";
+        })
+        .catch(function (error) { toast(error.message || "تعذّرت إضافة المطبعة."); })
+        .finally(function () { submit.disabled = false; });
+    });
+
     closeRejectReasonDialog.addEventListener("click", function () { rejectReasonDialog.close(); });
     rejectReasonDialog.addEventListener("click", function (event) {
       if (event.target === rejectReasonDialog) rejectReasonDialog.close();

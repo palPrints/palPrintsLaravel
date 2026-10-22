@@ -230,6 +230,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/support/{ticket}/status', [AdminSupportController::class, 'updateStatus'])->name('support.status');
         Route::get('/users', [AdminUserController::class, 'index'])->name('users');
         Route::post('/users/{user}/toggle', [AdminUserController::class, 'toggle'])->name('users.toggle');
+        Route::post('/users/print-shops', [AdminUserController::class, 'storePrintShop'])->name('users.print-shops.store');
         Route::get('/profile', [AdminProfileController::class, 'show'])->name('profile');
         Route::patch('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password', [AdminProfileController::class, 'updatePassword'])->name('profile.password');

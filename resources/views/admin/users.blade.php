@@ -16,6 +16,7 @@
 
         <div class="users-toolbar">
             <div class="users-filters" id="usersFilters" aria-label="تصفية المستخدمين"></div>
+            <button class="add-print-shop-button" id="addPrintShopButton" type="button" hidden><i class="bi bi-plus-lg" aria-hidden="true"></i> إضافة مطبعة</button>
         </div>
 
         <section class="users-panel theme-customers" id="usersPanel" aria-labelledby="usersListTitle">
@@ -59,6 +60,29 @@
     <footer class="customer-dialog-footer">
         <button class="customer-disable-button" id="customerDisableButton" type="button">تعطيل الحساب</button>
     </footer>
+</dialog>
+
+<dialog class="customer-details-dialog add-print-shop-dialog" id="addPrintShopDialog" aria-labelledby="addPrintShopTitle">
+    <form id="addPrintShopForm" data-url="{{ route('admin.users.print-shops.store') }}" novalidate>
+        <header class="customer-dialog-header">
+            <h2 id="addPrintShopTitle">إضافة مطبعة</h2>
+            <button class="customer-dialog-close" id="closeAddPrintShopDialog" type="button" aria-label="إغلاق"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+        </header>
+        <div class="customer-dialog-body">
+            <p class="add-print-shop-hint">تُنشأ المطبعة معتمدة وبريدها موثّق، فتقدر تسجّل الدخول مباشرة. أبلغها بالبريد وكلمة المرور.</p>
+            <div class="add-print-shop-grid">
+                <label><span>اسم المطبعة</span><input name="company_name" type="text" maxlength="255" required autocomplete="off"><small class="field-error" data-error-for="company_name" hidden></small></label>
+                <label><span>اسم المسؤول</span><input name="name" type="text" maxlength="255" required autocomplete="off"><small class="field-error" data-error-for="name" hidden></small></label>
+                <label><span>البريد الإلكتروني</span><input name="email" type="email" dir="ltr" maxlength="255" required autocomplete="off"><small class="field-error" data-error-for="email" hidden></small></label>
+                <label><span>رقم الهاتف</span><input name="phone" type="tel" dir="ltr" maxlength="30" required autocomplete="off"><small class="field-error" data-error-for="phone" hidden></small></label>
+                <label class="is-wide"><span>العنوان</span><input name="address" type="text" maxlength="255" placeholder="المدينة، الشارع" required autocomplete="off"><small class="field-error" data-error-for="address" hidden></small></label>
+                <label class="is-wide"><span>كلمة المرور</span><input name="password" type="text" dir="ltr" required autocomplete="new-password"><small class="field-error" data-error-for="password" hidden></small></label>
+            </div>
+        </div>
+        <footer class="customer-dialog-footer">
+            <button class="add-print-shop-submit" id="submitAddPrintShop" type="submit">إضافة المطبعة</button>
+        </footer>
+    </form>
 </dialog>
 
 <dialog class="customer-details-dialog reject-reason-dialog" id="rejectReasonDialog" aria-labelledby="rejectReasonTitle">

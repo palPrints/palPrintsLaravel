@@ -191,3 +191,26 @@
   .customer-details-dialog[open] { animation: none; }
   .designer-expansion { animation: none; }
 }
+
+/* Add a print shop */
+.users-toolbar { justify-content: space-between; }
+.add-print-shop-button { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 8px 18px; color: #fff; background: var(--pp-blue-600, #1590ff); border: 0; border-radius: 9px; font: 800 12px/1.4 "Cairo", sans-serif; cursor: pointer; transition: background-color 0.15s ease; }
+.add-print-shop-button:hover { background: var(--pp-blue-700, #0b6fd6); }
+.add-print-shop-button[hidden] { display: none; }
+.add-print-shop-dialog { width: min(560px, calc(100% - 28px)); }
+.add-print-shop-hint { margin: 0 0 16px; padding: 10px 14px; color: #14532d; background: #edfbf3; border: 1px solid #b7e6cb; border-radius: 9px; font-size: 11.5px; line-height: 1.8; }
+.add-print-shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.add-print-shop-grid label { display: grid; gap: 6px; min-width: 0; color: var(--pp-navy-800); font-size: 11.5px; font-weight: 800; }
+.add-print-shop-grid label.is-wide { grid-column: 1 / -1; }
+.add-print-shop-grid input { width: 100%; min-height: 40px; padding: 0 12px; color: var(--pp-navy-800); background: #fff; border: 1px solid #dce5ef; border-radius: 9px; font: 600 12px/1.4 "Cairo", sans-serif; }
+.add-print-shop-grid input:focus { outline: 2px solid var(--users-accent, var(--pp-blue-600)); outline-offset: 1px; }
+.add-print-shop-grid input.is-invalid { border-color: #d92d20; }
+.field-error { color: #d92d20; font-size: 10.5px; font-weight: 800; }
+.field-error[hidden] { display: none; }
+.add-print-shop-submit { min-height: 40px; padding: 8px 22px; color: #fff; background: #15924d; border: 0; border-radius: 9px; font: 800 12px/1.4 "Cairo", sans-serif; cursor: pointer; }
+.add-print-shop-submit:hover { background: #0f7a3f; }
+.add-print-shop-submit:disabled { opacity: 0.6; cursor: wait; }
+@media (max-width: 560px) {
+  .add-print-shop-grid { grid-template-columns: 1fr; }
+  .add-print-shop-button { justify-content: center; }
+}
