@@ -7,6 +7,7 @@ use App\Http\Requests\Designer\UpdateProfileRequest;
 use App\Models\AuditLog;
 use App\Models\Design;
 use App\Models\DesignerProfile;
+use App\Services\ApprovalSubmissionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -59,7 +60,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function update(UpdateProfileRequest $request): RedirectResponse
+    public function update(UpdateProfileRequest $request, ApprovalSubmissionService $submission): RedirectResponse
     {
         $validated = $request->validated();
         $skills = $request->skillList();
@@ -147,6 +148,16 @@ class ProfileController extends Controller
 
         if ($newImagePath !== null && $this->isLocalImagePath($oldImagePath)) {
             Storage::disk('public')->delete($oldImagePath);
+        }
+
+        // Saving a complete profile sends it straight to the admins; there is no separate "send for approval" step.
+        $user->unsetRelation('designerProfile');
+        if ($submission->canSubmit($user)) {
+            $submission->submit($user, $request->ip(), $request->userAgent());
+
+            return redirect()
+                ->route('designer.profile')
+                ->with('profile_status', 'submitted');
         }
 
         return redirect()

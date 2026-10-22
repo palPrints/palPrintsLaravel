@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\PrintProvider\DocumentController;
 use App\Models\ApprovalRequest;
 use App\Models\AuditLog;
 use App\Models\Design;
@@ -12,10 +11,15 @@ use App\Models\PrintProvider;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
+use App\Models\Wallet;
+use App\Services\AccountProvisioningService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -66,6 +70,75 @@ class UserController extends Controller
             'status' => $this->onboardingStatus($user, $profile?->approval_status),
             'message' => $active ? 'تم تفعيل الحساب.' : 'تم تعطيل الحساب، ولن يستطيع المستخدم الدخول.',
         ]);
+    }
+
+    /** The admin adds a print shop directly: the account is created already verified and approved, so the shop can sign in at once. */
+    public function storePrintShop(Request $request, AccountProvisioningService $accounts): JsonResponse
+    {
+        $validated = $request->validate([
+            'company_name' => ['required', 'string', 'min:2', 'max:255'],
+            'name' => ['required', 'string', 'min:3', 'max:255'],
+            'email' => ['required', 'email:rfc', 'max:255', Rule::unique('users', 'email')],
+            'phone' => ['required', 'string', 'max:30'],
+            'address' => ['required', 'string', 'max:255'],
+            'password' => ['required', Password::defaults()],
+        ], [
+            'company_name.required' => 'اسم المطبعة مطلوب.',
+            'name.required' => 'اسم المسؤول مطلوب.',
+            'name.min' => 'يجب أن يتكون اسم المسؤول من 3 أحرف على الأقل.',
+            'email.required' => 'البريد الإلكتروني مطلوب.',
+            'email.email' => 'البريد الإلكتروني غير صالح.',
+            'email.unique' => 'هذا البريد الإلكتروني مستخدم من قبل.',
+            'phone.required' => 'رقم الهاتف مطلوب.',
+            'address.required' => 'العنوان مطلوب.',
+            'password.required' => 'كلمة المرور مطلوبة.',
+        ]);
+
+        $admin = $request->user();
+
+        $user = DB::transaction(function () use ($accounts, $validated, $admin): User {
+            $user = $accounts->create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => $validated['password'],
+                'account_type' => 'print_provider',
+                'email_verified_at' => now(),
+            ]);
+            $user->update(['phone' => $validated['phone']]);
+
+            $provider = $user->printProvider;
+            $provider->update([
+                'company_name' => $validated['company_name'],
+                'phone' => $validated['phone'],
+                'contact_email' => $validated['email'],
+                'address' => $validated['address'],
+                'approval_status' => 'approved',
+                'submitted_at' => now(),
+                'reviewed_at' => now(),
+                'approved_at' => now(),
+                'approved_by' => $admin->id,
+                'is_active' => true,
+            ]);
+            $provider->primaryBranch();
+
+            Wallet::firstOrCreate(['user_id' => $user->id]);
+
+            AuditLog::create([
+                'user_id' => $admin->id,
+                'action' => 'admin.print_shop_created',
+                'description' => 'إضافة مطبعة «'.$validated['company_name'].'» من الإدارة.',
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'new_values' => ['user_id' => $user->id, 'company_name' => $validated['company_name']],
+            ]);
+
+            return $user;
+        });
+
+        return response()->json([
+            'message' => 'تمت إضافة المطبعة، ويمكنها تسجيل الدخول الآن.',
+            'user_id' => $user->id,
+        ], 201);
     }
 
     private function customers(): array
@@ -222,11 +295,6 @@ class UserController extends Controller
                     'revenue' => '₪'.number_format((float) ($stats?->revenue ?? 0)),
                     'workingHours' => $this->workingHoursSummary($profile?->working_hours),
                     'operating' => $profile?->is_active ?? true,
-                    // Private files: opened through a protected link, not a public /storage URL.
-                    'verificationDocument' => DocumentController::url($profile, 'verification_document'),
-                    // The identity picture is only stored once the schema has the column.
-                    'idDocument' => DocumentController::url($profile, 'id_document'),
-                    'idDocumentAvailable' => Schema::hasColumn('print_providers', 'id_document'),
                     'contactEmail' => $profile?->getAttribute('contact_email') ?: '',
                     'status' => $this->onboardingStatus($user, $profile?->approval_status),
                     'submittedAt' => $request?->submitted_at?->locale('ar')->translatedFormat('j F Y') ?? '—',

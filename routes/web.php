@@ -170,12 +170,6 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/onboarding/submit', [OnboardingController::class, 'submit'])
         ->name('onboarding.submit');
 
-    // A print shop's identity and licence files: only the admin and the shop's owner (checked in the controller).
-    Route::get('/print-provider-documents/{provider}/{field}', \App\Http\Controllers\PrintProvider\DocumentController::class)
-        ->whereNumber('provider')
-        ->whereIn('field', \App\Http\Controllers\PrintProvider\DocumentController::FIELDS)
-        ->name('print-provider.documents');
-
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
         Route::get('/designs', [AdminDesignController::class, 'index'])->name('designs');
@@ -230,6 +224,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/support/{ticket}/status', [AdminSupportController::class, 'updateStatus'])->name('support.status');
         Route::get('/users', [AdminUserController::class, 'index'])->name('users');
         Route::post('/users/{user}/toggle', [AdminUserController::class, 'toggle'])->name('users.toggle');
+        Route::post('/users/print-shops', [AdminUserController::class, 'storePrintShop'])->name('users.print-shops.store');
         Route::get('/profile', [AdminProfileController::class, 'show'])->name('profile');
         Route::patch('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password', [AdminProfileController::class, 'updatePassword'])->name('profile.password');

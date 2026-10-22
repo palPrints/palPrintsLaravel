@@ -62,3 +62,51 @@ test('the users page shows the real orders of customers and the real jobs of sho
             return $row['metric'] === 2 && $row['spend'] === '₪80' && $row['lastOrder'] !== '—' && str_contains($row['toggleUrl'], '/toggle');
         });
 });
+
+test('the admin adds a print shop that is verified and approved at once, and the shop can sign in', function () {
+    $payload = [
+        'company_name' => 'مطبعة النور',
+        'name' => 'أحمد النور',
+        'email' => 'noor.print@example.com',
+        'phone' => '0599123456',
+        'address' => 'غزة، الرمال',
+        'password' => 'Str0ng-Pass-2026!',
+    ];
+
+    $this->actingAs($this->admin)->postJson(route('admin.users.print-shops.store'), $payload)
+        ->assertCreated();
+
+    $owner = User::where('email', 'noor.print@example.com')->firstOrFail();
+    $provider = $owner->printProvider;
+
+    expect($owner->hasRole('print_provider'))->toBeTrue()
+        ->and($owner->email_verified_at)->not->toBeNull()
+        ->and($owner->is_active)->toBeTrue()
+        ->and($provider->company_name)->toBe('مطبعة النور')
+        ->and($provider->approval_status)->toBe('approved')
+        ->and($provider->approved_by)->toBe($this->admin->id)
+        ->and($provider->is_active)->toBeTrue()
+        ->and($provider->branches()->count())->toBe(1)
+        ->and($owner->hasApprovedBusinessAccount())->toBeTrue();
+
+    $this->post(route('logout'));
+    $this->post(route('login'), ['email' => 'noor.print@example.com', 'password' => 'Str0ng-Pass-2026!'])
+        ->assertSessionHasNoErrors();
+    $this->assertAuthenticatedAs($owner);
+});
+
+test('adding a print shop needs its fields, a new email, and only an admin can do it', function () {
+    $taken = User::factory()->create(['email' => 'taken@example.com']);
+
+    $this->actingAs($this->admin)->postJson(route('admin.users.print-shops.store'), [])
+        ->assertUnprocessable()->assertJsonValidationErrors(['company_name', 'name', 'email', 'phone', 'address', 'password']);
+
+    $this->actingAs($this->admin)->postJson(route('admin.users.print-shops.store'), [
+        'company_name' => 'مطبعة', 'name' => 'مسؤول', 'email' => 'taken@example.com',
+        'phone' => '0599', 'address' => 'غزة', 'password' => 'Str0ng-Pass-2026!',
+    ])->assertUnprocessable()->assertJsonValidationErrors(['email']);
+
+    $customer = User::factory()->create();
+    $customer->assignRole('customer');
+    $this->actingAs($customer)->postJson(route('admin.users.print-shops.store'), [])->assertForbidden();
+});

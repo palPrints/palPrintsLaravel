@@ -145,8 +145,6 @@ test('a print shop goes from sign-up to a delivered order', function () {
         'company_name' => 'مطبعة الأمل', 'contact_name' => 'أمل الطابعة', 'email' => 'alamal@palprints.test',
         'phone' => '022987654', 'owner_phone' => '0599000111', 'address' => 'رام الله، شارع الإرسال',
         'whatsapp_number' => '+972 59 768 1977', 'whatsapp_notifications' => '1',
-        'verification_document' => UploadedFile::fake()->create('licence.pdf', 40, 'application/pdf'),
-        'id_document' => UploadedFile::fake()->create('id.jpg', 40, 'image/jpeg'),
         'products' => [$this->paper->id],
         'available' => '1', 'days' => ['السبت', 'الأحد'], 'from' => '08:00', 'to' => '18:00',
     ])->assertSessionHasNoErrors();

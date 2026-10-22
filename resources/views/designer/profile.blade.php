@@ -1,6 +1,7 @@
 @extends('designer.layouts.app')
 
 @section('title', 'الملف الشخصي')
+@section('body-class', 'designer-profile-edit')
 
 @php
     $status = $approval['status'];
@@ -35,6 +36,11 @@
                 <div>
                     <h1>الملف الشخصي للمصمم</h1>
                     <p id="designerPageDescription" data-view-text="بياناتك الشخصية والمهنية كما تظهر في حسابك." data-edit-text="عدّل بياناتك الشخصية والمهنية، ثم احفظ التغييرات.">بياناتك الشخصية والمهنية كما تظهر في حسابك.</p>
+                </div>
+                {{-- Save and cancel sit at the top, beside the title; the save button belongs to the form below through its form attribute. --}}
+                <div class="designer-heading-actions" id="designerFormActions" @unless ($startEditing) hidden @endunless>
+                    <button class="designer-primary-btn" type="submit" form="designerProfileForm"><i class="bi bi-floppy"></i> حفظ التغييرات</button>
+                    <button class="designer-secondary-btn" id="cancelDesignerEdit" type="button">إلغاء</button>
                 </div>
                 <button class="designer-primary-btn designer-heading-action" id="editDesignerProfile" type="button" aria-expanded="false">
                     <i class="bi bi-pencil-square" aria-hidden="true"></i>
@@ -214,19 +220,19 @@
                                 <p>يمكنك رفع التصاميم ونشرها وطلب استلام أرباحك.</p>
                             @elseif ($status === 'rejected')
                                 <h3>تم رفض الحساب بسبب خلل في البيانات</h3>
-                                <p>عدّل بياناتك ثم أرسل الطلب للمراجعة مرة أخرى.</p>
+                                <p>عدّل بياناتك واحفظها، وسيُعاد إرسال الطلب للمراجعة تلقائيًا.</p>
                             @elseif ($status === 'changes_requested')
                                 <h3>حسابك بحاجة إلى تعديل البيانات</h3>
-                                <p>عدّل البيانات المطلوبة ثم أرسل الطلب للمراجعة مرة أخرى.</p>
+                                <p>عدّل البيانات المطلوبة واحفظها، وسيُعاد إرسال الطلب للمراجعة تلقائيًا.</p>
                             @elseif ($awaitingReview)
                                 <h3>طلب الاعتماد قيد المراجعة</h3>
                                 <p>سيصلك إشعار عند قبول أو رفض طلب اعتماد حسابك.</p>
                             @elseif ($profileComplete)
-                                <h3>ملفك مكتمل، أرسله للمراجعة</h3>
-                                <p>أرسل طلب اعتماد الحساب لتراجع الإدارة بياناتك وتفعّل صلاحيات المصمم.</p>
+                                <h3>ملفك مكتمل</h3>
+                                <p>اضغط "تعديل البيانات الشخصية" ثم احفظ التغييرات ليُرسل طلب الاعتماد للإدارة وتفعّل صلاحيات المصمم.</p>
                             @else
                                 <h3>أكمل ملفك الشخصي</h3>
-                                <p>أضف التخصص والمهارات ورابط معرض الأعمال ثم أرسل الطلب للمراجعة.</p>
+                                <p>أضف التخصص والمهارات ورابط معرض الأعمال واحفظها، وسيُرسل الطلب للمراجعة تلقائيًا.</p>
                             @endif
                         </div>
                     </div>
@@ -237,20 +243,8 @@
                 </div>
             </section>
 
-            <footer class="designer-form-actions" id="designerFormActions" @unless ($startEditing) hidden @endunless>
-                <button class="designer-secondary-btn" id="cancelDesignerEdit" type="button">إلغاء</button>
-                <div>
-                    <button class="designer-primary-btn" type="submit"><i class="bi bi-floppy"></i> حفظ التغييرات</button>
-                </div>
-            </footer>
         </form>
 
-        @if ($profileComplete && in_array($status, ['draft', 'rejected', 'changes_requested'], true))
-            <form method="POST" action="{{ route('onboarding.submit') }}" class="designer-submit-review">
-                @csrf
-                <button class="designer-outline-primary" type="submit"><i class="bi bi-send"></i> إرسال للاعتماد</button>
-            </form>
-        @endif
     </main>
 @endsection
 

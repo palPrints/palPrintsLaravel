@@ -18,6 +18,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const portfolioClearButton = document.getElementById("portfolioClearButton");
 
   const submitReview = document.querySelector(".designer-submit-review");
+  /* The save button sits in the page heading, outside the form, and belongs to it through its form attribute. */
+  const submitButton = document.querySelector('[type=submit][form="designerProfileForm"]');
 
   let submitting = false;
 
@@ -174,6 +176,15 @@ document.addEventListener("DOMContentLoaded", function () {
     return field.validationMessage || "القيمة غير صالحة.";
   }
 
+  /* The label of a field, without the star, for the list of what is missing. */
+  function fieldName(field) {
+    const label = field.closest("label") || (field.id && document.querySelector('label[for="' + field.id + '"]'));
+    if (!label) return field.name || "";
+    const copy = label.cloneNode(true);
+    copy.querySelectorAll("em, input, select, textarea, small, span, i").forEach(function (node) { node.remove(); });
+    return copy.textContent.split("*").join("").trim() || field.name || "";
+  }
+
   function showFieldError(field) {
     field.setAttribute("aria-invalid", "true");
     if (field === skillInput && skillsBox) skillsBox.classList.add("is-invalid");
@@ -223,13 +234,21 @@ document.addEventListener("DOMContentLoaded", function () {
       invalidFields.forEach(showFieldError);
 
       const first = invalidFields[0];
-      if (first) first.focus();
+      if (first) {
+        first.scrollIntoView({ block: "center", behavior: "smooth" });
+        first.focus({ preventScroll: true });
+      }
       if (Core) {
+        /* A red card that names every missing field. */
+        const names = [];
+        invalidFields.forEach(function (field) {
+          const name = fieldName(field);
+          if (name && names.indexOf(name) < 0) names.push(name);
+        });
         Core.toast(
-          invalidFields.length > 1
-            ? "راجع الحقول المطلوبة قبل الحفظ."
-            : fieldErrorMessage(first),
-          "error"
+          "أكمل البيانات التالية قبل الحفظ (" + names.length + "):\n" + names.map(function (name) { return "• " + name; }).join("\n"),
+          "error",
+          7000
         );
       }
       return;
@@ -237,7 +256,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     submitting = true;
 
-    const submitButton = form.querySelector("[type=submit]");
     if (submitButton) {
       submitButton.disabled = true;
       submitButton.setAttribute("aria-busy", "true");
@@ -248,12 +266,15 @@ document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener("pageshow", function () {
     submitting = false;
 
-    const submitButton = form.querySelector("[type=submit]");
     if (submitButton) {
       submitButton.disabled = false;
       submitButton.removeAttribute("aria-busy");
     }
   });
+
+  if (window.designerProfileFlash === "submitted" && Core) {
+    Core.toast("تم حفظ بياناتك وإرسال طلب الاعتماد للإدارة.", "success", 5000);
+  }
 
   if (window.designerProfileFlash === "updated" && Core) {
     Core.toast("تم حفظ بيانات الملف الشخصي بنجاح.", "success");

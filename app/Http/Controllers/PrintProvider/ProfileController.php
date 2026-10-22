@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\PrintProvider;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApprovalRequest;
 use App\Models\BranchProductOffering;
 use App\Models\PrintProvider;
 use App\Models\PrintProviderBranch;
@@ -31,11 +32,8 @@ class ProfileController extends Controller
         'delivery' => 'التوصيل للعميل',
     ];
 
-    /** Required verification documents: print_providers column => label. */
-    private const DOCUMENT_LABELS = [
-        'verification_document' => 'وثيقة التحقق',
-        'id_document' => 'صورة الهوية',
-    ];
+    /** Print shops no longer upload verification or ID documents; kept empty so the profile completes without them. */
+    private const DOCUMENT_LABELS = [];
 
     /**
      * Documents the current schema can store. `id_document` is only offered once the column exists.
@@ -170,11 +168,11 @@ class ProfileController extends Controller
             'email' => ['required', 'email', 'max:255', Rule::unique(User::class, 'email')->ignore($request->user())],
             'phone' => ['required', 'string', 'max:30'],
             'owner_phone' => ['required', 'string', 'max:30'],
-            'whatsapp_number' => ['nullable', 'string', 'max:30', function (string $attribute, mixed $value, Closure $fail) {
+            'whatsapp_number' => ['required', 'string', 'max:30', function (string $attribute, mixed $value, Closure $fail) {
                 if (PhoneNumber::normalize((string) $value) === null) {
                     $fail('أدخل رقم واتساب صحيحًا، مثل 0599123456 أو ‎+970599123456.');
                 }
-            }, 'required_if_accepted:whatsapp_notifications'],
+            }],
             'whatsapp_notifications' => ['nullable', 'boolean'],
             'products' => ['nullable', 'array'],
             'products.*' => ['integer', Rule::exists('products', 'id')->where('is_active', true)],
@@ -203,7 +201,7 @@ class ProfileController extends Controller
             'email.unique' => 'هذا البريد الإلكتروني مستخدم بالفعل.',
             'phone.required' => 'أدخل رقم هاتف المطبعة.',
             'owner_phone.required' => 'أدخل رقم هاتف صاحب المطبعة.',
-            'whatsapp_number.required_if_accepted' => 'أدخل رقم الواتساب الذي ستصلك عليه الطلبات.',
+            'whatsapp_number.required' => 'أدخل رقم الواتساب الذي ستصلك عليه الطلبات.',
             'address.required' => 'أدخل العنوان التفصيلي.',
         ] + self::documentMessages($documentFields));
 

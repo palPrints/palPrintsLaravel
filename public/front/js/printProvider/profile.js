@@ -40,8 +40,42 @@ document.addEventListener("DOMContentLoaded",function(){
     clear.addEventListener("click",function(){input.value="";reset();input.focus()});
   });
 
-  function showToast(message,success){toast.querySelector("span").textContent=message;toast.classList.toggle("is-success",!!success);toast.classList.add("show");setTimeout(function(){toast.classList.remove("show")},2800)}
-  form.addEventListener("submit",function(event){if(!form.reportValidity()){event.preventDefault();return}syncDays()});
+  function showToast(message,success){toast.querySelector("span").textContent=message;toast.classList.remove("is-warning");toast.classList.toggle("is-success",!!success);toast.classList.add("show");setTimeout(function(){toast.classList.remove("show")},4500)}
+  /* The save was blocked: say which data is missing, by name, in a warning card. */
+  var missingTimer;
+  function fieldName(input){
+    var wrap=input.closest(".upload-field"),label=wrap?wrap.querySelector(".upload-title"):input.closest("label");
+    if(!label)return input.name||"";
+    var copy=label.cloneNode(true);copy.querySelectorAll("em,input,select,textarea,small,span,i").forEach(function(node){node.remove()});
+    return copy.textContent.split("*").join("").trim()||input.name||"";
+  }
+  function showMissingToast(invalid){
+    var names=[];invalid.forEach(function(input){var name=fieldName(input);if(name&&names.indexOf(name)<0)names.push(name)});
+    var holder=toast.querySelector("span");holder.textContent="";
+    var title=document.createElement("strong");title.textContent="أكمل البيانات التالية قبل الحفظ ("+names.length+")";
+    var list=document.createElement("ul");names.forEach(function(name){var item=document.createElement("li");item.textContent=name;list.appendChild(item)});
+    holder.appendChild(title);holder.appendChild(list);
+    toast.classList.remove("is-success");toast.classList.add("is-warning","show");
+    clearTimeout(missingTimer);missingTimer=setTimeout(function(){toast.classList.remove("show","is-warning")},7000);
+  }
+  /* A required field left empty or wrong: a red border and a short message right under that field (no browser bubble). */
+  function fieldHolder(input){return input.closest(".input-icon")||input}
+  function clearFieldError(input){var holder=fieldHolder(input),note=holder.nextElementSibling;if(note&&note.classList.contains("field-error"))note.remove();input.classList.remove("is-invalid")}
+  function showFieldError(input){
+    clearFieldError(input);
+    var holder=fieldHolder(input),note=document.createElement("small");
+    note.className="field-error";note.setAttribute("role","alert");
+    note.textContent=input.validity.valueMissing?"هذا الحقل مطلوب":(input.validity.typeMismatch||input.validity.patternMismatch?"القيمة المدخلة غير صالحة":input.validationMessage);
+    holder.insertAdjacentElement("afterend",note);input.classList.add("is-invalid");
+  }
+  form.addEventListener("invalid",function(event){event.preventDefault();showFieldError(event.target)},true);
+  form.addEventListener("input",function(event){if(event.target.matches("input,textarea,select"))clearFieldError(event.target)});
+  form.addEventListener("submit",function(event){
+    form.classList.add("was-validated");
+    form.querySelectorAll(".field-error").forEach(function(note){note.remove()});
+    if(!form.checkValidity()){event.preventDefault();var invalid=form.querySelectorAll(":invalid"),first=invalid[0];showMissingToast(invalid);if(first){first.scrollIntoView({block:"center",behavior:"smooth"});if(first.type!=="file")first.focus({preventScroll:true})}return}
+    syncDays()
+  });
   if(window.printProviderProfileFlash==="updated")showToast("تم حفظ التغييرات بنجاح",true);
   if(window.printProviderProfileFlash==="submitted")showToast("تم حفظ بياناتك وإرسال طلب الاعتماد للإدارة",true);
 });
