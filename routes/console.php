@@ -16,8 +16,8 @@ Artisan::command('guests:prune {days=7}', function (int $days) {
 // Demo shops and orders (see DemoShopsSeeder): `php artisan db:seed --class=DemoShopsSeeder` adds them, this removes exactly those.
 Artisan::command('demo:shops-clean', function () {
     $removed = \Database\Seeders\DemoShopsSeeder::clean();
-    $this->info('Removed '.$removed['orders'].' demo order(s) and '.$removed['accounts'].' demo account(s) with their shops.');
-})->purpose('Remove the demo print shops, customers and orders made by DemoShopsSeeder');
+    $this->info('Removed '.$removed['orders'].' demo order(s), '.$removed['accounts'].' demo account(s) with their shops, '.$removed['designs'].' design(s) and '.$removed['stickers'].' sticker(s).');
+})->purpose('Remove the demo print shops, customers, designers, designs, stickers and orders made by DemoShopsSeeder');
 
 // Print-shop identity/licence files and support attachments used to be saved on the public disk (open to anyone with the link).
 // This copies them to the private disk under the same path, checks the copy, and only then removes the public one.
@@ -136,3 +136,13 @@ Artisan::command('stickers:retry-pdf {order}', function () {
     $this->info('PDFs ready; delivery dispatched to the assigned shops.');
     return 0;
 })->purpose('Regenerate missing sticker PDFs and dispatch shop delivery');
+
+// Demo (mock) data for a fresh server: seeds when the site has fewer approved print shops than DEMO_MIN_SHOPS (5).
+// The deploy's `php artisan migrate` runs this once when DEMO_SEED_ON_DEPLOY=true (see config/demo.php).
+Artisan::command('demo:seed-if-needed', function () {
+    $result = \App\Support\DemoData::seedIfNeeded();
+
+    $this->info($result['seeded']
+        ? 'Demo data seeded: print shops '.$result['shops_before'].' -> '.$result['shops_after'].'.'
+        : 'Nothing to do: the site already has '.$result['shops_before'].' approved print shops.');
+})->purpose('Seed the demo data when the site has fewer approved print shops than DEMO_MIN_SHOPS');

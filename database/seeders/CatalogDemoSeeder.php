@@ -239,7 +239,9 @@ class CatalogDemoSeeder extends Seeder
      */
     private function seedBranchCatalog(array $products): void
     {
-        $printProvider = PrintProvider::query()->first();
+        // The demo shop's, so the demo branches never land on a real shop; the first shop only on a site without it.
+        $printProvider = PrintProvider::query()->whereHas('user', fn ($query) => $query->where('email', 'demo.provider@palprints.test'))->first()
+            ?? PrintProvider::query()->first();
 
         if (! $printProvider) {
             return;
