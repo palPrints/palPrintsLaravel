@@ -270,7 +270,6 @@ body.paper-printing-page::after {
   transition: color .18s ease, background-color .18s ease, transform .18s ease;
 }
 
-.paper-printing-page .profile-breadcrumb a:hover,
 .paper-printing-page .profile-breadcrumb a:focus-visible {
   color: var(--profile-primary);
   background: var(--profile-primary-soft);
@@ -283,8 +282,6 @@ body.paper-printing-page::after {
   cursor: default;
 }
 
-.paper-printing-page .profile-sidebar-link:hover,
-.paper-printing-page .profile-sidebar-toggle:hover,
 .paper-printing-page .profile-action-button[aria-expanded="true"] {
   color: var(--paper-primary);
   background: var(--paper-primary-soft);
@@ -296,7 +293,6 @@ body.paper-printing-page::after {
   outline-offset: -3px;
 }
 
-.paper-printing-page .store-search:hover,
 .paper-printing-page .store-search:focus-within {
   border-color: var(--pp-primary);
   box-shadow: none;
@@ -411,21 +407,10 @@ html[data-bs-theme="dark"] .paper-progress {
   transition: color 0.18s ease;
 }
 
-.paper-progress-step:hover,
 .paper-progress-step:active {
   background: transparent;
   box-shadow: none;
   transform: none;
-}
-
-.paper-progress-step:not(:disabled):not(.is-active):not(.is-complete):hover {
-  color: var(--paper-primary-dark);
-}
-
-.paper-progress-step:not(:disabled):not(.is-active):not(.is-complete):hover .progress-number {
-  color: var(--paper-primary-dark);
-  background: var(--paper-primary-soft);
-  border-color: var(--pp-blue-300, #91bfff);
 }
 
 .paper-progress-step:focus-visible {
@@ -697,10 +682,6 @@ html[data-bs-theme="dark"] .paper-progress {
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
-.paper-button:hover:not(:disabled) {
-  transform: none;
-}
-
 .paper-button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -710,12 +691,6 @@ html[data-bs-theme="dark"] .paper-progress {
   color: #fff;
   background: var(--paper-primary);
   border-color: var(--paper-primary);
-  box-shadow: 0 6px 16px rgb(22 119 255 / 24%);
-}
-
-.paper-button.is-primary:hover:not(:disabled) {
-  background: var(--paper-primary-dark);
-  border-color: var(--paper-primary-dark);
   box-shadow: 0 6px 16px rgb(22 119 255 / 24%);
 }
 
@@ -919,16 +894,6 @@ html[data-bs-theme="dark"] .paper-progress {
   cursor: pointer;
 }
 
-.paper-workspace .icon-button:hover {
-  color: var(--paper-primary);
-  border-color: rgb(22 119 255 / 30%);
-}
-
-.paper-workspace .icon-button.is-danger:hover {
-  color: var(--profile-danger);
-  border-color: rgb(229 56 79 / 28%);
-}
-
 .stage-actions {
   display: flex;
   align-items: center;
@@ -1073,12 +1038,6 @@ html[data-bs-theme="dark"] .paper-progress {
   cursor: pointer;
   text-align: center;
   transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
-}
-
-.choice-card:hover:not(:disabled) {
-  color: var(--paper-primary);
-  border-color: rgb(22 119 255 / 36%);
-  transform: none;
 }
 
 .choice-card.is-selected {
@@ -1371,11 +1330,6 @@ html[data-bs-theme="dark"] .paper-progress {
   font-weight: 700;
   cursor: pointer;
   transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease;
-}
-
-.binding-select-wrap select:hover {
-  border-color: var(--paper-primary-dark);
-  background: #fff;
 }
 
 .binding-select-wrap select:focus {

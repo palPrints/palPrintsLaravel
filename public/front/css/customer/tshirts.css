@@ -42,9 +42,7 @@ html[data-bs-theme="dark"] body.tshirts-page::before {
 .catalog-breadcrumb { display: flex; flex-wrap: wrap; gap: 10px; color: var(--store-muted); font-size: .85rem; }
 .catalog-breadcrumb a,
 .catalog-breadcrumb [aria-current="page"] { display: inline-flex; align-items: center; padding: 3px 7px; color: inherit; border-radius: 7px; text-decoration: none; transition: color .18s ease, background-color .18s ease, transform .18s ease; }
-.catalog-breadcrumb a:hover,
-.catalog-breadcrumb a:focus-visible,
-.catalog-breadcrumb [aria-current="page"]:hover { color: var(--store-primary); background: var(--store-primary-soft); transform: translateY(-2px); }
+.catalog-breadcrumb a:focus-visible { color: var(--store-primary); background: var(--store-primary-soft); transform: translateY(-2px); }
 .catalog-breadcrumb [aria-current="page"] { color: var(--store-navy); font-weight: 700; cursor: default; }
 .catalog-heading { text-align: center; padding: 8px 0 22px; }
 .catalog-heading h1 { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 0; color: var(--store-navy); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; }
@@ -53,7 +51,6 @@ html[data-bs-theme="dark"] body.tshirts-page::before {
 .tshirt-filters { display: flex; justify-content: center; gap: 14px; margin-bottom: 24px; }
 .tshirt-filters button { flex: 1; max-width: 240px; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px; border: 1px solid var(--store-border); border-radius: 12px; color: var(--store-navy); background: #fff; font: 700 1rem Cairo, sans-serif; cursor: pointer; }
 .tshirt-filters i { font-size: 1.5rem; }
-.tshirt-filters button:hover { color: var(--store-primary); border-color: var(--store-primary-border); background: var(--store-primary-soft); }
 .tshirt-filters button[aria-pressed="true"] { color: #fff; background: var(--store-primary); border-color: var(--store-primary); box-shadow: 0 6px 16px rgb(22 119 255 / 20%); }
 
 .tshirts-page .products-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -62,17 +59,14 @@ html[data-bs-theme="dark"] body.tshirts-page::before {
 .tshirts-page .product-card__media > img { display: block; width: auto; height: 100%; max-width: 88%; object-fit: contain; object-position: center; }
 .tshirts-page .product-card__media > img { transition: transform 420ms cubic-bezier(.16, 1, .3, 1); }
 /* On hover the design zooms in slightly and the card gets a blue frame. */
-.tshirts-page .product-card:hover .product-card__media > img,
 .tshirts-page .product-card:focus-within .product-card__media > img,
 .tshirts-page .product-card.is-image-hovered .product-card__media > img { transform: scale(1.16) !important; }
-.tshirts-page .product-card:hover,
 .tshirts-page .product-card:focus-within { border-color: var(--store-primary-border); box-shadow: 0 12px 28px rgb(22 119 255 / 10%); }
 .tshirts-page .product-card__body { align-items: stretch; padding: 14px; text-align: start; }
 .tshirts-page .product-card__body h3 { font-size: 1.04rem; cursor: default; }
 .tshirts-page .product-card__body p { margin: 2px 0 10px; font-size: .86rem; }
 
 .tshirt-favorite { position: absolute; top: 10px; left: 10px; z-index: 2; width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 0; color: var(--store-navy); background: transparent; cursor: pointer; font-size: 21px; }
-.tshirt-favorite:hover { color: var(--store-danger); background: transparent; transform: scale(1.12); }
 .tshirt-favorite[aria-pressed="true"] { color: var(--store-danger); background: transparent; }
 .tshirt-credit { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .tshirt-credit > span { color: var(--store-muted); font-size: .85rem; }
@@ -80,7 +74,6 @@ html[data-bs-theme="dark"] body.tshirts-page::before {
 .tshirt-designer { display: inline-flex; align-items: center; gap: 5px; color: var(--store-muted); font-size: .72rem; }
 .tshirt-designer i { width: 25px; height: 25px; display: grid; place-items: center; color: var(--store-primary); background: var(--store-primary-soft); border-radius: 50%; }
 .tshirt-preview { width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--store-primary); border-radius: 10px; color: #fff; background: var(--store-primary); box-shadow: 0 4px 12px rgb(22 119 255 / 16%); font: 600 .9rem Cairo, sans-serif; cursor: pointer; }
-.tshirt-preview:hover { background: var(--store-primary-hover); border-color: var(--store-primary-hover); }
 
 .catalog-pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 24px 0 12px; }
 .catalog-pagination button { width: 40px; height: 40px; border: 1px solid var(--store-border); border-radius: 9px; color: var(--store-navy); background: #fff; font: 700 1rem Cairo, sans-serif; }
@@ -91,7 +84,6 @@ html[data-bs-theme="dark"] body.tshirts-page::before {
 .tshirts-page button:focus-visible,
 .tshirts-page a:focus-visible { outline: 3px solid var(--store-primary); outline-offset: 3px; }
 .tshirts-page .tshirt-favorite.pal-pressable { overflow: visible; box-shadow: none; }
-.tshirts-page .tshirt-favorite.pal-pressable:hover,
 .tshirts-page .tshirt-favorite.pal-pressable:focus-visible { outline: 0; box-shadow: none; color: var(--store-danger); background: transparent; filter: drop-shadow(0 0 3px rgb(220 38 38 / 28%)); }
 .tshirts-page .tshirt-favorite .pal-ripple { display: none; }
 
@@ -105,12 +97,10 @@ html[data-bs-theme="dark"] body.tshirts-page::before {
   .tshirts-motion-ready .catalog-heading.is-revealed,
   .tshirts-motion-ready .tshirt-filters.is-revealed,
   .tshirts-motion-ready .product-card.is-revealed { opacity: 1; transform: none; }
-  .tshirts-motion-ready .product-card.is-revealed:hover { transform: translateY(-6px); }
   .tshirts-motion-ready .product-card.is-floating { animation: productCardFloat 4.8s ease-in-out infinite; }
   .tshirts-motion-ready .product-card.is-floating:nth-child(3n + 1) { animation-delay: 0s; }
   .tshirts-motion-ready .product-card.is-floating:nth-child(3n + 2) { animation-delay: .7s; }
   .tshirts-motion-ready .product-card.is-floating:nth-child(3n) { animation-delay: 1.3s; }
-  .tshirts-motion-ready .product-card.is-floating:hover,
   .tshirts-motion-ready .product-card.is-floating:focus-within { animation-play-state: paused; }
 }
 
@@ -118,4 +108,4 @@ html[data-bs-theme="dark"] body.tshirts-page::before {
 @media (max-width: 991px) { .tshirts-page .products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .tshirts-page .catalog-topline { flex-wrap: wrap; } .catalog-heading p { font-size: .88rem; } .tshirt-filters { gap: 6px; } .tshirt-filters button { gap: 5px; font-size: .8rem; } .tshirt-filters i { font-size: 1.15rem; } }
 @media (max-width: 480px) { .tshirts-page .products-grid { grid-template-columns: 1fr; } }
-@media (prefers-reduced-motion: reduce) { .tshirts-page .product-card, .tshirts-page .product-card__media img { transition: none; } .tshirts-page .product-card:hover { transform: none; } .tshirts-page .product-card:hover .product-card__media > img { transform: none !important; } }
+@media (prefers-reduced-motion: reduce) { .tshirts-page .product-card, .tshirts-page .product-card__media img { transition: none; } }

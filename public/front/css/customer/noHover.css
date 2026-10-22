@@ -1,0 +1,64 @@
+/* Customer pages have no hover effects: no lift, glow, spin, nudge or zoom when the mouse is over something.
+   The shared stylesheets (interactions.css, site-footer.css) are also used by the other roles, so they are not touched;
+   these rules sit one step higher (body prefix) and cancel their hover motion on the customer pages only. */
+
+body .profile-button:hover,
+body .profile-sidebar-link:hover,
+body .profile-sidebar-logout:hover,
+body .profile-sidebar-close:hover,
+body .profile-dialog-close:hover,
+body .profile-card-link:hover,
+body .profile-avatar-upload:hover,
+body .customer-address-action:hover,
+body .customer-library-item:hover,
+body .btn-brand:hover,
+body .btn-brand-outline:hover,
+body .navbar-toggler:hover,
+body .pal-pressable:hover,
+body .pal-hover-lift:hover,
+body .profile-action-button:hover,
+body .profile-sidebar-toggle:hover,
+body .header-icon-btn:hover,
+body.storefront-page .icon-button:hover,
+body .site-footer__social a:hover,
+body .site-footer__column a:hover {
+  transform: none;
+}
+
+body .profile-button:hover:not(.is-primary),
+body .profile-sidebar-link:hover,
+body .profile-sidebar-logout:hover,
+body .profile-sidebar-close:hover,
+body .profile-dialog-close:hover,
+body .profile-card-link:hover,
+body .profile-avatar-upload:hover,
+body .customer-address-action:hover,
+body .customer-library-item:hover,
+body .btn-brand-outline:hover,
+body .navbar-toggler:hover,
+body .pal-hover-lift:hover,
+body .profile-action-button:hover:not(.is-pressed),
+body .profile-sidebar-toggle:hover:not(.is-pressed),
+body .header-icon-btn:hover:not(.is-pressed),
+body.storefront-page .icon-button:hover:not(.is-pressed) {
+  box-shadow: none;
+}
+
+/* Icons inside the header buttons stay still (bell ring, cart nudge, spinning globe, beating heart, arrows, logo). */
+body .profile-action-button:hover > i,
+body .profile-sidebar-toggle:hover > i,
+body .header-icon-btn:hover > i,
+body.storefront-page .icon-button:hover > i,
+body .profile-card-link:hover > i,
+body .navbar-toggler:hover > i,
+body.storefront-page .sidebar-toggle:hover > i,
+body .profile-action-button:hover .profile-action-badge,
+body .profile-action-button:hover .profile-action-dot,
+body.storefront-page .icon-button:hover .icon-badge,
+body .profile-brand:hover .profile-brand-image,
+body .navbar-brand:hover .main-logo {
+  transform: none;
+  animation: none;
+}
+
+body .site-footer__logo-link:hover .site-footer__logo { filter: none; }

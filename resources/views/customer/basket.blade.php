@@ -50,7 +50,16 @@
                     <article class="basket-item" data-id="{{ $item['id'] }}" data-unit-price="{{ $item['unit_price'] }}">
                         <div class="product-info">
                             <div class="product-media">
-                                @if(!empty($item['mockup']))
+                                @if(!empty($item['sticker_images']))
+                                    <div class="sticker-thumbs sticker-thumbs--{{ min(count($item['sticker_images']), 4) }}" role="img" aria-label="{{ $item['product_name'] }}">
+                                        @foreach(array_slice($item['sticker_images'], 0, count($item['sticker_images']) > 4 ? 3 : 4) as $stickerImage)
+                                            <img src="{{ $stickerImage }}" alt="" loading="lazy">
+                                        @endforeach
+                                        @if(count($item['sticker_images']) > 4)
+                                            <span class="sticker-thumbs__more">+{{ count($item['sticker_images']) - 3 }}</span>
+                                        @endif
+                                    </div>
+                                @elseif(!empty($item['mockup']))
                                     @include('customer.partials.cart-mockup', ['mockup' => $item['mockup'], 'alt' => $item['product_name']])
                                 @else
                                     <img src="{{ $item['product_image'] }}" alt="{{ $item['product_name'] }}">

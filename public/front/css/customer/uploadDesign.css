@@ -36,11 +36,6 @@
 
 .upload-design-button i { font-size: 1.3rem; }
 
-.upload-design-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgb(22 119 255 / 30%);
-}
-
 .upload-design-dialog {
   width: min(480px, calc(100vw - 32px));
   padding: 20px;
@@ -91,7 +86,6 @@
   transition: border-color .18s ease, background-color .18s ease;
 }
 
-.upload-design-drop:hover,
 .upload-design-drop.is-drag-active {
   border-color: var(--store-primary, #1677ff);
   background: #eef5ff;

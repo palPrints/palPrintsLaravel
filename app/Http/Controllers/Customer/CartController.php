@@ -29,7 +29,7 @@ class CartController extends Controller
     public function index(Request $request): View
     {
         // A visitor who has added nothing yet has no cart at all; show it empty without creating anything.
-        $items = ($request->user() ? $this->activeCart($request)->items() : CartItem::whereRaw('1 = 0'))->with(['product', 'design', 'printFiles'])->get()->map(function (CartItem $item) {
+        $items = ($request->user() ? $this->activeCart($request)->items() : CartItem::whereRaw('1 = 0'))->with(['product', 'design', 'printFiles', 'stickerBundleLines.libraryItem', 'stickerBundleLines.printFile'])->get()->map(function (CartItem $item) {
             $options = $item->selected_options ?? [];
 
             $designImage = null;
@@ -62,8 +62,22 @@ class CartController extends Controller
                 ? null
                 : $item->design;
 
+            // A sticker bundle is shown by the stickers in it (library pictures and the customer's own uploads), not by the product picture.
+            $stickerImages = $item->item_type === CartItem::TYPE_STICKER_BUNDLE
+                ? $item->stickerBundleLines
+                    ->sortBy('sort_order')
+                    ->map(fn ($line) => $line->libraryItem
+                        ? $line->libraryItem->imageUrl()
+                        : ($line->printFile ? route('customer.print-files.preview', $line->printFile) : null))
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all()
+                : [];
+
             return [
                 'id' => $item->id,
+                'sticker_images' => $stickerImages,
                 'product_name' => $design?->title ?: ($options['design_name'] ?? null) ?: ($item->product?->name ?? 'منتج'),
                 'design_overlay' => $designImage,
                 'mockup' => $options['mockup'] ?? null,
@@ -100,6 +114,19 @@ class CartController extends Controller
         ]);
     }
 
+    /** The names of the uploaded files, so a refusal can say which file it is about: files.0 => الملف «name.pdf». @return array<string, string> */
+    private function uploadNames(Request $request, string $field): array
+    {
+        $names = [];
+        foreach ((array) $request->file($field, []) as $index => $file) {
+            if ($file instanceof UploadedFile) {
+                $names["$field.$index"] = 'الملف «'.$file->getClientOriginalName().'»';
+            }
+        }
+
+        return $names;
+    }
+
     public function storePaper(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -107,7 +134,11 @@ class CartController extends Controller
             'settings' => ['nullable', 'array'],
             'files' => ['required', 'array', 'min:1', 'max:'.PaperPricing::MAX_FILES],
             'files.*' => ['file', 'mimes:pdf', 'max:51200'],
-        ]);
+        ], [
+            'files.*.mimes' => ':attribute ليس ملف PDF صالحًا (قد يكون فارغًا أو تالفًا). احذفه وارفع ملفًا سليمًا.',
+            'files.*.file' => 'تعذّر رفع :attribute. أعد المحاولة.',
+            'files.*.max' => ':attribute حجمه أكبر من 50MB.',
+        ], $this->uploadNames($request, 'files'));
 
         $job = json_decode($validated['job'], true);
         $uploads = array_values($request->file('files'));

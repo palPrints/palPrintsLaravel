@@ -59,7 +59,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const lines = (item.details || []).map((row) => `<div class="details-modal__spec"><span>${esc(row.label)}</span><strong>${esc(row.value)}</strong></div>`).join("");
     const cards = (item.files || []).map((card) => `<div class="details-modal__file"><strong>${esc(card.title)}</strong>${card.rows.map((row) => `<div class="details-modal__spec"><span>${esc(row.label)}</span><strong>${esc(row.value)}</strong></div>`).join("")}</div>`).join("");
     const specs = lines || cards ? `<div class="details-modal__specs"><h4>تفاصيل الطباعة</h4>${lines}${cards}</div>` : "";
-    return `<div class="details-modal__item">${item.thumb ? `<span class="details-modal__thumb">${item.thumb}</span>` : `<img src="${item.image}" alt="${item.title}">`}<div><strong>${item.title}</strong><small>${item.desc} · الكمية: ${item.qty}</small></div><b>${item.price}</b></div>${specs}`;
+    const shown = (item.stickers || []).length > 4 ? item.stickers.slice(0, 3) : (item.stickers || []);
+    const stickerTiles = shown.map((src) => `<img src="${esc(src)}" alt="" loading="lazy">`).join("") + ((item.stickers || []).length > 4 ? `<span class="sticker-thumbs__more">+${item.stickers.length - 3}</span>` : "");
+    const stickerThumb = shown.length ? `<div class="sticker-thumbs sticker-thumbs--${Math.min(item.stickers.length, 4)}" role="img" aria-label="${esc(item.title)}">${stickerTiles}</div>` : "";
+    return `<div class="details-modal__item">${stickerThumb ? `<span class="details-modal__thumb">${stickerThumb}</span>` : item.thumb ?`<span class="details-modal__thumb">${item.thumb}</span>` : `<img src="${item.image}" alt="${item.title}">`}<div><strong>${item.title}</strong><small>${item.desc} · الكمية: ${item.qty}</small></div><b>${item.price}</b></div>${specs}`;
   }
 
   if (detailsModal) {

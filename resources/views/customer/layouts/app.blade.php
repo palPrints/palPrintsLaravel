@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="{{ asset('front/shared/notificationPanel.css') }}?v={{ filemtime(public_path('front/shared/notificationPanel.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/css/shared/site-footer.css') }}?v={{ hash_file('sha256', public_path('front/css/shared/site-footer.css')) }}">
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('front/css/customer/noHover.css') }}?v={{ filemtime(public_path('front/css/customer/noHover.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/shared/table-pagination.css') }}?v={{ filemtime(public_path('front/shared/table-pagination.css')) }}">
 </head>
 @php($isGuestShop = ! auth()->check() || auth()->user()->isGuestShopper())

@@ -5,7 +5,6 @@
 
 .pp-breadcrumb { display: flex; align-items: center; gap: .55rem; margin-bottom: var(--sp-4); color: var(--pp-text-muted); font-size: .75rem; }
 .pp-breadcrumb a { color: var(--pp-text-muted); text-decoration: none; }
-.pp-breadcrumb a:hover { color: var(--pp-primary); }
 .pp-breadcrumb span { color: var(--pp-text-strong); font-weight: 700; }
 
 .pp-page-heading { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-5); }
@@ -31,7 +30,6 @@
   transition: border-color .16s ease, box-shadow .16s ease;
 }
 .pp-input-shell.is-textarea { align-items: flex-start; padding-block: .55rem; }
-.pp-input-shell:hover { border-color: var(--pp-blue-300); }
 .pp-input-shell:focus-within { border-color: var(--pp-primary); box-shadow: 0 0 0 3px rgba(var(--pp-blue-rgb), .18); }
 .pp-input-shell > i { flex: none; color: var(--pp-primary); font-size: 1rem; }
 .pp-input-shell input, .pp-input-shell select, .pp-input-shell textarea {
@@ -61,7 +59,6 @@
   cursor: pointer;
 }
 .support-channel + .support-channel::before { content: ""; position: absolute; inset-block: 14px; inset-inline-start: 0; width: 1px; background: var(--pp-border); }
-.support-channel:hover { background: transparent; }
 .support-channel > i { flex: none; color: var(--pp-primary); font-size: 1.35rem; }
 .support-channel > span { min-width: 0; flex: 1; display: grid; gap: 2px; }
 .support-channel strong { font-size: .85rem; color: var(--pp-text-strong); font-weight: 700; }
@@ -72,7 +69,6 @@
 .support-side { display: grid; gap: var(--sp-4); }
 
 .support-upload { grid-column: 1 / -1; min-height: 54px; display: flex; align-items: center; gap: var(--sp-2); padding: .6rem .75rem; border: 1px dashed var(--pp-blue-200); border-radius: var(--pp-radius-sm); cursor: pointer; }
-.support-upload:hover { border-color: var(--pp-primary); }
 .support-upload > i { flex: none; color: var(--pp-primary); font-size: 1.1rem; }
 .support-upload > span { flex: 1; display: grid; }
 .support-upload strong { color: var(--pp-text-strong); font-size: .78rem; }
@@ -93,18 +89,35 @@
 .support-faq details { border-bottom: 1px solid var(--pp-border); }
 .support-faq details:last-child { border-bottom: 0; }
 .support-faq summary {
-  position: relative;
-  padding: .7rem 24px .7rem 1px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: .95rem 0;
   color: var(--pp-text-strong);
-  font-size: .78rem;
+  font-size: .9rem;
   font-weight: 700;
   cursor: pointer;
   list-style: none;
 }
 .support-faq summary::-webkit-details-marker { display: none; }
-.support-faq summary::after { content: "+"; position: absolute; inset-inline-end: 2px; color: var(--pp-primary); font-size: 1.1rem; font-weight: 500; }
+/* The + / - sits in a small round box centred on the question line (it used to float lower than the text). */
+.support-faq summary::after {
+  content: "+";
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--pp-primary-soft);
+  color: var(--pp-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1;
+}
 .support-faq details[open] summary::after { content: "\2212"; }
-.support-faq details p { margin: 0; padding: 0 1px .7rem; color: var(--pp-text-muted); font-size: .72rem; line-height: 1.8; }
+.support-faq details p { margin: 0; padding: 0 0 1rem; color: var(--pp-text-muted); font-size: .85rem; line-height: 1.9; }
 
 @media (max-width: 900px) {
   .support-grid { grid-template-columns: 1fr; }
@@ -126,3 +139,10 @@
 
 .pp-page-heading h1#pageTitle { font-size: 1.2rem; }
 @media (max-width: 560px) { .pp-page-heading h1#pageTitle { font-size: 1.05rem; } }
+
+/* No hover effects on this page; the buttons only keep their pressed state. */
+.support-page .btn-brand:active, .support-page .btn-brand-outline:active { transform: none; }
+
+/* Empty list: an icon above the message. */
+.support-page .support-empty { display: grid; justify-items: center; gap: 8px; padding: 22px 0 14px; text-align: center; }
+.support-page .support-empty i { display: grid; place-items: center; width: 52px; height: 52px; color: var(--pp-primary); font-size: 1.5rem; background: var(--pp-primary-soft); border-radius: 50%; }

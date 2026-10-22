@@ -66,9 +66,7 @@ html[data-bs-theme="dark"] body.mugs-page::before {
   transition: color .18s ease, background-color .18s ease, transform .18s ease;
 }
 
-.catalog-breadcrumb a:hover,
-.catalog-breadcrumb a:focus-visible,
-.catalog-breadcrumb [aria-current="page"]:hover {
+.catalog-breadcrumb a:focus-visible {
   color: var(--store-primary);
   background: var(--store-primary-soft);
   transform: translateY(-2px);
@@ -148,7 +146,6 @@ html[data-bs-theme="dark"] body.mugs-page::before {
   object-fit: contain;
 }
 
-.mugs-page .product-card:hover .product-card__media > img,
 .mugs-page .product-card:focus-within .product-card__media > img,
 .mugs-page .product-card.is-image-hovered .product-card__media > img {
   transform: none !important;
@@ -187,8 +184,6 @@ html[data-bs-theme="dark"] body.mugs-page::before {
   cursor: pointer;
   font-size: 21px;
 }
-
-.mug-favorite:hover { color: var(--store-danger); background: transparent; transform: scale(1.12); }
 .mug-favorite[aria-pressed="true"] { color: var(--store-danger); background: transparent; }
 
 .mug-badge-accent {
@@ -208,12 +203,6 @@ html[data-bs-theme="dark"] body.mugs-page::before {
   font-weight: 700;
   line-height: 1.4;
   transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
-}
-
-.mugs-page .product-card:hover .mug-badge-accent {
-  background: #e85f00;
-  box-shadow: 0 7px 18px rgb(255 107 0 / 32%);
-  transform: translateY(-2px) scale(1.03);
 }
 
 .mug-credit {
@@ -262,11 +251,6 @@ html[data-bs-theme="dark"] body.mugs-page::before {
   cursor: pointer;
 }
 
-.mug-preview:hover {
-  background: var(--store-primary-hover);
-  border-color: var(--store-primary-hover);
-}
-
 .catalog-pagination {
   display: flex;
   justify-content: center;
@@ -301,7 +285,6 @@ html[data-bs-theme="dark"] body.mugs-page::before {
   box-shadow: none;
 }
 
-.mugs-page .mug-favorite.pal-pressable:hover,
 .mugs-page .mug-favorite.pal-pressable:focus-visible {
   outline: 0;
   box-shadow: none;
@@ -330,15 +313,10 @@ html[data-bs-theme="dark"] body.mugs-page::before {
     transform: none;
   }
 
-  .mugs-motion-ready .product-card.is-revealed:hover {
-    transform: translateY(-6px);
-  }
-
   .mugs-motion-ready .product-card.is-floating { animation: productCardFloat 4.8s ease-in-out infinite; }
   .mugs-motion-ready .product-card.is-floating:nth-child(3n + 1) { animation-delay: 0s; }
   .mugs-motion-ready .product-card.is-floating:nth-child(3n + 2) { animation-delay: .7s; }
   .mugs-motion-ready .product-card.is-floating:nth-child(3n) { animation-delay: 1.3s; }
-  .mugs-motion-ready .product-card.is-floating:hover,
   .mugs-motion-ready .product-card.is-floating:focus-within { animation-play-state: paused; }
 }
 
@@ -354,5 +332,4 @@ html[data-bs-theme="dark"] body.mugs-page::before {
   .mugs-page .product-card,
   .mugs-page .product-card__media img,
   .mug-badge-accent { transition: none; }
-  .mugs-page .product-card:hover { transform: none; }
 }

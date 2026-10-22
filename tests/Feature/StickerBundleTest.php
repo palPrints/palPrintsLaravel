@@ -86,3 +86,18 @@ test('sticker bundle rejects below minimum and stores valid bundle as one cart i
 
     expect(StickerBundleLine::query()->count())->toBe(1);
 });
+
+test('the basket shows the stickers of a bundle, not the product picture', function () {
+    $this->actingAs($this->customer)->postJson(route('customer.cart.store-sticker-bundle'), [
+        'lines' => [[
+            'client_id' => 'line-1', 'source' => 'library', 'library_item_id' => $this->sticker->id,
+            'size_key' => '5x5', 'cut_type' => 'circle', 'quantity' => 20,
+        ]],
+    ])->assertOk();
+
+    $this->actingAs($this->customer)->get(route('customer.basket'))
+        ->assertOk()
+        ->assertSee('sticker-thumbs', false)
+        ->assertSee($this->sticker->imageUrl(), false)
+        ->assertViewHas('items', fn ($items) => $items->first()['sticker_images'] === [$this->sticker->imageUrl()]);
+});

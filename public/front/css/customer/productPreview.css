@@ -127,7 +127,6 @@ body.preview-booting .product-preview-main::after {
   text-decoration: none;
 }
 
-.preview-breadcrumb a:hover,
 .preview-breadcrumb a:focus-visible {
   color: var(--preview-blue-hover);
 }
@@ -463,9 +462,7 @@ body.preview-booting .product-preview-main::after {
   cursor: pointer;
 }
 
-.preview-controls button:hover,
 .preview-controls button:focus-visible,
-.fullscreen-preview-dialog header button:hover,
 .fullscreen-preview-dialog header button:focus-visible {
   color: var(--preview-blue-hover);
   background: var(--preview-blue-soft);
@@ -619,8 +616,6 @@ body.preview-booting .product-preview-main::after {
   cursor: pointer;
 }
 
-.piece-tab:hover { border-color: var(--preview-blue-border); }
-
 .piece-tab[aria-selected="true"] {
   color: var(--preview-blue-hover);
   border-color: var(--preview-blue);
@@ -712,8 +707,6 @@ body.preview-booting .product-preview-main::after {
   cursor: pointer;
   transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
 }
-
-.color-option:hover { border-color: #9fc7ff; transform: translateY(-1px); }
 
 .color-option::before {
   content: "";
@@ -1037,7 +1030,6 @@ body.preview-booting .product-preview-main::after {
   box-shadow: 0 6px 16px rgb(22 119 255 / 24%);
 }
 
-.preview-button.is-primary:hover,
 .preview-button.is-primary:focus-visible { background: var(--preview-blue-hover); border-color: var(--preview-blue-hover); }
 .preview-button.is-primary:active { background: var(--preview-blue-active); transform: translateY(1px); }
 .preview-button.is-primary:disabled { opacity: .55; box-shadow: none; cursor: not-allowed; }
@@ -1050,7 +1042,6 @@ body.preview-booting .product-preview-main::after {
   border-color: var(--preview-blue-border);
 }
 
-.preview-button.is-secondary:hover,
 .preview-button.is-secondary:focus-visible { background: var(--preview-blue-soft); }
 
 .preview-bottom-actions {

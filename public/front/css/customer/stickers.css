@@ -30,7 +30,6 @@
   transition: color .18s ease;
 }
 
-.stickers-page .catalog-breadcrumb a:hover,
 .stickers-page .catalog-breadcrumb a:focus-visible {
   color: var(--pp-primary);
 }
@@ -197,7 +196,6 @@
   transition: background-color .18s ease, border-color .18s ease;
 }
 
-.upload-drop:hover,
 .upload-drop:focus-within {
   border-color: var(--pp-primary);
   background: var(--pp-blue-100);
@@ -259,10 +257,6 @@
   cursor: pointer;
 }
 
-.sticker-tabs button:hover {
-  background: var(--pp-surface-muted);
-}
-
 .sticker-tabs button.is-active {
   border-color: var(--pp-primary);
   background: var(--pp-primary);
@@ -288,12 +282,6 @@
   text-align: start;
   cursor: pointer;
   transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-}
-
-.sticker-pick-card button:hover {
-  transform: translateY(-3px);
-  border-color: var(--pp-primary-border);
-  box-shadow: var(--pp-shadow);
 }
 
 .sticker-pick-card span {
@@ -377,11 +365,6 @@
   background: var(--pp-surface);
   color: var(--pp-text-strong);
   cursor: pointer;
-}
-
-.page-switcher button:hover:not(:disabled) {
-  border-color: var(--pp-primary-border);
-  color: var(--pp-primary);
 }
 
 .page-switcher button:disabled {
@@ -545,10 +528,6 @@
   box-shadow: var(--pp-shadow-primary);
 }
 
-.primary-action:hover {
-  background: var(--pp-primary-hover);
-}
-
 .primary-action:active {
   background: var(--pp-primary-active);
   transform: translateY(1px);
@@ -558,12 +537,6 @@
   border-color: var(--pp-primary-border);
   background: transparent;
   color: var(--pp-primary);
-}
-
-.secondary-action:hover {
-  border-color: var(--pp-blue-300);
-  background: var(--pp-primary-soft);
-  color: var(--pp-primary-hover);
 }
 
 .primary-action:disabled,
@@ -670,4 +643,84 @@
 /* The dashed guide follows the real print margins from the admin settings (5% is only the fallback). */
 .a4-sheet::before {
   inset: var(--m-top, 5%) var(--m-right, 5%) var(--m-bottom, 5%) var(--m-left, 5%);
+}
+
+/* Paper choice for each A4 sheet (the row the page script draws): a card with the sheet name, a hint, a full-width select and the protection switch. */
+.page-material-row {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  background: var(--pp-surface-muted);
+  color: var(--pp-text-body);
+}
+
+.page-material-row strong {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--pp-text-strong);
+  font-weight: 800;
+}
+
+.page-material-row strong i {
+  color: var(--pp-primary);
+}
+
+.page-material-hint {
+  margin-top: calc(var(--sp-1) * -1);
+  color: var(--pp-text-muted, var(--pp-text-body));
+  font-size: .85rem;
+}
+
+.page-material-row select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius-sm);
+  background: var(--pp-surface);
+  color: var(--pp-text-strong);
+  font: inherit;
+  font-weight: 700;
+}
+
+.page-material-row select:focus {
+  outline: none;
+  border-color: var(--pp-primary);
+  box-shadow: none;
+}
+
+.page-material-row label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius-sm);
+  background: var(--pp-surface);
+  color: var(--pp-text-body);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.page-material-row label input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--pp-primary);
+}
+
+/* One line only on focus: the border of the box itself turns blue. No outer outline, no glow ring (buttons and links keep their keyboard outline). */
+:where(.stickers-workspace) input:not([type="checkbox"], [type="radio"], [type="file"]):focus,
+:where(.stickers-workspace) input:not([type="checkbox"], [type="radio"], [type="file"]):focus-visible,
+:where(.stickers-workspace) select:focus,
+:where(.stickers-workspace) select:focus-visible,
+.sticker-controls select:focus,
+.sticker-controls input:focus,
+.sticker-controls select:focus-visible,
+.sticker-controls input:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--pp-primary);
 }

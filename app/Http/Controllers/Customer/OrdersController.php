@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\PrintFile;
 use App\Support\AdminNotifier;
 use App\Support\OrderNotifier;
@@ -40,7 +41,7 @@ class OrdersController extends Controller
     {
         $orders = Order::query()
             ->where('user_id', $request->user()->id)
-            ->with(['items.product', 'items.printFiles'])
+            ->with(['items.product', 'items.printFiles', 'items.stickerBundleLines.libraryItem', 'items.stickerBundleLines.printFile'])
             ->latest()
             ->get()
             ->map(fn (Order $order) => $this->present($order));
@@ -121,12 +122,14 @@ class OrdersController extends Controller
             'payment' => $order->payment_method ?: 'غير محدد',
             'thumbnail' => $firstItem ? asset($firstItem->product?->image ?: 'front/assets/images/customer/products/1.png') : asset('front/assets/images/customer/products/1.png'),
             'mockup' => $firstItem?->selected_options['mockup'] ?? null,
+            'sticker_images' => $firstItem ? $this->stickerImages($firstItem) : [],
             'title' => $firstItem?->product?->name ?? 'منتج',
             'subtitle' => $items->count() > 1 ? 'ومنتج آخر' : ($firstItem?->product?->description ?: ''),
             'items' => $items->map(fn ($item) => [
                 'image' => asset($item->product?->image ?: 'front/assets/images/customer/products/1.png'),
                 // The product with the customer's design on it, ready to show in the details window (null for paper printing).
-                'thumb' => ($mockup = $item->selected_options['mockup'] ?? null)
+                'stickers' => $this->stickerImages($item),
+                'thumb' => ($mockup =$item->selected_options['mockup'] ?? null)
                     ? view('customer.partials.cart-mockup', ['mockup' => $mockup, 'alt' => $item->product?->name ?? 'منتج'])->render()
                     : null,
                 'title' => $item->product?->name ?? 'منتج',
@@ -140,6 +143,24 @@ class OrdersController extends Controller
                     : [],
             ])->values(),
         ];
+    }
+
+    /** The stickers in a sticker-bundle line (library pictures and the customer's own uploads), shown instead of the product picture. @return list<string> */
+    private function stickerImages(OrderItem $item): array
+    {
+        if ($item->item_type !== OrderItem::TYPE_STICKER_BUNDLE) {
+            return [];
+        }
+
+        return $item->stickerBundleLines
+            ->sortBy('sort_order')
+            ->map(fn ($line) => $line->libraryItem
+                ? $line->libraryItem->imageUrl()
+                : ($line->printFile ? route('customer.print-files.preview', $line->printFile) : null))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 
     private function formatAddress(?array $snapshot): string
