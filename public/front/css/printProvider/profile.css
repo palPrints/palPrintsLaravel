@@ -245,3 +245,28 @@ body:not(.sidebar-collapsed) main.printshop-main{padding:27px 28px 50px}
 .printshop-toast.is-warning li::before{content:"";position:absolute;inset-inline-start:0;top:.55em;width:6px;height:6px;border-radius:50%;background:#fff}
 .upload-field small.field-error,.fields small.field-error,label small.field-error{color:#dc2626;font-size:12px;font-weight:700}
 .upload-field small.field-error::before,label small.field-error::before{content:"\F33A";font-family:"bootstrap-icons";margin-inline-end:6px;font-weight:400}
+
+/* Manager, products, services and working hours sit side by side in one row, however many cards there are. */
+@media(min-width:851px){.three-column{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}.profile-section-grid.three-column>.form-card:last-child:nth-child(odd){grid-column:auto}}
+/* Working days are small chips again, not big buttons. */
+.work-days.is-static:not(.service-chips){display:flex;flex-wrap:wrap;gap:6px}
+.work-days.is-static:not(.service-chips)>span{min-height:0;padding:5px 12px;font-size:12px}
+/* Nothing added yet: a calm centred message instead of a bare pill. */
+.empty-card{display:grid;justify-items:center;gap:6px;padding:26px 12px;text-align:center;border:1px dashed #cfdcec;border-radius:14px;background:#f8fbff}
+.empty-card>i{display:grid;place-items:center;width:52px;height:52px;margin-bottom:4px;border-radius:50%;color:var(--blue);background:var(--blue-soft);font-size:24px}
+.empty-card>b{color:#142b4d;font-size:13px}
+.empty-card>small{color:var(--muted);font-size:11px;line-height:1.7}
+/* Shown after saving a complete profile: the approval request has gone to the admins. */
+.submit-success{display:flex;align-items:center;gap:14px;padding:18px 22px;margin-bottom:22px;border:1px solid #b7ebc9;border-radius:15px;background:#f0fdf4}
+.submit-success>i{flex:0 0 auto;color:#16a34a;font-size:30px}
+.submit-success h2{margin:0 0 4px;color:#087c42;font-size:16px}
+.submit-success p{margin:0;color:#3f5f4d;font-size:13px}
+/* The notice floats at the top of the screen so it is seen wherever the page is scrolled, then fades out. */
+.submit-success{position:fixed;z-index:60;top:82px;left:24px;width:min(420px,calc(100% - 28px));margin:0;box-shadow:0 14px 40px rgb(7 29 66/.18);animation:submit-success-in .35s ease both;transition:opacity .4s ease,transform .4s ease}
+.submit-success.is-leaving{opacity:0;transform:translateY(-12px);pointer-events:none}
+.submit-success>div{flex:1}
+.submit-success-close{flex:0 0 auto;border:0;background:transparent;color:#3f5f4d;cursor:pointer;font-size:14px}
+@keyframes submit-success-in{from{opacity:0;transform:translateY(-14px)}}
+/* On this page the save message also floats at the top of the screen, under the top bar. */
+#toast.printshop-toast{top:82px;bottom:auto;right:auto;inset-block-end:auto;inset-inline-end:auto;left:24px;height:auto;transform:translateY(-12px);width:max-content;max-width:min(420px,calc(100vw - 28px));padding:13px 20px;font-size:14px;box-shadow:0 14px 40px rgb(7 29 66/.22)}
+#toast.printshop-toast.show{transform:translateY(0)}

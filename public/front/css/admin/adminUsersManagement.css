@@ -151,7 +151,10 @@
 .reject-reason-dialog { width: min(420px, calc(100% - 28px)); }
 .reject-reason-hint { margin: 0 0 12px; color: var(--pp-navy-500); font-size: 12px; }
 .reject-reason-input { width: 100%; min-height: 110px; padding: 12px 14px; color: var(--pp-navy-800); background: #fff; border: 1px solid #dce5ef; border-radius: 9px; font: 600 12px/1.6 "Cairo", sans-serif; resize: vertical; }
-.reject-reason-input:focus { outline: 2px solid var(--users-accent, var(--pp-blue-600)); outline-offset: 1px; }
+.reject-reason-input:focus { outline: 2px solid #d92d20; outline-offset: 1px; }
+.reject-reason-dialog .customer-dialog-header { background: #fef3f2; }
+.reject-reason-dialog .customer-dialog-header h2,
+.reject-reason-dialog .customer-dialog-close { color: #d92d20; }
 .reject-reason-input.is-invalid { border-color: #d92d20; }
 .reject-reason-error { display: none; margin-top: 8px; color: #d92d20; font-size: 11px; font-weight: 800; }
 .reject-reason-error:not([hidden]) { display: block; }

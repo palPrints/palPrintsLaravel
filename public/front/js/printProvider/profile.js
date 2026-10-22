@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded",function(){
     clear.addEventListener("click",function(){input.value="";reset();input.focus()});
   });
 
-  function showToast(message,success){toast.querySelector("span").textContent=message;toast.classList.remove("is-warning");toast.classList.toggle("is-success",!!success);toast.classList.add("show");setTimeout(function(){toast.classList.remove("show")},2800)}
+  function showToast(message,success){toast.querySelector("span").textContent=message;toast.classList.remove("is-warning");toast.classList.toggle("is-success",!!success);toast.classList.add("show");setTimeout(function(){toast.classList.remove("show")},4500)}
   /* The save was blocked: say which data is missing, by name, in a warning card. */
   var missingTimer;
   function fieldName(input){

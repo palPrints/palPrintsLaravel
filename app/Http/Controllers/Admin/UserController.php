@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\PrintProvider\DocumentController;
 use App\Models\ApprovalRequest;
 use App\Models\AuditLog;
 use App\Models\Design;
@@ -296,11 +295,6 @@ class UserController extends Controller
                     'revenue' => '₪'.number_format((float) ($stats?->revenue ?? 0)),
                     'workingHours' => $this->workingHoursSummary($profile?->working_hours),
                     'operating' => $profile?->is_active ?? true,
-                    // Private files: opened through a protected link, not a public /storage URL.
-                    'verificationDocument' => DocumentController::url($profile, 'verification_document'),
-                    // The identity picture is only stored once the schema has the column.
-                    'idDocument' => DocumentController::url($profile, 'id_document'),
-                    'idDocumentAvailable' => Schema::hasColumn('print_providers', 'id_document'),
                     'contactEmail' => $profile?->getAttribute('contact_email') ?: '',
                     'status' => $this->onboardingStatus($user, $profile?->approval_status),
                     'submittedAt' => $request?->submitted_at?->locale('ar')->translatedFormat('j F Y') ?? '—',

@@ -33,8 +33,6 @@ test('saving a complete print provider profile sends the approval request to the
             'phone' => '0599123456',
             'owner_phone' => '0599000111',
             'whatsapp_number' => '0599123456',
-            'verification_document' => UploadedFile::fake()->create('license.pdf', 50, 'application/pdf'),
-            'id_document' => UploadedFile::fake()->create('id.pdf', 50, 'application/pdf'),
             'address' => 'غزة، الرمال',
             'available' => '1',
             'days' => ['الأحد', 'الإثنين'],
@@ -53,7 +51,7 @@ test('saving a complete print provider profile sends the approval request to the
         ->and(ApprovalRequest::where('user_id', $this->owner->id)->where('status', 'submitted')->count())->toBe(1);
 });
 
-test('saving a print provider profile without the documents does not send it for approval', function () {
+test('saving a complete print provider profile sends it for approval without any documents', function () {
     $this->actingAs($this->owner)
         ->patch(route('print-provider.profile.update'), [
             'company_name' => 'مطبعة الأمل',
@@ -65,10 +63,9 @@ test('saving a print provider profile without the documents does not send it for
             'address' => 'غزة، الرمال',
         ])
         ->assertRedirect(route('print-provider.profile'))
-        ->assertSessionHas('profile_status', 'updated');
-
-    expect($this->owner->fresh()->printProvider->approval_status)->toBe('draft')
-        ->and(ApprovalRequest::where('user_id', $this->owner->id)->exists())->toBeFalse();
+        ->assertSessionHas('profile_status', 'submitted');
+    expect($this->owner->fresh()->printProvider->approval_status)->toBe('submitted')
+        ->and(ApprovalRequest::where('user_id', $this->owner->id)->exists())->toBeTrue();
 });
 
 test('the whatsapp number of the shop is required', function () {

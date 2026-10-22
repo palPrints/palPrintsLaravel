@@ -172,32 +172,14 @@
       }).join('') + '</ul>';
     }
 
-    function renderDocumentRow(icon, label, url) {
-      const uploaded = Boolean(url);
-      return '<li class="print-shop-document-row">' +
-        '<span><i class="bi ' + icon + '" aria-hidden="true"></i>' + label + '</span>' +
-        (uploaded
-          ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">عرض الملف</a>'
-          : '<strong class="is-missing">غير مرفوعة</strong>') +
-      '</li>';
-    }
-
     function renderPrintShopExpansion(shop, index) {
       const infoVisible = activePrintShopTab === "info";
       const canReview = shop.status === "pending" && shop.reviewUrl;
-      const documents =
-        '<ul class="print-shop-documents">' +
-          renderDocumentRow('bi-patch-check', 'وثيقة التحقق', shop.verificationDocument) +
-          (shop.idDocumentAvailable
-            ? renderDocumentRow('bi-person-vcard', 'صورة الهوية', shop.idDocument)
-            : '<li class="print-shop-document-row"><span><i class="bi bi-person-vcard" aria-hidden="true"></i>صورة الهوية</span><strong class="is-missing">غير متاحة بعد</strong></li>') +
-        '</ul>';
       return '<section class="designer-expansion print-shop-expansion" aria-label="تفاصيل ' + esc(shop.name) + '">' +
         '<div class="designer-tabs" role="tablist"><button class="' + (infoVisible ? 'active' : '') + '" type="button" data-print-shop-tab="info" data-print-shop-tab-index="' + index + '">البيانات</button><button class="' + (!infoVisible ? 'active' : '') + '" type="button" data-print-shop-tab="jobs" data-print-shop-tab-index="' + index + '">وظائف الطباعة</button></div>' +
         '<div class="designer-info-panel"' + (infoVisible ? '' : ' hidden') + '>' +
           '<div class="designer-stats print-shop-stats"><div><strong>' + shop.metric + '</strong><span>الوظائف المنجزة</span></div><div><strong>' + shop.activeJobs + '</strong><span>الوظائف النشطة</span></div><div><strong>' + esc(shop.delivery) + '</strong><span>متوسط التسليم</span></div><div><strong>' + esc(shop.city) + '</strong><span>المدينة</span></div></div>' +
           '<div class="print-shop-revenue"><span><i class="bi bi-wallet2" aria-hidden="true"></i>إجمالي الإيرادات</span><strong dir="ltr">' + shop.revenue + '</strong></div>' +
-          documents +
           '<dl class="designer-contact">' +
             '<div><dt>اسم المسؤول</dt><dd>' + esc(shop.contactName || '—') + '</dd></div>' +
             '<div><dt>البريد الإلكتروني</dt><dd dir="ltr">' + esc(shop.email) + '</dd></div>' +

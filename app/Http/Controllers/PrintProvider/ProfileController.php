@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\PrintProvider;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApprovalRequest;
 use App\Models\BranchProductOffering;
 use App\Models\PrintProvider;
 use App\Models\PrintProviderBranch;
@@ -31,11 +32,8 @@ class ProfileController extends Controller
         'delivery' => 'التوصيل للعميل',
     ];
 
-    /** Required verification documents: print_providers column => label. */
-    private const DOCUMENT_LABELS = [
-        'verification_document' => 'وثيقة التحقق',
-        'id_document' => 'صورة الهوية',
-    ];
+    /** Print shops no longer upload verification or ID documents; kept empty so the profile completes without them. */
+    private const DOCUMENT_LABELS = [];
 
     /**
      * Documents the current schema can store. `id_document` is only offered once the column exists.

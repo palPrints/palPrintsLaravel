@@ -60,6 +60,15 @@
         </div>
     @endif
 
+    @if (session('profile_status') === 'submitted')
+        <div class="submit-success" id="submitSuccess" role="status">
+            <i class="bi bi-check-circle-fill"></i>
+            <div><h2>تم إرسال طلبك للمتابعة</h2><p>حفظنا بياناتك وأرسلنا طلب الاعتماد إلى الإدارة. سنخبرك بالقرار فور مراجعته.</p></div>
+            <button type="button" class="submit-success-close" aria-label="إغلاق" onclick="this.parentNode.remove()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <script>setTimeout(function(){var n=document.getElementById("submitSuccess");if(n)n.classList.add("is-leaving")},8000)</script>
+    @endif
+
     @if (session('warning'))
         <div class="review-notice form-errors" role="alert">
             <i class="bi bi-exclamation-triangle"></i>
@@ -144,26 +153,6 @@
 
         <div class="three-column profile-section-grid">
             <section class="form-card">
-                <header class="card-title"><span><i class="bi bi-file-earmark-text"></i></span><h2>الوثائق</h2></header>
-                <div class="documents-table">
-                    <div class="table-head"><b>اسم الوثيقة</b><b>حالة الوثيقة</b></div>
-                    @foreach ($documentLabels as $field => $label)
-                        <div class="document-row">
-                            <span>{{ $label }}</span>
-                            @if (! in_array($field, $documentFields, true))
-                                <strong class="status pending">غير متاحة بعد</strong>
-                            @elseif (filled($provider->$field))
-                                <strong class="status uploaded">مرفوع</strong>
-                                <a class="doc-link" href="{{ route('print-provider.documents', [$provider, $field]) }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right"></i> عرض</a>
-                            @else
-                                <strong class="status missing">غير مرفوع</strong>
-                            @endif
-                        </div>
-                    @endforeach
-                </div>
-            </section>
-
-            <section class="form-card">
                 <header class="card-title"><span><i class="bi bi-person"></i></span><h2>بيانات المسؤول</h2></header>
                 <dl class="details-grid single">
                     <div><dt>اسم المسؤول</dt><dd>{{ $user->name ?: $dash }}</dd></div>
@@ -173,26 +162,30 @@
             </section>
 
             <section class="form-card">
-                <header class="card-title"><span><i class="bi bi-box-seam"></i></span><h2>المنتجات التي أطبعها</h2></header>
-                <div class="work-days is-static service-chips">
-                    @forelse ($shownProducts as $product)
-                        <span class="selected">{{ $product->name }}</span>
-                    @empty
-                        <span>{{ $dash }}</span>
-                    @endforelse
-                </div>
+                <header class="card-title"><span><i class="bi bi-bag-heart"></i></span><h2>المنتجات التي أطبعها</h2></header>
+                @if ($shownProducts->isEmpty())
+                    <div class="empty-card"><i class="bi bi-bag-heart"></i><b>لم تضف أي منتجات بعد</b><small>اختر المنتجات التي تطبعها من زر تعديل الملف</small></div>
+                @else
+                    <div class="work-days is-static service-chips">
+                        @foreach ($shownProducts as $product)
+                            <span class="selected">{{ $product->name }}</span>
+                        @endforeach
+                    </div>
+                @endif
             </section>
 
             @if ($hasServices)
                 <section class="form-card">
                     <header class="card-title"><span><i class="bi bi-printer"></i></span><h2>الخدمات التي أقدمها</h2></header>
-                    <div class="work-days is-static service-chips">
-                        @forelse ($shownServices as $service)
-                            <span class="selected">{{ $service }}</span>
-                        @empty
-                            <span>{{ $dash }}</span>
-                        @endforelse
-                    </div>
+                    @if (blank($shownServices))
+                        <div class="empty-card"><i class="bi bi-printer"></i><b>لم تضف أي خدمات بعد</b><small>اختر الخدمات التي تقدمها من زر تعديل الملف</small></div>
+                    @else
+                        <div class="work-days is-static service-chips">
+                            @foreach ($shownServices as $service)
+                                <span class="selected">{{ $service }}</span>
+                            @endforeach
+                        </div>
+                    @endif
                 </section>
             @endif
             <section class="form-card">
@@ -255,40 +248,6 @@
     
             <div class="three-column profile-section-grid">
                 <section class="form-card">
-                    <header class="card-title"><span><i class="bi bi-file-earmark-text"></i></span><h2>الوثائق</h2></header>
-                    <div class="upload-fields">
-                        @foreach ($documentLabels as $field => $label)
-                            @continue(! in_array($field, $documentFields, true))
-                            {{-- A div, not a label: a click on the "cancel" button inside a label would open the file picker again. --}}
-                            <div class="upload-field" data-upload-field>
-                                <label class="upload-title" for="upload-{{ $field }}">{{ $label }} <em>*</em></label>
-                                <input type="file" id="upload-{{ $field }}" name="{{ $field }}" @required(! filled($provider->$field)) accept=".jpg,.jpeg,.png,.webp,.pdf,image/*,application/pdf">
-                                {{-- The file picked and not saved yet: a preview, its name and size, and a way to take it back. --}}
-                                <div class="upload-picked" data-picked hidden>
-                                    <img class="upload-picked-thumb" data-picked-image alt="" hidden>
-                                    <span class="upload-picked-thumb is-file" data-picked-icon hidden><i class="bi bi-file-earmark-pdf"></i></span>
-                                    <span class="upload-picked-copy">
-                                        <b data-picked-name></b>
-                                        <small data-picked-note></small>
-                                    </span>
-                                    <button class="upload-clear" type="button" data-clear aria-label="إلغاء اختيار ملف {{ $label }}"><i class="bi bi-x-lg"></i> إلغاء الاختيار</button>
-                                </div>
-                                <small data-has-saved="{{ filled($provider->$field) ? '1' : '0' }}">
-                                    @if (filled($provider->$field))
-                                        <i class="bi bi-check-circle-fill"></i> تم رفع ملف سابقًا (<a href="{{ route('print-provider.documents', [$provider, $field]) }}" target="_blank" rel="noopener noreferrer">عرض</a>) — اختر ملفًا جديدًا لاستبداله.
-                                    @else
-                                        صورة أو ملف PDF، بحجم أقصى 5 ميجابايت.
-                                    @endif
-                                </small>
-                            </div>
-                        @endforeach
-                        @unless (in_array('id_document', $documentFields, true))
-                            <p class="upload-pending"><i class="bi bi-info-circle"></i> رفع صورة الهوية غير متاح بعد: بانتظار إضافة عمود <bdi>id_document</bdi> في قاعدة البيانات.</p>
-                        @endunless
-                    </div>
-                </section>
-    
-                <section class="form-card">
                     <header class="card-title"><span><i class="bi bi-person"></i></span><h2>بيانات المسؤول</h2></header>
                     <div class="fields single">
                         <label>اسم المسؤول <em>*</em><input name="contact_name" required value="{{ old('contact_name', $user->name) }}"></label>
@@ -300,7 +259,7 @@
                 </section>
 
                 <section class="form-card">
-                    <header class="card-title"><span><i class="bi bi-box-seam"></i></span><h2>المنتجات التي أطبعها</h2></header>
+                    <header class="card-title"><span><i class="bi bi-bag-heart"></i></span><h2>المنتجات التي أطبعها</h2></header>
                     <p class="services-hint">اختر المنتجات التي تقدمها مطبعتك. بعد موافقة الإدارة على طلبك تظهر هذه المنتجات في صفحة خدمات الطباعة لتكمل أسعارها ومدة تجهيزها.</p>
                     @foreach ($productOptions->groupBy(fn ($product) => $product->category?->name ?? 'منتجات أخرى') as $categoryName => $group)
                         <h3 class="services-group">{{ $categoryName }}</h3>

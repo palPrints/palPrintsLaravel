@@ -170,12 +170,6 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/onboarding/submit', [OnboardingController::class, 'submit'])
         ->name('onboarding.submit');
 
-    // A print shop's identity and licence files: only the admin and the shop's owner (checked in the controller).
-    Route::get('/print-provider-documents/{provider}/{field}', \App\Http\Controllers\PrintProvider\DocumentController::class)
-        ->whereNumber('provider')
-        ->whereIn('field', \App\Http\Controllers\PrintProvider\DocumentController::FIELDS)
-        ->name('print-provider.documents');
-
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
         Route::get('/designs', [AdminDesignController::class, 'index'])->name('designs');
