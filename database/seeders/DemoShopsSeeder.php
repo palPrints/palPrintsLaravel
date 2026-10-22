@@ -253,25 +253,28 @@ class DemoShopsSeeder extends Seeder
 
     /**
      * What the demo shops copy, by product: the offering of the approved real shop with the most products, and for a
-     * product it does not sell, the next shop's.
+     * product it does not sell (or sells with no colour or size to choose), the next shop's. A shop the admin switched
+     * off still serves as a template: only its settings are copied, the shop itself stays off.
      *
      * @return Collection<int, BranchProductOffering>
      */
     private function sourceOfferings(): Collection
     {
         $branches = PrintProviderBranch::query()
-            ->whereHas('printProvider', fn ($query) => $query->where('approval_status', 'approved')->where('is_active', true)
+            ->whereHas('printProvider', fn ($query) => $query->where('approval_status', 'approved')
                 ->whereHas('user', fn ($user) => $user->where('email', 'not like', self::SHOP_EMAIL)))
             ->withCount('branchProductOfferings')
             ->orderByDesc('branch_product_offerings_count')
             ->get();
 
+        $usable = fn (?BranchProductOffering $offering) => $offering && $offering->branchOfferingVariants->contains('is_available', true);
         $offerings = collect();
         foreach ($branches as $branch) {
             $branch->branchProductOfferings()
                 ->with(['product', 'branchOfferingVariants', 'branchPrintAreas.branchPrintCapabilities.branchPrintCapabilityVariants', 'branchPricingRules'])
                 ->get()
-                ->each(fn (BranchProductOffering $offering) => $offerings->has($offering->product_id) ? null : $offerings->put($offering->product_id, $offering));
+                ->each(fn (BranchProductOffering $offering) => $usable($offerings->get($offering->product_id)) || ($offerings->has($offering->product_id) && ! $usable($offering))
+                    ? null : $offerings->put($offering->product_id, $offering));
         }
 
         if ($offerings->isEmpty()) {
