@@ -5,6 +5,7 @@
 @push('styles')
     <link rel="stylesheet" href="{{ asset('front/css/admin/adminEarningsPayments.css').'?v='.filemtime(public_path('front/css/admin/adminEarningsPayments.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/css/admin/adminProducts.css').'?v='.filemtime(public_path('front/css/admin/adminProducts.css')) }}">
+    <link rel="stylesheet" href="{{ asset('front/css/admin/adminPaperTypes.css').'?v='.filemtime(public_path('front/css/admin/adminPaperTypes.css')) }}">
 @endpush
 
 @php
@@ -125,6 +126,18 @@
                 <input id="productSizesInput" name="sizes" type="text" required maxlength="300" placeholder="S, M, L, XL — أو اكتب: مقاس واحد">
                 <small>افصل بين المقاسات بفاصلة.</small>
             </label>
+            <div class="options-field paper-types-field" id="paperTypesField" hidden>
+                <span class="field-label">أنواع الورق المتاحة</span>
+                <div class="paper-type-rows" id="paperTypeRows"></div>
+                <button class="add-color-button" type="button" id="addPaperTypeButton"><i class="bi bi-plus-circle"></i> إضافة نوع ورق</button>
+                <small>المطابع تختار من هذه الأنواع ما تبيعه وتكتب أسعاره وتفاصيله، والزبون يرى فقط ما توفّره مطبعة. لا يمكن حذف نوع، فقط إخفاؤه.</small>
+            </div>
+            <div class="options-field paper-types-field" id="paperBindingsField" hidden>
+                <span class="field-label">أنواع التغليف المتاحة</span>
+                <div class="paper-type-rows" id="paperBindingRows"></div>
+                <button class="add-color-button" type="button" id="addPaperBindingButton"><i class="bi bi-plus-circle"></i> إضافة نوع تغليف</button>
+                <small>المطابع تختار من هذه الأنواع ما تقدمه وتكتب سعره، والزبون يرى فقط ما توفّره مطبعة. «بدون تغليف» موجود دائمًا. لا يمكن حذف نوع، فقط إخفاؤه.</small>
+            </div>
         </div>
         <footer>
             <button class="secondary-button" type="button" data-dialog-close>إلغاء</button>
@@ -146,5 +159,7 @@
 @endsection
 
 @push('scripts')
+    <script type="application/json" id="paperTypesData">@json($paperTypes)</script>
+    <script type="application/json" id="paperBindingsData">@json($paperBindings)</script>
     <script src="{{ asset('front/js/admin/adminProducts.js').'?v='.filemtime(public_path('front/js/admin/adminProducts.js')) }}"></script>
 @endpush

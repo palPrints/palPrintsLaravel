@@ -162,19 +162,12 @@ button { color: inherit; }
   transition: color .18s ease, background-color .18s ease, transform .18s ease;
 }
 .nav-link i { color: var(--pp-primary); font-size: 1.35rem; }
-.nav-link:hover {
-  color: var(--pp-text-strong);
-  background: var(--pp-primary-soft);
-  transform: translateY(-3px);
-}
 .nav-link.active {
   color: var(--pp-on-primary);
   background: var(--pp-primary);
   box-shadow: var(--pp-shadow-primary);
 }
 .nav-link.active i { color: var(--pp-on-primary); }
-.nav-link.active:hover { color: var(--pp-on-primary); background: var(--pp-primary-hover); }
-.nav-link.active:hover i { color: var(--pp-on-primary); }
 .nav-divider { height: 1px; margin: var(--sp-2); background: var(--pp-border); }
 
 .logout-button {
@@ -195,7 +188,6 @@ button { color: inherit; }
   transition: background-color .18s ease, transform .18s ease;
 }
 .logout-button i { font-size: 1.35rem; }
-.logout-button:hover { background: #fef2f2; transform: translateY(-3px); }
 
 .site-content {
   min-width: 0;
@@ -235,10 +227,6 @@ body.sidebar-collapsed .site-content { margin-inline-start: 0; }
   border-radius: var(--pp-radius-pill);
   transition: border-color .18s ease;
 }
-.search-box:hover {
-  border-color: var(--pp-primary);
-  box-shadow: 0 0 0 3px rgba(var(--pp-blue-rgb), .18);
-}
 .search-box:focus-within {
   border-color: var(--pp-primary);
   box-shadow: 0 0 0 3px rgba(var(--pp-blue-rgb), .18);
@@ -277,10 +265,7 @@ body.sidebar-collapsed .site-content { margin-inline-start: 0; }
   cursor: pointer;
   transition: color .18s ease, transform .18s ease;
 }
-.icon-button:hover { background: transparent; transform: translateY(-2px) scale(1.06); }
-.icon-button i, .icon-button:hover i { color: var(--pp-primary); font-size: 1.3rem; }
-.menu-button:hover .bi-x-lg { color: var(--pp-danger); }
-.cart-button:hover i { animation: cart-nudge .45s ease; }
+.icon-button i { color: var(--pp-primary); font-size: 1.3rem; }
 
 @keyframes cart-nudge {
   0%, 100% { transform: translateX(0); }
@@ -337,7 +322,6 @@ main {
   box-shadow: var(--pp-shadow-sm);
 }
 .app-card-hover { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
-.app-card-hover:hover { transform: translateY(-3px); border-color: var(--pp-primary-border); box-shadow: var(--pp-shadow); }
 
 .profile-summary {
   min-height: 160px;
@@ -380,7 +364,6 @@ main {
   font-size: 1.25rem;
   transition: background-color .18s ease, transform .18s ease;
 }
-.avatar-camera:hover { background: var(--pp-primary-hover); transform: translateY(-2px); }
 .identity-text h2 { margin: 0; color: var(--pp-text-strong); font-size: 1.375rem; line-height: 1.32; font-weight: 700; }
 .identity-text p { margin: 0; color: var(--pp-text-body); font-size: 1rem; }
 .identity-text span { display: block; margin-block-start: var(--sp-2); color: var(--pp-text-muted); font-size: .875rem; }
@@ -423,7 +406,6 @@ main {
   transition: border-color .18s ease, box-shadow .18s ease;
 }
 .pp-textarea { min-height: 96px; resize: vertical; }
-.pp-input:hover, .pp-textarea:hover,
 .pp-input:focus, .pp-textarea:focus {
   border-color: var(--pp-primary);
   box-shadow: 0 0 0 3px rgba(var(--pp-blue-rgb), .18);
@@ -470,13 +452,10 @@ main {
 .btn-sm { padding: .45rem .95rem; font-size: .875rem; }
 .btn-lg { padding: .9rem 1.7rem; font-size: 1.0625rem; }
 .btn-brand { color: var(--pp-on-primary); background: var(--pp-primary); box-shadow: var(--pp-shadow-primary); }
-.btn-brand:hover { background: var(--pp-primary-hover); transform: translateY(-3px); }
 .btn-brand:active { background: var(--pp-primary-active); transform: translateY(0); }
 .btn-brand-outline { color: var(--pp-primary); background: transparent; border-color: var(--pp-primary-border); }
-.btn-brand-outline:hover { color: var(--pp-primary-hover); background: var(--pp-primary-soft); border-color: var(--pp-blue-300); transform: translateY(-3px); }
 .btn-brand-outline:active { background: var(--pp-blue-100); transform: translateY(0); }
 .btn-brand-dark { color: #fff; background: var(--pp-text-strong); }
-.btn-brand-dark:hover { background: var(--pp-navy-800); transform: translateY(-3px); }
 .btn-brand:disabled, .btn-brand-outline:disabled, .btn-brand-dark:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
 
 .form-actions .btn-brand { min-width: 224px; }
@@ -500,9 +479,7 @@ main {
 .footer-column { display: flex; flex-direction: column; gap: var(--sp-1); }
 .footer-column h3 { margin: 0 0 var(--sp-1); color: var(--pp-text-strong); font-size: 1rem; line-height: 1.45; font-weight: 700; }
 .footer-column a { display: inline-flex; align-items: center; gap: var(--sp-1); color: var(--pp-text-muted); font-size: .8125rem; line-height: 1.7; transition: color .18s ease, transform .18s ease; }
-.footer-column a:hover { color: var(--pp-primary-hover); transform: translateX(-4px); }
 .footer-contact span { display: flex; align-items: center; gap: var(--sp-1); color: var(--pp-text-muted); font-size: .8125rem; line-height: 1.7; cursor: pointer; transition: color .18s ease, transform .18s ease; }
-.footer-contact span:hover { color: var(--pp-primary-hover); transform: translateX(-4px); }
 .footer-contact i, .footer-column a i { flex: none; color: var(--pp-primary); font-size: .95rem; }
 
 .footer-bottom {
@@ -528,7 +505,6 @@ main {
   font-size: 1.05rem;
   transition: background-color .18s ease, color .18s ease, transform .18s ease;
 }
-.footer-social a:hover { color: var(--pp-on-primary); background: var(--pp-primary); transform: translateY(-2px); }
 
 .sidebar-overlay { display: none; }
 .toast {
@@ -623,9 +599,7 @@ main {
 }
 
 /* A field the server or the page rejected: red frame (also while focused). */
-.pp-input.is-invalid, .pp-textarea.is-invalid,
-.pp-input.is-invalid:hover, .pp-input.is-invalid:focus,
-.pp-textarea.is-invalid:hover, .pp-textarea.is-invalid:focus {
+.pp-input.is-invalid, .pp-textarea.is-invalid, .pp-input.is-invalid:focus, .pp-textarea.is-invalid:focus {
   border-color: var(--pp-danger);
   background: #fff8f8;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, .12);
@@ -637,5 +611,4 @@ main {
 .email-status .badge-success, .email-status .badge-warning { margin: 0; }
 .email-status__form { margin: 0; }
 .email-status__button { display: inline-flex; align-items: center; gap: .35rem; min-height: 30px; padding: 0 14px; color: var(--pp-primary); background: #fff; border: 1px solid var(--pp-primary-border); border-radius: var(--pp-radius-pill); font: 700 .8125rem inherit; font-family: inherit; cursor: pointer; transition: background-color .18s ease, color .18s ease, transform .18s ease; }
-.email-status__button:hover { color: #fff; background: var(--pp-primary); border-color: var(--pp-primary); }
 .email-status__button:active { transform: scale(.97); }

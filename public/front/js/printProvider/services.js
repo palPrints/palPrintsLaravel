@@ -517,12 +517,21 @@
         if (!body.methods.length) { sectionError("اختر طريقة طباعة واحدة على الأقل وحدد سعرها.", form.querySelector('input[name="methods"]')); return; }
       }
       const id = draft.id, isNew = !find(id).settings;
+      const send = function () {
       submit.disabled = true;
       request("PUT", url(config.saveUrl, id), body).then(function (data) {
         replace(data.product); returnToCatalog = false; settingsDialog.close(); draft = null; renderProducts();
         const target = products.querySelector('[data-edit-product="' + id + '"]'); if (target) target.focus(); else document.getElementById("openCatalog").focus();
         showToast(isNew ? "تمت إضافة المنتج وحفظ إعداداته" : data.message);
       }).catch(function (exception) { error.textContent = exception.message; error.hidden = false; }).then(function () { submit.disabled = false; });
+      };
+      // Sticker paper types that are on but cost 0 are allowed (the base price may already cover them), so ask once instead of blocking.
+      const freeItems = !body.sticker_materials ? [] : body.sticker_materials.paper.filter(function (item) { return item.available && !item.price_per_sheet; }).map(function (item) { return item.label; }).concat(body.sticker_materials.protection.available && !body.sticker_materials.protection.price_per_sheet ? [body.sticker_materials.protection.label] : []);
+      if (freeItems.length && window.PalAlert) {
+        window.PalAlert.confirm({ title: "أسعار بدون زيادة", text: "سعر الورقة 0 للأنواع: " + freeItems.join("، ") + ". يعني بدون أي زيادة على السعر الأساسي. هل تريد الحفظ هكذا؟", confirmText: "نعم، احفظ", danger: false, icon: "question", target: settingsDialog }).then(function (ok) { if (ok) send(); });
+        return;
+      }
+      send();
     });
 
     renderProducts();

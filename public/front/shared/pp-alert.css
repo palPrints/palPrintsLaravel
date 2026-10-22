@@ -25,3 +25,10 @@
 @media (prefers-reduced-motion: reduce) {
   .pp-swal__btn { transition: none; }
 }
+
+/* Question / info icons in the site blue (SweetAlert's default is a pale grey-teal that looks washed out). */
+.pp-swal .swal2-icon.swal2-question,
+.pp-swal .swal2-icon.swal2-info { color: #1677ff; border-color: #bfdbfe; background: #eff6ff; }
+.pp-swal .swal2-icon.swal2-question .swal2-icon-content,
+.pp-swal .swal2-icon.swal2-info .swal2-icon-content { color: #1677ff; }
+.pp-swal__text { color: #475569; font-weight: 600; }

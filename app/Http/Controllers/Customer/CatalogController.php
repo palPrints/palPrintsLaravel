@@ -8,9 +8,11 @@ use App\Models\DesignFavorite;
 use App\Models\Product;
 use App\Models\BranchProductOffering;
 use App\Models\StickerCategory;
+use App\Services\PaperPricing;
 use App\Services\Stickers\StickerSettingsService;
 use App\Support\CatalogProductData;
-use App\Services\PaperPricing;
+use App\Support\PaperBindings;
+use App\Support\PaperTypes;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
 
@@ -147,6 +149,8 @@ class CatalogController extends Controller
         // A job needs a size, a paper type and a colour together: each combination some live shop can print.
         $combos = [];
         $bindings = [];
+        $activeTypes = PaperTypes::active();
+        $activeBindings = PaperBindings::active();
 
         foreach ($offerings as $offering) {
             $list = $pricing->priceList($offering);
@@ -154,6 +158,11 @@ class CatalogController extends Controller
                 ->map(fn ($variant) => $sizeByVariant[$variant->variant_id] ?? null)->filter()->unique()->all();
 
             foreach ($list['ink'] as $type => $byColor) {
+                // A paper type the admin has hidden is not offered, even if a shop still has a price for it.
+                if (! isset($activeTypes[$type])) {
+                    continue;
+                }
+
                 foreach ($shopSizes as $size) {
                     foreach (array_keys($byColor) as $color) {
                         $combos[$size.'|'.$type.'|'.$color] = ['size' => strtoupper($size), 'paper' => $type, 'color' => $color];
@@ -162,6 +171,11 @@ class CatalogController extends Controller
             }
 
             foreach ($list['bindings'] as $binding => $price) {
+                // A binding the admin has hidden is not offered, even if a shop still has a price for it.
+                if (! isset($activeBindings[$binding])) {
+                    continue;
+                }
+
                 $bindings[$binding] = min($bindings[$binding] ?? $price, $price);
             }
         }
@@ -180,9 +194,11 @@ class CatalogController extends Controller
                 ],
                 // What can be printed together, so the page can hide a choice that does not go with the ones already made.
                 'combinations' => $combos,
+                // The admin's paper types (name, hint, icon) the page draws its paper choices from.
+                'paperTypes' => collect(PaperTypes::all())->where('active', true)->values()->all(),
             ],
             // The lowest price among the shops that sell each binding, to show on its card ("from").
-            'bindings' => collect($bindings)->map(fn ($price, $id) => ['id' => $id, 'from' => $price])->values()->all(),
+            'bindings' => collect($bindings)->map(fn ($price, $id) => ['id' => $id, 'label' => $activeBindings[$id], 'from' => $price])->values()->all(),
         ];
     }
 

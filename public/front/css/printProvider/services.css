@@ -234,3 +234,38 @@ html[data-bs-theme="dark"] .print-services-page .services-section-error { color:
   .print-services-page .services-pack .services-paper-since { grid-column: 1; }
   .print-services-page .services-pack-line { flex-wrap: wrap; }
 }
+
+/* ===== Settings dialog: every box has ONE border. On focus the border itself turns blue, no outer ring or glow. ===== */
+.print-services-page .services-dialog input:not([type="checkbox"]):focus,
+.print-services-page .services-dialog input:not([type="checkbox"]):focus-visible,
+.print-services-page .services-dialog select:focus,
+.print-services-page .services-dialog select:focus-visible,
+.print-services-page .services-dialog textarea:focus,
+.print-services-page .services-dialog textarea:focus-visible { outline: 0; box-shadow: none; border-color: var(--pp-blue-600); }
+.print-services-page .services-dialog .services-price-field:focus-within { outline: 0; box-shadow: none; border-color: var(--pp-blue-600); }
+.print-services-page .services-dialog .services-price-field input:focus,
+.print-services-page .services-dialog .services-price-field input:focus-visible { border: 0; }
+.print-services-page .services-dialog .services-method-price input:focus,
+.print-services-page .services-dialog .services-pack-line input:focus { box-shadow: none; }
+.print-services-page .services-dialog input[type="checkbox"]:focus-visible { outline: 2px solid var(--pp-blue-600); outline-offset: 2px; }
+
+/* ===== Sticker paper materials ===== */
+.print-services-page .sticker-material-options { display: grid; gap: 10px; margin-top: 20px; }
+.print-services-page .sticker-material-options legend { margin-bottom: 4px; color: var(--pp-navy-900); font-size: 14px; font-weight: 800; }
+.print-services-page .sticker-material-row { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto 110px; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--pp-border); border-radius: 10px; background: #f8fafc; color: var(--pp-navy-900); font-size: 12px; font-weight: 700; }
+.print-services-page .sticker-material-row:has(input[type="checkbox"]:checked) { background: #f8fbff; border-color: #8ebeff; }
+.print-services-page .sticker-material-row input[type="checkbox"] { width: 17px; height: 17px; margin: 0; accent-color: var(--pp-blue-600); cursor: pointer; }
+.print-services-page .sticker-material-row input:not([type="checkbox"]) { box-sizing: border-box; width: 100%; min-width: 0; height: 38px; padding: 0 10px; border: 1px solid var(--pp-border); border-radius: 8px; background: #fff; color: var(--pp-navy-900); font: inherit; font-size: 13px; font-weight: 700; }
+.print-services-page .sticker-material-row input[data-material$="-price"] { direction: ltr; text-align: left; }
+.print-services-page .sticker-material-row span { white-space: nowrap; color: var(--pp-navy-500, #64748b); }
+.print-services-page .sticker-material-options > .services-button { justify-self: stretch; min-height: 42px; border: 1.5px dashed #aacbf5; border-radius: 10px; background: #f8fbff; color: var(--pp-blue-600); font-weight: 800; }
+.print-services-page .sticker-material-options > .services-button:hover { background: #eff6ff; border-color: var(--pp-blue-600); }
+@media (max-width: 640px) { .print-services-page .sticker-material-row { grid-template-columns: auto 1fr; } .print-services-page .sticker-material-row input:not([type="checkbox"]) { grid-column: 1 / -1; } }
+
+/* One row per line, full width, so the paper name and price are readable (the shared .services-options rule wraps rows side by side). */
+.print-services-page fieldset.sticker-material-options { display: flex; flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 10px; width: 100%; min-width: 0; }
+.print-services-page fieldset.sticker-material-options > .sticker-material-row { width: 100%; }
+.print-services-page .sticker-material-row { grid-template-columns: auto auto minmax(140px, 1fr) auto 120px; }
+
+/* No outline around the dialog: the 1px light border showed as a white line against the dimmed page. The shadow already separates it. */
+.print-services-page .services-dialog { border: 0; }

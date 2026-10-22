@@ -67,9 +67,10 @@
     const paper = (materials.paper || []).filter(item => item.available);
     const protection = materials.protection || {};
     if (!el.materials) return;
+    if (!paper.length && !protection.available) { el.materials.innerHTML = ""; return; }
     el.materials.innerHTML = pages.map((_, index) => {
       const current = state.pageSpecs[index] || { paper_key: paper[0]?.key || "photo-sticker", protection: false };
-      return `<div class="page-material-row"><strong>ورقة A4 ${index + 1}</strong><select data-page-paper="${index}">${paper.map(item => `<option value="${item.key}" ${item.key === current.paper_key ? "selected" : ""}>${item.label}</option>`).join("")}</select>${protection.available ? `<label><input type="checkbox" data-page-protection="${index}" ${current.protection ? "checked" : ""}> ${protection.label} (+${Number(protection.price_per_sheet || 0).toFixed(2)} شيكل)</label>` : ""}</div>`;
+      return `<div class="page-material-row"><strong><i class="bi bi-file-earmark-text"></i> ورقة A4 ${index + 1}</strong><span class="page-material-hint">نوع الورق لهذه الصفحة</span><select data-page-paper="${index}">${paper.map(item => `<option value="${item.key}" ${item.key === current.paper_key ? "selected" : ""}>${item.label}</option>`).join("")}</select>${protection.available ? `<label><input type="checkbox" data-page-protection="${index}" ${current.protection ? "checked" : ""}> ${protection.label} (+${Number(protection.price_per_sheet || 0).toFixed(2)} شيكل)</label>` : ""}</div>`;
     }).join("");
     el.materials.querySelectorAll("select,[data-page-protection]").forEach(input => input.addEventListener("change", () => { const index = Number(input.dataset.pagePaper ?? input.dataset.pageProtection); const current = state.pageSpecs[index] || {}; current.paper_key = el.materials.querySelector(`[data-page-paper="${index}"]`)?.value || current.paper_key; current.protection = Boolean(el.materials.querySelector(`[data-page-protection="${index}"]`)?.checked); state.pageSpecs[index] = current; requestPreview(); }));
   }
@@ -159,6 +160,13 @@
     const cut = layout.page?.cut_line || {};
 
     el.sheet.style.setProperty("--a4-ratio", `${width} / ${height}`);
+    const margins = layout.page?.margins_mm;
+    if (margins) {
+      el.sheet.style.setProperty("--m-top", `${(Number(margins.top) / height) * 100}%`);
+      el.sheet.style.setProperty("--m-bottom", `${(Number(margins.bottom) / height) * 100}%`);
+      el.sheet.style.setProperty("--m-left", `${(Number(margins.left) / width) * 100}%`);
+      el.sheet.style.setProperty("--m-right", `${(Number(margins.right) / width) * 100}%`);
+    }
     el.sheet.querySelectorAll(".a4-sticker").forEach((node) => node.remove());
     el.a4Empty.hidden = state.lines.length > 0;
 

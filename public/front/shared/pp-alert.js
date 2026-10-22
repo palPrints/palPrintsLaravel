@@ -36,7 +36,7 @@
     var o = options || {};
     if (!window.Swal) return Promise.resolve(window.confirm(o.text || o.title || ""));
 
-    return window.Swal.fire({
+    var config = {
       icon: o.icon || "warning",
       title: o.title,
       text: o.html ? undefined : o.text,
@@ -48,7 +48,10 @@
       heightAuto: false,
       buttonsStyling: false,
       customClass: classes(o.danger !== false),
-    }).then(function (result) { return result.isConfirmed; });
+    };
+    // A modal <dialog> sits in the browser top layer, above everything: to show above it the pop-up must be drawn inside it.
+    if (o.target) config.target = o.target;
+    return window.Swal.fire(config).then(function (result) { return result.isConfirmed; });
   }
 
   function alertMessage(text, options) {

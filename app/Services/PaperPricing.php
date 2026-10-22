@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\BranchProductOffering;
 use App\Models\Variant;
+use App\Support\PaperBindings;
 use App\Support\PaperPrices;
+use App\Support\PaperTypes;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -142,7 +144,7 @@ class PaperPricing
         }
 
         $grouping = ($input['grouping'] ?? '') === 'separate' ? 'separate' : 'combined';
-        $bindingIds = array_merge(array_keys(PaperPrices::BINDINGS), ['none']);
+        $bindingIds = array_merge(array_keys(PaperBindings::active()), ['none']);
         $binding = fn ($value) => in_array($value, $bindingIds, true) ? $value : null;
         $pagesTotal = 0;
         $clean = [];
@@ -154,7 +156,7 @@ class PaperPricing
             $pagesTotal += $pages;
 
             if (! in_array($size, $sizes, true)
-                || ! array_key_exists((string) ($file['paper'] ?? ''), PaperPrices::TYPES)
+                || ! array_key_exists((string) ($file['paper'] ?? ''), PaperTypes::active())
                 || ! array_key_exists((string) ($file['color'] ?? ''), PaperPrices::INK)
                 || ! in_array($file['sides'] ?? '', self::SIDES, true)
                 || ! in_array((int) ($file['layout'] ?? 0), self::LAYOUTS, true)

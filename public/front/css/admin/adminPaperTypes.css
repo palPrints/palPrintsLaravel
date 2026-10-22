@@ -1,0 +1,37 @@
+/* Paper types inside the product dialog (only the paper printing product shows them). One border per box, blue on the box itself when focused. */
+.paper-types-field[hidden] { display: none; }
+.paper-type-rows { display: grid; gap: 10px; }
+
+.paper-type-row { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 8px; padding: 12px; border: 1px solid #e5eaf1; border-radius: 12px; background: #f8fafc; }
+.paper-type-row .pt-label { grid-column: 1 / -1; }
+.paper-type-row.is-off { background: #f1f5f9; }
+.paper-type-row.is-off input[type="text"] { opacity: .65; }
+
+.form-body .paper-type-row input[type="text"] { width: 100%; min-height: 42px; padding: 0 12px; border: 1px solid #dbe2ea; border-radius: 8px; background: #fff; color: #0f172a; font-weight: 700; outline: 0; box-shadow: none; }
+.form-body .paper-type-row input[type="text"]::placeholder { color: #94a3b8; font-weight: 600; }
+.form-body .paper-type-row input[type="text"]:focus { border-color: var(--blue); box-shadow: none; outline: 0; }
+
+.paper-type-row .pt-switch { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; margin: 0; border: 1px solid #dbe2ea; border-radius: 8px; background: #fff; color: #334155; font-size: 12px; font-weight: 700; cursor: pointer; }
+.form-body .paper-type-row .pt-switch input { width: 16px; min-height: 0; height: 16px; margin: 0; padding: 0; accent-color: var(--blue); cursor: pointer; }
+.paper-type-row.is-off .pt-switch { color: #64748b; }
+
+/* Tidier rows: the name and its on/off switch on one line, the short hint under it, smaller and muted. */
+.paper-type-row { grid-template-columns: minmax(0, 1fr) 104px; grid-template-areas: "label switch" "note note"; align-items: center; gap: 8px 10px; padding: 12px; background: #fff; }
+.paper-type-row .pt-label { grid-area: label; grid-column: auto; }
+.paper-type-row .pt-note { grid-area: note; }
+.paper-type-row .pt-switch { grid-area: switch; }
+.paper-type-row.is-off { background: #f8fafc; }
+.form-body .paper-type-row input.pt-label { font-size: 14px; font-weight: 800; }
+.form-body .paper-type-row input.pt-note { min-height: 38px; background: #f8fafc; color: #475569; font-size: 12px; font-weight: 600; }
+.form-body .paper-type-row input.pt-note:focus { background: #fff; }
+.paper-type-row .pt-switch { min-height: 42px; background: #f8fafc; }
+.paper-type-row:has(.pt-switch input:checked) .pt-switch { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
+.paper-type-rows { gap: 10px; }
+
+/* One border only when a box of this dialog is focused: the blue line sits on the box itself, no extra glow ring. */
+.product-dialog .form-body input:focus,
+.product-dialog .form-body select:focus,
+.product-dialog .form-body textarea:focus { outline: 0; box-shadow: none; border-color: var(--blue); }
+
+/* A binding has no hint line: name and switch only. */
+.paper-type-row.no-note { grid-template-areas: "label switch"; }

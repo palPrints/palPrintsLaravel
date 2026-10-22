@@ -102,7 +102,7 @@
                             <span @class(['is-open' => $ticketStatus !== 'resolved'])>{{ ['new' => 'قيد المتابعة', 'open' => 'قيد المعالجة', 'resolved' => 'تم الحل'][$ticketStatus] }}</span>
                         </a>
                     @empty
-                        <p class="support-empty">ما أرسلت أي طلب دعم بعد.</p>
+                        <p class="support-empty"><i class="bi bi-inbox"></i><span>ما أرسلت أي طلب دعم بعد.</span></p>
                     @endforelse
                 </section>
 
