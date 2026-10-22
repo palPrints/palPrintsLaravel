@@ -43,4 +43,5 @@ document.addEventListener("DOMContentLoaded",function(){
   function showToast(message,success){toast.querySelector("span").textContent=message;toast.classList.toggle("is-success",!!success);toast.classList.add("show");setTimeout(function(){toast.classList.remove("show")},2800)}
   form.addEventListener("submit",function(event){if(!form.reportValidity()){event.preventDefault();return}syncDays()});
   if(window.printProviderProfileFlash==="updated")showToast("تم حفظ التغييرات بنجاح",true);
+  if(window.printProviderProfileFlash==="submitted")showToast("تم حفظ بياناتك وإرسال طلب الاعتماد للإدارة",true);
 });

@@ -11,7 +11,6 @@
     $complete = $provider->profile_completed_at !== null;
     $awaiting = in_array($status, ['submitted', 'under_review'], true);
     $needsChanges = in_array($status, ['rejected', 'changes_requested'], true);
-    $canSubmit = $complete && in_array($status, ['draft', 'rejected', 'changes_requested'], true);
     $canEdit = ! $awaiting;
     $startEditing = $errors->any();
     $selectedDays = old('days', $hours['days']);
@@ -68,7 +67,7 @@
             <span><i class="bi bi-exclamation-triangle"></i></span>
             <div>
                 <h2>أكمل ملفك الشخصي</h2>
-                <p>اضغط "تعديل البيانات" وأدخل بيانات المطبعة وصاحبها، وارفع وثيقة التحقق وصورة الهوية، ثم احفظ التغييرات لتتمكن من إرسال الملف للمراجعة.</p>
+                <p>اضغط "تعديل البيانات" وأدخل بيانات المطبعة وصاحبها، وارفع وثيقة التحقق وصورة الهوية، ثم احفظ التغييرات، وسيُرسل طلب الاعتماد للإدارة تلقائيًا.</p>
             </div>
         </section>
     @endunless
@@ -383,13 +382,13 @@
                             <p>سيتم إشعارك عند قبول أو رفض طلب اعتماد حسابك.</p>
                         @elseif ($needsChanges)
                             <h3>الملف بحاجة إلى تعديل</h3>
-                            <p>راجع ملاحظات الإدارة وعدّل البيانات ثم أعد إرسال الملف للمراجعة.</p>
+                            <p>راجع ملاحظات الإدارة وعدّل البيانات ثم احفظها، وسيُعاد إرسال الملف للمراجعة تلقائيًا.</p>
                         @elseif ($complete)
-                            <h3>ملفك مكتمل، أرسله للمراجعة</h3>
-                            <p>أرسل الملف ليراجعه فريق الإدارة ويفعّل حسابك.</p>
+                            <h3>ملفك مكتمل</h3>
+                            <p>اضغط "تعديل البيانات" ثم احفظ التغييرات ليُرسل الملف للإدارة لمراجعته وتفعيل حسابك.</p>
                         @else
                             <h3>جاري تجهيز بياناتك للمراجعة</h3>
-                            <p>أكمل البيانات المطلوبة واحفظها ثم أرسل الملف للمراجعة.</p>
+                            <p>أكمل البيانات المطلوبة واحفظها، وسيُرسل الملف للمراجعة تلقائيًا.</p>
                         @endif
                     </div>
                 </div>
@@ -402,13 +401,6 @@
                 </div>
             </div>
         </section>
-
-    @if ($canSubmit)
-        <form method="POST" action="{{ route('onboarding.submit') }}" class="submit-review-form">
-            @csrf
-            <button class="outline-primary" type="submit"><i class="bi bi-send"></i> إرسال للمراجعة</button>
-        </form>
-    @endif
 
     <div class="printshop-toast" id="toast" role="status" aria-live="polite" aria-atomic="true"><span></span></div>
 @endsection

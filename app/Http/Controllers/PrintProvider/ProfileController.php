@@ -8,6 +8,7 @@ use App\Models\PrintProvider;
 use App\Models\PrintProviderBranch;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\ApprovalSubmissionService;
 use App\Services\WhatsApp\PhoneNumber;
 use Closure;
 use Illuminate\Http\RedirectResponse;
@@ -145,7 +146,7 @@ class ProfileController extends Controller
         }
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request, ApprovalSubmissionService $submission): RedirectResponse
     {
         // A profile that is already with the admin for review cannot change underneath them.
         if ($request->user()->isAwaitingApproval()) {
@@ -293,6 +294,16 @@ class ProfileController extends Controller
                 Storage::disk('local')->delete($oldPaths[$field]);
                 Storage::disk('public')->delete($oldPaths[$field]);
             }
+        }
+
+        // Saving a complete profile sends it straight to the admins; there is no separate "send for review" step.
+        $user->unsetRelation('printProvider');
+        if ($submission->canSubmit($user)) {
+            $submission->submit($user, $request->ip(), $request->userAgent());
+
+            return redirect()
+                ->route('print-provider.profile')
+                ->with('profile_status', 'submitted');
         }
 
         return redirect()

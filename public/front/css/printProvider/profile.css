@@ -107,7 +107,6 @@ body:not(.sidebar-collapsed) main{max-width:calc(1320px + var(--side))}
 .status.missing{color:#b91c1c;background:#fee2e2}
 .form-errors{margin-bottom:20px}
 .review-card{margin-top:0}
-.submit-review-form{margin-top:16px;display:flex;justify-content:flex-end}
 .document-row .doc-link{justify-self:start;color:var(--blue);font-size:12px;font-weight:700;text-decoration:none}
 .document-row .doc-link:hover{text-decoration:underline}
 .owner-view{display:flex;align-items:center;gap:18px}
