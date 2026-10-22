@@ -155,9 +155,9 @@ test('a print shop goes from sign-up to a delivered order', function () {
         ->and($provider->whatsapp_number)->toBe('972597681977')
         ->and($provider->whatsapp_notifications_enabled)->toBeTrue();
 
-    // 3. Sent for approval, 4. approved by the admin. (A fresh copy of the user, as every real request loads one.)
+    // 3. Saving the complete profile sent it for approval, 4. approved by the admin. (A fresh copy of the user, as every real request loads one.)
+    expect($provider->approval_status)->toBe('submitted');
     $owner = $owner->fresh();
-    $this->actingAs($owner)->post(route('onboarding.submit'))->assertSessionHasNoErrors();
     $request = ApprovalRequest::where('user_id', $owner->id)->firstOrFail();
     $this->actingAs($this->admin)->post(route('admin.approval-requests.review', $request), ['action' => 'approved'])->assertSessionHasNoErrors();
     $owner = $owner->fresh();
