@@ -22,12 +22,12 @@
         </div>
 
         <section class="stickers-workspace" aria-labelledby="stickersTitle">
-            <div class="stickers-shop">
+            <div class="stickers-shop{{ $stickerUploadMode ? ' stickers-shop--sticky' : '' }}">
                 <header class="stickers-hero">
                     <span class="stickers-hero__icon"><i class="bi bi-sticky"></i></span>
                     <div>
                         <h1 id="stickersTitle">ملصقات A4 تفاعلية</h1>
-                        <p>اختاري الملصقات أو ارفعي تصميمك، وسنرتبها على ورقة A4 حسب إعدادات الطباعة.</p>
+                        <p>اختر الملصقات أو ارفع تصميمك، وسنرتبها على ورقة A4 حسب إعدادات الطباعة.</p>
                     </div>
                 </header>
 
@@ -35,13 +35,15 @@
                     <label><span>المقاس</span><select id="stickerSizeSelect"></select></label>
                     <label><span>الكمية</span><input id="stickerQuantityInput" type="number" min="1" max="999" value="1" inputmode="numeric"></label>
                     <label><span>نوع القص</span><select id="stickerCutSelect"><option value="circle">قص دائري مجاني</option><option value="contour">خط قص حول التصميم</option></select></label>
+                    <p class="sticker-controls__hint"><i class="bi bi-info-circle" aria-hidden="true"></i> <span><strong>الخطوة الأولى:</strong> اختر المقاس والكمية ونوع القص، ثم {{ $stickerUploadMode ? 'ارفع صورتك' : 'اضغط على الملصق الذي تريده' }}. بعدها تقدر تعدّلها لكل ملصق من قائمة «ملصقاتك».</span></p>
                 </section>
 
-                {{-- The customer's own design, beside the ready stickers: it lands on the A4 sheet like any sticker. --}}
+                {{-- Only when the customer came from "upload your design": their own image lands on the A4 sheet like any sticker. --}}
+                @if ($stickerUploadMode)
                 <section class="upload-panel" aria-labelledby="uploadTitle">
                     <div class="upload-panel__copy">
                         <span class="upload-panel__badge">تصميمك الخاص</span>
-                        <h2 id="uploadTitle">ارفعي تصميمك كملصق</h2>
+                        <h2 id="uploadTitle">ارفع تصميمك كملصق</h2>
                         <p>صورة PNG أو JPG، ويُفضّل PNG بخلفية شفافة. تظهر مباشرة على ورقة A4 بالمقاس والكمية ونوع القص المختارة فوق.</p>
                     </div>
                     <label class="upload-drop">
@@ -51,7 +53,12 @@
                         <small>PNG · JPG</small>
                     </label>
                 </section>
+                @endif
 
+                {{-- Every sticker added, with its own size, quantity and cut. --}}
+                <div class="sticker-lines" id="stickerLines" aria-label="ملصقاتك" hidden></div>
+
+                @unless ($stickerUploadMode)
                 <section class="library-panel" aria-labelledby="libraryTitle">
                     <div class="section-title-row"><h2 id="libraryTitle">الملصقات الجاهزة</h2><span id="libraryCount"></span></div>
                     <div class="sticker-tabs" id="stickerTabs">
@@ -61,8 +68,9 @@
                         @endforeach
                     </div>
                     <div class="sticker-grid" id="stickerGrid"></div>
-                    <p class="products-empty" id="stickersEmpty" hidden>لا توجد ملصقات جاهزة في هذا التصنيف بعد، ارفعي تصميمك من فوق.</p>
+                    <p class="products-empty" id="stickersEmpty" hidden>لا توجد ملصقات جاهزة في هذا التصنيف بعد.</p>
                 </section>
+                @endunless
             </div>
 
             <aside class="a4-preview-panel" aria-label="معاينة ورقة A4">
@@ -83,7 +91,7 @@
 
                     <div class="a4-sheet-wrap">
                         <div class="a4-sheet" id="a4Sheet">
-                            <div class="a4-empty" id="a4Empty"><i class="bi bi-plus-circle"></i><strong>اختاري ملصقا ليقفز إلى الورقة</strong></div>
+                            <div class="a4-empty" id="a4Empty"><i class="bi bi-plus-circle"></i><strong>{{ $stickerUploadMode ? 'ارفع صورتك لتظهر على الورقة' : 'اختر ملصقا ليقفز إلى الورقة' }}</strong></div>
                         </div>
                     </div>
 
@@ -108,6 +116,7 @@
     <script>
         window.PalPrintsStickers = {
             categories: @json($stickerCategories),
+            uploadMode: @json($stickerUploadMode),
             settings: @json($stickerSettings),
             materials: @json($stickerMaterials),
             routes: @json($stickerRoutes),

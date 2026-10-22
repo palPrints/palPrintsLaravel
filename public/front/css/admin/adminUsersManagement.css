@@ -43,6 +43,8 @@
 .user-status.is-active { color: #15924d; background: #edfbf3; }
 .user-status.is-suspended { color: #d92d20; background: #fff0ef; }
 .user-status.is-pending { color: #a35b00; background: #fff5e8; }
+.user-status.is-draft { color: #5b6b82; background: #eef1f6; }
+.user-status.is-returned { color: #b42318; background: #fff0ef; }
 .user-arrow { color: #8fa4bd; font-size: 13px; }
 .user-arrow-button { width: 28px; height: 28px; display: grid; place-items: center; padding: 0; color: #8fa4bd; background: transparent; border: 0; border-radius: 50%; cursor: pointer; }
 .user-arrow-button:hover { color: var(--users-accent); background: var(--users-soft); }

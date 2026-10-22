@@ -38,7 +38,7 @@
         users: serverData.printShops || []
       }
     };
-    const statusLabels = { active: "نشط", suspended: "معطّل", pending: "معلّق الاعتماد" };
+    const statusLabels = { active: "نشط", suspended: "معطّل", pending: "بانتظار المراجعة", draft: "لم يُكمل بياناته", returned: "يحتاج تعديل" };
     let activeUserType = "customers";
     let activeStatus = "all";
     let expandedDesignerIndex = -1;
@@ -70,7 +70,8 @@
       const filters = [
         { key: "all", label: "الكل", count: users.length },
         { key: "active", label: "نشط", count: users.filter(function (user) { return user.status === "active"; }).length },
-        { key: "pending", label: "معلّق", count: users.filter(function (user) { return user.status === "pending"; }).length },
+        { key: "pending", label: "بانتظار المراجعة", count: users.filter(function (user) { return user.status === "pending"; }).length },
+        { key: "incomplete", label: "غير مكتمل", count: users.filter(function (user) { return user.status === "draft" || user.status === "returned"; }).length },
         { key: "suspended", label: "معطّل", count: users.filter(function (user) { return user.status === "suspended"; }).length }
       ];
       usersFilters.innerHTML = filters.map(function (filter) {
@@ -81,14 +82,15 @@
     function userRank(user) {
       if (user.status === "pending" && user.reviewUrl) return 0;
       if (user.status === "pending") return 1;
-      if (user.status === "active") return 2;
-      return 3;
+      if (user.status === "returned") return 2;
+      if (user.status === "active") return 3;
+      return 4;
     }
 
     function renderUsers() {
       const type = userTypes[activeUserType];
       const visibleUsers = type.users.filter(function (user) {
-        const statusMatches = activeStatus === "all" || user.status === activeStatus;
+        const statusMatches = activeStatus === "all" || user.status === activeStatus || (activeStatus === "incomplete" && (user.status === "draft" || user.status === "returned"));
         return statusMatches;
       }).sort(function (a, b) { return userRank(a) - userRank(b); });
       usersList.innerHTML = visibleUsers.map(function (user) {
@@ -146,7 +148,9 @@
                 '<button class="designer-approve-button" type="button" data-approve-designer="' + index + '">قبول الطلب</button>' +
                 '<button class="designer-reject-button" type="button" data-reject-designer="' + index + '">رفض الطلب</button>' +
               '</div>'
-            : '<button class="designer-disable" type="button" data-disable-designer="' + index + '">' + (designer.status === 'suspended' ? 'تفعيل الحساب' : 'تعطيل الحساب') + '</button>') +
+            : designer.status === 'draft'
+              ? '<div class="designer-portfolio"><span><i class="bi bi-hourglass-split" aria-hidden="true"></i>لم يُرسل طلب الاعتماد</span><strong>لم يرسل المصمم طلب الاعتماد بعد، وسيظهر قبول ورفض الطلب هنا عند إرساله.</strong></div>'
+              : '<button class="designer-disable" type="button" data-disable-designer="' + index + '">' + (designer.status === 'suspended' ? 'تفعيل الحساب' : 'تعطيل الحساب') + '</button>') +
         '</div>' +
         '<div class="designer-designs-panel' + (designer.designs && designer.designs.length ? ' has-list' : '') + '"' + (!infoVisible ? '' : ' hidden') + '>' + renderDesignsList(designer.designs) + '</div>' +
       '</section>';
@@ -215,7 +219,9 @@
                 '<button class="designer-approve-button" type="button" data-approve-print-shop="' + index + '">قبول الطلب</button>' +
                 '<button class="designer-reject-button" type="button" data-reject-print-shop="' + index + '">رفض الطلب</button>' +
               '</div>'
-            : '<button class="designer-disable" type="button" data-disable-print-shop="' + index + '">' + (shop.status === 'suspended' ? 'تفعيل الحساب' : 'تعطيل الحساب') + '</button>') +
+            : shop.status === 'draft'
+              ? '<div class="designer-portfolio"><span><i class="bi bi-hourglass-split" aria-hidden="true"></i>لم يُرسل طلب الاعتماد</span><strong>لم ترسل المطبعة طلب الاعتماد بعد، وسيظهر قبول ورفض الطلب هنا عند إرساله.</strong></div>'
+              : '<button class="designer-disable" type="button" data-disable-print-shop="' + index + '">' + (shop.status === 'suspended' ? 'تفعيل الحساب' : 'تعطيل الحساب') + '</button>') +
         '</div>' +
         '<div class="designer-designs-panel print-shop-jobs-panel"' + (!infoVisible ? '' : ' hidden') + '>' +
           (shop.jobsAvailable
