@@ -47,6 +47,7 @@
     <link rel="stylesheet" href="{{ asset('front/shared/interactions.css').'?v='.filemtime(public_path('front/shared/interactions.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/shared/notificationPanel.css') }}?v={{ filemtime(public_path('front/shared/notificationPanel.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/shared/table-pagination.css') }}?v={{ filemtime(public_path('front/shared/table-pagination.css')) }}">
+    <link rel="stylesheet" href="{{ asset('front/shared/field-focus.css') }}?v={{ filemtime(public_path('front/shared/field-focus.css')) }}">
 </head>
 <body class="profile-page designer-profile-page @yield('body-class')">
     <a href="#designerMain" class="profile-skip-link" data-i18n="skipToContent">تخطي إلى المحتوى</a>
@@ -62,6 +63,8 @@
             @yield('content')
         </div>
     </div>
+
+    @include('designer.partials.decision-notice')
 
     <div class="profile-toast" id="profileToast" role="status" aria-live="polite" aria-atomic="true">
         <span class="profile-toast-icon" aria-hidden="true"><i class="bi bi-check2"></i></span>

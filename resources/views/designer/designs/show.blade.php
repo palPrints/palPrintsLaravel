@@ -84,7 +84,7 @@
                         <dd>{{ $colors ? collect($colors)->pluck('name')->implode('، ') : '—' }}</dd>
                     </div>
                     <div>
-                        <dt><i class="bi bi-cash" aria-hidden="true"></i> سعر البيع</dt>
+                        <dt><i class="bi bi-cash" aria-hidden="true"></i> سعر البيع للعميل</dt>
                         <dd>{{ number_format((float) $design->selling_price, 2) }} ₪</dd>
                     </div>
                     <div>

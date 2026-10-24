@@ -42,7 +42,12 @@
                     <button class="designer-primary-btn" type="submit" form="designerProfileForm"><i class="bi bi-floppy"></i> حفظ التغييرات</button>
                     <button class="designer-secondary-btn" id="cancelDesignerEdit" type="button">إلغاء</button>
                 </div>
-                <button class="designer-primary-btn designer-heading-action" id="editDesignerProfile" type="button" aria-expanded="false">
+                {{-- A designer who still has to complete the profile (or fix it) is pointed to this button. --}}
+                @php($pointToEdit = ! $startEditing && ($needsChanges || ! $profileComplete))
+                @if ($pointToEdit)
+                    <span class="designer-edit-hint" id="designerEditHint"><i class="bi bi-hand-index" aria-hidden="true"></i> اضغط هنا لإكمال بياناتك</span>
+                @endif
+                <button @class(['designer-primary-btn', 'designer-heading-action', 'is-attention' => $pointToEdit]) id="editDesignerProfile" type="button" aria-expanded="false" @if ($startEditing) hidden @endif>
                     <i class="bi bi-pencil-square" aria-hidden="true"></i>
                     تعديل البيانات الشخصية
                 </button>

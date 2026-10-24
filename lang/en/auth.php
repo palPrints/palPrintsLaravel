@@ -15,7 +15,7 @@ return [
     ],
 
     'social' => [
-        'account_type_required' => 'Choose an account type before continuing with Google or Apple.',
+        'account_type_required' => 'Choose an account type before continuing with Google.',
         'terms_required' => 'You must accept the terms and privacy policy before creating an account.',
         'provider_not_configured' => 'Sign-in with :provider is currently unavailable because its configuration is incomplete.',
         'connection_failed' => 'Could not connect to :provider. Please try again.',

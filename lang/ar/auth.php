@@ -15,7 +15,7 @@ return [
     ],
 
     'social' => [
-        'account_type_required' => 'اختر نوع الحساب أولًا قبل المتابعة باستخدام Google أو Apple.',
+        'account_type_required' => 'اختر نوع الحساب أولًا قبل المتابعة باستخدام Google.',
         'terms_required' => 'يجب الموافقة على الشروط وسياسة الخصوصية قبل إنشاء الحساب.',
         'provider_not_configured' => 'تسجيل الدخول بواسطة :provider غير متاح حاليًا لعدم اكتمال الإعدادات.',
         'connection_failed' => 'تعذر بدء الاتصال مع :provider. حاول مرة أخرى.',

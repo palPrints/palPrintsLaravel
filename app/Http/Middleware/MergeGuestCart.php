@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Right after a visitor signs in (or registers) as a customer, the cart they filled as a guest becomes theirs.
- * Runs on every web request because sign-in can happen in several places (form, Google, Apple, registration).
+ * Runs on every web request because sign-in can happen in several places (form, Google, registration).
  */
 class MergeGuestCart
 {

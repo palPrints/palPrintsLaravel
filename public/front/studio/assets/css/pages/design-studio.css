@@ -2045,8 +2045,12 @@ body.sidebar-collapsed .site-content {
 }
 
 @media (min-width: 1181px) {
+  /* The three columns are the same height (that of the preview); each side panel scrolls inside itself. */
+  .studio-product-panel,
   .studio-tools-panel {
-    height: clamp(450px, 60vh, 640px);
+    align-self: start;
+    height: clamp(600px, 78vh, 850px);
+    max-height: none;
   }
 }
 

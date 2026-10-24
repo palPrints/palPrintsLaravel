@@ -3154,3 +3154,32 @@ html[dir="rtl"] .profile-switch input:checked + .profile-switch-track::after {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Admin decision notice at the side of the page (refusal with its reason / approval). */
+.designer-decision-notice {
+  position: fixed;
+  inset-block-start: 92px;
+  inset-inline-start: 24px;
+  z-index: 60;
+  width: min(380px, calc(100vw - 32px));
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 16px 16px 12px;
+  background: #fff;
+  border: 1px solid #fecaca;
+  border-inline-start: 4px solid #dc2626;
+  border-radius: 14px;
+  box-shadow: 0 14px 38px rgb(15 39 71 / 18%);
+  animation: designerNoticeIn .35s ease both;
+}
+.designer-decision-notice > i { margin-top: 2px; color: #dc2626; font-size: 22px; }
+.designer-decision-notice strong { display: block; color: #991b1b; font-size: 15px; font-weight: 800; }
+.designer-decision-notice p { margin: 4px 0 0; color: #475569; font-size: 13px; font-weight: 600; line-height: 1.7; overflow-wrap: anywhere; }
+.designer-decision-notice a { display: inline-block; margin-top: 8px; color: #1d63c9; font-size: 13px; font-weight: 800; }
+.designer-decision-notice button { margin-inline-start: auto; padding: 2px; color: #94a3b8; background: none; border: 0; cursor: pointer; }
+.designer-decision-notice.is-approved { border-color: #bbf7d0; border-inline-start-color: #16a34a; }
+.designer-decision-notice.is-approved > i { color: #16a34a; }
+.designer-decision-notice.is-approved strong { color: #166534; }
+@keyframes designerNoticeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+@media (max-width: 640px) { .designer-decision-notice { inset-block-start: 76px; inset-inline-start: 16px; } }

@@ -8,6 +8,7 @@
   ])
   <link rel="stylesheet" href="{{ asset('front/shared/theme-dark.css') }}?v={{ filemtime(public_path('front/shared/theme-dark.css')) }}">
   <script src="{{ asset('front/shared/theme-dark.js') }}?v={{ filemtime(public_path('front/shared/theme-dark.js')) }}"></script>
+    <link rel="stylesheet" href="{{ asset('front/shared/field-focus.css') }}?v={{ filemtime(public_path('front/shared/field-focus.css')) }}">
 </head>
 
 <body class="login-page">
@@ -106,9 +107,6 @@
           <div class="social-login" aria-label="خيارات تسجيل الدخول عبر حساب اجتماعي">
             <a class="social-login__button social-login__button--google" href="{{ route('social.redirect', ['provider' => 'google']) }}" aria-label="تسجيل الدخول باستخدام Google">
               <i class="bi bi-google" aria-hidden="true"></i>
-            </a>
-            <a class="social-login__button social-login__button--apple" href="{{ route('social.redirect', ['provider' => 'apple']) }}" aria-label="تسجيل الدخول باستخدام Apple">
-              <i class="bi bi-apple" aria-hidden="true"></i>
             </a>
           </div>
 

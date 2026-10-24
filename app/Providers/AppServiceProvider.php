@@ -47,10 +47,6 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-        Event::listen(function (SocialiteWasCalled $event): void {
-            $event->extendSocialite('apple', \SocialiteProviders\Apple\Provider::class);
-        });
-
         View::composer('admin.partials.sidebar', function ($view): void {
             $unread = fn (string $category) => Auth::user()?->userNotifications()->where('is_read', false)->where(AdminNotifier::scope($category))->count() ?? 0;
 

@@ -19,6 +19,7 @@
     @stack('styles')
     <link rel="stylesheet" href="{{ asset('front/css/customer/noHover.css') }}?v={{ filemtime(public_path('front/css/customer/noHover.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/shared/table-pagination.css') }}?v={{ filemtime(public_path('front/shared/table-pagination.css')) }}">
+    <link rel="stylesheet" href="{{ asset('front/shared/field-focus.css') }}?v={{ filemtime(public_path('front/shared/field-focus.css')) }}">
 </head>
 @php($isGuestShop = ! auth()->check() || auth()->user()->isGuestShopper())
 <body class="@yield('body-class', 'storefront-page'){{ $isGuestShop ? ' guest-shop' : '' }}" data-authenticated="{{ auth()->check() && ! auth()->user()->isGuestShopper() ? 'true' : 'false' }}" data-shopper="true">

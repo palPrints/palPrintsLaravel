@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const edit = document.getElementById("designerProfileEdit");
   const actions = document.getElementById("designerFormActions");
   const editButton = document.getElementById("editDesignerProfile");
+  const editHint = document.getElementById("designerEditHint");
   const cancelButton = document.getElementById("cancelDesignerEdit");
   const description = document.getElementById("designerPageDescription");
   const portfolioField = document.getElementById("profilePortfolio");
@@ -30,6 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
     edit.hidden = !isEditing;
     actions.hidden = !isEditing;
     editButton.hidden = isEditing;
+    if (editHint) editHint.hidden = isEditing;
     editButton.setAttribute("aria-expanded", String(isEditing));
 
     if (description) {

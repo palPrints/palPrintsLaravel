@@ -6,6 +6,7 @@
       'description' => 'متابعة حالة مراجعة حسابك في PalPrints',
       'css' => 'forgot-password',
   ])
+    <link rel="stylesheet" href="{{ asset('front/shared/field-focus.css') }}?v={{ filemtime(public_path('front/shared/field-focus.css')) }}">
 </head>
 <body>
   @php

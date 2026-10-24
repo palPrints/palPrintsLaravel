@@ -22,7 +22,7 @@ use Throwable;
 
 class SocialAuthController extends Controller
 {
-    private const PROVIDERS = ['google', 'apple'];
+    private const PROVIDERS = ['google'];
 
     private const ACCOUNT_TYPES = ['customer', 'designer', 'print_provider'];
 
@@ -77,14 +77,6 @@ class SocialAuthController extends Controller
         try {
             $response = Socialite::driver($provider)->redirect();
 
-            if ($provider === 'apple') {
-                $state = (string) $request->session()->get('state');
-
-                if ($state !== '') {
-                    Cache::put($this->intentCacheKey($state), $intent, now()->addMinutes(10));
-                }
-            }
-
             return $response;
         } catch (Throwable $exception) {
             report($exception);
@@ -108,15 +100,6 @@ class SocialAuthController extends Controller
 
         $intent = $request->session()->get('social_auth', []);
 
-        if ($provider === 'apple' && $request->filled('state')) {
-            $cachedIntent = Cache::pull(
-                $this->intentCacheKey((string) $request->input('state'))
-            );
-
-            if (is_array($cachedIntent)) {
-                $intent = $cachedIntent;
-            }
-        }
         $source = ($intent['source'] ?? null) === 'register' ? 'register' : 'login';
         $accountType = $intent['account_type'] ?? null;
         $locale = in_array($intent['locale'] ?? null, ['ar', 'en'], true)
@@ -369,11 +352,6 @@ class SocialAuthController extends Controller
                 && filled($config['team_id'] ?? null)
                 && filled($config['private_key'] ?? null)
             );
-    }
-
-    private function intentCacheKey(string $state): string
-    {
-        return 'social_auth_intent:'.hash('sha256', $state);
     }
 
     private function providerEmailIsVerified(ProviderUser $providerUser, string $provider): bool

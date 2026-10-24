@@ -15,7 +15,7 @@
                 <span class="dp-heading__icon" aria-hidden="true"><i class="bi bi-rocket-takeoff"></i></span>
                 <div>
                     <h1>تفاصيل النشر</h1>
-                    <p>حدّد اسم التصميم وسعر البيع، ثم أرسله للمراجعة</p>
+                    <p>اكتب اسم تصميمك وسعره، ثم أرسله للمراجعة</p>
                 </div>
             </div>
             <a class="designer-flow-button is-ghost" id="backToPreview" href="{{ route('designer.designs.preview') }}">
@@ -72,7 +72,7 @@
                     <span aria-hidden="true"><i class="bi bi-sliders"></i></span>
                     <div>
                         <h2 id="publishTitle">بيانات التصميم</h2>
-                        <p>أكمل البيانات المطلوبة للمتابعة</p>
+                        <p>املأ الحقول المطلوبة (*) ليُفعَّل زر الإرسال</p>
                     </div>
                 </div>
 
@@ -84,14 +84,14 @@
 
                 <section class="dp-price" aria-labelledby="priceTitle">
                     <div class="dp-price__title">
-                        <h3 id="priceTitle">السعر</h3><span>حدّد هامش ربحك</span>
+                        <h3 id="priceTitle">سعر التصميم</h3>
                     </div>
-                    <div class="dp-row"><span>تكلفة المنتج (الأساسية)</span><strong><bdi id="basePrice">0.00</bdi> ₪</strong></div>
                     <label class="dp-row dp-row--sell" for="sellingPrice">
-                        <span>سعر البيع <b aria-hidden="true" style="color:var(--df-danger)">*</b></span>
-                        <span class="dp-money"><input id="sellingPrice" type="text" dir="ltr" lang="en" inputmode="decimal" autocomplete="off"><small>₪</small></span>
+                        <span>سعر تصميمك <b aria-hidden="true" style="color:var(--df-danger)">*</b></span>
+                        <span class="dp-money"><input id="sellingPrice" type="text" dir="ltr" lang="en" inputmode="decimal" autocomplete="off" placeholder="0.00"><small>₪</small></span>
                     </label>
                     <div class="dp-row dp-row--profit"><span><i class="bi bi-graph-up-arrow" aria-hidden="true"></i> ربحك من كل قطعة</span><strong><bdi id="profitValue">0.00</bdi> ₪</strong></div>
+                    <p class="dp-hint">بعد خصم عمولة المنصة (<bdi id="commissionRate">0</bdi>%). تكلفة المنتج تُضاف على العميل تلقائيًا.</p>
                     <p class="dp-error" id="priceError" role="alert"></p>
                 </section>
 
@@ -105,8 +105,9 @@
         </div>
 
         <footer class="dp-actions" id="publishFooter" hidden>
+            <a class="designer-flow-button is-ghost" href="{{ route('designer.designs.preview') }}"><i class="bi bi-arrow-right" aria-hidden="true"></i><span>رجوع للمعاينة</span></a>
             <button class="designer-flow-button is-ghost" id="saveButton" type="button"><i class="bi bi-bookmark" aria-hidden="true"></i><span>حفظ كمسودة</span></button>
-            <button class="designer-flow-button is-primary" id="publishButton" type="button"><span>متابعة وإرسال للمراجعة</span><i class="bi bi-arrow-left" aria-hidden="true"></i></button>
+            <button class="designer-flow-button is-primary" id="publishButton" type="button"><i class="bi bi-send" aria-hidden="true"></i><span>إرسال للمراجعة</span></button>
         </footer>
     </div>
 
@@ -126,6 +127,7 @@
     <script>
         window.palPrintsPublish = {
             basePrices: @json($basePrices),
+            commissionRate: @json($commissionRate),
             audiences: @json(\App\Support\CatalogProductData::AUDIENCES),
             saveUrl: @json(route('designer.designs.store')),
             designsUrl: @json(route('designer.designs.index'))
