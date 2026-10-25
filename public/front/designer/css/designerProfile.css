@@ -1244,3 +1244,19 @@ html[data-bs-theme="dark"] .designer-skills-box {
   color: #dc2626;
   background: #fff;
 }
+
+/* Hidden state must win over the display rule of the button, otherwise "edit" stays beside save and cancel. */
+.designer-heading-action[hidden],
+.designer-edit-hint[hidden] { display: none; }
+
+/* A new designer is pointed to the edit button: it pulses and a short line says what to press. */
+.designer-heading-action.is-attention { animation: designerEditPulse 1.8s ease-out infinite; }
+.designer-edit-hint { display: inline-flex; align-items: center; gap: 6px; color: #1d63c9; font-size: 13px; font-weight: 800; white-space: nowrap; }
+@keyframes designerEditPulse {
+  0% { box-shadow: 0 0 0 0 rgb(51 133 245 / 45%); }
+  70% { box-shadow: 0 0 0 12px rgb(51 133 245 / 0%); }
+  100% { box-shadow: 0 0 0 0 rgb(51 133 245 / 0%); }
+}
+@media (prefers-reduced-motion: reduce) { .designer-heading-action.is-attention { animation: none; } }
+.designer-edit-hint { margin-inline-start: auto; }
+.designer-edit-hint + .designer-heading-action { margin-inline-start: 0; }

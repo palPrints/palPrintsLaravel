@@ -9,6 +9,7 @@
   const roleAuth = window.PALPRINTS_ROLE_AUTH;
   const objectUrls = [];
   const $ = id => document.getElementById(id);
+  let studioLowQuality = []; // print areas holding a picture too small for its printed size
   let studioOverflow = []; // print areas of the saved design that stick out of the print zone
   const elements = {
     pageTitle: $("previewPageTitle"), pageDescription: $("previewPageDescription"), breadcrumbProductName: $("breadcrumbProductName"), colorLabel: $("colorControlLabel"),
@@ -154,6 +155,7 @@
     const draft = documentState?.drafts?.[context.productId];
     if (!product || !draft) return null;
     studioOverflow = (product.editor?.printAreas || []).filter(area => draft.areas?.[area.id]?.overflow).map(area => area.name || area.id);
+    studioLowQuality = (product.editor?.printAreas || []).filter(area => draft.areas?.[area.id]?.lowQuality).map(area => area.name || area.id);
     const ids = [...new Set(Object.values(draft.areas || {}).flatMap(area => area?.objects || []).filter(item => item.kind === "image" && item.assetId).map(item => item.assetId))];
     const sources = new Map();
     await Promise.all(ids.map(async id => sources.set(id, await assetSource(context.designId, id))));
@@ -482,6 +484,7 @@
     if (role !== "customer") return;
     if (document.body.dataset.authenticated !== "true") { showToast("سجّل الدخول أولًا لإضافة المنتج إلى السلة.", true); setTimeout(() => roleAuth.redirectToLogin(), 1200); return; }
     const message = validationMessage(); if (message) { showToast(message, true); return; }
+    if (studioLowQuality.length) { showToast("جودة الصورة منخفضة لا تكفي للطباعة (" + studioLowQuality.join("، ") + "). عد إلى الاستوديو وغيّرها قبل الإضافة للسلة.", true); return; }
     if (studioOverflow.length) { showToast("التصميم يتجاوز حدود منطقة الطباعة (" + studioOverflow.join("، ") + "). عد إلى الاستوديو وعدّله قبل الإضافة للسلة.", true); return; }
     const assets = window.palPrintsCustomerAssets || {};
     const custom = Boolean(payload.studioSave);

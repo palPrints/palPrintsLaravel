@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="{{ asset('front/home/css/about.css') }}?v={{ filemtime(public_path('front/home/css/about.css')) }}" />
     <link rel="stylesheet" href="{{ asset('front/shared/theme-dark.css') }}?v={{ filemtime(public_path('front/shared/theme-dark.css')) }}" />
     <script src="{{ asset('front/shared/theme-dark.js') }}?v={{ filemtime(public_path('front/shared/theme-dark.js')) }}"></script>
-  </head>
+      <link rel="stylesheet" href="{{ asset('front/shared/field-focus.css') }}?v={{ filemtime(public_path('front/shared/field-focus.css')) }}">
+</head>
   <body class="home-page about-page">
     @include('partials.home-header', ['active' => $active ?? null])
 

@@ -146,7 +146,7 @@
 .dp-heading h1 { margin: 0; font-size: 24px; font-weight: 800; line-height: 1.25; }
 .dp-heading p { margin: 4px 0 0; color: var(--df-muted); font-size: 14px; font-weight: 600; }
 
-.dp-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.dp-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: stretch; }
 .dp-layout[hidden], .dp-actions[hidden], .dp-empty[hidden] { display: none; }
 
 .dp-card { min-width: 0; padding: 20px 22px; background: var(--df-surface); border: 1px solid var(--df-border); border-radius: var(--df-radius-lg); box-shadow: var(--df-shadow); }
@@ -245,3 +245,41 @@
   .flow-dialog[open], .dp-dialog__card { animation: none; }
   .audience-option:hover, .designer-flow-button:active { transform: none; }
 }
+
+/* Both columns of the publish page are the same height; the empty room in the shorter one goes above the confirmation. */
+.dp-layout > .dp-card { display: flex; flex-direction: column; }
+.dp-layout > .dp-card .dp-stage { flex: 1; }
+.dp-layout > aside.dp-card .dp-rights { margin-top: auto; }
+.dp-hint { margin: 2px 0 8px; color: var(--df-muted); font-size: 13px; font-weight: 600; }
+
+/* Publish buttons: "back" at the start of the row, "save draft" and "send" together at the end. */
+.dp-actions { justify-content: flex-start; }
+.dp-actions > a.designer-flow-button { margin-inline-end: auto; }
+.designer-flow-button { min-height: 46px; }
+.designer-flow-button.is-primary { box-shadow: none; }
+.designer-flow-button.is-primary:disabled { background: #94b8e8; border-color: #94b8e8; opacity: 1; }
+@media (max-width: 520px) { .dp-actions > a.designer-flow-button { margin-inline-end: 0; } }
+
+/* The price sits at the same edge as the profit below it: number first, shekel sign right after it. */
+.dp-money { gap: 4px; }
+.dp-money input { width: 6ch; min-width: 3ch; max-width: 12ch; field-sizing: content; text-align: left; }
+.dp-money small { font-size: 1.05rem; }
+.dp-row--sell { cursor: text; }
+
+/* The price row is plain text; only the number has a box, so it is clear that this is the part to edit. */
+.dp-row--sell { padding: 0; background: none; border: 0; cursor: default; }
+.dp-row--sell:focus-within { border: 0; box-shadow: none; }
+.dp-money { width: 150px; min-height: 46px; padding: 0 14px; gap: 8px; justify-content: space-between; background: #fff; border: 1px solid var(--df-border); border-radius: var(--df-radius); cursor: text; transition: border-color .16s ease; }
+.dp-money:hover { border-color: #9cc3f4; }
+.dp-money:focus-within { border-color: var(--df-blue); }
+.dp-money input { flex: 1; width: 100%; min-width: 0; max-width: none; field-sizing: fixed; text-align: left; }
+
+/* A smaller preview: the T-shirt picture and its detail tiles take less room, so the two columns are closer in height. */
+.dp-stage { padding: 10px; }
+.dp-stage img { max-height: 250px; }
+.dp-card .dp-facts { gap: 8px; margin-top: 12px; }
+.dp-facts div { padding: 8px 12px; }
+.dp-facts dt { font-size: 11.5px; }
+.dp-facts dd { font-size: 13px; }
+.dp-card { padding: 16px 18px; }
+.dp-layout { gap: 16px; }

@@ -168,7 +168,7 @@ class StickerController extends Controller
     private function ensureUnused(StickerLibraryItem $item): void
     {
         if (StickerBundleLine::where('sticker_library_item_id', $item->id)->exists()) {
-            throw ValidationException::withMessages(['image' => 'الملصق مرتبط بحزمة محفوظة. يمكنك إخفاؤه أو إضافة صورة كملصق جديد.']);
+            throw ValidationException::withMessages(['image' => 'لا يمكن تغيير صورة هذا الملصق لأن عملاء استخدموه في حزم محفوظة. أخفِ هذا الملصق ثم أضف الصورة الجديدة كملصق جديد.']);
         }
     }
 

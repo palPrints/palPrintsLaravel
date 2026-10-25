@@ -6,6 +6,7 @@
       'description' => 'تأكيد كلمة المرور قبل المتابعة',
       'css' => 'forgot-password',
   ])
+    <link rel="stylesheet" href="{{ asset('front/shared/field-focus.css') }}?v={{ filemtime(public_path('front/shared/field-focus.css')) }}">
 </head>
 <body>
   <main class="recovery-layout">

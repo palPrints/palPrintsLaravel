@@ -471,6 +471,9 @@
     const hasOverflow = outsideCount > 0;
     // Saved with the draft, so the preview step (and the cart) can refuse a design that does not fit its print area.
     if (app.design?.areas?.[app.area?.id]) app.design.areas[app.area.id].overflow = hasOverflow;
+    // A picture too small for the size it is printed at (low DPI) is refused like one outside the print zone.
+    const hasLowQuality = app.canvas.getObjects().some(object => imageQuality(object)?.state === "low");
+    if (app.design?.areas?.[app.area?.id]) app.design.areas[app.area.id].lowQuality = hasLowQuality;
     const formatConflict = elements.printZone.classList.contains("has-format-conflict");
     elements.printZone.classList.toggle("has-overflow", hasOverflow);
     elements.printZone.setAttribute("aria-label", hasOverflow
@@ -1346,6 +1349,13 @@
     const areas = app.drafts[app.product.id]?.areas || {};
     return app.product.editor.printAreas.filter(area => areas[area.id]?.overflow).map(area => area.name || area.id);
   }
+  /** Names of the print areas that hold a picture whose quality is too low to print at its size. */
+  function lowQualityAreaNames() {
+    if (!app.design || !app.product) return [];
+    updatePrintZoneFeedback(); saveActiveArea(); commitDesign();
+    const areas = app.drafts[app.product.id]?.areas || {};
+    return app.product.editor.printAreas.filter(area => areas[area.id]?.lowQuality).map(area => area.name || area.id);
+  }
   /**
    * The print shop gets one ready-to-print picture per print area: a transparent PNG at 300 dpi of the area's real size
    * (capped so the browser's canvas stays safe) with the pictures, graphics and text already drawn in their fonts.
@@ -1385,6 +1395,6 @@
     }
     return exported;
   }
-  window.PALPRINTS_DESIGN_STUDIO_EXPORT = Object.freeze({ createPrintAreaCanvas: createPrintAreaExport, overflowAreaNames, exportPrintFiles });
+  window.PALPRINTS_DESIGN_STUDIO_EXPORT = Object.freeze({ createPrintAreaCanvas: createPrintAreaExport, overflowAreaNames, lowQualityAreaNames, exportPrintFiles });
   void init();
 })(window, document);

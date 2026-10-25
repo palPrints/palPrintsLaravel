@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="{{ asset('front/shared/notificationPanel.css') }}?v={{ filemtime(public_path('front/shared/notificationPanel.css')) }}">
     @stack('styles')
     <link rel="stylesheet" href="{{ asset('front/shared/table-pagination.css') }}?v={{ filemtime(public_path('front/shared/table-pagination.css')) }}">
+    <link rel="stylesheet" href="{{ asset('front/shared/field-focus.css') }}?v={{ filemtime(public_path('front/shared/field-focus.css')) }}">
 </head>
 <body class="admin-dashboard-page @yield('body-class') sidebar-collapsed">
     <a class="skip-link" href="#@yield('main-id', 'adminMain')">تخطي إلى المحتوى</a>

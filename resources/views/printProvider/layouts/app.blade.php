@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="{{ asset('front/css/printProvider/dark.css') }}?v={{ filemtime(public_path('front/css/printProvider/dark.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/shared/notificationPanel.css') }}?v={{ filemtime(public_path('front/shared/notificationPanel.css')) }}">
     <link rel="stylesheet" href="{{ asset('front/shared/table-pagination.css') }}?v={{ filemtime(public_path('front/shared/table-pagination.css')) }}">
+    <link rel="stylesheet" href="{{ asset('front/shared/field-focus.css') }}?v={{ filemtime(public_path('front/shared/field-focus.css')) }}">
 </head>
 <body class="printshop-dashboard-page sidebar-collapsed @yield('bodyClass')">
     <a class="skip-link" href="#printshopDashboardMain">تخطي إلى المحتوى</a>

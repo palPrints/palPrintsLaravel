@@ -84,7 +84,8 @@ class DesignController extends Controller
         return [
             'id' => $design->id,
             'name' => $design->title,
-            'sellingPrice' => (float) $design->selling_price,
+            // What the designer typed is the price of the design itself; the customer's price also holds the product's cost.
+            'sellingPrice' => max(0, round((float) $design->selling_price - (float) $design->base_price, 2)),
             'productCode' => strtoupper((string) ($payload['product_code'] ?? $design->product?->code)),
             'colorId' => $layout['colorId'] ?? ($options['color_id'] ?? null),
             'sizeId' => $layout['sizeId'] ?? ($options['size_id'] ?? null),
@@ -288,6 +289,12 @@ class DesignController extends Controller
         ]);
     }
 
+    /** The platform's share of each design sale, in percent (Settings > fees). */
+    public static function commissionRate(): float
+    {
+        return min(100, max(0, (float) \App\Support\PlatformSettings::get('fees', 'platform_commission', 12)));
+    }
+
     public function review()
     {
         // The product's cost for the designer: the cheapest active print shop's base price, from the database.
@@ -302,7 +309,7 @@ class DesignController extends Controller
                     ->min('base_price') ?? 0),
             ]);
 
-        return view('designer.designs.review', ['basePrices' => $basePrices]);
+        return view('designer.designs.review', ['basePrices' => $basePrices, 'commissionRate' => self::commissionRate()]);
     }
 
     /**
@@ -351,7 +358,7 @@ class DesignController extends Controller
             'editingDesignId' => ['nullable', 'integer'],
         ], [], [
             'designName' => 'اسم التصميم',
-            'sellingPrice' => 'سعر البيع',
+            'sellingPrice' => 'سعر التصميم',
             'rightsConfirmed' => 'تأكيد الحقوق',
         ])->validate();
 
@@ -369,13 +376,11 @@ class DesignController extends Controller
             ->where('product_id', $product->id)
             ->where('is_active', true)
             ->min('base_price') ?? 0);
-        $sellingPrice = (float) $data['sellingPrice'];
-
-        if ($data['status'] === 'submitted' && $sellingPrice < $basePrice) {
-            throw ValidationException::withMessages([
-                'sellingPrice' => 'يجب ألا يقل سعر البيع عن تكلفة المنتج ('.number_format($basePrice, 2).' ₪).',
-            ]);
-        }
+        // The designer prices only the design. The customer pays the product's cost plus that price, and the platform keeps
+        // its percentage (Settings > fees) of the design price on every sale.
+        $designPrice = round((float) $data['sellingPrice'], 2);
+        $sellingPrice = round($basePrice + $designPrice, 2);
+        $designerProfit = round($designPrice * (1 - self::commissionRate() / 100), 2);
 
         // Clothing is for an audience (men/women, oversized, kids); the sizes offered must belong to it.
         $category = null;
@@ -413,7 +418,7 @@ class DesignController extends Controller
         $oldFiles = collect($existing?->design_payload['files'] ?? []);
         $oldExports = collect($existing?->design_payload['print_exports'] ?? []);
 
-        $design = DB::transaction(function () use ($request, $data, $product, $basePrice, $sellingPrice, $status, $designer, $category, $allowedSizeIds, $existing, $oldFiles, $oldExports) {
+        $design = DB::transaction(function () use ($request, $data, $product, $basePrice, $sellingPrice, $designerProfit, $status, $designer, $category, $allowedSizeIds, $existing, $oldFiles, $oldExports) {
             $fields = [
                 'designer_id' => $designer->id,
                 'product_id' => $product->id,
@@ -421,7 +426,7 @@ class DesignController extends Controller
                 'description' => $product->name,
                 'base_price' => $basePrice,
                 'selling_price' => $sellingPrice,
-                'designer_profit' => max(0, $sellingPrice - $basePrice),
+                'designer_profit' => $designerProfit,
                 'selected_options' => [
                     'color_id' => $data['colorId'] ?? null,
                     'size_id' => $data['sizeId'] ?? null,

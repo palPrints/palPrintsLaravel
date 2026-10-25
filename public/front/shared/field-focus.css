@@ -1,0 +1,45 @@
+/* One line around a focused field, everywhere on the site: the border changes colour, with no second ring
+   (box-shadow or outline) drawn outside it. Fields marked invalid keep their red border. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="image"]):focus,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="image"]):focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible,
+.dp-row--sell:focus-within,
+.dashboard-field:focus-within,
+.input-control:focus-within,
+.pp-input-shell:focus-within,
+.profile-input-shell:focus-within,
+.acct-input:focus-within,
+.designer-skills-box:focus-within,
+.payout-account-field:focus-within,
+.services-price-field:focus-within,
+.search-box:focus-within,
+.search:focus-within,
+.store-search:focus-within,
+.sticker-search:focus-within,
+.orders-search:focus-within,
+.design-search:focus-within,
+.printshop-search:focus-within {
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="image"]):not([aria-invalid="true"]):not(.is-invalid):focus,
+textarea:not([aria-invalid="true"]):not(.is-invalid):focus,
+select:not([aria-invalid="true"]):not(.is-invalid):focus {
+  border-color: #3385f5 !important;
+}
+
+/* A field with an error stays red while it is being edited. */
+input[aria-invalid="true"]:focus,
+input.is-invalid:focus,
+textarea[aria-invalid="true"]:focus,
+textarea.is-invalid:focus,
+select[aria-invalid="true"]:focus,
+select.is-invalid:focus {
+  border-color: #dc2626 !important;
+}
+
+.dp-money:focus-within { outline: 0 !important; box-shadow: none !important; }

@@ -51,6 +51,8 @@
             <h1 id="previewPageTitle">معاينة المنتج</h1>
             <p id="previewPageDescription">راجع الشكل النهائي واختياراتك، ثم أضف المنتج إلى سلتك بثقة.</p>
           </div>
+          {{-- Back to the previous step: the studio keeps the design, so nothing is lost. --}}
+          <a class="preview-back-link" href="{{ route('design-studio') }}"><i class="bi bi-arrow-right" aria-hidden="true"></i><span>رجوع إلى الاستوديو</span></a>
         </div>
       </header>
 

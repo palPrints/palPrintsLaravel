@@ -262,3 +262,25 @@
 /* Telegram: the order went to the shop automatically. */
 .notices-flash.is-telegram { color: #0c4a6e; background: #f0f9ff; border: 1px solid #7dd3fc; }
 .notices-flash.is-telegram .bi-telegram { color: #0284c7; }
+
+/* One look for both decision cards: same label, same field height, same chevron on the select. */
+.notice-form label,
+.shop-others summary { color: #5b6b82; font-size: 13px; font-weight: 800; }
+.notice-form select,
+.notice-form input[type="text"],
+.shop-others select { min-height: 46px; border-radius: 10px; font-size: 14px; }
+.notice-form select,
+.shop-others select {
+  appearance: none;
+  padding-inline: 12px 38px;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%235b6b82' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 5 4 4 4-4'/%3E%3C/svg%3E") no-repeat left 14px center;
+  cursor: pointer;
+}
+.notice-form .notice-approve, .notice-form .notice-reject { min-height: 48px; border-radius: 10px; }
+.shop-others summary { display: flex; align-items: center; gap: 6px; list-style: none; }
+.shop-others summary::-webkit-details-marker { display: none; }
+.shop-others summary::before { content: "\F282"; font-family: "bootstrap-icons"; font-size: 12px; color: #3385f5; transition: transform .15s; }
+.shop-others[open] summary::before { transform: rotate(180deg); }
+.notice-form input.is-invalid { border-color: #dc2626; background: #fff7f7; }
+.notice-field-error { display: flex; align-items: center; gap: 6px; color: #b91c1c; font-size: 12.5px; font-weight: 800; }
+.notice-form input.is-invalid:focus { outline: 0; border-color: #dc2626; box-shadow: none; }

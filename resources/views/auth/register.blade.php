@@ -6,6 +6,7 @@
       'description' => 'إنشاء حساب جديد في منصة PalPrints كعميل أو مصمم أو مطبعة',
       'css' => 'register',
   ])
+    <link rel="stylesheet" href="{{ asset('front/shared/field-focus.css') }}?v={{ filemtime(public_path('front/shared/field-focus.css')) }}">
 </head>
 <body>
   @php

@@ -14,6 +14,7 @@
 @push('styles')
   <base href="{{ asset('front/studio') }}/">
   <link rel="stylesheet" href="assets/css/pages/design-studio.css?v={{ filemtime(public_path('front/studio/assets/css/pages/design-studio.css')) }}">
+  <link rel="stylesheet" href="{{ asset('front/shared/field-focus.css') }}?v={{ filemtime(public_path('front/shared/field-focus.css')) }}">
   {{-- The studio stylesheet sets .studio-main to width:100%; inside the site layout that would overflow the sidebar margin. --}}
   <style>body.storefront-page .studio-main.store-main { width: auto; min-width: 0; }</style>
 @endpush
@@ -433,6 +434,12 @@
           const overflowing = window.PALPRINTS_DESIGN_STUDIO_EXPORT?.overflowAreaNames?.() || [];
           if (overflowing.length) {
             PalAlert.alert("بعض عناصر التصميم تتجاوز حدود منطقة الطباعة (" + overflowing.join("، ") + "). الأجزاء الخارجة لن تُطبع، لذلك صغّرها أو حرّكها إلى داخل الإطار ثم تابع إلى المعاينة.", { title: "التصميم خارج منطقة الطباعة", icon: "warning" });
+            return;
+          }
+          // A picture that is too small for its size prints blurry: stop here too.
+          const lowQuality = window.PALPRINTS_DESIGN_STUDIO_EXPORT?.lowQualityAreaNames?.() || [];
+          if (lowQuality.length) {
+            PalAlert.alert("جودة الصورة منخفضة لا تكفي للطباعة بهذا الحجم (" + lowQuality.join("، ") + "). صغّر الصورة أو ارفع صورة بدقة أعلى ثم تابع إلى المعاينة.", { title: "جودة الصورة منخفضة", icon: "warning" });
             return;
           }
           // The print shop prints from a picture of each area (fonts and all), made here because the fonts live in this browser.

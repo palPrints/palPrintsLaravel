@@ -1443,3 +1443,7 @@ body[data-user-role="designer"] .preview-mobile-bar { display: none !important; 
   mask-repeat: no-repeat;
   pointer-events: none;
 }
+/* Back to the studio, beside the page title. */
+.preview-back-link { display: inline-flex; align-items: center; gap: 8px; margin-inline-start: auto; padding: 10px 16px; color: var(--preview-blue); background: #fff; border: 1px solid var(--preview-blue-border); border-radius: 10px; font-size: 14px; font-weight: 800; text-decoration: none; white-space: nowrap; }
+.preview-back-link:hover { background: var(--preview-blue-soft); }
+@media (max-width: 640px) { .preview-title-row { flex-wrap: wrap; } .preview-back-link { margin-inline-start: 0; } }

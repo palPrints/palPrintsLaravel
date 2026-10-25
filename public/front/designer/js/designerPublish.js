@@ -35,10 +35,12 @@
     } catch (error) { return null; }
   }
 
+  const commissionRate = Number(config.commissionRate) || 0;
   const basePrice = Number((config.basePrices || {})[String(stash.productCode).toUpperCase()] || 0);
   const state = {
     designName: stash.form?.designName ?? stash.designName ?? "",
-    sellingPrice: Number(stash.form?.sellingPrice) || Number(readEditing()?.sellingPrice) || (basePrice + 16),
+    // The designer prices the design itself (the product's cost is added by the site).
+    sellingPrice: Number(stash.form?.sellingPrice) || Number(readEditing()?.sellingPrice) || 0,
     rightsConfirmed: stash.form?.rightsConfirmed ?? false
   };
 
@@ -59,7 +61,7 @@
   function validationErrors() {
     const errors = [];
     if (!state.designName.trim()) errors.push("أدخل اسم التصميم.");
-    if (state.sellingPrice < basePrice) errors.push("صحح سعر البيع.");
+    if (!(state.sellingPrice > 0)) errors.push("أدخل سعر تصميمك.");
     if (!state.rightsConfirmed) errors.push("أكد امتلاك حقوق استخدام التصميم.");
     return errors;
   }
@@ -75,9 +77,8 @@
     const field = $("sellingPrice"), digits = field.value.replace(/[^\d.]/g, "");
     if (field.value !== digits) field.value = digits; // numbers only, shown with ordinary digits
     state.sellingPrice = Number(digits) || 0;
-    const profit = state.sellingPrice - basePrice;
-    $("profitValue").textContent = Math.max(0, profit).toFixed(2);
-    $("priceError").textContent = profit < 0 ? "يجب ألا يقل سعر البيع عن تكلفة المنتج." : "";
+    $("profitValue").textContent = (state.sellingPrice * (1 - commissionRate / 100)).toFixed(2);
+    $("priceError").textContent = "";
     remember();
     updateValidation();
   }
@@ -207,9 +208,8 @@
   }
   $("designName").value = state.designName;
   $("nameCount").textContent = state.designName.length;
-  $("basePrice").textContent = basePrice.toFixed(2);
-  $("sellingPrice").min = String(basePrice);
-  $("sellingPrice").value = state.sellingPrice.toFixed(2);
+  $("sellingPrice").value = state.sellingPrice ? String(state.sellingPrice) : "";
+  $("commissionRate").textContent = String(commissionRate);
   $("rightsCheck").checked = state.rightsConfirmed;
   updateProfit();
 

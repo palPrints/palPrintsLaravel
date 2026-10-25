@@ -112,11 +112,11 @@ class PaymentNoticeController extends Controller
             ->with('notice_error', $pdfReady ? null : 'تم اعتماد الدفع، لكن تعذر تجهيز PDF. بقي الطلب بانتظار الملف ولم يرسل للمطبعة.');
     }
 
-    public function reject(Request $request, Payment $payment): RedirectResponse
+    public function reject(Request $request, Payment $payment): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $order = $this->reviewable($payment);
         if (! $order) {
-            return back()->with('notice_error', 'تمت مراجعة هذا الإشعار من قبل.');
+            return $this->done($request, back()->with('notice_error', 'تمت مراجعة هذا الإشعار من قبل.'));
         }
 
         $validated = $request->validate([
@@ -136,7 +136,13 @@ class PaymentNoticeController extends Controller
         OrderNotifier::paymentReviewed((int) $order->user_id, $order->order_number, false, $validated['reason']);
         $this->audit($request, 'admin.payment_notice_rejected', 'رفض إشعار دفع الطلب '.$order->order_number, ['order_id' => $order->id, 'payment_id' => $payment->id]);
 
-        return redirect()->route('admin.payment-notices')->with('notice_status', 'تم رفض الطلب '.$order->order_number.' وإبلاغ العميل.');
+        return $this->done($request, redirect()->route('admin.payment-notices')->with('notice_status', 'تم رفض الطلب '.$order->order_number.' وإبلاغ العميل.'));
+    }
+
+    /** A page form redirects as usual; the reject form's fetch gets the address instead, so the flash message survives until the page opens. */
+    private function done(Request $request, RedirectResponse $redirect): RedirectResponse|\Illuminate\Http\JsonResponse
+    {
+        return $request->expectsJson() ? response()->json(['redirect' => $redirect->getTargetUrl()]) : $redirect;
     }
 
     /** Streams the receipt the customer uploaded (private storage) to the admin. */

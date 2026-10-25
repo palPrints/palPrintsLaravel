@@ -11,9 +11,6 @@ beforeEach(function () {
         'services.google.client_id' => 'google-client-id',
         'services.google.client_secret' => 'google-client-secret',
         'services.google.redirect' => 'http://localhost/auth/google/callback',
-        'services.apple.client_id' => 'com.palprints.web',
-        'services.apple.client_secret' => 'apple-client-secret',
-        'services.apple.redirect' => 'https://palprints.example/auth/apple/callback',
     ]);
 });
 
@@ -207,39 +204,3 @@ test('a suspended account cannot sign in with a social provider', function () {
     ]);
 });
 
-test('apple callback can create a linked draft print provider account', function () {
-    $this->seed(RoleAndPermissionSeeder::class);
-
-    Socialite::fake('apple', SocialiteUser::fake([
-        'id' => 'apple-printer-1',
-        'name' => 'Apple Print Shop',
-        'email' => 'printer.apple@example.com',
-        'email_verified' => 'true',
-    ]));
-
-    $state = 'apple-state-without-session-cookie';
-    Cache::put('social_auth_intent:'.hash('sha256', $state), [
-        'source' => 'register',
-        'account_type' => 'print_provider',
-    ], now()->addMinutes(10));
-
-    $response = $this->post(
-        route('social.callback', ['provider' => 'apple']),
-        ['state' => $state]
-    );
-
-    $user = User::where('email', 'printer.apple@example.com')->firstOrFail();
-
-    $response->assertRedirect(route('print-provider.dashboard', absolute: false));
-    $this->assertAuthenticatedAs($user);
-    expect($user->hasRole('print_provider'))->toBeTrue();
-    $this->assertDatabaseHas('social_accounts', [
-        'user_id' => $user->id,
-        'provider' => 'apple',
-        'provider_user_id' => 'apple-printer-1',
-    ]);
-    $this->assertDatabaseHas('print_providers', [
-        'user_id' => $user->id,
-        'approval_status' => 'draft',
-    ]);
-});

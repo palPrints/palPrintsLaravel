@@ -35,7 +35,7 @@
         @if (session('notice_error'))
             <p class="notices-flash is-error" role="alert"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> {{ session('notice_error') }}</p>
         @endif
-        @if ($errors->any())
+        @if ($errors->any() && ! $errors->has('reason'))
             <p class="notices-flash is-error" role="alert"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> {{ $errors->first() }}</p>
         @endif
 
@@ -114,7 +114,7 @@
                                 @if (! empty($shops['others']))
                                     <details class="shop-others"@if (empty($shops['top'])) open @endif>
                                         <summary>{{ empty($shops['top']) ? 'اختيار مطبعة يدويًا' : 'مطابع أخرى (لا تطابق كل المواصفات)' }}</summary>
-                                        <select name="{{ empty($shops['top']) ? 'branch_id' : 'branch_id_other' }}" @if (empty($shops['top'])) required @endif aria-label="مطبعة أخرى">
+                                        <select name="{{ empty($shops['top']) ? 'branch_id' : 'branch_id_other' }}" aria-label="مطبعة أخرى">
                                             <option value="">اختر المطبعة</option>
                                             @foreach ($shops['others'] as $shop)
                                                 <option value="{{ $shop['id'] }}">{{ $shop['label'] }}</option>
@@ -130,10 +130,14 @@
                     <form method="POST" action="{{ $notice['rejectUrl'] }}" class="notice-form notice-form--reject">
                         @csrf
                         <div class="notice-form__title is-danger"><i class="bi bi-x-octagon" aria-hidden="true"></i> رفض الطلب</div>
+                        {{-- No browser `required`: the server's own message (reason.required) is shown under the field. --}}
+                        @php($reasonError = old('_notice') == $notice['rejectUrl'] ? $errors->first('reason') : null)
                         <label>
                             سبب الرفض (يصل للعميل)
-                            <input type="text" name="reason" maxlength="500" required placeholder="مثال: المبلغ في الإشعار لا يطابق قيمة الطلب">
+                            <input type="text" name="reason" maxlength="500" placeholder="مثال: المبلغ في الإشعار لا يطابق قيمة الطلب" value="{{ old('_notice') == $notice['rejectUrl'] ? old('reason') : '' }}" @class(['is-invalid' => $reasonError]) @if ($reasonError) aria-invalid="true" @endif>
+                            @if ($reasonError)<span class="notice-field-error" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> {{ $reasonError }}</span>@endif
                         </label>
+                        <input type="hidden" name="_notice" value="{{ $notice['rejectUrl'] }}">
                         <button class="notice-reject" type="submit"><i class="bi bi-x-circle" aria-hidden="true"></i> رفض الطلب</button>
                     </form>
                 </div>
@@ -203,6 +207,42 @@
 
 @push('scripts')
     <script>
+        /* Reject: the server validates the reason and answers without a page reload, so the open card stays where it is. */
+        document.querySelectorAll('.notice-form--reject').forEach(function (form) {
+            const label = form.querySelector('label');
+            const input = form.querySelector('input[name="reason"]');
+            const button = form.querySelector('.notice-reject');
+            function showError(message) {
+                const old = label.querySelector('.notice-field-error');
+                if (old) old.remove();
+                input.classList.toggle('is-invalid', !!message);
+                if (!message) return;
+                const span = document.createElement('span');
+                span.className = 'notice-field-error';
+                span.setAttribute('role', 'alert');
+                span.innerHTML = '<i class="bi bi-exclamation-circle" aria-hidden="true"></i> ';
+                span.append(message);
+                label.append(span);
+            }
+            input.addEventListener('input', function () { showError(''); });
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                button.disabled = true;
+                fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function (response) {
+                        if (response.status === 422) {
+                            return response.json().then(function (data) {
+                                showError((data.errors && data.errors.reason && data.errors.reason[0]) || data.message);
+                                button.disabled = false;
+                                input.focus();
+                            });
+                        }
+                        return response.json().then(function (data) { window.location.href = data.redirect; });
+                    })
+                    .catch(function () { form.submit(); });
+            });
+        });
+
         /* One choice per order: picking a shop from the "other shops" list replaces the ticked card, and ticking a card clears the list. */
         document.querySelectorAll('.notice-form--approve').forEach(function (form) {
             const other = form.querySelector('select[name="branch_id_other"]');
